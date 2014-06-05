@@ -75,8 +75,15 @@
 		</property>
 	</bean>
 	<bean id="com.liferay.portal.kernel.captcha.CaptchaUtil" class="com.liferay.portal.kernel.captcha.CaptchaUtil">
+		<property name="captchas">
+			<list>
+				<bean class="com.liferay.portal.captcha.CaptchaImpl" />
+				<bean class="com.liferay.portal.captcha.simplecaptcha.SimpleCaptchaImpl" />
+				<bean class="com.liferay.portal.captcha.recaptcha.ReCaptchaImpl" />
+			</list>
+		</property>
 		<property name="captcha">
-			<bean class="com.liferay.portal.captcha.CaptchaImpl" />
+				<bean class="com.liferay.portal.captcha.CaptchaImpl" />
 		</property>
 	</bean>
 	<bean class="com.liferay.portal.kernel.dao.jdbc.CurrentConnectionUtil">

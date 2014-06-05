@@ -14,24 +14,6 @@
 
 package com.liferay.portal.captcha.simplecaptcha;
 
-import com.liferay.portal.kernel.captcha.Captcha;
-import com.liferay.portal.kernel.captcha.CaptchaException;
-import com.liferay.portal.kernel.captcha.CaptchaMaxChallengesException;
-import com.liferay.portal.kernel.captcha.CaptchaTextException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.RandomUtil;
-import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.InstancePool;
-import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.util.PropsValues;
-import com.liferay.portal.util.WebKeys;
-import com.liferay.registry.Filter;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.ServiceTracker;
-
 import java.io.IOException;
 
 import javax.portlet.PortletRequest;
@@ -49,41 +31,34 @@ import nl.captcha.servlet.CaptchaServletUtil;
 import nl.captcha.text.producer.TextProducer;
 import nl.captcha.text.renderer.WordRenderer;
 
+import com.liferay.portal.kernel.captcha.Captcha;
+import com.liferay.portal.kernel.captcha.CaptchaException;
+import com.liferay.portal.kernel.captcha.CaptchaMaxChallengesException;
+import com.liferay.portal.kernel.captcha.CaptchaTextException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.RandomUtil;
+import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.util.PropsValues;
+import com.liferay.portal.util.WebKeys;
+
 /**
  * @author Brian Wing Shun Chan
  * @author Daniel Sanz
- * @author Peter Fellwock
  */
 public class SimpleCaptchaImpl implements Captcha {
 
 	public SimpleCaptchaImpl() {
-		_initRegistry();
 		initBackgroundProducers();
 		initGimpyRenderers();
 		initNoiseProducers();
 		initTextProducers();
 		initWordRenderers();
 	}
-	
-	
-	private ServiceTracker<?, SimpleCaptchaImpl> _serviceTracker;
-
-	private void _initRegistry() {
-		Registry registry = RegistryUtil.getRegistry();
-
-		Filter filter = registry.getFilter(
-			"(&(objectClass=" 
-					+ SimpleCaptchaImpl.class.getName() +
-				")(path=*))");
-
-		_serviceTracker = registry.trackServices(filter);
-
-		_serviceTracker.open();	
 		
-		_log.info("SimpleCaptchaImpl._initRegistry() adds class to registry");
-	}
-
-
 	@Override
 	public void check(HttpServletRequest request) throws CaptchaException {
 		if (!isEnabled(request)) {
