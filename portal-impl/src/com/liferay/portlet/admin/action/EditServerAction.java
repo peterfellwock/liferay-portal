@@ -632,7 +632,7 @@ public class EditServerAction extends PortletAction {
 
 		if (reCaptchaEnabled) {
 			captcha = CaptchaUtil.getCaptcha(ReCaptchaImpl.class.getName());
-			if(captcha == null){
+			if(captcha == null){				
 				/** not sure how to decouple this, this should not happen **/
 				captcha = new ReCaptchaImpl();
 				CaptchaUtil.injectCaptcha(captcha);
