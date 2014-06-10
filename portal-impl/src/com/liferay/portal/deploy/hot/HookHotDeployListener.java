@@ -200,6 +200,7 @@ import org.springframework.aop.framework.AdvisedSupport;
  * @author Wesley Gong
  * @author Ryan Park
  * @author Mika Koivisto
+ * @author Peter Fellwock
  */
 public class HookHotDeployListener
 	extends BaseHotDeployListener implements PropsKeys {
@@ -447,7 +448,7 @@ public class HookHotDeployListener
 
 		if (portalProperties.containsKey(PropsKeys.AUTH_TOKEN_IMPL)) {
 			AuthTokenWrapper authTokenWrapper =
-				(AuthTokenWrapper)AuthTokenUtil.getAuthToken();
+				(AuthTokenWrapper)AuthTokenUtil.getAuthToken(PropsKeys.AUTH_TOKEN_IMPL);
 
 			authTokenWrapper.setAuthToken(null);
 		}
@@ -1738,7 +1739,7 @@ public class HookHotDeployListener
 				portletClassLoader, AuthToken.class, authTokenClassName);
 
 			AuthTokenWrapper authTokenWrapper =
-				(AuthTokenWrapper)AuthTokenUtil.getAuthToken();
+				(AuthTokenWrapper)AuthTokenUtil.getAuthToken(authTokenClassName);
 
 			authTokenWrapper.setAuthToken(authToken);
 		}

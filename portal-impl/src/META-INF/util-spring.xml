@@ -717,6 +717,8 @@
 			<bean class="com.liferay.portal.service.permission.PasswordPolicyPermissionImpl" />
 		</property>
 	</bean>
+	<bean id="com.liferay.portal.security.auth.SessionAuthToken" class="com.liferay.portal.security.auth.SessionAuthToken">
+	</bean>	
 	<bean id="com.liferay.portal.security.pwd.CompositePasswordEncryptor" class="com.liferay.portal.security.pwd.CompositePasswordEncryptor">
 		<property name="defaultPasswordEncryptor">
 			<bean class="com.liferay.portal.security.pwd.DefaultPasswordEncryptor" />
