@@ -117,6 +117,7 @@ import com.liferay.portal.security.auth.EmailAddressGeneratorFactory;
 import com.liferay.portal.security.auth.EmailAddressGeneratorRegistryUtil;
 import com.liferay.portal.security.auth.EmailAddressValidator;
 import com.liferay.portal.security.auth.EmailAddressValidatorFactory;
+import com.liferay.portal.security.auth.EmailAddressValidatorRegistryUtil;
 import com.liferay.portal.security.auth.FullNameGenerator;
 import com.liferay.portal.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.security.auth.FullNameValidator;
@@ -2057,10 +2058,8 @@ public class HookHotDeployListener
 					PropsKeys.USERS_EMAIL_ADDRESS_VALIDATOR);
 
 			EmailAddressValidator emailAddressValidator =
-				(EmailAddressValidator)newInstance(
-					portletClassLoader, EmailAddressValidator.class,
-					emailAddressValidatorClassName);
-
+				EmailAddressValidatorRegistryUtil.getEmailAddressValidator(emailAddressValidatorClassName);
+			
 			EmailAddressValidatorFactory.setInstance(emailAddressValidator);
 		}
 
