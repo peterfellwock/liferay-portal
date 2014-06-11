@@ -66,20 +66,16 @@ public class AutoLoginRegistryUtil {
 
 	private AutoLogin _getAutoLogin(String classname) {
 
-		
-		System.out.println("-----------------------------------------------------> LOOKING FOR:" + classname);
 		AutoLogin autoLogin = _tokens.get(classname);
 
 		if (autoLogin != null) {
 			return autoLogin;
 		}
-		System.out.println("-----------------------------------------------------> NOT TOKEN FOUND: " + classname);
 		for (Map.Entry<String, AutoLogin> entry : _tokens.entrySet()) {
 			if (classname.startsWith(entry.getKey())) {
 				return entry.getValue();
 			}
-		}
-		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!> OH SNAP, could not find:" + classname);
+		}		
 		return null;
 	}
 
