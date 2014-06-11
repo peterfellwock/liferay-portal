@@ -114,6 +114,7 @@ import com.liferay.portal.security.auth.AutoLoginRegistryUtil;
 import com.liferay.portal.security.auth.CompanyThreadLocal;
 import com.liferay.portal.security.auth.EmailAddressGenerator;
 import com.liferay.portal.security.auth.EmailAddressGeneratorFactory;
+import com.liferay.portal.security.auth.EmailAddressGeneratorRegistryUtil;
 import com.liferay.portal.security.auth.EmailAddressValidator;
 import com.liferay.portal.security.auth.EmailAddressValidatorFactory;
 import com.liferay.portal.security.auth.FullNameGenerator;
@@ -172,12 +173,9 @@ import com.liferay.portlet.documentlibrary.util.DLProcessorRegistryUtil;
 
 import java.io.File;
 import java.io.InputStream;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-
 import java.net.URL;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -2046,9 +2044,7 @@ public class HookHotDeployListener
 					PropsKeys.USERS_EMAIL_ADDRESS_GENERATOR);
 
 			EmailAddressGenerator emailAddressGenerator =
-				(EmailAddressGenerator)newInstance(
-					portletClassLoader, EmailAddressGenerator.class,
-					emailAddressGeneratorClassName);
+				EmailAddressGeneratorRegistryUtil.getEmailAddressGenerator(emailAddressGeneratorClassName);
 
 			EmailAddressGeneratorFactory.setInstance(emailAddressGenerator);
 		}
