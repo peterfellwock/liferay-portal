@@ -110,6 +110,7 @@ import com.liferay.portal.security.auth.AuthVerifierConfiguration;
 import com.liferay.portal.security.auth.AuthVerifierPipeline;
 import com.liferay.portal.security.auth.Authenticator;
 import com.liferay.portal.security.auth.AutoLogin;
+import com.liferay.portal.security.auth.AutoLoginRegistryUtil;
 import com.liferay.portal.security.auth.CompanyThreadLocal;
 import com.liferay.portal.security.auth.EmailAddressGenerator;
 import com.liferay.portal.security.auth.EmailAddressGeneratorFactory;
@@ -1162,8 +1163,7 @@ public class HookHotDeployListener
 			portalProperties.getProperty(AUTO_LOGIN_HOOKS));
 
 		for (String autoLoginClassName : autoLoginClassNames) {
-			AutoLogin autoLogin = (AutoLogin)newInstance(
-				portletClassLoader, AutoLogin.class, autoLoginClassName);
+			AutoLogin autoLogin = AutoLoginRegistryUtil.getAutoLogin(autoLoginClassName);
 
 			autoLoginsContainer.registerAutoLogin(autoLogin);
 		}
