@@ -14,10 +14,6 @@
 
 package com.liferay.portal.security.auth;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -26,6 +22,10 @@ import com.liferay.registry.ServiceRegistration;
 import com.liferay.registry.ServiceTracker;
 import com.liferay.registry.ServiceTrackerCustomizer;
 import com.liferay.registry.collections.StringServiceRegistrationMap;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Peter Fellwock
