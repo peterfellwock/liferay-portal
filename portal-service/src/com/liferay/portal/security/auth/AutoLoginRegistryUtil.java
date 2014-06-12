@@ -66,16 +66,30 @@ public class AutoLoginRegistryUtil {
 
 	private AutoLogin _getAutoLogin(String classname) {
 
+<<<<<<< HEAD
+=======
+		
+		System.out.println("-----------------------------------------------------> LOOKING FOR:" + classname);
+>>>>>>> f090f0d... AutoLogin Registry'fy
 		AutoLogin autoLogin = _tokens.get(classname);
 
 		if (autoLogin != null) {
 			return autoLogin;
 		}
+<<<<<<< HEAD
+=======
+		System.out.println("-----------------------------------------------------> NOT TOKEN FOUND: " + classname);
+>>>>>>> f090f0d... AutoLogin Registry'fy
 		for (Map.Entry<String, AutoLogin> entry : _tokens.entrySet()) {
 			if (classname.startsWith(entry.getKey())) {
 				return entry.getValue();
 			}
+<<<<<<< HEAD
 		}		
+=======
+		}
+		System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!> OH SNAP, could not find:" + classname);
+>>>>>>> f090f0d... AutoLogin Registry'fy
 		return null;
 	}
 
