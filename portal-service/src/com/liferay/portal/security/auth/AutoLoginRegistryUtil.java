@@ -14,7 +14,6 @@
 
 package com.liferay.portal.security.auth;
 
-import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
@@ -28,38 +27,60 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @autoor Peter Fellwock
+ * @author Peter Fellwock
  */
 public class AutoLoginRegistryUtil {
 
-	public static AutoLogin getAutoLogin(String classname) {
-		return _instance._getAutoLogin(classname);
-	}
-	
 	public static AutoLogin getAutoLogin() {
 		return _instance._serviceTracker.getService();
+	}
+
+	public static AutoLogin getAutoLogin(String classname) {
+		if (_instance._getAutoLogin(classname) != null) {
+			return _instance._getAutoLogin(classname);
+		}
+
+		return _delayGet(classname);
 	}
 
 	public static Map<String, AutoLogin> getAutoLogins() {
 		return _instance._getAutoLogins();
 	}
 
-	public static void register(String path, AutoLogin autoLogin) {
-		_instance._register(path, autoLogin);
+	public static void register(String classname, AutoLogin autoLogin) {
+		_instance._register(classname, autoLogin);
 	}
 
-	public static void unregister(String path) {
-		_instance._unregister(path);
+	public static void unregister(String classname) {
+		_instance._unregister(classname);
+	}
+
+	private static AutoLogin _delayGet(String classname) {
+		int count = 0;
+		while (count < _delayAttempt) {
+			_sleep();
+
+			if (_instance._getAutoLogin(classname) != null) {
+				return _instance._getAutoLogin(classname);
+			}
+
+			count++;
+		}
+
+		return _instance._getAutoLogin(classname);
+	}
+
+	private static void _sleep() {
+		try {
+			Thread.sleep(_delaySleep);
+		}catch (Exception e) {}
 	}
 
 	private AutoLoginRegistryUtil() {
 		Registry registry = RegistryUtil.getRegistry();
 
-		Filter filter = registry.getFilter(
-			"(objectClass=" + AutoLogin.class.getName() + ")");
-
-		_serviceTracker = registry.trackServices(
-			filter, new AutoLoginServiceTrackerCustomizer());
+		_serviceTracker = registry.trackServices(AutoLogin.class.getName(),
+				new AutoLoginServiceTrackerCustomizer());
 
 		_serviceTracker.open();
 	}
@@ -71,11 +92,13 @@ public class AutoLoginRegistryUtil {
 		if (autoLogin != null) {
 			return autoLogin;
 		}
+
 		for (Map.Entry<String, AutoLogin> entry : _tokens.entrySet()) {
 			if (classname.startsWith(entry.getKey())) {
 				return entry.getValue();
 			}
 		}
+
 		return null;
 	}
 
@@ -83,30 +106,28 @@ public class AutoLoginRegistryUtil {
 		return _tokens;
 	}
 
-	private void _register(String path, AutoLogin autoLogin) {
+	private void _register(String classname, AutoLogin autoLogin) {
 		Registry registry = RegistryUtil.getRegistry();
 
 		Map<String, Object> properties = new HashMap<String, Object>();
 
-		properties.put("path", path);
+		properties.put("classname", classname);
 
 		ServiceRegistration<AutoLogin> serviceRegistration =
-			registry.registerService(
-				AutoLogin.class, autoLogin, properties);
+			registry.registerService(AutoLogin.class, autoLogin, properties);
 
-		_autoLoginServiceRegistrations.put(path, serviceRegistration);
+		_autoLoginServiceRegistrations.put(classname, serviceRegistration);
 	}
 
-	private void _unregister(String path) {
+	private void _unregister(String classname) {
 		ServiceRegistration<?> serviceRegistration =
-				_autoLoginServiceRegistrations.remove(path);
+			_autoLoginServiceRegistrations.remove(classname);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
 		}
 
-		serviceRegistration = _autoLoginServiceRegistrations.remove(
-			path);
+		serviceRegistration = _autoLoginServiceRegistrations.remove(classname);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
@@ -116,12 +137,15 @@ public class AutoLoginRegistryUtil {
 	private static AutoLoginRegistryUtil _instance =
 		new AutoLoginRegistryUtil();
 
-	private Map<String, AutoLogin> _tokens =
-		new ConcurrentHashMap<String, AutoLogin>();
-	private ServiceTracker<?, AutoLogin> _serviceTracker;
+	private static int _delayAttempt = 2;
+	private static int _delaySleep = 200;
+
 	private StringServiceRegistrationMap<AutoLogin>
 		_autoLoginServiceRegistrations =
 			new StringServiceRegistrationMap<AutoLogin>();
+	private ServiceTracker<?, AutoLogin> _serviceTracker;
+	private Map<String, AutoLogin> _tokens =
+		new ConcurrentHashMap<String, AutoLogin>();
 
 	private class AutoLoginServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<Object, AutoLogin> {
@@ -131,12 +155,12 @@ public class AutoLoginRegistryUtil {
 			Registry registry = RegistryUtil.getRegistry();
 
 			Object service = registry.getService(serviceReference);
-			
-			AutoLogin autoLogin = (AutoLogin) service;
-			
-			String path = autoLogin.getClass().getName();
-			
-			_tokens.put(path, autoLogin);
+
+			AutoLogin autoLogin = (AutoLogin)service;
+
+			String classname = autoLogin.getClass().getName();
+
+			_tokens.put(classname, autoLogin);
 
 			return autoLogin;
 		}
@@ -154,9 +178,9 @@ public class AutoLoginRegistryUtil {
 
 			registry.ungetService(serviceReference);
 
-			String path = (String)serviceReference.getProperty("path");
+			String classname = (String)serviceReference.getProperty("path");
 
-			_tokens.remove(path);
+			_tokens.remove(classname);
 		}
 
 	}

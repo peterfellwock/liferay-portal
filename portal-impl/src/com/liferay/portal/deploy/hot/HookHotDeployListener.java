@@ -174,9 +174,12 @@ import com.liferay.portlet.documentlibrary.util.DLProcessorRegistryUtil;
 
 import java.io.File;
 import java.io.InputStream;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -825,11 +828,9 @@ public class HookHotDeployListener
 			autoDeployListenersContainer.unregisterAutoDeployListeners();
 		}
 
-		AutoLoginsContainer autoLoginsContainer =
-			_autoLoginsContainerMap.remove(servletContextName);
-
-		if (autoLoginsContainer != null) {
-			autoLoginsContainer.unregisterAutoLogins();
+		/** remove all autLogins from Registry? why? ask Ray **/
+		for (String autoLoginClassName : PropsValues.AUTO_LOGIN_HOOKS) {
+			AutoLoginRegistryUtil.unregister(autoLoginClassName);
 		}
 
 		CustomJspBag customJspBag = _customJspBagsMap.remove(
@@ -1154,17 +1155,15 @@ public class HookHotDeployListener
 			Properties portalProperties)
 		throws Exception {
 
-		AutoLoginsContainer autoLoginsContainer = new AutoLoginsContainer();
-
-		_autoLoginsContainerMap.put(servletContextName, autoLoginsContainer);
-
 		String[] autoLoginClassNames = StringUtil.split(
 			portalProperties.getProperty(AUTO_LOGIN_HOOKS));
 
-		for (String autoLoginClassName : autoLoginClassNames) {
-			AutoLogin autoLogin = AutoLoginRegistryUtil.getAutoLogin(autoLoginClassName);
+		AutoLogin tempAutoLogin = null;
 
-			autoLoginsContainer.registerAutoLogin(autoLogin);
+		for (String autoLoginClassName : autoLoginClassNames) {
+			tempAutoLogin = (AutoLogin)newInstance(
+				portletClassLoader, AutoLogin.class, autoLoginClassName);
+			AutoLoginRegistryUtil.register(autoLoginClassName, tempAutoLogin);
 		}
 	}
 
@@ -2059,7 +2058,7 @@ public class HookHotDeployListener
 
 			EmailAddressValidator emailAddressValidator =
 				EmailAddressValidatorRegistryUtil.getEmailAddressValidator(emailAddressValidatorClassName);
-			
+
 			EmailAddressValidatorFactory.setInstance(emailAddressValidator);
 		}
 
@@ -2844,8 +2843,6 @@ public class HookHotDeployListener
 	private Map<String, AutoDeployListenersContainer>
 		_autoDeployListenersContainerMap =
 			new HashMap<String, AutoDeployListenersContainer>();
-	private Map<String, AutoLoginsContainer> _autoLoginsContainerMap =
-		new HashMap<String, AutoLoginsContainer>();
 	private Map<String, CustomJspBag> _customJspBagsMap =
 		new HashMap<String, CustomJspBag>();
 	private Map<String, DLFileEntryProcessorContainer>
