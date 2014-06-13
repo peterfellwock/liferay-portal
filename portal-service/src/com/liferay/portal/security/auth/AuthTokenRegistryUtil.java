@@ -32,12 +32,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AuthTokenRegistryUtil {
 
-	public static AuthToken getAuthToken(String path) {
-		return _instance._getAuthToken(path);
-	}
-	
 	public static AuthToken getAuthToken() {
 		return _instance._serviceTracker.getService();
+	}
+
+	public static AuthToken getAuthToken(String classname) {
+		if (_instance._getAuthToken(classname) != null) {
+			return _instance._getAuthToken(classname);
+		}
+
+		return _delayGet(classname);
 	}
 
 	public static Map<String, AuthToken> getAuthTokens() {
@@ -50,6 +54,27 @@ public class AuthTokenRegistryUtil {
 
 	public static void unregister(String path) {
 		_instance._unregister(path);
+	}
+
+	private static AuthToken _delayGet(String classname) {
+		int count = 0;
+		while (count < _delayAttempt) {
+			_sleep();
+
+			if (_instance._getAuthToken(classname) != null) {
+				return _instance._getAuthToken(classname);
+			}
+
+			count++;
+		}
+
+		return _instance._getAuthToken(classname);
+	}
+
+	private static void _sleep() {
+		try {
+			Thread.sleep(_delaySleep);
+		}catch (Exception e) {}
 	}
 
 	private AuthTokenRegistryUtil() {
@@ -92,22 +117,20 @@ public class AuthTokenRegistryUtil {
 		properties.put("path", path);
 
 		ServiceRegistration<AuthToken> serviceRegistration =
-			registry.registerService(
-				AuthToken.class, authToken, properties);
+			registry.registerService(AuthToken.class, authToken, properties);
 
 		_authTokenServiceRegistrations.put(path, serviceRegistration);
 	}
 
 	private void _unregister(String path) {
 		ServiceRegistration<?> serviceRegistration =
-				_authTokenServiceRegistrations.remove(path);
+			_authTokenServiceRegistrations.remove(path);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
 		}
 
-		serviceRegistration = _authTokenServiceRegistrations.remove(
-			path);
+		serviceRegistration = _authTokenServiceRegistrations.remove(path);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
@@ -117,12 +140,15 @@ public class AuthTokenRegistryUtil {
 	private static AuthTokenRegistryUtil _instance =
 		new AuthTokenRegistryUtil();
 
-	private Map<String, AuthToken> _tokens =
-		new ConcurrentHashMap<String, AuthToken>();
-	private ServiceTracker<?, AuthToken> _serviceTracker;
+	private static int _delayAttempt = 2;
+	private static int _delaySleep = 200;
+
 	private StringServiceRegistrationMap<AuthToken>
 		_authTokenServiceRegistrations =
 			new StringServiceRegistrationMap<AuthToken>();
+	private ServiceTracker<?, AuthToken> _serviceTracker;
+	private Map<String, AuthToken> _tokens =
+		new ConcurrentHashMap<String, AuthToken>();
 
 	private class AuthTokenServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<Object, AuthToken> {
@@ -133,8 +159,7 @@ public class AuthTokenRegistryUtil {
 
 			Object service = registry.getService(serviceReference);
 
-			AuthToken authToken = (AuthToken) service;
-
+			AuthToken authToken = (AuthToken)service;
 
 			String path = (String)serviceReference.getProperty("path");
 

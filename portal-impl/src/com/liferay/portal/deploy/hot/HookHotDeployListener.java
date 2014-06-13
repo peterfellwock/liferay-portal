@@ -102,9 +102,8 @@ import com.liferay.portal.sanitizer.SanitizerImpl;
 import com.liferay.portal.security.auth.AuthFailure;
 import com.liferay.portal.security.auth.AuthPipeline;
 import com.liferay.portal.security.auth.AuthToken;
-import com.liferay.portal.security.auth.AuthTokenUtil;
+import com.liferay.portal.security.auth.AuthTokenRegistryUtil;
 import com.liferay.portal.security.auth.AuthTokenWhitelistUtil;
-import com.liferay.portal.security.auth.AuthTokenWrapper;
 import com.liferay.portal.security.auth.AuthVerifier;
 import com.liferay.portal.security.auth.AuthVerifierConfiguration;
 import com.liferay.portal.security.auth.AuthVerifierPipeline;
@@ -450,10 +449,9 @@ public class HookHotDeployListener
 		}
 
 		if (portalProperties.containsKey(PropsKeys.AUTH_TOKEN_IMPL)) {
-			AuthTokenWrapper authTokenWrapper =
-				(AuthTokenWrapper)AuthTokenUtil.getAuthToken(PropsKeys.AUTH_TOKEN_IMPL);
-
-			authTokenWrapper.setAuthToken(null);
+			String authTokenClassName = portalProperties.getProperty(
+				PropsKeys.AUTH_TOKEN_IMPL);
+			AuthTokenRegistryUtil.unregister(authTokenClassName);
 		}
 
 		if (portalProperties.containsKey(PropsKeys.CAPTCHA_ENGINE_IMPL)) {
@@ -1163,6 +1161,7 @@ public class HookHotDeployListener
 		for (String autoLoginClassName : autoLoginClassNames) {
 			tempAutoLogin = (AutoLogin)newInstance(
 				portletClassLoader, AutoLogin.class, autoLoginClassName);
+			
 			AutoLoginRegistryUtil.register(autoLoginClassName, tempAutoLogin);
 		}
 	}
@@ -1736,10 +1735,7 @@ public class HookHotDeployListener
 			AuthToken authToken = (AuthToken)newInstance(
 				portletClassLoader, AuthToken.class, authTokenClassName);
 
-			AuthTokenWrapper authTokenWrapper =
-				(AuthTokenWrapper)AuthTokenUtil.getAuthToken(authTokenClassName);
-
-			authTokenWrapper.setAuthToken(authToken);
+			AuthTokenRegistryUtil.register(authTokenClassName, authToken);
 		}
 
 		if (portalProperties.containsKey(PropsKeys.CAPTCHA_ENGINE_IMPL)) {
@@ -3031,24 +3027,6 @@ public class HookHotDeployListener
 
 		private List<AutoDeployListener> _autoDeployListeners =
 			new ArrayList<AutoDeployListener>();
-
-	}
-
-	private class AutoLoginsContainer {
-
-		public void registerAutoLogin(AutoLogin autoLogin) {
-			AutoLoginFilter.registerAutoLogin(autoLogin);
-
-			_autoLogins.add(autoLogin);
-		}
-
-		public void unregisterAutoLogins() {
-			for (AutoLogin autoLogin : _autoLogins) {
-				AutoLoginFilter.unregisterAutoLogin(autoLogin);
-			}
-		}
-
-		private List<AutoLogin> _autoLogins = new ArrayList<AutoLogin>();
 
 	}
 
