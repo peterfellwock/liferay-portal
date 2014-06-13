@@ -146,7 +146,6 @@ import com.liferay.portal.security.pwd.ToolkitWrapper;
 import com.liferay.portal.service.ReleaseLocalServiceUtil;
 import com.liferay.portal.service.ServiceWrapper;
 import com.liferay.portal.service.persistence.BasePersistence;
-import com.liferay.portal.servlet.filters.autologin.AutoLoginFilter;
 import com.liferay.portal.servlet.filters.cache.CacheUtil;
 import com.liferay.portal.spring.aop.ServiceBeanAopCacheManagerUtil;
 import com.liferay.portal.spring.aop.ServiceBeanAopProxy;
@@ -593,11 +592,21 @@ public class HookHotDeployListener
 		if (portalProperties.containsKey(
 				PropsKeys.USERS_EMAIL_ADDRESS_GENERATOR)) {
 
+			String classname = (String)portalProperties.get(
+				PropsKeys.USERS_EMAIL_ADDRESS_GENERATOR);
+
+			EmailAddressGeneratorRegistryUtil.unregister(classname);
+
 			EmailAddressGeneratorFactory.setInstance(null);
 		}
 
 		if (portalProperties.containsKey(
 				PropsKeys.USERS_EMAIL_ADDRESS_VALIDATOR)) {
+
+			String classname = (String)portalProperties.get(
+				PropsKeys.USERS_EMAIL_ADDRESS_VALIDATOR);
+
+			EmailAddressValidatorRegistryUtil.unregister(classname);
 
 			EmailAddressValidatorFactory.setInstance(null);
 		}
@@ -1161,7 +1170,7 @@ public class HookHotDeployListener
 		for (String autoLoginClassName : autoLoginClassNames) {
 			tempAutoLogin = (AutoLogin)newInstance(
 				portletClassLoader, AutoLogin.class, autoLoginClassName);
-			
+
 			AutoLoginRegistryUtil.register(autoLoginClassName, tempAutoLogin);
 		}
 	}
@@ -2040,7 +2049,12 @@ public class HookHotDeployListener
 					PropsKeys.USERS_EMAIL_ADDRESS_GENERATOR);
 
 			EmailAddressGenerator emailAddressGenerator =
-				EmailAddressGeneratorRegistryUtil.getEmailAddressGenerator(emailAddressGeneratorClassName);
+				(EmailAddressGenerator)newInstance(
+					portletClassLoader, EmailAddressGenerator.class,
+					emailAddressGeneratorClassName);
+
+			EmailAddressGeneratorRegistryUtil
+			.register(emailAddressGeneratorClassName, emailAddressGenerator);
 
 			EmailAddressGeneratorFactory.setInstance(emailAddressGenerator);
 		}
@@ -2053,7 +2067,12 @@ public class HookHotDeployListener
 					PropsKeys.USERS_EMAIL_ADDRESS_VALIDATOR);
 
 			EmailAddressValidator emailAddressValidator =
-				EmailAddressValidatorRegistryUtil.getEmailAddressValidator(emailAddressValidatorClassName);
+					(EmailAddressValidator)newInstance(
+							portletClassLoader, EmailAddressValidator.class,
+							emailAddressValidatorClassName);
+
+			EmailAddressValidatorRegistryUtil
+			.register(emailAddressValidatorClassName, emailAddressValidator);
 
 			EmailAddressValidatorFactory.setInstance(emailAddressValidator);
 		}

@@ -32,12 +32,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EmailAddressValidatorRegistryUtil {
 
-	public static EmailAddressValidator getEmailAddressValidator(String path) {		
-		return _instance._getEmailAddressValidator(path);
-	}
-	
 	public static EmailAddressValidator getEmailAddressValidator() {
 		return _instance._serviceTracker.getService();
+	}
+
+	public static EmailAddressValidator getEmailAddressValidator(String path) {
+		return _instance._getEmailAddressValidator(path);
 	}
 
 	public static Map<String, EmailAddressValidator> getEmailAddressValidators() {
@@ -64,17 +64,18 @@ public class EmailAddressValidatorRegistryUtil {
 		_serviceTracker.open();
 	}
 
-	private EmailAddressValidator _getEmailAddressValidator(String path) {		
-		EmailAddressValidator emailAddressValidator = _validators.get(path);		
+	private EmailAddressValidator _getEmailAddressValidator(String path) {
+		EmailAddressValidator emailAddressValidator = _validators.get(path);
+
 		if (emailAddressValidator != null) {
 			return emailAddressValidator;
-		}		
-		for (Map.Entry<String, EmailAddressValidator> entry : _validators.entrySet()) {			
-			
-			if (path.startsWith(entry.getKey())) {				
+		}
+
+		for (Map.Entry<String, EmailAddressValidator> entry : _validators.entrySet()) {
+			if (path.startsWith(entry.getKey())) {
 				return entry.getValue();
 			}
-		}		
+		}
 
 		return null;
 	}
@@ -99,7 +100,7 @@ public class EmailAddressValidatorRegistryUtil {
 
 	private void _unregister(String path) {
 		ServiceRegistration<?> serviceRegistration =
-				_emailAddressValidatorServiceRegistrations.remove(path);
+			_emailAddressValidatorServiceRegistrations.remove(path);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
@@ -116,12 +117,12 @@ public class EmailAddressValidatorRegistryUtil {
 	private static EmailAddressValidatorRegistryUtil _instance =
 		new EmailAddressValidatorRegistryUtil();
 
-	private Map<String, EmailAddressValidator> _validators =
-		new ConcurrentHashMap<String, EmailAddressValidator>();
-	private ServiceTracker<?, EmailAddressValidator> _serviceTracker;
 	private StringServiceRegistrationMap<EmailAddressValidator>
 		_emailAddressValidatorServiceRegistrations =
 			new StringServiceRegistrationMap<EmailAddressValidator>();
+	private ServiceTracker<?, EmailAddressValidator> _serviceTracker;
+	private Map<String, EmailAddressValidator> _validators =
+		new ConcurrentHashMap<String, EmailAddressValidator>();
 
 	private class EmailAddressValidatorServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<Object, EmailAddressValidator> {
@@ -132,7 +133,7 @@ public class EmailAddressValidatorRegistryUtil {
 
 			Object service = registry.getService(serviceReference);
 
-			EmailAddressValidator emailAddressValidator = (EmailAddressValidator) service;
+			EmailAddressValidator emailAddressValidator = (EmailAddressValidator)service;
 
 			String path = emailAddressValidator.getClass().getName();
 

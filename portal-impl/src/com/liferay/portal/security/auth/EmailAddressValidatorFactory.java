@@ -27,13 +27,14 @@ import com.liferay.portal.util.PropsValues;
 public class EmailAddressValidatorFactory {
 
 	public static EmailAddressValidator getInstance() {
-		if(_emailAddressValidator== null){
-			_originalEmailAddressValidator = 
+		if (_emailAddressValidator == null) {
+			_originalEmailAddressValidator =
 					EmailAddressValidatorRegistryUtil
-					.getEmailAddressValidator(PropsValues.USERS_EMAIL_ADDRESS_VALIDATOR);
-			_emailAddressValidator = _originalEmailAddressValidator;			
+					.getEmailAddressValidator(
+						PropsValues.USERS_EMAIL_ADDRESS_VALIDATOR);
+			_emailAddressValidator = _originalEmailAddressValidator;
 		}
-				
+
 		return _emailAddressValidator;
 	}
 
@@ -53,16 +54,17 @@ public class EmailAddressValidatorFactory {
 	}
 
 	public void afterPropertiesSet() throws Exception {
-				
+
 		String classname = PropsValues.USERS_EMAIL_ADDRESS_VALIDATOR;
-		
+
 		if (_log.isDebugEnabled()) {
-			_log.debug(
-				"Instantiate " + classname);
+			_log.debug("Instantiate " + classname);
 		}
-	
-		_originalEmailAddressValidator = EmailAddressValidatorRegistryUtil.getEmailAddressValidator(classname);
-		
+
+		_originalEmailAddressValidator =
+				EmailAddressValidatorRegistryUtil
+				.getEmailAddressValidator(classname);
+
 		_emailAddressValidator = _originalEmailAddressValidator;
 	}
 

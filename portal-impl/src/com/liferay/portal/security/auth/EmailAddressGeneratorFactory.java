@@ -26,13 +26,15 @@ import com.liferay.portal.util.PropsValues;
  */
 public class EmailAddressGeneratorFactory {
 
-	public static EmailAddressGenerator getInstance() {	
-		if(_emailAddressGenerator == null){
-			_originalEmailAddressGenerator = 
+	public static EmailAddressGenerator getInstance() {
+		if (_emailAddressGenerator == null) {
+			_originalEmailAddressGenerator =
 					EmailAddressGeneratorRegistryUtil
-					.getEmailAddressGenerator(PropsValues.USERS_EMAIL_ADDRESS_GENERATOR);
-			_emailAddressGenerator = _originalEmailAddressGenerator;			
+					.getEmailAddressGenerator(
+						PropsValues.USERS_EMAIL_ADDRESS_GENERATOR);
+			_emailAddressGenerator = _originalEmailAddressGenerator;
 		}
+
 		return _emailAddressGenerator;
 	}
 
@@ -59,7 +61,8 @@ public class EmailAddressGeneratorFactory {
 
 		String classname = PropsValues.USERS_EMAIL_ADDRESS_GENERATOR;
 
-		_originalEmailAddressGenerator = EmailAddressGeneratorRegistryUtil.getEmailAddressGenerator(classname);
+		_originalEmailAddressGenerator = EmailAddressGeneratorRegistryUtil
+			.getEmailAddressGenerator(classname);
 
 		_emailAddressGenerator = _originalEmailAddressGenerator;
 	}

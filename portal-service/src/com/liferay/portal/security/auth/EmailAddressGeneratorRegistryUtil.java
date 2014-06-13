@@ -32,12 +32,12 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EmailAddressGeneratorRegistryUtil {
 
-	public static EmailAddressGenerator getEmailAddressGenerator(String path) {		
-		return _instance._getEmailAddressGenerator(path);
-	}
-	
 	public static EmailAddressGenerator getEmailAddressGenerator() {
 		return _instance._serviceTracker.getService();
+	}
+
+	public static EmailAddressGenerator getEmailAddressGenerator(String path) {
+		return _instance._getEmailAddressGenerator(path);
 	}
 
 	public static Map<String, EmailAddressGenerator> getEmailAddressGenerators() {
@@ -64,17 +64,18 @@ public class EmailAddressGeneratorRegistryUtil {
 		_serviceTracker.open();
 	}
 
-	private EmailAddressGenerator _getEmailAddressGenerator(String path) {		
-		EmailAddressGenerator emailAddressGenerator = _generators.get(path);		
+	private EmailAddressGenerator _getEmailAddressGenerator(String path) {
+		EmailAddressGenerator emailAddressGenerator = _generators.get(path);
+
 		if (emailAddressGenerator != null) {
 			return emailAddressGenerator;
-		}		
-		for (Map.Entry<String, EmailAddressGenerator> entry : _generators.entrySet()) {			
-			
-			if (path.startsWith(entry.getKey())) {				
+		}
+
+		for (Map.Entry<String, EmailAddressGenerator> entry : _generators.entrySet()) {
+			if (path.startsWith(entry.getKey())) {
 				return entry.getValue();
 			}
-		}		
+		}
 
 		return null;
 	}
@@ -99,7 +100,7 @@ public class EmailAddressGeneratorRegistryUtil {
 
 	private void _unregister(String path) {
 		ServiceRegistration<?> serviceRegistration =
-				_emailAddressGeneratorServiceRegistrations.remove(path);
+			_emailAddressGeneratorServiceRegistrations.remove(path);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
@@ -116,12 +117,12 @@ public class EmailAddressGeneratorRegistryUtil {
 	private static EmailAddressGeneratorRegistryUtil _instance =
 		new EmailAddressGeneratorRegistryUtil();
 
-	private Map<String, EmailAddressGenerator> _generators =
-		new ConcurrentHashMap<String, EmailAddressGenerator>();
-	private ServiceTracker<?, EmailAddressGenerator> _serviceTracker;
 	private StringServiceRegistrationMap<EmailAddressGenerator>
 		_emailAddressGeneratorServiceRegistrations =
 			new StringServiceRegistrationMap<EmailAddressGenerator>();
+	private Map<String, EmailAddressGenerator> _generators =
+		new ConcurrentHashMap<String, EmailAddressGenerator>();
+	private ServiceTracker<?, EmailAddressGenerator> _serviceTracker;
 
 	private class EmailAddressGeneratorServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<Object, EmailAddressGenerator> {
@@ -132,7 +133,7 @@ public class EmailAddressGeneratorRegistryUtil {
 
 			Object service = registry.getService(serviceReference);
 
-			EmailAddressGenerator emailAddressGenerator = (EmailAddressGenerator) service;
+			EmailAddressGenerator emailAddressGenerator = (EmailAddressGenerator)service;
 
 			String path = emailAddressGenerator.getClass().getName();
 
