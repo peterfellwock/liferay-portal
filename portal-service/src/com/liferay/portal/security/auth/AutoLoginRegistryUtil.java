@@ -80,7 +80,7 @@ public class AutoLoginRegistryUtil {
 		Registry registry = RegistryUtil.getRegistry();
 
 		_serviceTracker = registry.trackServices(AutoLogin.class.getName(),
-				new AutoLoginServiceTrackerCustomizer());
+			new AutoLoginServiceTrackerCustomizer());
 
 		_serviceTracker.open();
 	}
