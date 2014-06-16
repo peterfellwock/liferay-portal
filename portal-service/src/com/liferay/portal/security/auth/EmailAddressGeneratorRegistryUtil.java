@@ -14,7 +14,6 @@
 
 package com.liferay.portal.security.auth;
 
-import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
@@ -55,11 +54,9 @@ public class EmailAddressGeneratorRegistryUtil {
 	private EmailAddressGeneratorRegistryUtil() {
 		Registry registry = RegistryUtil.getRegistry();
 
-		Filter filter = registry.getFilter(
-			"(objectClass=" + EmailAddressGenerator.class.getName() + ")");
-
 		_serviceTracker = registry.trackServices(
-			filter, new EmailAddressGeneratorServiceTrackerCustomizer());
+			EmailAddressGenerator.class.getName(),
+			new EmailAddressGeneratorServiceTrackerCustomizer());
 
 		_serviceTracker.open();
 	}
