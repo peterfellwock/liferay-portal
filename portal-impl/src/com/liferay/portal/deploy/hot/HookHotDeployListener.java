@@ -114,9 +114,7 @@ import com.liferay.portal.security.auth.EmailAddressGeneratorFactory;
 import com.liferay.portal.security.auth.EmailAddressValidator;
 import com.liferay.portal.security.auth.EmailAddressValidatorFactory;
 import com.liferay.portal.security.auth.FullNameGenerator;
-import com.liferay.portal.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.security.auth.FullNameValidator;
-import com.liferay.portal.security.auth.FullNameValidatorFactory;
 import com.liferay.portal.security.auth.ScreenNameGenerator;
 import com.liferay.portal.security.auth.ScreenNameGeneratorFactory;
 import com.liferay.portal.security.auth.ScreenNameValidator;
@@ -613,11 +611,27 @@ public class HookHotDeployListener
 		}
 
 		if (portalProperties.containsKey(PropsKeys.USERS_FULL_NAME_GENERATOR)) {
-			FullNameGeneratorFactory.setInstance(null);
+			String fullnameGenClassName = portalProperties
+				.getProperty(PropsKeys.USERS_FULL_NAME_GENERATOR);
+
+			ServiceRegistration<?> serviceRegistration =
+				serviceRegistrations.remove(fullnameGenClassName);
+
+			if (serviceRegistration != null) {
+				serviceRegistration.unregister();
+			}
 		}
 
 		if (portalProperties.containsKey(PropsKeys.USERS_FULL_NAME_VALIDATOR)) {
-			FullNameValidatorFactory.setInstance(null);
+			String fullnameValClassName = portalProperties
+				.getProperty(PropsKeys.USERS_FULL_NAME_VALIDATOR);
+
+			ServiceRegistration<?> serviceRegistration =
+				serviceRegistrations.remove(fullnameValClassName);
+
+			if (serviceRegistration != null) {
+				serviceRegistration.unregister();
+			}
 		}
 
 		if (portalProperties.containsKey(
@@ -2108,7 +2122,12 @@ public class HookHotDeployListener
 					portletClassLoader, FullNameGenerator.class,
 					fullNameGeneratorClassName);
 
-			FullNameGeneratorFactory.setInstance(fullNameGenerator);
+			ServiceRegistration<FullNameGenerator> serviceRegistration =
+			registry.registerService(FullNameGenerator.class,
+				fullNameGenerator);
+
+			serviceRegistrations.put(fullNameGeneratorClassName,
+				serviceRegistration);
 		}
 
 		if (portalProperties.containsKey(PropsKeys.USERS_FULL_NAME_VALIDATOR)) {
@@ -2120,7 +2139,12 @@ public class HookHotDeployListener
 					portletClassLoader, FullNameValidator.class,
 					fullNameValidatorClassName);
 
-			FullNameValidatorFactory.setInstance(fullNameValidator);
+			ServiceRegistration<FullNameValidator> serviceRegistration =
+			registry.registerService(FullNameValidator.class,
+				fullNameValidator);
+
+			serviceRegistrations.put(fullNameValidatorClassName,
+				serviceRegistration);
 		}
 
 		if (portalProperties.containsKey(
