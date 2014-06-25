@@ -608,31 +608,7 @@ public class HookHotDeployListener
 				PropsKeys.USERS_EMAIL_ADDRESS_VALIDATOR)) {
 
 			EmailAddressValidatorFactory.setInstance(null);
-		}
-
-		if (portalProperties.containsKey(PropsKeys.USERS_FULL_NAME_GENERATOR)) {
-			String fullnameGenClassName = portalProperties
-				.getProperty(PropsKeys.USERS_FULL_NAME_GENERATOR);
-
-			ServiceRegistration<?> serviceRegistration =
-				serviceRegistrations.remove(fullnameGenClassName);
-
-			if (serviceRegistration != null) {
-				serviceRegistration.unregister();
-			}
-		}
-
-		if (portalProperties.containsKey(PropsKeys.USERS_FULL_NAME_VALIDATOR)) {
-			String fullnameValClassName = portalProperties
-				.getProperty(PropsKeys.USERS_FULL_NAME_VALIDATOR);
-
-			ServiceRegistration<?> serviceRegistration =
-				serviceRegistrations.remove(fullnameValClassName);
-
-			if (serviceRegistration != null) {
-				serviceRegistration.unregister();
-			}
-		}
+		}		
 
 		if (portalProperties.containsKey(
 				PropsKeys.USERS_SCREEN_NAME_GENERATOR)) {
