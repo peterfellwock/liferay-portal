@@ -618,35 +618,6 @@ public class HookHotDeployListener
 			FullNameValidatorFactory.setInstance(null);
 		}
 
-		if (portalProperties.containsKey(
-				PropsKeys.USERS_SCREEN_NAME_GENERATOR)) {
-
-			String screenNameGeneratorClassName = portalProperties.getProperty(
-			PropsKeys.USERS_SCREEN_NAME_GENERATOR);
-
-			ServiceRegistration<?> serviceRegistration =
-			serviceRegistrations.remove(screenNameGeneratorClassName);
-
-			if (serviceRegistration != null) {
-			serviceRegistration.unregister();
-			}
-		}
-
-		if (portalProperties.containsKey(
-				PropsKeys.USERS_SCREEN_NAME_VALIDATOR)) {
-
-			String screenNameValidatorClassName =
-					portalProperties.getProperty(
-			PropsKeys.USERS_SCREEN_NAME_VALIDATOR);
-
-			ServiceRegistration<?> serviceRegistration =
-			serviceRegistrations.remove(screenNameValidatorClassName);
-
-			if (serviceRegistration != null) {
-			serviceRegistration.unregister();
-			}
-		}
-
 		Set<String> liferayFilterClassNames =
 			LiferayFilterTracker.getClassNames();
 
