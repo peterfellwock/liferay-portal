@@ -1817,14 +1817,15 @@ public class HookHotDeployListener
 				(SiteMembershipPolicy)newInstance(
 					portletClassLoader, SiteMembershipPolicy.class,
 					siteMembershipPolicyClassName);
+			
+			Boolean autoVerify = new Boolean(
+				PropsValues.MEMBERSHIP_POLICY_AUTO_VERIFY);
 
 			registerService(
-					servletContextName, siteMembershipPolicyClassName,
-					SiteMembershipPolicy.class, siteMembershipPolicy);
-
-			if (PropsValues.MEMBERSHIP_POLICY_AUTO_VERIFY) {
-				siteMembershipPolicy.verifyPolicy();
-			}
+				servletContextName, siteMembershipPolicyClassName,
+				SiteMembershipPolicy.class, siteMembershipPolicy, 
+				SiteMembershipPolicy.MEMBERSHIP_POLICY_AUTO_VERIFY,
+				autoVerify);
 		}
 
 		if (portalProperties.containsKey(
