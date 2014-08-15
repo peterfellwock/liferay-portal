@@ -21,9 +21,9 @@ import com.liferay.portal.kernel.util.TimeZoneUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webcache.WebCacheItem;
 import com.liferay.portal.kernel.webcache.WebCachePoolUtil;
-import com.liferay.portal.util.PropsValues;
 
 import java.text.DateFormat;
+
 import java.util.Calendar;
 
 /**
@@ -31,27 +31,18 @@ import java.util.Calendar;
  */
 public class AmazonRankingsUtil {
 
-	public static String getAmazonAccessKeyId() {
-		return PropsValues.AMAZON_ACCESS_KEY_ID;
-	}
+	public static AmazonRankings getAmazonRankings(
+		String isbn, String key, String tag, String secret) {
 
-	public static String getAmazonAssociateTag() {
-		return PropsValues.AMAZON_ASSOCIATE_TAG;
-	}
-
-	public static AmazonRankings getAmazonRankings(String isbn) {
 		if (!Validator.isDigit(isbn)) {
 			return null;
 		}
 
-		WebCacheItem wci = new AmazonRankingsWebCacheItem(isbn);
+		WebCacheItem wci = new AmazonRankingsWebCacheItem(isbn, key, tag,
+			secret);
 
 		return (AmazonRankings)WebCachePoolUtil.get(
 			AmazonRankingsUtil.class.getName() + StringPool.PERIOD + isbn, wci);
-	}
-
-	public static String getAmazonSecretAccessKey() {
-		return PropsValues.AMAZON_SECRET_ACCESS_KEY;
 	}
 
 	public static String getTimestamp() {
@@ -63,18 +54,6 @@ public class AmazonRankingsUtil {
 		Calendar calendar = Calendar.getInstance();
 
 		return dateFormat.format(calendar.getTime());
-	}
-
-	public static boolean isEnabled() {
-		if (Validator.isNull(PropsValues.AMAZON_ACCESS_KEY_ID) ||
-			Validator.isNull(PropsValues.AMAZON_ASSOCIATE_TAG) ||
-			Validator.isNull(PropsValues.AMAZON_SECRET_ACCESS_KEY)) {
-
-			return false;
-		}
-		else {
-			return true;
-		}
 	}
 
 	private static final String _TIMESTAMP = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";

@@ -49,10 +49,10 @@ page import="com.liferay.portlet.asset.model.AssetTagProperty" %><%@
 page import="com.liferay.portlet.asset.service.AssetTagLocalServiceUtil" %><%@
 page import="com.liferay.portlet.asset.service.AssetTagPropertyLocalServiceUtil" %>
 
-<%@ page import="java.net.URL" %><%@ 
+<%@ page import="java.net.URL" %><%@
 page import="java.text.NumberFormat" %><%@
-page import="java.util.Enumeration" %><%@  
-page import="java.util.Set" %><%@ 
+page import="java.util.Enumeration" %><%@
+page import="java.util.Set" %><%@
 page import="java.util.TreeSet" %>
 
 <%@ page import="javax.portlet.PortletMode" %><%@
@@ -71,6 +71,9 @@ PortletURL currentURLObj = PortletURLUtil.getCurrent(liferayPortletRequest, life
 String currentURL = currentURLObj.toString();
 
 String[] isbns = portletPreferences.getValues("isbns", new String[0]);
+String accessKeyID = portletPreferences.getValue(AmazonRankings.AMAZON_ACCESS_KEY_ID, "");
+String associateTag = portletPreferences.getValue(AmazonRankings.AMAZON_ASSOCIATE_TAG , "");
+String secretAccessKey = portletPreferences.getValue(AmazonRankings.AMAZON_SECRET_ACCESS_KEY, "");
 
 NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
 %>

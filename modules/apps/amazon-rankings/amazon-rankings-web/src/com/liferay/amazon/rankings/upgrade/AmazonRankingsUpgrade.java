@@ -19,16 +19,16 @@ import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.service.ReleaseLocalService;
 import com.liferay.portal.upgrade.util.UpgradePortletId;
 
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
-
 import java.util.Collections;
 
 import javax.servlet.ServletContext;
 
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
- * @author Raymond Aug�
+ * @author Raymond Augé
  * @author Peter Fellwock
  */
 @Component(immediate = true, service = AmazonRankingsUpgrade.class)
@@ -40,31 +40,31 @@ public class AmazonRankingsUpgrade {
 
 		_releaseLocalService = releaseLocalService;
 	}
-	
+
 	@Reference(target = "(original.bean=*)", unbind = "-")
 	protected void setServletContext(ServletContext servletContext) {
 	}
-	
+
 	@Activate
 	protected void upgrade() throws PortalException {
 		UpgradePortletId upgradePortletId = new UpgradePortletId() {
-			
+
 			@Override
 			protected String[][] getRenamePortletIdsArray() {
-				return new String[][] { 
-					new String[] { 
+				return new String[][] {
+					new String[] {
 						"67",
 						"com_liferay_amazon_rankings_portlet_AmazonRankingsPortlet"
 						}
 					};
 				}
 			};
-		
+
 			_releaseLocalService.updateRelease(
 				AmazonRankingsPortlet.class.getName(),
-				Collections.<UpgradeProcess> singletonList(upgradePortletId),
-				1, 1, false);
+				Collections.<UpgradeProcess> singletonList(upgradePortletId), 1,
+				1, false);
 	}
-	
+
 	private ReleaseLocalService _releaseLocalService;
 }

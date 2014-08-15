@@ -14,7 +14,6 @@
 
 package com.liferay.amazon.rankings.util;
 
-import com.liferay.amazon.rankings.util.AmazonRankingsUtil;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -22,6 +21,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URLEncoder;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -36,13 +36,14 @@ import javax.crypto.spec.SecretKeySpec;
 public class AmazonSignedRequestsUtil {
 
 	public static String generateUrlWithSignature(
-			Map<String, String> parameters)
+			Map<String, String> parameters, String amazonSecretAccessKey)
 		throws Exception {
 
 		String canonicalizedParameters = _canonicalizeParameters(parameters);
 
 		String signature = _generateSignature(
-			"GET\necs.amazonaws.com\n/onca/xml\n" + canonicalizedParameters);
+			"GET\necs.amazonaws.com\n/onca/xml\n" + canonicalizedParameters,
+			amazonSecretAccessKey);
 
 		return "http://ecs.amazonaws.com/onca/xml?" + canonicalizedParameters +
 			"&Signature=" + signature;
@@ -74,10 +75,7 @@ public class AmazonSignedRequestsUtil {
 		return sb.toString();
 	}
 
-	private static String _generateSignature(String data) throws Exception {
-		String amazonSecretAccessKey =
-			AmazonRankingsUtil.getAmazonSecretAccessKey();
-
+	private static String _generateSignature(String data, String amazonSecretAccessKey) throws Exception {
 		if (Validator.isNull(amazonSecretAccessKey)) {
 			return StringPool.BLANK;
 		}
