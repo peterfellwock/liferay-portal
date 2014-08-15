@@ -12,8 +12,9 @@
  * details.
  */
 
-package com.liferay.portlet.amazonrankings.util;
+package com.liferay.amazon.rankings.util;
 
+import com.liferay.amazon.rankings.util.AmazonRankingsUtil;
 import com.liferay.portal.kernel.util.Base64;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
@@ -21,7 +22,6 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URLEncoder;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;

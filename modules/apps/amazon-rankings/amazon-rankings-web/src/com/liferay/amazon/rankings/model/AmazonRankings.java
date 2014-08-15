@@ -12,10 +12,9 @@
  * details.
  */
 
-package com.liferay.portlet.amazonrankings.model;
+package com.liferay.amazon.rankings.model;
 
 import java.io.Serializable;
-
 import java.util.Date;
 
 /**

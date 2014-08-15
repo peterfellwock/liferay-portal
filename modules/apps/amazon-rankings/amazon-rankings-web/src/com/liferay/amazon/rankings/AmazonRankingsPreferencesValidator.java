@@ -12,12 +12,12 @@
  * details.
  */
 
-package com.liferay.portlet.amazonrankings;
+package com.liferay.amazon.rankings;
 
+import com.liferay.amazon.rankings.model.AmazonRankings;
+import com.liferay.amazon.rankings.util.AmazonRankingsUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portlet.amazonrankings.model.AmazonRankings;
-import com.liferay.portlet.amazonrankings.util.AmazonRankingsUtil;
 
 import java.util.ArrayList;
 import java.util.List;

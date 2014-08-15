@@ -12,8 +12,9 @@
  * details.
  */
 
-package com.liferay.portlet.amazonrankings.util;
+package com.liferay.amazon.rankings.util;
 
+import com.liferay.amazon.rankings.model.AmazonRankings;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.TimeZoneUtil;
@@ -21,10 +22,8 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webcache.WebCacheItem;
 import com.liferay.portal.kernel.webcache.WebCachePoolUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.amazonrankings.model.AmazonRankings;
 
 import java.text.DateFormat;
-
 import java.util.Calendar;
 
 /**

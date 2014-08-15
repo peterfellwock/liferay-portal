@@ -28,18 +28,25 @@ import java.util.Collections;
 import javax.servlet.ServletContext;
 
 /**
- * @author Raymond Augé
+ * @author Raymond Augï¿½
  * @author Peter Fellwock
  */
 @Component(immediate = true, service = AmazonRankingsUpgrade.class)
 public class AmazonRankingsUpgrade {
+
+	@Reference(unbind = "-")
+	protected void setReleaseLocalService(
+		ReleaseLocalService releaseLocalService) {
+
+		_releaseLocalService = releaseLocalService;
+	}
 	
 	@Reference(target = "(original.bean=*)", unbind = "-")
-	private void setServletContext(ServletContext servletContext) {
+	protected void setServletContext(ServletContext servletContext) {
 	}
 	
 	@Activate
-	private void upgrade() throws PortalException {
+	protected void upgrade() throws PortalException {
 		UpgradePortletId upgradePortletId = new UpgradePortletId() {
 			
 			@Override
@@ -58,13 +65,6 @@ public class AmazonRankingsUpgrade {
 				Collections.<UpgradeProcess> singletonList(upgradePortletId),
 				1, 1, false);
 	}
-
-	@Reference(unbind = "-")
-	private void setReleaseLocalService(
-		ReleaseLocalService releaseLocalService) {
-
-		_releaseLocalService = releaseLocalService;
-	}
-
+	
 	private ReleaseLocalService _releaseLocalService;
 }

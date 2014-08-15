@@ -12,11 +12,14 @@
  * details.
  */
 
-package com.liferay.portlet.amazonrankings.action;
+package com.liferay.amazon.rankings.action;
 
+import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.StringUtil;
+
+import org.osgi.service.component.annotations.Component;
 
 import java.util.Arrays;
 
@@ -27,6 +30,13 @@ import javax.portlet.PortletConfig;
 /**
  * @author Brian Wing Shun Chan
  */
+@Component(
+	immediate = true,
+	property = {
+			"javax.portlet.name=com_liferay_amazon_rankings_portlet_AmazonRankingsPortlet"
+	},
+	service = ConfigurationAction.class
+)
 public class ConfigurationActionImpl extends DefaultConfigurationAction {
 
 	@Override
