@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.language.template;
+package com.liferay.language.web.template;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portletdisplaytemplate.BasePortletDisplayTemplateHandler;
