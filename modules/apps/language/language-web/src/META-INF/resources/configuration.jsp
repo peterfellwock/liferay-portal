@@ -75,7 +75,7 @@
 				classNameId="<%= PortalUtil.getClassNameId(templateHandler.getClassName()) %>"
 				displayStyle="<%= displayStyle %>"
 				displayStyleGroupId="<%= displayStyleGroupId %>"
-				displayStyles="<%= Arrays.asList(PropsValues.LANGUAGE_DISPLAY_STYLE_OPTIONS) %>"
+				displayStyles="<%= Arrays.asList(PropsUtil.getArray(PropsKeys.LANGUAGE_DISPLAY_STYLE_OPTIONS)) %>"
 				label="display-template"
 				refreshURL="<%= configurationRenderURL %>"
 			/>

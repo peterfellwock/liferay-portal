@@ -16,6 +16,7 @@
 
 <%@ taglib uri="/META-INF/aui.tld" prefix="aui" %>
 <%@ taglib uri="/META-INF/c.tld" prefix="c" %>
+<%@ taglib uri="/META-INF/liferay-portlet-ext.tld" prefix="liferay-portlet" %>
 <%@ taglib uri="/META-INF/liferay-portlet_2_0.tld" prefix="portlet" %>
 <%@ taglib uri="/META-INF/liferay-theme.tld" prefix="liferay-theme" %>
 <%@ taglib uri="/META-INF/liferay-ui.tld" prefix="liferay-ui" %>
@@ -31,6 +32,8 @@ page import="com.liferay.portal.kernel.util.KeyValuePair" %><%@
 page import="com.liferay.portal.kernel.util.KeyValuePairComparator" %><%@
 page import="com.liferay.portal.kernel.util.ListUtil" %><%@
 page import="com.liferay.portal.kernel.util.LocaleUtil" %><%@
+page import="com.liferay.portal.kernel.util.PropsKeys" %><%@
+page import="com.liferay.portal.kernel.util.PropsUtil" %><%@
 page import="com.liferay.portal.kernel.util.SetUtil" %><%@
 page import="com.liferay.portal.kernel.util.StringPool" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
