@@ -16,6 +16,7 @@ package com.liferay.language.web.template;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portletdisplaytemplate.BasePortletDisplayTemplateHandler;
+import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateVariableGroup;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.PortalUtil;
@@ -27,9 +28,19 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Eduardo Garcia
  */
+
+@Component(
+	immediate = true,
+	property = {
+		"javax.portlet.name=com_liferay_language_web_portlet_LanguagePortlet"
+	},
+	service = TemplateHandler.class
+)
 public class LanguagePortletDisplayTemplateHandler
 	extends BasePortletDisplayTemplateHandler {
 
