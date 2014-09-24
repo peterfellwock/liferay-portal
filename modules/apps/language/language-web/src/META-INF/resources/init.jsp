@@ -14,9 +14,43 @@
  */
 --%>
 
-<%@ include file="/html/portlet/init.jsp" %>
+<%@ taglib uri="/META-INF/aui.tld" prefix="aui" %>
+<%@ taglib uri="/META-INF/c.tld" prefix="c" %>
+<%@ taglib uri="/META-INF/liferay-portlet_2_0.tld" prefix="portlet" %>
+<%@ taglib uri="/META-INF/liferay-theme.tld" prefix="liferay-theme" %>
+<%@ taglib uri="/META-INF/liferay-ui.tld" prefix="liferay-ui" %>
+
+<%@ page contentType="text/html; charset=UTF-8" %>
+
+<%@ page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.template.TemplateHandler" %><%@
+page import="com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil" %><%@
+page import="com.liferay.portal.kernel.util.Constants" %><%@
+page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
+page import="com.liferay.portal.kernel.util.KeyValuePair" %><%@
+page import="com.liferay.portal.kernel.util.KeyValuePairComparator" %><%@
+page import="com.liferay.portal.kernel.util.ListUtil" %><%@
+page import="com.liferay.portal.kernel.util.LocaleUtil" %><%@
+page import="com.liferay.portal.kernel.util.SetUtil" %><%@
+page import="com.liferay.portal.kernel.util.StringPool" %><%@
+page import="com.liferay.portal.kernel.util.StringUtil" %><%@
+page import="com.liferay.portal.util.PortalUtil" %><%@
+page import="com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplateUtil" %>
+
+<%@ page import="java.util.ArrayList" %><%@
+page import="java.util.Arrays" %><%@
+page import="java.util.List" %><%@
+page import="java.util.Locale" %><%@
+page import="java.util.Set" %>
+
+<%@ page import="javax.portlet.WindowState" %>
+
+<liferay-theme:defineObjects />
+<portlet:defineObjects />
 
 <%
+WindowState windowState = liferayPortletRequest.getWindowState();
+
 Locale[] availableLocales = LanguageUtil.getAvailableLocales(themeDisplay.getSiteGroupId());
 
 String[] availableLanguageIds = LocaleUtil.toLanguageIds(availableLocales);
@@ -27,4 +61,4 @@ String displayStyle = portletPreferences.getValue("displayStyle", StringPool.BLA
 long displayStyleGroupId = GetterUtil.getLong(portletPreferences.getValue("displayStyleGroupId", null), scopeGroupId);
 %>
 
-<%@ include file="/html/portlet/language/init-ext.jsp" %>
+<%@ include file="/init-ext.jsp" %>
