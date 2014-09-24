@@ -14,62 +14,87 @@
 
 package com.liferay.language.web.action;
 
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Contact;
-import com.liferay.portal.model.Group;
-import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.User;
-import com.liferay.portal.struts.PortletAction;
+import com.liferay.portal.model.UserGroupRole;
+import com.liferay.portal.service.ServiceContext;
+import com.liferay.portal.service.UserLocalServiceUtil;
+import com.liferay.portal.service.UserService;
 import com.liferay.portal.theme.ThemeDisplay;
-import com.liferay.portal.util.Portal;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
-import com.liferay.portlet.admin.util.AdminUtil;
+import com.liferay.util.bridges.mvc.ActionCommand;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-import javax.portlet.PortletConfig;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
+import javax.portlet.PortletException;
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Brian Wing Shun Chan
  */
-public class ViewAction extends PortletAction {
+@Component(
+	immediate = true,
+	property = {
+		"action.command.name=view",
+		"javax.portlet.name=com_liferay_language_web_portlet_LanguagePortlet"
+	},
+	service = ActionCommand.class
+)
+public class ViewAction implements ActionCommand {
+
+	public static String getUpdateUserPassword(
+		HttpServletRequest request, long userId) {
+
+		String password = PortalUtil.getUserPassword(request);
+
+		if (userId != PortalUtil.getUserId(request)) {
+			password = StringPool.BLANK;
+		}
+
+		if (password == null) {
+			password = StringPool.BLANK;
+		}
+
+		return password;
+	}
 
 	@Override
-	public void processAction(
-			ActionMapping actionMapping, ActionForm actionForm,
-			PortletConfig portletConfig, ActionRequest actionRequest,
-			ActionResponse actionResponse)
-		throws Exception {
+	public boolean processCommand(
+			PortletRequest portletRequest, PortletResponse portletResponse)
+		throws PortletException {
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			actionRequest);
-		HttpServletResponse response = PortalUtil.getHttpServletResponse(
-			actionResponse);
-		HttpSession session = request.getSession();
+		HttpServletResponse httpServletResponse =
+			PortalUtil.getHttpServletResponse(portletResponse);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+		HttpServletRequest httpServletRequest =
+			PortalUtil.getHttpServletRequest(portletRequest);
+
+		HttpSession httpSession = httpServletRequest.getSession();
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String languageId = ParamUtil.getString(actionRequest, "languageId");
+		String languageId = ParamUtil.getString(portletRequest, "languageId");
 
 		Locale locale = LocaleUtil.fromLanguageId(languageId);
 
@@ -78,133 +103,94 @@ public class ViewAction extends PortletAction {
 
 		if (availableLocales.contains(locale)) {
 			boolean persistState = ParamUtil.getBoolean(
-				request, "persistState", true);
+				portletRequest, "persistState", true);
 
 			if (themeDisplay.isSignedIn() && (persistState)) {
 				User user = themeDisplay.getUser();
 
-				Contact contact = user.getContact();
+				try {
+					Contact contact = user.getContact();
 
-				AdminUtil.updateUser(
-					actionRequest, user.getUserId(), user.getScreenName(),
-					user.getEmailAddress(), user.getFacebookId(),
-					user.getOpenId(), languageId, user.getTimeZoneId(),
-					user.getGreeting(), user.getComments(), contact.getSmsSn(),
-					contact.getAimSn(), contact.getFacebookSn(),
-					contact.getIcqSn(), contact.getJabberSn(),
-					contact.getMsnSn(), contact.getMySpaceSn(),
-					contact.getSkypeSn(), contact.getTwitterSn(),
-					contact.getYmSn());
-			}
-
-			session.setAttribute(Globals.LOCALE_KEY, locale);
-
-			LanguageUtil.updateCookie(request, response, locale);
-		}
-
-		// Send redirect
-
-		String redirect = ParamUtil.getString(actionRequest, "redirect");
-
-		String layoutURL = StringPool.BLANK;
-		String queryString = StringPool.BLANK;
-
-		int pos = redirect.indexOf(Portal.FRIENDLY_URL_SEPARATOR);
-
-		if (pos == -1) {
-			pos = redirect.indexOf(StringPool.QUESTION);
-		}
-
-		if (pos != -1) {
-			layoutURL = redirect.substring(0, pos);
-			queryString = redirect.substring(pos);
-		}
-		else {
-			layoutURL = redirect;
-		}
-
-		Layout layout = themeDisplay.getLayout();
-
-		Group group = layout.getGroup();
-
-		if (isGroupFriendlyURL(group, layout, layoutURL, locale)) {
-			if (PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 0) {
-				redirect = layoutURL;
-			}
-			else {
-				redirect = PortalUtil.getGroupFriendlyURL(
-					group, layout.isPrivateLayout(), themeDisplay, locale);
-			}
-		}
-		else {
-			if (PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE == 0) {
-				if (themeDisplay.isI18n()) {
-					redirect = layout.getFriendlyURL(locale);
+					updateUser(
+						httpServletRequest, user.getUserId(),
+						user.getScreenName(), user.getEmailAddress(),
+						user.getFacebookId(), user.getOpenId(), languageId,
+						user.getTimeZoneId(), user.getGreeting(),
+						user.getComments(), contact.getSmsSn(),
+						contact.getAimSn(), contact.getFacebookSn(),
+						contact.getIcqSn(), contact.getJabberSn(),
+						contact.getMsnSn(), contact.getMySpaceSn(),
+						contact.getSkypeSn(), contact.getTwitterSn(),
+						contact.getYmSn());
 				}
-				else {
-					redirect = PortalUtil.getLayoutURL(
-						layout, themeDisplay, locale);
-				}
+				catch (Exception e) {
+						if (_log.isWarnEnabled()) {
+							_log.warn(e.getMessage());
+						}
+					}
 			}
-			else {
-				redirect = PortalUtil.getLayoutFriendlyURL(
-					layout, themeDisplay, locale);
-			}
+
+			httpSession.setAttribute(_STRUTS_LOCALE_KEY, locale);
+
+			LanguageUtil.updateCookie(httpServletRequest, httpServletResponse, locale);
 		}
 
-		int lifecycle = GetterUtil.getInteger(
-			HttpUtil.getParameter(queryString, "p_p_lifecycle", false));
-
-		if (lifecycle == 0) {
-			redirect = redirect + queryString;
-		}
-
-		actionResponse.sendRedirect(redirect);
+		return true;
 	}
 
-	@Override
-	public ActionForward render(
-			ActionMapping actionMapping, ActionForm actionForm,
-			PortletConfig portletConfig, RenderRequest renderRequest,
-			RenderResponse renderResponse)
-		throws Exception {
+	public void updateUser(
+			HttpServletRequest request, long userId, String screenName,
+			String emailAddress, long facebookId, String openId,
+			String languageId, String timeZoneId, String greeting,
+			String comments, String smsSn, String aimSn, String facebookSn,
+			String icqSn, String jabberSn, String msnSn, String mySpaceSn,
+			String skypeSn, String twitterSn, String ymSn)
+		throws PortalException {
 
-		return actionMapping.findForward("portlet.language.view");
+		String password = getUpdateUserPassword(request, userId);
+
+		User user = UserLocalServiceUtil.getUserById(userId);
+
+		Contact contact = user.getContact();
+
+		Calendar birthdayCal = CalendarFactoryUtil.getCalendar();
+
+		birthdayCal.setTime(contact.getBirthday());
+
+		int birthdayMonth = birthdayCal.get(Calendar.MONTH);
+		int birthdayDay = birthdayCal.get(Calendar.DATE);
+		int birthdayYear = birthdayCal.get(Calendar.YEAR);
+
+		long[] groupIds = null;
+		long[] organizationIds = null;
+		long[] roleIds = null;
+		List<UserGroupRole> userGroupRoles = null;
+		long[] userGroupIds = null;
+		ServiceContext serviceContext = new ServiceContext();
+
+		_userService.updateUser(
+			userId, password, StringPool.BLANK, StringPool.BLANK,
+			user.isPasswordReset(), user.getReminderQueryQuestion(),
+			user.getReminderQueryAnswer(), screenName, emailAddress, facebookId,
+			openId, languageId, timeZoneId, greeting, comments,
+			contact.getFirstName(), contact.getMiddleName(),
+			contact.getLastName(), contact.getPrefixId(), contact.getSuffixId(),
+			contact.isMale(), birthdayMonth, birthdayDay, birthdayYear, smsSn,
+			aimSn, facebookSn, icqSn, jabberSn, msnSn, mySpaceSn, skypeSn,
+			twitterSn, ymSn, contact.getJobTitle(), groupIds, organizationIds,
+			roleIds, userGroupRoles, userGroupIds, serviceContext);
 	}
 
-	@Override
-	protected boolean isCheckMethodOnProcessAction() {
-		return _CHECK_METHOD_ON_PROCESS_ACTION;
+	@Reference(unbind = "-")
+	protected void setUserService(UserService userService) {
+		_userService = userService;
 	}
 
-	protected boolean isGroupFriendlyURL(
-		Group group, Layout layout, String layoutURL, Locale locale) {
+	private static final String _STRUTS_LOCALE_KEY =
+		"org.apache.struts.action.LOCALE";
 
-		if (Validator.isNull(layoutURL)) {
-			return true;
-		}
+	private static Log _log = LogFactoryUtil.getLog(ViewAction.class);
 
-		int pos = layoutURL.lastIndexOf(CharPool.SLASH);
-
-		String layoutURLLanguageId = layoutURL.substring(pos + 1);
-
-		Locale layoutURLLocale = LocaleUtil.fromLanguageId(
-			layoutURLLanguageId, true, false);
-
-		if (layoutURLLocale != null) {
-			return true;
-		}
-
-		if (PortalUtil.isGroupFriendlyURL(
-				layoutURL, group.getFriendlyURL(),
-				layout.getFriendlyURL(locale))) {
-
-			return true;
-		}
-
-		return false;
-	}
-
-	private static final boolean _CHECK_METHOD_ON_PROCESS_ACTION = false;
+	private UserService _userService;
 
 }
