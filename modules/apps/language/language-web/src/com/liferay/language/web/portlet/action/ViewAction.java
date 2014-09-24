@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.language.web.action;
+package com.liferay.language.web.portlet.action;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
