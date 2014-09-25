@@ -1,4 +1,4 @@
-<#assign liferay_ui = taglibLiferayHash["/WEB-INF/tld/liferay-ui.tld"] />
+<#assign liferay_ui = taglibLiferayHash["/META-INF/liferay-ui.tld"] />
 
 <#if entries?has_content>
 	<#assign portletURL = renderResponse.createActionURL() />
