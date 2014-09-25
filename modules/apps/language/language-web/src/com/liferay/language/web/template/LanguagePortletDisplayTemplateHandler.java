@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.template.TemplateVariableGroup;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
-import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplateConstants;
 
 import java.util.List;
@@ -96,7 +95,10 @@ public class LanguagePortletDisplayTemplateHandler
 
 	@Override
 	protected String getTemplatesConfigPath() {
-		return PropsValues.LANGUAGE_DISPLAY_TEMPLATES_CONFIG;
+		return _LANGUAGE_DISPLAY_TEMPLATES_CONFIG;
 	}
+
+	private static final String _LANGUAGE_DISPLAY_TEMPLATES_CONFIG = 
+		"com/liferay/language/web/dependencies/portlet-display-templates.xml";
 
 }
