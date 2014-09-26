@@ -98,7 +98,7 @@ public class LanguagePortletDisplayTemplateHandler
 		return _LANGUAGE_DISPLAY_TEMPLATES_CONFIG;
 	}
 
-	private static final String _LANGUAGE_DISPLAY_TEMPLATES_CONFIG = 
+	private static final String _LANGUAGE_DISPLAY_TEMPLATES_CONFIG =
 		"com/liferay/language/web/dependencies/portlet-display-templates.xml";
 
 }

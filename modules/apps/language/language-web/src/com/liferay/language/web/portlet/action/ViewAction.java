@@ -124,15 +124,16 @@ public class ViewAction implements ActionCommand {
 						contact.getYmSn());
 				}
 				catch (Exception e) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(e.getMessage());
-						}
+					if (_log.isWarnEnabled()) {
+						_log.warn(e.getMessage());
 					}
+				}
 			}
 
 			httpSession.setAttribute(_STRUTS_LOCALE_KEY, locale);
 
-			LanguageUtil.updateCookie(httpServletRequest, httpServletResponse, locale);
+			LanguageUtil.updateCookie(
+				httpServletRequest, httpServletResponse, locale);
 		}
 
 		return true;
