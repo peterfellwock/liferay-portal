@@ -51,7 +51,7 @@ List<JournalArticle> results = null;
 int total = 0;
 %>
 
-<%@ include file="/html/portlet/journal/article_search_results.jspf" %>
+<%@ include file="/article_search_results.jspf" %>
 
 <%
 List resultRows = searchContainer.getResultRows();

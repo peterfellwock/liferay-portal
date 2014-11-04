@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/portlet/rss/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 String redirect = ParamUtil.getString(request, "redirect");
@@ -235,7 +235,7 @@ configurationRenderURL.setParameter("portletResource", portletResource);
 
 			<br /><br />
 
-			<%@ include file="/html/portlet/rss/select_journal_article.jspf" %>
+			<%@ include file="/select_journal_article.jspf" %>
 		</c:when>
 	</c:choose>
 </aui:form>

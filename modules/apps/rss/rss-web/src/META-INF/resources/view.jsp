@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/portlet/rss/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 String url = ParamUtil.getString(request, "url");
@@ -47,7 +47,7 @@ String title = StringPool.BLANK;
 		}
 	%>
 
-		<%@ include file="/html/portlet/rss/feed.jspf" %>
+		<%@ include file="/feed.jspf" %>
 
 	<%
 	}
