@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.rss.lar;
+package com.liferay.rss.web.lar;
 
 import com.liferay.portal.kernel.lar.BasePortletDataHandler;
 import com.liferay.portal.kernel.lar.DataLevel;
@@ -40,9 +40,19 @@ import java.util.Map;
 
 import javax.portlet.PortletPreferences;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Raymond Augé
+ * @author Peter Fellwock
  */
+@Component(
+		immediate = true,
+		property = {
+			"javax.portlet.name=com_liferay_rss_web_portlet_RSSPortlet"
+		},
+		service = BasePortletDataHandler.class
+)
 public class RSSPortletDataHandler extends BasePortletDataHandler {
 
 	public static final String NAMESPACE = "rss";

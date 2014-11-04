@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.rss.util;
+package com.liferay.rss.web.util;
 
 import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StringPool;
