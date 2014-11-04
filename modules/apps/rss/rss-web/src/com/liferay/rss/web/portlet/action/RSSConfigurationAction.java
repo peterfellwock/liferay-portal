@@ -12,8 +12,11 @@
  * details.
  */
 
-package com.liferay.portlet.rss.action;
+package com.liferay.rss.web.portlet.action;
 
+import aQute.bnd.annotation.metatype.Configurable;
+
+import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
@@ -22,6 +25,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.rss.web.configuration.RSSConfiguration;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,12 +34,28 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletPreferences;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
 import javax.portlet.ValidatorException;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Peter Fellwock
  */
-public class ConfigurationActionImpl extends DefaultConfigurationAction {
+@Component(
+	configurationPid = "com.liferay.rss.web",
+	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
+	property = {
+		"javax.portlet.name=com_liferay_rss_web_portlet_RSSPortlet"
+	},
+	service = ConfigurationAction.class
+)
+public class RSSConfigurationAction extends DefaultConfigurationAction {
 
 	@Override
 	public void processAction(
@@ -95,6 +115,25 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 			actionRequest,
 			PortalUtil.getPortletId(actionRequest) +
 				SessionMessages.KEY_SUFFIX_UPDATED_CONFIGURATION);
+	}
+
+	@Override
+	public String render(
+			PortletConfig portletConfig, RenderRequest renderRequest,
+			RenderResponse renderResponse)
+		throws Exception {
+
+		renderRequest.setAttribute(
+			RSSConfiguration.class.getName(), _rssConfiguration);
+
+		return super.render(portletConfig, renderRequest, renderResponse);
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		_rssConfiguration = Configurable.createConfigurable(
+			RSSConfiguration.class, properties);
 	}
 
 	protected void removeFooterArticle(
@@ -173,5 +212,7 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 		setPreference(actionRequest, "urls", urls);
 		setPreference(actionRequest, "titles", titles);
 	}
+
+	private volatile RSSConfiguration _rssConfiguration;
 
 }
