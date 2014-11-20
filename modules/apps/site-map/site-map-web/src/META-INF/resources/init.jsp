@@ -14,17 +14,52 @@
  */
 --%>
 
-<%@ include file="/html/portlet/init.jsp" %>
+<%@ taglib uri="/META-INF/c.tld" prefix="c" %>
+<%@ taglib uri="/META-INF/aui.tld" prefix="aui" %>
+<%@ taglib uri="/META-INF/liferay-portlet-ext.tld" prefix="liferay-portlet" %>
+<%@ taglib uri="/META-INF/liferay-portlet_2_0.tld" prefix="portlet" %>
+<%@ taglib uri="/META-INF/liferay-theme.tld" prefix="liferay-theme" %>
+<%@ taglib uri="/META-INF/liferay-ui.tld" prefix="liferay-ui" %>
+
+<%@ page contentType="text/html; charset=UTF-8" %>
+
+<%@ page import="com.liferay.portal.kernel.template.TemplateHandler" %><%@
+page import="com.liferay.portal.kernel.template.TemplateHandlerRegistryUtil" %><%@
+page import="com.liferay.portal.kernel.util.Constants" %><%@
+page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
+page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
+page import="com.liferay.portal.kernel.util.StringBundler" %><%@
+page import="com.liferay.portal.kernel.util.StringPool" %><%@
+page import="com.liferay.portal.kernel.util.Validator" %><%@
+page import="com.liferay.portal.model.Layout" %><%@
+page import="com.liferay.portal.model.LayoutConstants" %><%@
+page import="com.liferay.portal.model.LayoutSet" %><%@
+page import="com.liferay.portal.security.permission.ActionKeys" %><%@
+page import="com.liferay.portal.service.LayoutLocalServiceUtil" %><%@
+page import="com.liferay.portal.service.permission.LayoutPermissionUtil" %><%@
+page import="com.liferay.portal.theme.ThemeDisplay" %><%@
+page import="com.liferay.portal.util.LayoutDescription" %><%@
+page import="com.liferay.portal.util.LayoutListUtil" %><%@
+page import="com.liferay.portal.util.PortalUtil" %><%@
+page import="com.liferay.portlet.portletdisplaytemplate.util.PortletDisplayTemplateUtil" %><%@
+page import="com.liferay.site.map.web.configuration.SiteMapConfiguration" %>
+
+<%@ page import="java.util.List" %>
+
+<liferay-theme:defineObjects />
+<portlet:defineObjects />
 
 <%
-String rootLayoutUuid = GetterUtil.getString(portletPreferences.getValue("rootLayoutUuid", StringPool.BLANK));
-int displayDepth = GetterUtil.getInteger(portletPreferences.getValue("displayDepth", StringPool.BLANK));
-String displayStyle = GetterUtil.getString(portletPreferences.getValue("displayStyle", StringPool.BLANK));
-long displayStyleGroupId = GetterUtil.getLong(portletPreferences.getValue("displayStyleGroupId", null), themeDisplay.getScopeGroupId());
-boolean includeRootInTree = GetterUtil.getBoolean(portletPreferences.getValue("includeRootInTree", StringPool.BLANK));
-boolean showCurrentPage = GetterUtil.getBoolean(portletPreferences.getValue("showCurrentPage", StringPool.BLANK));
-boolean useHtmlTitle = GetterUtil.getBoolean(portletPreferences.getValue("useHtmlTitle", StringPool.BLANK));
-boolean showHiddenPages = GetterUtil.getBoolean(portletPreferences.getValue("showHiddenPages", StringPool.BLANK));
+SiteMapConfiguration siteMapConfiguration = (SiteMapConfiguration)request.getAttribute(SiteMapConfiguration.class.getName());
+
+String rootLayoutUuid = GetterUtil.getString(portletPreferences.getValue("rootLayoutUuid", siteMapConfiguration.getRootLayoutUuid()));
+int displayDepth = GetterUtil.getInteger(portletPreferences.getValue("displayDepth", siteMapConfiguration.getDisplayDepth()));
+String displayStyle = GetterUtil.getString(portletPreferences.getValue("displayStyle", siteMapConfiguration.getDisplayStyle()));
+long displayStyleGroupId = GetterUtil.getLong(portletPreferences.getValue("displayStyleGroupId", siteMapConfiguration.getDisplayStyleGroupId()), themeDisplay.getScopeGroupId());
+boolean includeRootInTree = GetterUtil.getBoolean(portletPreferences.getValue("includeRootInTree", siteMapConfiguration.includeRootInTree()));
+boolean showCurrentPage = GetterUtil.getBoolean(portletPreferences.getValue("showCurrentPage", siteMapConfiguration.showCurrentPage()));
+boolean useHtmlTitle = GetterUtil.getBoolean(portletPreferences.getValue("useHtmlTitle", siteMapConfiguration.useHtmlTitle()));
+boolean showHiddenPages = GetterUtil.getBoolean(portletPreferences.getValue("showHiddenPages", siteMapConfiguration.showHiddenPages()));
 
 Layout rootLayout = null;
 
@@ -46,4 +81,4 @@ if (rootLayoutId == LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
 }
 %>
 
-<%@ include file="/html/portlet/site_map/init-ext.jsp" %>
+<%@ include file="/init-ext.jsp" %>
