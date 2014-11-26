@@ -346,26 +346,6 @@
 		<put name="portlet_content" value="/portlet/control_panel_menu/view.jsp" />
 	</definition>
 
-	<!-- Directory -->
-
-	<definition name="portlet.directory" extends="portlet" />
-
-	<definition name="portlet.directory.error" extends="portlet.directory">
-		<put name="portlet_content" value="/portlet/directory/error.jsp" />
-	</definition>
-
-	<definition name="portlet.directory.view" extends="portlet.directory">
-		<put name="portlet_content" value="/portlet/directory/view.jsp" />
-	</definition>
-
-	<definition name="portlet.directory.view_organization" extends="portlet.directory">
-		<put name="portlet_content" value="/portlet/directory/view_organization.jsp" />
-	</definition>
-
-	<definition name="portlet.directory.view_user" extends="portlet.directory">
-		<put name="portlet_content" value="/portlet/directory/view_user.jsp" />
-	</definition>
-
 	<!-- Dockbar -->
 
 	<definition name="portlet.dockbar" extends="portlet" />
