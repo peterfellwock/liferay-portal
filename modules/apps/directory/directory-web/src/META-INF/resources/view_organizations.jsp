@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/portlet/directory/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 PortletURL portletURL = (PortletURL)request.getAttribute("view.jsp-portletURL");
@@ -33,7 +33,7 @@ if (parentOrganizationId > 0) {
 	<aui:input disabled="<%= true %>" name="organizationsRedirect" type="hidden" value="<%= portletURL.toString() %>" />
 
 	<liferay-ui:search-form
-		page="/html/portlet/directory/organization_search.jsp"
+		page="/organization_search.jsp"
 	/>
 
 	<%
@@ -103,7 +103,7 @@ if (parentOrganizationId > 0) {
 			<portlet:param name="organizationId" value="<%= String.valueOf(organization.getOrganizationId()) %>" />
 		</portlet:renderURL>
 
-		<%@ include file="/html/portlet/directory/organization/search_columns.jspf" %>
+		<%@ include file="/organization/search_columns.jspf" %>
 	</liferay-ui:search-container-row>
 
 	<div class="separator"><!-- --></div>

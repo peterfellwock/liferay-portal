@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/portlet/directory/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 UserSearch searchContainer = (UserSearch)request.getAttribute("liferay-ui:search:searchContainer");
@@ -28,7 +28,7 @@ UserDisplayTerms displayTerms = (UserDisplayTerms)searchContainer.getDisplayTerm
 	displayTerms="<%= displayTerms %>"
 	id="toggle_id_directory_user_search"
 >
-	<%@ include file="/html/portlet/directory/user_search_user_name.jspf" %>
+	<%@ include file="/user_search_user_name.jspf" %>
 
 	<aui:fieldset>
 		<aui:input inlineField="<%= true %>" name="<%= UserDisplayTerms.SCREEN_NAME %>" size="20" type="text" value="<%= displayTerms.getScreenName() %>" />

@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/portlet/directory/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 Organization organization = (Organization)request.getAttribute(WebKeys.ORGANIZATION);
@@ -32,34 +32,34 @@ request.setAttribute("websites.className", Organization.class.getName());
 request.setAttribute("websites.classPK", organizationId);
 %>
 
-<liferay-util:include page="/html/portlet/directory/tabs1.jsp" />
+<liferay-util:include page="/tabs1.jsp" />
 
 <div class="organization-information">
 	<div class="section entity-details">
-		<liferay-util:include page="/html/portlet/directory/organization/details.jsp" />
+		<liferay-util:include page="/organization/details.jsp" />
 	</div>
 
 	<div class="section">
-		<liferay-util:include page="/html/portlet/directory/common/additional_email_addresses.jsp" />
+		<liferay-util:include page="/common/additional_email_addresses.jsp" />
 	</div>
 
 	<div class="section">
-		<liferay-util:include page="/html/portlet/directory/common/websites.jsp" />
+		<liferay-util:include page="/common/websites.jsp" />
 	</div>
 
 	<div class="section">
-		<liferay-util:include page="/html/portlet/directory/organization/addresses.jsp" />
+		<liferay-util:include page="/organization/addresses.jsp" />
 	</div>
 
 	<div class="section">
-		<liferay-util:include page="/html/portlet/directory/organization/phone_numbers.jsp" />
+		<liferay-util:include page="/organization/phone_numbers.jsp" />
 	</div>
 
 	<div class="section">
-		<liferay-util:include page="/html/portlet/directory/organization/services.jsp" />
+		<liferay-util:include page="/organization/services.jsp" />
 	</div>
 
 	<div class="section">
-		<liferay-util:include page="/html/portlet/directory/organization/comments.jsp" />
+		<liferay-util:include page="/organization/comments.jsp" />
 	</div>
 </div>

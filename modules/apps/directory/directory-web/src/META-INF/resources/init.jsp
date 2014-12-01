@@ -14,7 +14,24 @@
  */
 --%>
 
-<%@ include file="/html/portlet/init.jsp" %>
+<%@ taglib uri="/META-INF/aui.tld" prefix="aui" %>
+<%@ taglib uri="/META-INF/c.tld" prefix="c" %>
+<%@ taglib uri="/META-INF/liferay-portlet-ext.tld" prefix="liferay-portlet" %>
+<%@ taglib uri="/META-INF/liferay-portlet_2_0.tld" prefix="portlet" %>
+<%@ taglib uri="/META-INF/liferay-theme.tld" prefix="liferay-theme" %>
+<%@ taglib uri="/META-INF/liferay-ui.tld" prefix="liferay-ui" %>
+
+<%@ page contentType="text/html; charset=UTF-8" %>
+
+<%@ page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
+page import="com.liferay.portal.kernel.util.CharPool" %><%@
+page import="com.liferay.portal.kernel.util.Constants" %><%@
+page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
+
+page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
+page import="com.liferay.portal.kernel.util.StringPool" %><%@
+page import="com.liferay.portal.kernel.util.StringUtil" %><%@
+page import="com.liferay.portal.kernel.util.Validator" %>
 
 <%@ page import="com.liferay.portal.NoSuchOrganizationException" %><%@
 page import="com.liferay.portal.NoSuchUserGroupException" %><%@
@@ -22,10 +39,23 @@ page import="com.liferay.portlet.social.model.SocialRelationConstants" %><%@
 page import="com.liferay.portlet.usersadmin.search.OrganizationDisplayTerms" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserDisplayTerms" %>
 
+<%@ page import="java.text.Format" %><%@
+ page import="java.text.NumberFormat" %>
+
+<%@ page import="java.util.Enumeration" %><%@
+page import="java.util.Set" %><%@
+page import="java.util.TreeSet" %>
+
+<%@ page import="javax.portlet.ValidatorException" %><%@
+page import="javax.portlet.WindowState" %>
+
+<liferay-theme:defineObjects />
+<portlet:defineObjects />
+
 <%
 String tabs1 = ParamUtil.getString(request, "tabs1", "users");
 
 Format dateFormatDate = FastDateFormatFactoryUtil.getDate(locale);
 %>
 
-<%@ include file="/html/portlet/directory/init-ext.jsp" %>
+<%@ include file="/init-ext.jsp" %>

@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/portlet/directory/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 Organization organization = (Organization)request.getAttribute(WebKeys.ORGANIZATION);
