@@ -25,8 +25,6 @@ import com.liferay.portlet.blogs.asset.BlogsEntryAssetRendererFactory;
 import com.liferay.portlet.blogs.trash.BlogsEntryTrashHandler;
 import com.liferay.portlet.blogs.util.BlogsIndexer;
 import com.liferay.portlet.blogs.workflow.BlogsEntryWorkflowHandler;
-import com.liferay.portlet.directory.asset.UserAssetRendererFactory;
-import com.liferay.portlet.directory.workflow.UserWorkflowHandler;
 import com.liferay.portlet.documentlibrary.asset.DLFileEntryAssetRendererFactory;
 import com.liferay.portlet.documentlibrary.asset.DLFolderAssetRendererFactory;
 import com.liferay.portlet.documentlibrary.trash.DLFileEntryTrashHandler;
@@ -46,7 +44,6 @@ import com.liferay.portlet.journal.util.JournalFolderIndexer;
 import com.liferay.portlet.journal.workflow.JournalArticleWorkflowHandler;
 import com.liferay.portlet.messageboards.asset.MBCategoryAssetRendererFactory;
 import com.liferay.portlet.messageboards.asset.MBDiscussionAssetRendererFactory;
-import com.liferay.portlet.messageboards.asset.MBMessageAssetRendererFactory;
 import com.liferay.portlet.messageboards.trash.MBCategoryTrashHandler;
 import com.liferay.portlet.messageboards.trash.MBMessageTrashHandler;
 import com.liferay.portlet.messageboards.trash.MBThreadTrashHandler;
@@ -149,7 +146,6 @@ public class PortalRegisterTestUtil {
 			new JournalArticleWorkflowHandler());
 		WorkflowHandlerRegistryUtil.register(new MBDiscussionWorkflowHandler());
 		WorkflowHandlerRegistryUtil.register(new MBMessageWorkflowHandler());
-		WorkflowHandlerRegistryUtil.register(new UserWorkflowHandler());
 		WorkflowHandlerRegistryUtil.register(new WikiPageWorkflowHandler());
 
 		_workflowHandlersRegistered = true;
@@ -165,7 +161,6 @@ public class PortalRegisterTestUtil {
 		LayoutRevisionAssetRendererFactory.class,
 		MBCategoryAssetRendererFactory.class,
 		MBDiscussionAssetRendererFactory.class,
-		MBMessageAssetRendererFactory.class, UserAssetRendererFactory.class,
 		WikiPageAssetRendererFactory.class
 	};
 
