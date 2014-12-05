@@ -37,7 +37,7 @@ String type = displayTerms.getType();
 			<aui:option value=""></aui:option>
 
 			<%
-			for (String curType : PropsValues.ORGANIZATIONS_TYPES) {
+			for (String curType : PrefsPropsUtil.getArray(PropsKeys.ORGANIZATIONS_TYPES)) {
 			%>
 
 				<aui:option label="<%= curType %>" selected="<%= type.equals(curType) %>" />
