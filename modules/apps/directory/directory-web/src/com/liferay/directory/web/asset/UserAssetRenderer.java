@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.directory.asset;
+package com.liferay.directory.web.asset;
 
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;

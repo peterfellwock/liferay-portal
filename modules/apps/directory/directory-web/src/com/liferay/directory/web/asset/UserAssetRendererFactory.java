@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.directory.asset;
+package com.liferay.directory.web.asset;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -25,13 +25,23 @@ import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.service.permission.UserPermissionUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portlet.asset.model.AssetRenderer;
+import com.liferay.portlet.asset.model.AssetRendererFactory;
 import com.liferay.portlet.asset.model.BaseAssetRendererFactory;
+
+import org.osgi.service.component.annotations.Component;
 
 import javax.portlet.PortletURL;
 
 /**
  * @author Michael C. Han
  */
+@Component(
+	immediate = true,
+	property = {
+			"javax.portlet.name=com_liferay_directory_web_portlet_PortalDirectoryPortal"
+	},
+	service = AssetRendererFactory.class
+)
 public class UserAssetRendererFactory extends BaseAssetRendererFactory {
 
 	public static final String TYPE = "user";

@@ -12,12 +12,13 @@
  * details.
  */
 
-package com.liferay.portlet.directory.util;
+package com.liferay.directory.web.util;
 
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.HitsOpenSearchImpl;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.search.OpenSearch;
 import com.liferay.portal.kernel.search.SearchException;
 import com.liferay.portal.kernel.search.Summary;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -29,12 +30,13 @@ import com.liferay.portlet.expando.model.ExpandoColumnConstants;
 import com.liferay.portlet.expando.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portlet.usersadmin.util.UserIndexer;
 
+import org.osgi.service.component.annotations.Component;
+
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import javax.portlet.PortletURL;
-
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -42,6 +44,13 @@ import javax.servlet.http.HttpServletRequest;
  * @author Marcellus Tavares
  * @author Ryan Park
  */
+@Component(
+		immediate = true,
+		property = {
+				"javax.portlet.name=com_liferay_directory_web_portlet_PortalDirectoryPortal"
+		},
+		service = OpenSearch.class
+	)
 public class DirectoryOpenSearchImpl extends HitsOpenSearchImpl {
 
 	public static final String SEARCH_PATH = "/c/directory/open_search";

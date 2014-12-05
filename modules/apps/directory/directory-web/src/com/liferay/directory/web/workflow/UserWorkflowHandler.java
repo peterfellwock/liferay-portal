@@ -12,26 +12,35 @@
  * details.
  */
 
-package com.liferay.portlet.directory.workflow;
+package com.liferay.directory.web.workflow;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.workflow.BaseWorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.model.User;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 
-import java.io.Serializable;
+import org.osgi.service.component.annotations.Component;
 
+import java.io.Serializable;
 import java.util.Locale;
 import java.util.Map;
 
 /**
  * @author Michael C. Han
  */
+@Component(
+		immediate = true,
+		property = {
+				"javax.portlet.name=com_liferay_directory_web_portlet_PortalDirectoryPortal"
+		},
+		service = WorkflowHandler.class
+	)
 public class UserWorkflowHandler extends BaseWorkflowHandler<User> {
 
 	@Override
