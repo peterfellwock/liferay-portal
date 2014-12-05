@@ -28,9 +28,9 @@ import com.liferay.portlet.asset.model.AssetRenderer;
 import com.liferay.portlet.asset.model.AssetRendererFactory;
 import com.liferay.portlet.asset.model.BaseAssetRendererFactory;
 
-import org.osgi.service.component.annotations.Component;
-
 import javax.portlet.PortletURL;
+
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Michael C. Han
@@ -83,6 +83,11 @@ public class UserAssetRendererFactory extends BaseAssetRendererFactory {
 	@Override
 	public String getIconCssClass() {
 		return "icon-user";
+	}
+
+	@Override
+	public String getPortletId() {
+		return "com_liferay_directory_web_portlet_PortalDirectoryPortal";
 	}
 
 	@Override
