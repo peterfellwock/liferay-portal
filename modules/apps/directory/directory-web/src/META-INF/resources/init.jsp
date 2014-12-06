@@ -20,34 +20,65 @@
 <%@ taglib uri="/META-INF/liferay-portlet_2_0.tld" prefix="portlet" %>
 <%@ taglib uri="/META-INF/liferay-theme.tld" prefix="liferay-theme" %>
 <%@ taglib uri="/META-INF/liferay-ui.tld" prefix="liferay-ui" %>
+<%@ taglib uri="/META-INF/liferay-util.tld" prefix="liferay-util" %>
 
 <%@ page contentType="text/html; charset=UTF-8" %>
 
-<%@ page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
+<%@ page import="com.liferay.portal.kernel.dao.orm.QueryUtil" %><%@
+page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.search.BaseModelSearchResult" %><%@
+page import="com.liferay.portal.kernel.search.Sort" %><%@
+page import="com.liferay.portal.kernel.search.SortFactoryUtil" %><%@
 page import="com.liferay.portal.kernel.util.CharPool" %><%@
 page import="com.liferay.portal.kernel.util.Constants" %><%@
+page import="com.liferay.portal.kernel.util.Constants" %><%@
 page import="com.liferay.portal.kernel.util.FastDateFormatFactoryUtil" %><%@
-
+page import="com.liferay.portal.kernel.util.GetterUtil" %><%@
+page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
+page import="com.liferay.portal.kernel.util.PropsKeys" %><%@
+page import="com.liferay.portal.kernel.util.PropsUtil" %><%@
 page import="com.liferay.portal.kernel.util.StringPool" %><%@
 page import="com.liferay.portal.kernel.util.StringUtil" %><%@
-page import="com.liferay.portal.kernel.util.Validator" %>
-
-<%@ page import="com.liferay.portal.NoSuchOrganizationException" %><%@
-page import="com.liferay.portal.NoSuchUserGroupException" %><%@
+page import="com.liferay.portal.kernel.util.Validator" %><%@
+page import="com.liferay.portal.model.Group" %><%@
+page import="com.liferay.portal.model.Organization" %><%@
+page import="com.liferay.portal.model.OrganizationConstants" %><%@
+page import="com.liferay.portal.model.User" %><%@
+page import="com.liferay.portal.model.UserGroup" %><%@
+page import="com.liferay.portal.NoSuchModelException" %><%@
+page import="com.liferay.portal.NoSuchOrganizationException" %><%@
+page import="com.liferay.portal.NoSuchUserException" %><%@
+page import="com.liferay.portal.service.GroupLocalServiceUtil" %><%@
+page import="com.liferay.portal.service.OrganizationLocalServiceUtil" %><%@
+page import="com.liferay.portal.service.UserGroupLocalServiceUtil" %><%@
+page import="com.liferay.portal.service.UserLocalServiceUtil" %><%@
+page import="com.liferay.portal.util.PortalUtil" %><%@
+page import="com.liferay.portal.util.PortletKeys" %><%@
+page import="com.liferay.portal.util.PrefsPropsUtil" %><%@
+page import="com.liferay.portal.util.PropsValues" %><%@
+page import="com.liferay.portlet.sites.util.SitesUtil" %><%@
 page import="com.liferay.portlet.social.model.SocialRelationConstants" %><%@
 page import="com.liferay.portlet.usersadmin.search.OrganizationDisplayTerms" %><%@
-page import="com.liferay.portlet.usersadmin.search.UserDisplayTerms" %>
+page import="com.liferay.portlet.usersadmin.search.OrganizationSearch" %><%@
+page import="com.liferay.portlet.usersadmin.search.OrganizationSearchTerms" %><%@
+page import="com.liferay.portlet.usersadmin.search.UserDisplayTerms" %><%@
+page import="com.liferay.portlet.usersadmin.search.UserSearch" %><%@
+page import="com.liferay.portlet.usersadmin.search.UserSearchTerms" %><%@
+page import="com.liferay.portlet.usersadmin.util.UsersAdmin" %><%@
+page import="com.liferay.portlet.usersadmin.util.UsersAdminUtil" %><%@
+page import="com.liferay.portlet.usergroupsadmin.search.UserGroupDisplayTerms" %><%@
+page import="com.liferay.portlet.usergroupsadmin.search.UserGroupSearch" %>
+
 
 <%@ page import="java.text.Format" %><%@
- page import="java.text.NumberFormat" %>
+page import="java.text.Format" %><%@ 
+page import="java.util.ArrayList" %><%@
+page import="java.util.List" %><%@
+page import="java.util.LinkedHashMap" %>
 
-<%@ page import="java.util.Enumeration" %><%@
-page import="java.util.Set" %><%@
-page import="java.util.TreeSet" %>
-
-<%@ page import="javax.portlet.ValidatorException" %><%@
-page import="javax.portlet.WindowState" %>
+<%@ page import="javax.portlet.WindowState" %><%@ 
+page import="javax.portlet.PortletURL" %>  
 
 <liferay-theme:defineObjects />
 <portlet:defineObjects />
