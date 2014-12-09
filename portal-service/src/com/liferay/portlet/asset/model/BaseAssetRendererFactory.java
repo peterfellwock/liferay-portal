@@ -76,7 +76,7 @@ public abstract class BaseAssetRendererFactory implements AssetRendererFactory {
 
 	@Override
 	public long getClassNameId() {
-		return PortalUtil.getClassNameId(_className);
+		return PortalUtil.getClassNameId(getClassName());
 	}
 
 	@Deprecated
@@ -290,9 +290,9 @@ public abstract class BaseAssetRendererFactory implements AssetRendererFactory {
 		return _supportsClassTypes;
 	}
 
+	@Deprecated
 	@Override
 	public void setClassName(String className) {
-		_className = className;
 	}
 
 	@Override
@@ -335,7 +335,6 @@ public abstract class BaseAssetRendererFactory implements AssetRendererFactory {
 	private static final boolean _PERMISSION = true;
 
 	private boolean _categorizable = true;
-	private String _className;
 	private boolean _linkable;
 	private String _portletId;
 	private boolean _selectable = true;

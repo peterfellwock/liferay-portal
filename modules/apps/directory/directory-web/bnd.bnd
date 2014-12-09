@@ -1,8 +1,16 @@
 Bundle-Name: Liferay My Sites Directory Web
 Bundle-SymbolicName: com.liferay.directory.web
 Bundle-Version: 1.0.0
-Import-Package:\
-	${bnd.jsp.support.imports},\
+Import-Package:\	
+	com.liferay.portal,\
+	com.liferay.portlet.asset.model,\
+	com.liferay.portal.kernel.workflow,\	
+	com.liferay.portal.kernel.search,\
+	com.liferay.portal.service,\
+	com.liferay.portlet.usersadmin.search,\
+	com.liferay.portlet.usersadmin.util,\
+	com.liferay.portlet.usergroupsadmin.search,\	
+	com.liferay.portal.kernel.portlet.bridges.mvc,\
 	*
 Include-Resource:\
 	classes,\

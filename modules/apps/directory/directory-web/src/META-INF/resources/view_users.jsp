@@ -58,7 +58,7 @@ if (Validator.isNotNull(viewUsersRedirect)) {
 		try {
 			userGroup = UserGroupLocalServiceUtil.getUserGroup(userGroupId);
 		}
-		catch (NoSuchUserGroupException nsuge) {
+		catch (Exception nsuge) {
 		}
 	}
 	%>
@@ -104,7 +104,7 @@ if (Validator.isNotNull(viewUsersRedirect)) {
 
 		List<Group> groups = GroupLocalServiceUtil.search(user.getCompanyId(), groupParams, QueryUtil.ALL_POS,QueryUtil.ALL_POS);
 
-		userParams.put("usersGroups", SitesUtil.filterGroups(groups, PrefsPropsUtil.getArray(PropsKeys.MY_SITES_DIRECTORY_SITE_EXCLUDES)));
+		userParams.put("usersGroups", SitesUtil.filterGroups(groups, PropsUtil.getArray(PropsKeys.MY_SITES_DIRECTORY_SITE_EXCLUDES)));
 	}
 	else if (portletName.equals(PortletKeys.SITE_MEMBERS_DIRECTORY) && (organizationId == 0) && (userGroupId == 0)) {
 		userParams.put("inherit", Boolean.TRUE);
@@ -114,7 +114,7 @@ if (Validator.isNotNull(viewUsersRedirect)) {
 
 	<liferay-ui:search-container-results>
 		<c:choose>
-			<c:when test="<%= portletName.equals(PortletKeys.DIRECTORY) && GetterUtil.getBoolean(PrefsPropsUtil.get(PropsKeys.USERS_INDEXER_ENABLED)) && GetterUtil.getBoolean(PrefsPropsUtil.get(PropsKeys.USERS_SEARCH_WITH_INDEX)) %>">
+			<c:when test="<%= portletName.equals(PortletKeys.DIRECTORY) && GetterUtil.getBoolean(PropsUtil.get(PropsKeys.USERS_INDEXER_ENABLED)) && GetterUtil.getBoolean(PropsUtil.get(PropsKeys.USERS_SEARCH_WITH_INDEX)) %>">
 				<%@ include file="/users_admin/user_search_results_index.jspf" %>
 			</c:when>
 			<c:otherwise>

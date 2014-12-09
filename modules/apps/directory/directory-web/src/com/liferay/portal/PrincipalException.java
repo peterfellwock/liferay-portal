@@ -1,4 +1,3 @@
-<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -12,12 +11,29 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
---%>
 
-<%@ include file="/init.jsp" %>
+package com.liferay.portal;
 
-<liferay-ui:error-header />
+import com.liferay.portal.kernel.exception.PortalException;
 
-<liferay-ui:error exception="<%= NoSuchOrganizationException.class %>" message="the-organization-could-not-be-found" />
-<liferay-ui:error exception="<%= NoSuchUserException.class %>" message="the-user-could-not-be-found" />
-<liferay-ui:error exception="<%= Exception.class %>" message="you-do-not-have-the-required-permissions" />
+/**
+ * @author Brian Wing Shun Chan
+ */
+public class PrincipalException extends PortalException {
+
+	public PrincipalException() {
+	}
+
+	public PrincipalException(String msg) {
+		super(msg);
+	}
+
+	public PrincipalException(String msg, Throwable cause) {
+		super(msg, cause);
+	}
+
+	public PrincipalException(Throwable cause) {
+		super(cause);
+	}
+
+}

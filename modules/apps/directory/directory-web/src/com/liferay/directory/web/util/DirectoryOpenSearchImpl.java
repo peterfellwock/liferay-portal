@@ -30,14 +30,15 @@ import com.liferay.portlet.expando.model.ExpandoColumnConstants;
 import com.liferay.portlet.expando.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portlet.usersadmin.util.UserIndexer;
 
-import org.osgi.service.component.annotations.Component;
-
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 
 import javax.portlet.PortletURL;
+
 import javax.servlet.http.HttpServletRequest;
+
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Brian Wing Shun Chan
