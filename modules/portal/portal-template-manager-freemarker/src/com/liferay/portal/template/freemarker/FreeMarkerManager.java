@@ -29,13 +29,10 @@ import com.liferay.portal.template.RestrictedTemplate;
 import com.liferay.portal.template.TemplateContextHelper;
 
 import freemarker.cache.TemplateCache;
-
 import freemarker.debug.impl.DebuggerService;
-
 import freemarker.template.Configuration;
 
 import java.lang.reflect.Field;
-
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Activate;
@@ -84,6 +81,11 @@ public class FreeMarkerManager extends BaseTemplateManager {
 	@Override
 	public String getName() {
 		return TemplateConstants.LANG_TYPE_FTL;
+	}
+	
+	@Override
+	public String[] getRestrictedVariables(){
+		return _freemarkerEngineConfiguration.getRestrictedVariables();
 	}
 
 	@Override
