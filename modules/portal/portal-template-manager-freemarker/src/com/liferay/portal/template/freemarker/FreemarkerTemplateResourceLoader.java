@@ -50,13 +50,7 @@ public class FreemarkerTemplateResourceLoader implements TemplateResourceLoader{
 				_freemarkerEngineConfiguration.getTemplateParsers(),
 				_freemarkerEngineConfiguration.getResourceModificationCheck());
 	}
-
-	private volatile FreemarkerEngineConfiguration 
-		_freemarkerEngineConfiguration;
 	
-	public volatile static DefaultTemplateResourceLoader 
-		_defaultTemplateResourceLoader;
-
 	@Override
 	public void clearCache() {
 		_defaultTemplateResourceLoader.clearCache();
@@ -87,4 +81,9 @@ public class FreemarkerTemplateResourceLoader implements TemplateResourceLoader{
 		return _defaultTemplateResourceLoader.hasTemplateResource(templateId);
 	}
 
+	private static volatile DefaultTemplateResourceLoader 
+		_defaultTemplateResourceLoader;
+	
+	private static volatile FreemarkerEngineConfiguration 
+		_freemarkerEngineConfiguration;
 }

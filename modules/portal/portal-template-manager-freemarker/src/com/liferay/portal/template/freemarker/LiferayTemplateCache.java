@@ -145,8 +145,8 @@ public class LiferayTemplateCache extends TemplateCache {
 			templateResource.getTemplateId(), templateResource.getReader(),
 			_configuration, TemplateConstants.DEFAUT_ENCODING);
 
-		if (_freemarkerEngineConfiguration
-				.getResourceModificationCheck() != 0) {
+		if (_freemarkerEngineConfiguration.getResourceModificationCheck()
+				!= 0) {
 
 			_portalCache.put(templateResource, template);
 		}
