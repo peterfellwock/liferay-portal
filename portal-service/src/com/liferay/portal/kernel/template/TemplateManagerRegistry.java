@@ -77,8 +77,8 @@ public class TemplateManagerRegistry {
 		Registry registry = RegistryUtil.getRegistry();
 
 		_serviceTracker = registry.trackServices(
-				TemplateManager.class,
-				new TemplateManagerServiceTrackerCustomizer());
+			TemplateManager.class,
+			new TemplateManagerServiceTrackerCustomizer());
 
 		_serviceTracker.open();
 	}
@@ -94,48 +94,47 @@ public class TemplateManagerRegistry {
 	private class TemplateManagerServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer<TemplateManager, TemplateManager> {
 
-			@Override
-			public TemplateManager addingService(
-				ServiceReference<TemplateManager> serviceReference) {
+		@Override
+		public TemplateManager addingService(
+			ServiceReference<TemplateManager> serviceReference) {
 
-				Registry registry = RegistryUtil.getRegistry();
+			Registry registry = RegistryUtil.getRegistry();
 
-				TemplateManager templateManager = registry.getService(
-					serviceReference);
+			TemplateManager templateManager = registry.getService(
+				serviceReference);
 
-				String name = templateManager.getName();
+			String name = templateManager.getName();
 
-				try {
-					templateManager.init();
+			try {
+				templateManager.init();
 
-					_templateManagers.put(name, templateManager);
-				}
-				catch (TemplateException e) {
-					_log.error(
-						"Unable to initialize " + name + " template manager ",
-							e);
-				}
-
-				return templateManager;
+				_templateManagers.put(name, templateManager);
+			}
+			catch (TemplateException e) {
+				_log.error(
+					"Unable to initialize " + name + " template manager ", e);
 			}
 
-			@Override
-			public void modifiedService(
-				ServiceReference<TemplateManager> serviceReference,
-				TemplateManager templateManager) {
-			}
+			return templateManager;
+		}
 
-			@Override
-			public void removedService(
-				ServiceReference<TemplateManager> serviceReference,
-				TemplateManager templateManager) {
+		@Override
+		public void modifiedService(
+			ServiceReference<TemplateManager> serviceReference,
+			TemplateManager templateManager) {
+		}
 
-				Registry registry = RegistryUtil.getRegistry();
+		@Override
+		public void removedService(
+			ServiceReference<TemplateManager> serviceReference,
+			TemplateManager templateManager) {
 
-				registry.ungetService(serviceReference);
+			Registry registry = RegistryUtil.getRegistry();
 
-				_templateManagers.remove(templateManager.getName());
-			}
+			registry.ungetService(serviceReference);
+
+			_templateManagers.remove(templateManager.getName());
+		}
 
 	}
 
