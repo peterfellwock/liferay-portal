@@ -15,10 +15,11 @@
 package com.liferay.portlet.dynamicdatamapping.render;
 
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.template.TaglibFactoryUtilRegistry;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.URLTemplateResource;
@@ -40,7 +41,10 @@ import com.liferay.portlet.dynamicdatamapping.storage.Fields;
 import com.liferay.portlet.dynamicdatamapping.util.DDMFieldsCounter;
 import com.liferay.portlet.dynamicdatamapping.util.DDMImpl;
 
+import java.io.Writer;
+
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -557,7 +561,7 @@ public class DDMFormFieldFreeMarkerRenderer implements DDMFormFieldRenderer {
 			fieldStructure.get("readOnly"));
 
 		if ((fieldReadOnly && Validator.isNotNull(mode) &&
-			 StringUtil.equalsIgnoreCase(
+			StringUtil.equalsIgnoreCase(
 				mode, DDMTemplateConstants.TEMPLATE_MODE_EDIT)) ||
 			readOnly) {
 
@@ -596,6 +600,17 @@ public class DDMFormFieldFreeMarkerRenderer implements DDMFormFieldRenderer {
 			template.put(entry.getKey(), entry.getValue());
 		}
 
+		TemplateManager templateManager =
+			TemplateManagerUtil.getTemplateManager(
+				TemplateConstants.LANG_TYPE_FTL);
+
+		templateManager.addTaglibApplication(
+			template, "Application", request.getServletContext());
+		templateManager.addTaglibFactory(
+			template, "PortalJspTagLibs", request.getServletContext());
+		templateManager.addTaglibRequest(
+			template, "Request", request, response);
+
 		return processFTL(request, response, template);
 	}
 
@@ -607,13 +622,13 @@ public class DDMFormFieldFreeMarkerRenderer implements DDMFormFieldRenderer {
 			Template template)
 		throws Exception {
 
-		// FreeMarker variables
-
 		template.prepare(request);
 
-		return TaglibFactoryUtilRegistry.getTaglibFactoryUtil().processFTL(
-			request, response, template);
+		Writer writer = new UnsyncStringWriter();
 
+		template.processTemplate(writer);
+
+		return writer.toString();
 	}
 
 	private static final String _DEFAULT_NAMESPACE = "alloy";

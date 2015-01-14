@@ -14,7 +14,6 @@
 
 package com.liferay.portal.template.freemarker;
 
-import com.liferay.portal.freemarker.configuration.FreemarkerEngineConfiguration;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
 import com.liferay.portal.kernel.template.TemplateConstants;
@@ -22,6 +21,7 @@ import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.template.TemplateResourceThreadLocal;
+import com.liferay.portal.template.freemarker.configuration.FreemarkerEngineConfiguration;
 import com.liferay.portal.util.PropsUtil;
 
 import freemarker.cache.TemplateCache;

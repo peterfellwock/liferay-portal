@@ -133,12 +133,6 @@ public class StartupAction extends SimpleAction {
 
 		runtime.addShutdownHook(new Thread(new ShutdownHook()));
 
-		// Template manager
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("Initialize template manager");
-		}
-
 		// Indexers
 
 		IndexerRegistryUtil.register(new MBMessageIndexer());

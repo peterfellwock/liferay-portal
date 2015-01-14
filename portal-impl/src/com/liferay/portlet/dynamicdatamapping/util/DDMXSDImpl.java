@@ -16,14 +16,15 @@ package com.liferay.portlet.dynamicdatamapping.util;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
-import com.liferay.portal.kernel.template.TaglibFactoryUtilRegistry;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.URLTemplateResource;
@@ -58,7 +59,10 @@ import com.liferay.portlet.dynamicdatamapping.service.DDMTemplateLocalServiceUti
 import com.liferay.portlet.dynamicdatamapping.storage.Field;
 import com.liferay.portlet.dynamicdatamapping.storage.Fields;
 
+import java.io.Writer;
+
 import java.net.URL;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -866,7 +870,7 @@ public class DDMXSDImpl implements DDMXSD {
 			fieldStructure.get("readOnly"));
 
 		if ((fieldReadOnly && Validator.isNotNull(mode) &&
-			 StringUtil.equalsIgnoreCase(
+			StringUtil.equalsIgnoreCase(
 				mode, DDMTemplateConstants.TEMPLATE_MODE_EDIT)) ||
 			readOnly) {
 
@@ -907,6 +911,17 @@ public class DDMXSDImpl implements DDMXSD {
 			template.put(entry.getKey(), entry.getValue());
 		}
 
+		TemplateManager templateManager =
+			TemplateManagerUtil.getTemplateManager(
+				TemplateConstants.LANG_TYPE_FTL);
+
+		templateManager.addTaglibApplication(
+			template, "Application", request.getServletContext());
+		templateManager.addTaglibFactory(
+			template, "PortalJspTagLibs", request.getServletContext());
+		templateManager.addTaglibRequest(
+			template, "Request", request, response);
+
 		return processFTL(request, response, template);
 	}
 
@@ -920,8 +935,11 @@ public class DDMXSDImpl implements DDMXSD {
 
 		template.prepare(request);
 
-		return TaglibFactoryUtilRegistry.getTaglibFactoryUtil().processFTL(
-			request, response, template);
+		Writer writer = new UnsyncStringWriter();
+
+		template.processTemplate(writer);
+
+		return writer.toString();
 	}
 
 	protected void putMetadataValue(

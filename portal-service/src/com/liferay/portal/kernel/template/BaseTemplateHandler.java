@@ -60,14 +60,13 @@ public abstract class BaseTemplateHandler implements TemplateHandler {
 
 	@Override
 	public String[] getRestrictedVariables(String language) {
-		
 		TemplateManager templateManager =
-			TemplateManagerRegistry.getTemplateManager(language);
-		
-		if(templateManager != null){
+			TemplateManagerUtil.getTemplateManager(language);
+
+		if (templateManager != null) {
 			return templateManager.getRestrictedVariables();
 		}
-		
+
 		return new String[0];
 	}
 

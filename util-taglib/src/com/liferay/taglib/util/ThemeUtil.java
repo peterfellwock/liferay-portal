@@ -19,9 +19,9 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.taglib.DynamicIncludeUtil;
-import com.liferay.portal.kernel.template.TaglibFactoryUtilRegistry;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateManagerUtil;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceLoaderUtil;
@@ -246,8 +246,6 @@ public class ThemeUtil {
 
 		template.put("themeServletContext", themeServletContext);
 
-		// Tag libraries
-
 		Writer writer = null;
 
 		if (write) {
@@ -260,30 +258,22 @@ public class ThemeUtil {
 			writer = new UnsyncStringWriter();
 		}
 
-		VelocityTaglib velocityTaglib = new VelocityTaglibImpl(
-			servletContext, request,
-			new PipingServletResponse(response, writer), template);
+		TemplateManager templateManager =
+			TemplateManagerUtil.getTemplateManager(
+				TemplateConstants.LANG_TYPE_FTL);
+
+		templateManager.addTaglibApplication(
+			template, "Application", request.getServletContext());
+		templateManager.addTaglibFactory(
+			template, "PortalJspTagLibs", servletContext);
+		templateManager.addTaglibFactory(
+			template, "ThemeJspTaglibs", themeServletContext);
+		templateManager.addTaglibRequest(
+			template, "Request", request, response);
+		templateManager.addTaglibTheme(
+			template, "taglibLiferay", request, response, writer);
 
 		template.put(TemplateConstants.WRITER, writer);
-		template.put("taglibLiferay", velocityTaglib);
-		template.put("theme", velocityTaglib);
-
-		// Portal JSP tag library factory
-
-		TaglibFactoryUtilRegistry.getTaglibFactoryUtil().includeTagLib(
-			servletContext, "PortalJspTagLibs", template);
-
-		// Theme JSP tag library factory
-
-		TaglibFactoryUtilRegistry.getTaglibFactoryUtil().includeTagLib(
-			themeServletContext, "ThemeJspTaglibs", template);
-		
-
-		// FreeMarker JSP tag library support
-
-		TaglibFactoryUtilRegistry.getTaglibFactoryUtil()
-			.includeContextHashModel(
-				servletContext, request, response, template);
 
 		// Merge templates
 

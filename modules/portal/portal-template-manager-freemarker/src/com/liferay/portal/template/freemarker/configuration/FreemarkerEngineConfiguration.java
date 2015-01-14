@@ -12,14 +12,14 @@
  * details.
  */
 
-package com.liferay.portal.freemarker.configuration;
+package com.liferay.portal.template.freemarker.configuration;
 
 import aQute.bnd.annotation.metatype.Meta;
 
 /**
  * @author Peter Fellwock
  */
-@Meta.OCD(id = "com.liferay.portal.freemarker")
+@Meta.OCD(id = "com.liferay.portal.template.freemarker")
 public interface FreemarkerEngineConfiguration {
 
 	public static final String FREEMARKER_ENGINE_TEMPLATE_PARSERS =

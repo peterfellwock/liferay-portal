@@ -196,7 +196,6 @@ public class GlobalShutdownAction extends SimpleAction {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	protected void shutdownLevel2() {

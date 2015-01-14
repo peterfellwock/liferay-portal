@@ -16,7 +16,6 @@ package com.liferay.portal.template.freemarker;
 
 import aQute.bnd.annotation.metatype.Configurable;
 
-import com.liferay.portal.freemarker.configuration.FreemarkerEngineConfiguration;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -26,6 +25,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Theme;
 import com.liferay.portal.template.TemplateContextHelper;
 import com.liferay.portal.template.TemplatePortletPreferences;
+import com.liferay.portal.template.freemarker.configuration.FreemarkerEngineConfiguration;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.WebKeys;
 

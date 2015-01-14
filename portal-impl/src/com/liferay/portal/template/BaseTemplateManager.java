@@ -19,18 +19,76 @@ import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateManager;
 import com.liferay.portal.kernel.template.TemplateResource;
 import com.liferay.portal.kernel.template.TemplateResourceLoader;
-import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.util.PropsUtil;
+
+import java.io.Writer;
 
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+
 import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author Raymond Augé
  */
 public abstract class BaseTemplateManager implements TemplateManager {
+
+	@Override
+	public void addStaticClassSupport(
+		Map<String, Object> contextObjects, String variableName,
+		Class<?> variableClass) {
+	}
+
+	@Override
+	public void addStaticClassSupport(
+		Template template, String variableName, Class<?> variableClass) {
+	}
+
+	@Override
+	public void addTaglibApplication(
+		Map<String, Object> contextObjects, String applicationName,
+		ServletContext servletContext) {
+	}
+
+	@Override
+	public void addTaglibApplication(
+		Template template, String applicationName,
+		ServletContext servletContext) {
+	}
+
+	@Override
+	public void addTaglibFactory(
+		Template template, String taglibLiferayHash,
+		ServletContext servletContext) {
+	}
+
+	@Override
+	public void addTaglibFactory(
+		Map<String, Object> contextObjects, String taglibLiferayHash,
+		ServletContext servletContext) {
+	}
+
+	@Override
+	public void addTaglibRequest(
+		Map<String, Object> contextObjects, String applicationName,
+		HttpServletRequest request, HttpServletResponse response) {
+	}
+
+	@Override
+	public void addTaglibRequest(
+		Template template, String applicationName,
+		HttpServletRequest request, HttpServletResponse response) {
+	}
+
+	@Override
+	public void addTaglibTheme(
+		Template template, String string, HttpServletRequest request,
+		HttpServletResponse response, Writer writer) {
+	}
 
 	@NotPrivileged
 	@Override
@@ -39,7 +97,7 @@ public abstract class BaseTemplateManager implements TemplateManager {
 
 		return getTemplate(templateResource, null, restricted);
 	}
-	
+
 	@Override
 	public String[] getRestrictedVariables() {
 		return new String[0];
@@ -94,14 +152,14 @@ public abstract class BaseTemplateManager implements TemplateManager {
 		Map<String, Object> helperUtilities, boolean privileged);
 
 	protected TemplateContextHelper templateContextHelper;
-	
-	protected TemplateResourceLoader templateResourceLoader;
-	
-	public void setTemplateResourceLoader(
-			TemplateResourceLoader templateResourceLoader) {
 
-			this.templateResourceLoader = templateResourceLoader;
-		}
+	protected TemplateResourceLoader templateResourceLoader;
+
+	public void setTemplateResourceLoader(
+		TemplateResourceLoader templateResourceLoader) {
+
+		this.templateResourceLoader = templateResourceLoader;
+	}
 
 	private class DoGetHelperUtilitiesPrivilegedAction
 		implements PrivilegedAction<Map<String, Object>> {
