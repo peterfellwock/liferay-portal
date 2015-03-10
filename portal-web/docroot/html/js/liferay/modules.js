@@ -41,7 +41,8 @@
 			},
 
 			liferay: {
-				base: PATH_JAVASCRIPT + '/liferay/',
+				//base: PATH_JAVASCRIPT + '/liferay/',
+				base: '../../o/front-end-web/html/js/liferay/',
 				combine: COMBINE,
 				modules: {
 					'liferay-app-view-move': {
