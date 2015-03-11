@@ -3,5 +3,10 @@ Bundle-SymbolicName: com.liferay.portal.front-end.web
 Bundle-Version: 1.0.0
 Include-Resource:\
 META-INF/resources=src/META-INF/resources
+Import-Package:\
+	com.liferay.portal.kernel.web,\
+	*
+Include-Resource:\
+	classes
 
 Web-ContextPath: /front-end-web
