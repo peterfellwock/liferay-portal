@@ -14,6 +14,8 @@
 	<property name="vaadin.file" value="vaadin-6.8.12-liferay.zip" />
 	<property name="wsc.file" value="wsc_4.4.5.zip" />
 
+	<property name="portal.front.end.web.path" value="../modules/portal/portal-front-end-web/src/META-INF/resources" />
+
 	<path id="jspc.common.classpath">
 		<pathelement path="docroot/WEB-INF/classes" />
 		<pathelement location="${project.dir}/portal-impl/portal-impl.jar" />
@@ -66,26 +68,26 @@
 			<not>
 				<uptodate
 					srcfile="third-party/${alloy.file}"
-					targetfile="docroot/html/js/aui"
+					targetfile="${portal.front.end.web.path}/html/js/aui"
 				/>
 			</not>
 			<then>
 
 				<!-- Prepare -->
 
-				<delete dir="docroot/html/ALLOY_ZIP" />
-				<delete dir="docroot/html/css/portal/aui_deprecated.css" />
-				<delete dir="docroot/html/js/aui" />
-				<delete dir="docroot/html/themes/_unstyled/images/aui" />
+				<delete dir="${portal.front.end.web.path}/html/ALLOY_ZIP" />
+				<delete dir="${portal.front.end.web.path}/html/css/portal/aui_deprecated.css" />
+				<delete dir="${portal.front.end.web.path}/html/js/aui" />
+				<delete dir="${portal.front.end.web.path}/html/themes/_unstyled/images/aui" />
 
 				<echo>${alloy.file}</echo>
 
-				<unzip src="third-party/${alloy.file}" dest="docroot/html/ALLOY_ZIP" />
+				<unzip src="third-party/${alloy.file}" dest="${portal.front.end.web.path}/html/ALLOY_ZIP" />
 
 				<!-- CSS -->
 
-				<property name="alloy.build.dir" value="docroot/html/ALLOY_ZIP/build" />
-				<property name="alloy.temp.dir" value="docroot/html/ALLOY_ZIP/temp" />
+				<property name="alloy.build.dir" value="${portal.front.end.web.path}/html/ALLOY_ZIP/build" />
+				<property name="alloy.temp.dir" value="${portal.front.end.web.path}/html/ALLOY_ZIP/temp" />
 
 				<concat destfile="${alloy.temp.dir}/aui_deprecated.css">
 					<filelist
@@ -118,10 +120,10 @@
 							</then>
 						</if>
 						<if>
-							<available file="docroot/html/js/aui/${dir.name}/assets/skins/sam" />
+							<available file="${portal.front.end.web.path}/html/js/aui/${dir.name}/assets/skins/sam" />
 							<then>
 								<copy todir="docroot/html/themes/_unstyled/images/aui" preservelastmodified="true">
-									<fileset dir="docroot/html/js/aui/${dir.name}/assets/skins/sam" includes="**/*.png,**/*.jpg,**/*.gif" />
+									<fileset dir="${portal.front.end.web.path}/html/js/aui/${dir.name}/assets/skins/sam" includes="**/*.png,**/*.jpg,**/*.gif" />
 								</copy>
 							</then>
 						</if>
@@ -160,7 +162,7 @@
 
 				<!-- JavaScript -->
 
-				<copy todir="docroot/html/js/aui" overwrite="true" preservelastmodified="true">
+				<copy todir="${portal.front.end.web.path}/html/js/aui" overwrite="true" preservelastmodified="true">
 					<fileset dir="${alloy.build.dir}/" />
 				</copy>
 
@@ -172,7 +174,7 @@
 
 				<!-- Clean up -->
 
-				<delete dir="docroot/html/ALLOY_ZIP" />
+				<delete dir="${portal.front.end.web.path}/html/ALLOY_ZIP" />
 			</then>
 		</if>
 	</target>
