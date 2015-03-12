@@ -250,15 +250,20 @@ public class InputEditorTag extends IncludeTag {
 
 	@Override
 	protected String getPage() {
+		if (_page == null) {
+			ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+			_page =
+				themeDisplay.getPathJavaScript() + "/editor/" +
+					getEditorImpl() + ".jsp";
+		}
+
 		return _page;
 	}
 
 	@Override
 	protected void setAttributes(HttpServletRequest request) {
-		String editorImpl = getEditorImpl();
-
-		_page = "/html/js/editor/" + editorImpl + ".jsp";
-
 		request.setAttribute(
 			"liferay-ui:input-editor:allowBrowseDocuments",
 			String.valueOf(_allowBrowseDocuments));
@@ -273,7 +278,8 @@ public class InputEditorTag extends IncludeTag {
 		request.setAttribute("liferay-ui:input-editor:cssClass", _cssClass);
 		request.setAttribute(
 			"liferay-ui:input-editor:cssClasses", getCssClasses());
-		request.setAttribute("liferay-ui:input-editor:editorImpl", editorImpl);
+		request.setAttribute("liferay-ui:input-editor:editorImpl",
+			getEditorImpl());
 		request.setAttribute(
 			"liferay-ui:input-editor:fileBrowserParams", _fileBrowserParams);
 		request.setAttribute("liferay-ui:input-editor:height", _height);
