@@ -161,8 +161,6 @@ cobertura.ser
 
 /portal-web/docroot/html/icons/_sprite.*
 
-/portal-web/docroot/html/js/aui
-
 /portal-web/docroot/html/js/editor/alloyeditor
 /portal-web/docroot/html/js/editor/ckeditor
 /portal-web/docroot/html/js/editor/codepress
