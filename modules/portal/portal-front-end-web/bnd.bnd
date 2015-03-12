@@ -29,7 +29,6 @@ Import-Package:\
 	com.liferay.portal.kernel.staging,\
 	com.liferay.portal.kernel.template,\
 	com.liferay.portal.kernel.upload,\
-	com.liferay.portal.kernel.util,\
 	com.liferay.portal.kernel.workflow,\
 	com.liferay.portal.layoutconfiguration.util,\
 	com.liferay.portal.model,\
@@ -83,8 +82,6 @@ Import-Package:\
 	com.liferay.taglib.search,\
 	com.liferay.taglib.ui.util,\
 	com.liferay.taglib.util,\
-	com.liferay.util,\
-	com.liferay.util.log4j,\
 	*
 Include-Resource:\
 	classes,\
