@@ -42,6 +42,11 @@ public class FileAvailabilityUtil {
 		if (path.charAt(0) != CharPool.SLASH) {
 			return true;
 		}
+		
+		if (path.contains("front-end-web") == true) {
+			System.out.println("CAUGHT ME FRONT-END:" + path);
+			return true;
+		}
 
 		Map<String, Boolean> availabilities = _getAvailabilities(
 			servletContext);
