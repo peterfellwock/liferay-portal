@@ -26,15 +26,13 @@ import com.liferay.registry.ServiceTracker;
 public class PortalWebResourcesUtil {
 
 	public static String getContextPath() {
-		try {
-			return getPortalWebResources().getContextPath();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return "/o/front-end-web";
-		}
+		return getPortalWebResources().getContextPath();
 	}
-	
+
+	public static long getLastModified() {
+		return getPortalWebResources().getLastModified();
+	}
+
 	public static PortalWebResources getPortalWebResources() {
 		return _instance._serviceTracker.getService();
 	}

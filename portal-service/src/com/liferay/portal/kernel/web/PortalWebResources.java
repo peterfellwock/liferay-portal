@@ -23,6 +23,8 @@ public interface PortalWebResources {
 
 	public String getContextPath();
 
+	public long getLastModified();
+
 	public ServletContext getServletContext();
 
 }
