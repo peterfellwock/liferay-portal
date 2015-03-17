@@ -72,11 +72,12 @@ boolean skipEditorLoading = GetterUtil.getBoolean((String)request.getAttribute("
 
 <c:if test="<%= !skipEditorLoading %>">
 	<liferay-util:html-top outputKey="js_editor_alloyeditor_skip_editor_loading">
-		<link href="<%= PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + themeDisplay.getPathJavaScript() + "/editor/alloyeditor/assets/alloy-editor-ocean.css") %>" rel="stylesheet" type="text/css" />
 
 		<%
-		long javaScriptLastModified = ServletContextUtil.getLastModified(application, "/html/js/", true);
+		long javaScriptLastModified = PortalWebResourcesUtil.getLastModified();
 		%>
+
+		<link href="<%= PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + themeDisplay.getPathJavaScript() + "/editor/alloyeditor/assets/alloy-editor-ocean.css", javaScriptLastModified) %>" rel="stylesheet" type="text/css" />
 
 		<script src="<%= HtmlUtil.escape(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNHost() + themeDisplay.getPathJavaScript() + "/editor/ckeditor/ckeditor.js", javaScriptLastModified)) %>" type="text/javascript"></script>
 
