@@ -23,7 +23,9 @@
 <%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 <%@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 
-<%@ page import="com.liferay.portal.kernel.portlet.LiferayPortletRequest" %><%@
+<%@ page import="com.liferay.portal.kernel.json.JSONObject" %><%@
+page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.portlet.LiferayPortletRequest" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayPortletResponse" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
 page import="com.liferay.portal.kernel.servlet.ServletContextUtil" %><%@
@@ -46,7 +48,8 @@ page import="com.liferay.portal.util.SessionClicks" %><%@
 page import="com.liferay.portlet.PortletURLUtil" %><%@
 page import="com.liferay.util.Encryptor" %>
 
-<%@page import="java.util.Map" %><%@
+<%@ page import="java.util.Locale" %><%@
+page import="java.util.Map" %><%@
 page import="java.util.Set" %>
 
 <%@ page import="javax.portlet.PortletURL" %><%@
