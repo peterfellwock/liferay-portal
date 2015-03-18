@@ -48,7 +48,6 @@ Import-Package:\
 	com.liferay.portlet,\
 	com.liferay.portlet.asset,\
 	com.liferay.portlet.asset.model,\
-	com.liferay.portlet.asset.provider,\
 	com.liferay.portlet.asset.service,\
 	com.liferay.portlet.asset.service.persistence,\
 	com.liferay.portlet.asset.util,\
