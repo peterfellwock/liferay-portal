@@ -43,6 +43,11 @@ public class FileAvailabilityUtil {
 			return true;
 		}
 
+		//hack
+		if (path.contains("front-end-web")) {
+			return true;
+		}
+
 		Map<String, Boolean> availabilities = _getAvailabilities(
 			servletContext);
 
