@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.web;
 
-import javax.servlet.ServletContext;
-
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceTracker;
+
+import javax.servlet.ServletContext;
 
 /**
  * @author Peter Fellwock
@@ -34,7 +34,7 @@ public class PortalWebResourcesUtil {
 			return "/o/front-end-web";
 		}
 	}
-	
+
 	public static PortalWebResources getPortalWebResources() {
 		return _instance._serviceTracker.getService();
 	}

@@ -182,7 +182,8 @@ public class InputEditorTag extends IncludeTag {
 
 		String editorImpl = EditorUtil.getEditorValue(request, _editorImpl);
 
-		_page = themeDisplay.getPathJavaScript() + "/editor/" + editorImpl + ".jsp";
+		_page =
+			themeDisplay.getPathJavaScript() + "/editor/" + editorImpl + ".jsp";
 
 		request.setAttribute(
 			"liferay-ui:input-editor:allowBrowseDocuments",
