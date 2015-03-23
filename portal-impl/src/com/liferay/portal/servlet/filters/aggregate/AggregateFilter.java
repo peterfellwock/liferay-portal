@@ -210,13 +210,9 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			String content = fileServletPaths.getContent();
 
 			if (Validator.isNull(content)) {
-				System.out.println("Filename:" + fileName + " IS BLANK"); 
 				continue;
 			}
 
-			
-			System.out.println("Filename" + fileName + " || content.length:" + content.length());
-			
 			sb.append(content);
 			sb.append(StringPool.NEW_LINE);
 		}
@@ -252,7 +248,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		String minifierType = ParamUtil.getString(request, "minifierType");
 		String bundleId = ParamUtil.getString(
 			request, "bundleId",
-			ParamUtil.getString(request, "minifierBundleId"));		
+			ParamUtil.getString(request, "minifierBundleId"));
 
 		if (Validator.isNull(minifierType) || Validator.isNull(bundleId) ||
 			!ArrayUtil.contains(PropsValues.JAVASCRIPT_BUNDLE_IDS, bundleId)) {
@@ -262,10 +258,10 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 		String bundleDirName = PropsUtil.get(
 			PropsKeys.JAVASCRIPT_BUNDLE_DIR, new Filter(bundleId));
-		
-		ServletContext resourceServeletContext = 
+
+		ServletContext resourceServeletContext =
 				PortalWebResourcesUtil.getServletContext();
-		
+
 		URL bundleDirURL = resourceServeletContext.getResource(bundleDirName);
 
 		if (bundleDirURL == null) {
@@ -519,22 +515,20 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 		return getJavaScriptContent(resourceURL.toString(), content);
 	}
-	
+
 	@Override
 	protected boolean isModuleRequest(HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
-		
-		System.out.println("\n\n-----------------------------requestURI>" + requestURI);
-		
+
 		String frontEndContextPath = PortalWebResourcesUtil.getContextPath();
-		
+
 		if(requestURI.startsWith(frontEndContextPath)){
 			return false;
 		}
-		
+
 		return super.isModuleRequest(request);
 	}
-	
+
 
 	@Override
 	protected void processFilter(
