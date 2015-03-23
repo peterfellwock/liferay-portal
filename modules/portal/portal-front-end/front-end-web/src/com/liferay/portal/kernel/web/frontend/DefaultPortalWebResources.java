@@ -18,6 +18,9 @@ import com.liferay.portal.kernel.web.PortalWebResources;
 
 import javax.servlet.ServletContext;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -27,20 +30,35 @@ import org.osgi.service.component.annotations.Reference;
 @Component(immediate = true, service = PortalWebResources.class)
 public class DefaultPortalWebResources implements PortalWebResources {
 
+	@Override
 	public String getContextPath() {
 		return _servletContext.getContextPath();
 	}
-
+	
 	@Override
 	public ServletContext getServletContext() {
 		return _servletContext;
 	}
 
-	@Reference(target = "(osgi.web.symbolicname=com.liferay.portal.front-end.web)")
+	@Override
+	public long getLastModified() {
+		return _bundle.getLastModified();
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_bundle = bundleContext.getBundle();
+	}
+
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.portal.front-end.web)"
+	)
 	protected void setServletContext(ServletContext servletContext) {
 		_servletContext = servletContext;
 	}
 
+	private Bundle _bundle;
 	private ServletContext _servletContext;
+
 
 }
