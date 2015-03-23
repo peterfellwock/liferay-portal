@@ -82,8 +82,6 @@ public class ServletPaths {
 		try {
 			URL resourceURL = _servletContext.getResource(_resourcePath);
 
-			System.out.println("URL??::" + resourceURL);
-
 			if (resourceURL == null) {
 				return null;
 			}
