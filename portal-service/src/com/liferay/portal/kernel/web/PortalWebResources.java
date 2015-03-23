@@ -14,11 +14,15 @@
 
 package com.liferay.portal.kernel.web;
 
+import javax.servlet.ServletContext;
+
 /**
  * @author Peter Fellwock
  */
 public interface PortalWebResources {
 
 	public String getContextPath();
+
+	public ServletContext getServletContext();
 
 }

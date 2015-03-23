@@ -30,6 +30,11 @@ public class DefaultPortalWebResources implements PortalWebResources {
 	public String getContextPath() {
 		return _servletContext.getContextPath();
 	}
+	
+	@Override
+	public ServletContext getServletContext() {
+		return _servletContext;
+	}
 
 	@Reference(target = "(osgi.web.symbolicname=com.liferay.portal.front-end.web)")
 	protected void setServletContext(ServletContext servletContext) {
@@ -37,5 +42,6 @@ public class DefaultPortalWebResources implements PortalWebResources {
 	}
 
 	private ServletContext _servletContext;
+
 
 }
