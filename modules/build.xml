@@ -41,7 +41,6 @@
 		<dirset dir="core" includes="*" />
 		<dirset dir="frontend" includes="*" />
 		<dirset dir="portal" excludes="portal-taglib-aui-form-extension-sample" includes="*" />
-		<dirset dir="portal/portal-front-end" includes="*" />
 		<dirset dir="util" includes="pmd,portal-tools,sass-compiler" />
 	</path>
 
