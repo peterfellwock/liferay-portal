@@ -14,7 +14,7 @@
 	<property name="vaadin.file" value="vaadin-6.8.12-liferay.zip" />
 	<property name="wsc.file" value="wsc_4.4.5.zip" />
 
-	<property name="front.end.js.web.path" value="../modules/front-end/js-web/src/META-INF/resources" />
+	<property name="front.end.js.web.path" value="../modules/frontend/frontend-js-web/src/META-INF/resources" />
 
 	<path id="jspc.common.classpath">
 		<pathelement path="docroot/WEB-INF/classes" />
