@@ -64,7 +64,6 @@ Import-Package:\
 	com.liferay.portlet.expando.model,\
 	com.liferay.portlet.journal,\
 	com.liferay.portlet.journal.model,\
-	com.liferay.portlet.journal.search,\
 	com.liferay.portlet.journal.service,\
 	com.liferay.portlet.journal.util,\
 	com.liferay.portlet.messageboards.model,\
