@@ -84,6 +84,6 @@ Include-Resource:\
 	@../../../util-java/util-java.jar!/com/liferay/util/Encryptor.class,\
 	@../../../util-java/util-java.jar!/com/liferay/util/EncryptorException.class
 
-Web-ContextPath: /js-web
+Web-ContextPath: /frontend-js-web
 
 -donotcopy: (\.touch|.*_diffs.*)
