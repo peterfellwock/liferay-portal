@@ -1,5 +1,5 @@
-Bundle-Name: Liferay Portal Front End Web
-Bundle-SymbolicName: com.liferay.portal.front-end.web
+Bundle-Name: Liferay Front End JS Web
+Bundle-SymbolicName: com.liferay.frontend.js.web
 Bundle-Version: 1.0.0
 Import-Package:\
 	com.liferay.portal,\
@@ -84,6 +84,6 @@ Include-Resource:\
 	@../../../util-java/util-java.jar!/com/liferay/util/Encryptor.class,\
 	@../../../util-java/util-java.jar!/com/liferay/util/EncryptorException.class
 
-Web-ContextPath: /front-end-web
+Web-ContextPath: /js-web
 
 -donotcopy: (\.touch|.*_diffs.*)
