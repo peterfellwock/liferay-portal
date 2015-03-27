@@ -46,10 +46,8 @@ import com.liferay.portal.util.PropsValues;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.net.URL;
 import java.net.URLConnection;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -262,7 +260,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			PropsKeys.JAVASCRIPT_BUNDLE_DIR, new Filter(bundleId));
 
 		ServletContext resourceServeletContext =
-			PortalWebResourcesUtil.getServletContext();
+				PortalWebResourcesUtil.getServletContext();
 
 		URL bundleDirURL = resourceServeletContext.getResource(bundleDirName);
 
@@ -524,12 +522,13 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 		String frontEndContextPath = PortalWebResourcesUtil.getContextPath();
 
-		if (requestURI.startsWith(frontEndContextPath)) {
+		if(requestURI.startsWith(frontEndContextPath)){
 			return false;
 		}
 
 		return super.isModuleRequest(request);
 	}
+
 
 	@Override
 	protected void processFilter(
