@@ -18,6 +18,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.template.TemplateConstants;
+import com.liferay.portal.kernel.web.PortalWebResourceConstants;
 import com.liferay.portal.kernel.web.PortalWebResourcesUtil;
 import com.liferay.portal.template.URLResourceParser;
 import com.liferay.portal.util.PortalUtil;
@@ -69,11 +70,9 @@ public class VelocityServletResourceParser extends URLResourceParser {
 		}
 
 		URL url = servletContext.getResource(name);
-		
+
 		if (url == null) {
-			ServletContext webResourceServletContext = PortalWebResourcesUtil.getServletContext();
-			
-			url = webResourceServletContext.getResource(name);
+			url = PortalWebResourcesUtil.getServletContextResource(name);
 		}
 
 		if ((url == null) && name.endsWith("/init_custom.vm")) {
@@ -81,8 +80,9 @@ public class VelocityServletResourceParser extends URLResourceParser {
 				_log.warn("The template " + name + " should be created");
 			}
 
-			ServletContext portalServletContext = ServletContextPool.get(
-				PortalUtil.getServletContextName());
+			ServletContext portalServletContext =
+				PortalWebResourcesUtil.getServletContext(
+					PortalWebResourceConstants.RESOURCE_TYPE_CSS);
 
 			url = portalServletContext.getResource(
 				"/html/themes/_unstyled/templates/init_custom.vm");
