@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.web.PortalWebResourceConstants;
 import com.liferay.portal.kernel.web.PortalWebResourcesUtil;
 import com.liferay.portal.minifier.MinifierUtil;
 import com.liferay.portal.servlet.filters.IgnoreModuleRequestFilter;
@@ -262,7 +263,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			PropsKeys.JAVASCRIPT_BUNDLE_DIR, new Filter(bundleId));
 
 		ServletContext resourceServeletContext =
-			PortalWebResourcesUtil.getServletContext();
+			PortalWebResourcesUtil.getServletContext(
+				PortalWebResourceConstants.RESOURCE_TYPE_JS);
 
 		URL bundleDirURL = resourceServeletContext.getResource(bundleDirName);
 
@@ -522,9 +524,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	protected boolean isModuleRequest(HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 
-		String frontEndContextPath = PortalWebResourcesUtil.getContextPath();
-
-		if (requestURI.startsWith(frontEndContextPath)) {
+		if (PortalWebResourcesUtil.isResourceContextPath(requestURI)) {
 			return false;
 		}
 
