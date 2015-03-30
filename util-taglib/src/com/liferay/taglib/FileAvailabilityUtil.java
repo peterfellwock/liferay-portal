@@ -41,11 +41,11 @@ public class FileAvailabilityUtil {
 		if (path.charAt(0) != CharPool.SLASH) {
 			return true;
 		}
-		
-		if (path.startsWith(PortalWebResourcesUtil.getContextPath())) {
+
+		if (PortalWebResourcesUtil.isResourceContextPath(path)) {
 			return true;
 		}
-		
+
 		Map<String, Boolean> availabilities = _getAvailabilities(
 			servletContext);
 
