@@ -60,7 +60,7 @@ if (!themeDisplay.isSignedIn() && layout.isPublicLayout()) {
 
 <link class="lfr-css-file" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getPathThemeCss() + "/aui.css")) %>" rel="stylesheet" type="text/css" />
 
-<link href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getCDNDynamicResourcesHost() + themeDisplay.getPathContext() + "/html/css/main.css")) %>" rel="stylesheet" type="text/css" />
+<link href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, PortalWebResourcesUtil.getContextPath() + "/html/css/main.css")) %>" rel="stylesheet" type="text/css" />
 
 <%
 List<Portlet> portlets = null;

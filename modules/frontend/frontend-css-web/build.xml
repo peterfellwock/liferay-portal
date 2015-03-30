@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<!DOCTYPE project>
+
+<project>
+	<import file="../../../tools/sdk/build-common-osgi-plugin.xml" />
+
+	<property name="auto.deploy.dir" value="${liferay.home}/osgi/portal" />
+
+	<macrodef name="build-css">
+		<attribute name="module.dir" />
+		<attribute default="${module.dir.unix}/html/css" name="sass.docroot.dir" />
+
+		<sequential>
+			<property name="sass.tmp.dir" value="${basedir}/sass_tmp_dir" />
+
+			<mkdir dir="${sass.tmp.dir}" />
+
+			<path id="web-lib.classpath">
+				<fileset dir="${project.dir}/lib/portal" includes="*.jar" />
+			</path>
+
+			<java
+				classname="com.liferay.portal.tools.SassToCssBuilder"
+				classpathref="portal.classpath"
+				fork="true"
+				newenvironment="true"
+				outputproperty="build-css.output"
+			>
+				<jvmarg value="-Xmx1024m" />
+				<jvmarg value="-Djava.io.tmpdir=${sass.tmp.dir}" />
+				<jvmarg value="-Djava.util.logging.config.file=${project.dir}/portal-impl/src/com/liferay/portal/tools/dependencies/portal-tools-logging.properties" />
+				<jvmarg value="-Dliferay.lib.portal.dir=${basedir}/../lib/portal" />
+				<arg value="sass.dir.0=/html/css" />
+				<arg value="sass.dir.1=/html/themes" />
+				<arg value="sass.docroot.dir=@{sass.docroot.dir}" />
+				<arg value="sass.portal.common.dir=@{sass.docroot.dir}/html/css/common" />
+			</java>
+
+			<delete dir="${sass.tmp.dir}" />
+
+			<echo>${build-css.output}</echo>
+
+			<if>
+				<contains string="${build-css.output}" substring="Error" />
+				<then>
+					<fail>Sass to CSS Builder generated exceptions.</fail>
+				</then>
+			</if>
+		</sequential>
+	</macrodef>
+</project>
