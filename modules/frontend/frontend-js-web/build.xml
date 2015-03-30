@@ -5,4 +5,124 @@
 	<import file="../../../tools/sdk/build-common-osgi-plugin.xml" />
 
 	<property name="auto.deploy.dir" value="${liferay.home}/osgi/portal" />
+
+	<target name="build-alloy">
+		<property name="alloy.extracted.path" value="ALLOY_ZIP" />
+		<property name="alloy.version" value="3.0.1" />
+		<property name="third.party.path" value="../../../portal-web/third-party" />
+
+		<path id="alloy.zip.path">
+			<fileset dir="${third.party.path}">
+				<include name="alloy-${alloy.version}*.zip" />
+			</fileset>
+		</path>
+
+		<property name="alloy.zip.path" refid="alloy.zip.path" />
+
+		<basename file="${alloy.zip.path}" property="alloy.file" />
+
+		<if>
+			<not>
+				<uptodate
+					srcfile="${third.party.path}/${alloy.file}"
+					targetfile="tmp/aui"
+				/>
+			</not>
+			<then>
+
+				<!-- Prepare -->
+
+				<delete dir="{alloy.extracted.path}" />
+				<delete dir="tmp/aui" />
+
+				<echo>${alloy.file}</echo>
+
+				<unzip src="${third.party.path}/${alloy.file}" dest="${alloy.extracted.path}" />
+
+				<!-- CSS -->
+
+				<property name="alloy.build.dir" value="${alloy.extracted.path}/build" />
+				<property name="alloy.temp.dir" value="${alloy.extracted.path}/temp" />
+
+				<concat destfile="${alloy.temp.dir}/aui_deprecated.css">
+					<filelist
+						dir="${alloy.build.dir}/aui-skin-deprecated/css"
+						files="aui-skin-deprecated.css"
+					/>
+				</concat>
+
+ 				<for param="dir">
+					<path>
+						<dirset
+							dir="${alloy.build.dir}"
+							includes="aui-*"
+						/>
+					</path>
+					<sequential>
+						<basename property="dir.name" file="@{dir}" />
+						<if>
+							<and>
+								<available file="${alloy.build.dir}/${dir.name}/assets/skins/sam/${dir.name}.css" />
+								<matches pattern="-deprecated" string="${dir.name}" />
+							</and>
+							<then>
+								<concat append="true" destfile="${alloy.temp.dir}/aui_deprecated.css">
+									<filelist
+										dir="${alloy.build.dir}/${dir.name}/assets/skins/sam"
+										files="${dir.name}.css"
+									/>
+								</concat>
+							</then>
+						</if>
+						<var name="dir.name" unset="true" />
+					</sequential>
+				</for>
+
+  				<replaceregexp match="url\(([^)]+)\)" replace="url(@theme_image_path@/aui/\1)" flags="g" byline="false">
+					<fileset
+						dir="${alloy.temp.dir}"
+						includes="aui_deprecated.css"
+					/>
+				</replaceregexp>
+
+				<replace file="${alloy.temp.dir}/aui_deprecated.css">
+					<replacefilter token="../images/" value="" />
+				</replace>
+
+				<replace file="${alloy.temp.dir}/aui_deprecated.css">
+					<replacefilter token="../../../../../build/aui-skin-base/images/" value="" />
+				</replace>
+
+				<replace file="${alloy.temp.dir}/aui_deprecated.css">
+					<replacefilter token="../../../../../build/aui-skin-classic/images/" value="" />
+				</replace>
+
+				<replace file="${alloy.temp.dir}/aui_deprecated.css">
+					<replacefilter token="../../../../../build/aui-skin-deprecated/images/" value="" />
+				</replace>
+
+ 				<copy
+					file="${alloy.temp.dir}/aui_deprecated.css"
+					tofile="tmp/aui/aui_deprecated.css"
+					overwrite="true"
+				/>
+
+				<!-- JavaScript -->
+
+				<copy todir="tmp/aui" overwrite="true" preservelastmodified="true">
+					<fileset dir="${alloy.build.dir}/" />
+				</copy>
+
+				<!-- Clean up -->
+
+				<delete dir="${alloy.extracted.path}" />
+			</then>
+		</if>
+	</target>
+
+	<target name="jar" depends="build-common.compile,build-alloy">
+		<jar-macro
+			module.dir="${basedir}"
+		/>
+	</target>
 </project>
