@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.servlet.BrowserSniffer;
 import com.liferay.portal.kernel.servlet.BufferCacheServletResponse;
 import com.liferay.portal.kernel.servlet.FileTimestampUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
 import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -264,10 +265,10 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			PropsKeys.JAVASCRIPT_BUNDLE_DIR, new Filter(bundleId));
 
 		ServletContext portalWebResourcesServletContext =
-			PortalWebResourcesUtil.getServletContext();
+			PortalWebResourcesUtil.getServletContext(
+				PortalWebResourceConstants.RESOURCE_TYPE_JS);
 
-		URL bundleDirURL = portalWebResourcesServletContext.getResource(
-			bundleDirName);
+		URL bundleDirURL = portalWebResourcesServletContext.getResource(bundleDirName);
 
 		if (bundleDirURL == null) {
 			return null;
@@ -312,8 +313,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		}
 		else {
 			content = aggregateJavaScript(
-				new ServletPaths(
-					portalWebResourcesServletContext, bundleDirName),
+				new ServletPaths(portalWebResourcesServletContext, bundleDirName),
 				fileNames);
 		}
 
@@ -518,9 +518,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 	protected boolean isModuleRequest(HttpServletRequest request) {
 		String requestURI = request.getRequestURI();
 
-		String contextPath = PortalWebResourcesUtil.getContextPath();
-
-		if (requestURI.startsWith(contextPath)) {
+		if (PortalWebResourcesUtil.isResourceContextPath(requestURI)) {
 			return false;
 		}
 
