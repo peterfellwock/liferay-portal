@@ -52,133 +52,7 @@
 		<pathelement location="${project.dir}/lib/portal/struts.jar" />
 	</path>
 
-	<extension-point name="build-portal-web-dependencies" depends="build-alloy,build-alloy-editor,build-bourbon,build-ckeditor,build-css,build-dtd,build-tinymce,build-vaadin" />
-
-	<target name="build-alloy" depends="build-alloy-bootstrap,build-alloy-font-awesome">
-		<path id="alloy.zip.path">
-			<fileset dir="third-party">
-				<include name="alloy-${alloy.version}*.zip" />
-			</fileset>
-		</path>
-
-		<property name="alloy.zip.path" refid="alloy.zip.path" />
-
-		<basename file="${alloy.zip.path}" property="alloy.file" />
-
-		<if>
-			<not>
-				<uptodate
-					srcfile="third-party/${alloy.file}"
-					targetfile="${front.end.js.web.path}/html/js/aui"
-				/>
-			</not>
-			<then>
-
-				<!-- Prepare -->
-
-				<delete dir="${front.end.js.web.path}/html/ALLOY_ZIP" />
-				<delete dir="${front.end.js.web.path}/html/css/portal/aui_deprecated.css" />
-				<delete dir="${front.end.js.web.path}/html/js/aui" />
-				<delete dir="${front.end.js.web.path}/html/themes/_unstyled/images/aui" />
-
-				<echo>${alloy.file}</echo>
-
-				<unzip src="third-party/${alloy.file}" dest="${front.end.js.web.path}/html/ALLOY_ZIP" />
-
-				<!-- CSS -->
-
-				<property name="alloy.build.dir" value="${front.end.js.web.path}/html/ALLOY_ZIP/build" />
-				<property name="alloy.temp.dir" value="${front.end.js.web.path}/html/ALLOY_ZIP/temp" />
-
-				<concat destfile="${alloy.temp.dir}/aui_deprecated.css">
-					<filelist
-						dir="${alloy.build.dir}/aui-skin-deprecated/css"
-						files="aui-skin-deprecated.css"
-					/>
-				</concat>
-
-				<for param="dir">
-					<path>
-						<dirset
-							dir="${alloy.build.dir}"
-							includes="aui-*"
-						/>
-					</path>
-					<sequential>
-						<basename property="dir.name" file="@{dir}" />
-						<if>
-							<and>
-								<available file="${alloy.build.dir}/${dir.name}/assets/skins/sam/${dir.name}.css" />
-								<matches pattern="-deprecated" string="${dir.name}" />
-							</and>
-							<then>
-								<concat append="true" destfile="${alloy.temp.dir}/aui_deprecated.css">
-									<filelist
-										dir="${alloy.build.dir}/${dir.name}/assets/skins/sam"
-										files="${dir.name}.css"
-									/>
-								</concat>
-							</then>
-						</if>
-						<if>
-							<available file="${front.end.js.web.path}/html/js/aui/${dir.name}/assets/skins/sam" />
-							<then>
-								<copy todir="docroot/html/themes/_unstyled/images/aui" preservelastmodified="true">
-									<fileset dir="${front.end.js.web.path}/html/js/aui/${dir.name}/assets/skins/sam" includes="**/*.png,**/*.jpg,**/*.gif" />
-								</copy>
-							</then>
-						</if>
-						<var name="dir.name" unset="true" />
-					</sequential>
-				</for>
-
-				<replaceregexp match="url\(([^)]+)\)" replace="url(@theme_image_path@/aui/\1)" flags="g" byline="false">
-					<fileset
-						dir="${alloy.temp.dir}"
-						includes="aui_deprecated.css"
-					/>
-				</replaceregexp>
-
-				<replace file="${alloy.temp.dir}/aui_deprecated.css">
-					<replacefilter token="../images/" value="" />
-				</replace>
-
-				<replace file="${alloy.temp.dir}/aui_deprecated.css">
-					<replacefilter token="../../../../../build/aui-skin-base/images/" value="" />
-				</replace>
-
-				<replace file="${alloy.temp.dir}/aui_deprecated.css">
-					<replacefilter token="../../../../../build/aui-skin-classic/images/" value="" />
-				</replace>
-
-				<replace file="${alloy.temp.dir}/aui_deprecated.css">
-					<replacefilter token="../../../../../build/aui-skin-deprecated/images/" value="" />
-				</replace>
-
-				<copy
-					file="${alloy.temp.dir}/aui_deprecated.css"
-					tofile="docroot/html/css/portal/aui_deprecated.css"
-					overwrite="true"
-				/>
-
-				<!-- JavaScript -->
-
-				<copy todir="${front.end.js.web.path}/html/js/aui" overwrite="true" preservelastmodified="true">
-					<fileset dir="${alloy.build.dir}/" />
-				</copy>
-
-				<!-- Images -->
-
-				<copy todir="docroot/html/themes/_unstyled/images/aui" preservelastmodified="true">
-					<fileset dir="${alloy.build.dir}/aui-skin-deprecated/images" />
-				</copy>
-
-				<!-- Clean up -->
-
-				<delete dir="${front.end.js.web.path}/html/ALLOY_ZIP" />
-			</then>
-		</if>
-	</target>
+	<extension-point name="build-portal-web-dependencies" depends="build-alloy-editor,build-bourbon,build-ckeditor,build-css,build-dtd,build-tinymce,build-vaadin" />
 
 	<target name="build-alloy-bootstrap">
 		<property name="alloy.bootstrap.version" value="3.2.0-2" />
@@ -233,6 +107,68 @@
 				<delete dir="${alloy.bootstrap.tmp.dir}" />
 			</then>
 		</if>
+	</target>
+
+	<target name="build-alloy-themes">
+		<path id="alloy.zip.path">
+			<fileset dir="third-party">
+				<include name="alloy-${alloy.version}*.zip" />
+			</fileset>
+		</path>
+
+		<property name="alloy.zip.path" refid="alloy.zip.path" />
+
+		<basename file="${alloy.zip.path}" property="alloy.file" />
+
+		<property name="alloy.dir" value="${front.end.js.web.path}/tmp/aui" />
+
+		<if>
+			<not>
+				<uptodate
+					srcfile="third-party/${alloy.file}"
+					targetfile="${alloy.dir}"
+				/>
+			</not>
+			<then>
+				<ant-execute
+					ant.build.file="build.xml"
+					ant.dir="${front.end.js.web.path}"
+					ant.target="build-alloy"
+				/>
+			</then>
+		</if>
+
+		<delete dir="docroot/html/themes/_unstyled/images/aui" />
+
+		<for param="dir">
+			<path>
+				<dirset
+					dir="${alloy.dir}"
+					includes="aui-*"
+				/>
+			</path>
+			<sequential>
+				<basename property="dir.name" file="@{dir}" />
+				<if>
+					<available file="${alloy.dir}/${dir.name}/assets/skins/sam" />
+					<then>
+						<copy todir="docroot/html/themes/_unstyled/images/aui" preservelastmodified="true">
+							<fileset dir="{alloy.dir}/${dir.name}/assets/skins/sam" includes="**/*.png,**/*.jpg,**/*.gif" />
+						</copy>
+					</then>
+				</if>
+			</sequential>
+		</for>
+
+		<copy todir="docroot/html/themes/_unstyled/images/aui" preservelastmodified="true">
+			<fileset dir="${alloy.dir}/aui-skin-deprecated/images" />
+		</copy>
+
+		<copy
+			file="${alloy.dir}/aui_deprecated.css"
+			tofile="docroot/html/css/portal/aui_deprecated.css"
+			overwrite="true"
+		/>
 	</target>
 
 	<target name="build-alloy-editor">
@@ -676,7 +612,7 @@
 		<echo file="${project.dir}/tools/selenium/extensions/ide.${user.name}.js">${ide.js.content}</echo>
 	</target>
 
-	<target name="build-themes" depends="build-alloy,build-bourbon">
+	<target name="build-themes" depends="build-alloy-bootstrap,build-alloy-themes,build-alloy-font-awesome,build-bourbon">
 		<for param="module.name">
 			<path>
 				<dirset dir="docroot/html/themes" excludes="_styled,_unstyled" includes="*" />
@@ -818,7 +754,6 @@
 	<target name="clean" depends="build-common-web.clean,clean-css,clean-themes,clean-tlds">
 		<delete dir="classes" />
 		<delete dir="docroot/dtd" />
-		<delete dir="${front.end.js.web.path}/html/js/aui" />
 		<delete dir="${front.end.js.web.src.path}/html/js/editor/alloyeditor" />
 		<delete dir="${front.end.js.web.src.path}/html/js/editor/ckeditor" />
 		<delete dir="${front.end.js.web.src.path}/html/js/editor/tiny_mce" />
