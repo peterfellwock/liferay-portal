@@ -72,6 +72,12 @@ public class PortalWebResourcesUtil {
 			ServletContext servletContext =
 				portalWebResources.getServletContext();
 
+			String contextPath = servletContext.getContextPath();
+
+			if(resourceName.startsWith(contextPath)){
+				resourceName = resourceName.substring(contextPath.length(), resourceName.length());
+			}
+
 			try {
 				URL url = servletContext.getResource(resourceName);
 
