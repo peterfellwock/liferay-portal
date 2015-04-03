@@ -83,4 +83,4 @@ Include-Resource:\
 
 Web-ContextPath: /frontend-css-web
 
--donotcopy: (\.touch)
+-donotcopy: (\.touch|.*_diffs.*|.*scss)
