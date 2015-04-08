@@ -24,6 +24,8 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.ThemeHelper;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.web.PortalWebResourceConstants;
+import com.liferay.portal.kernel.web.PortalWebResourcesUtil;
 import com.liferay.portal.model.ColorScheme;
 import com.liferay.portal.model.Plugin;
 import com.liferay.portal.model.SpriteImage;
@@ -305,7 +307,8 @@ public class ThemeImpl extends PluginBaseImpl implements Theme {
 			return proxyPath.concat(virtualPath);
 		}
 
-		String contextPath = getContextPath();
+		String contextPath = PortalWebResourcesUtil.getContextPath(
+			PortalWebResourceConstants.RESOURCE_TYPE_CSS);
 
 		if (!isWARFile()) {
 			return contextPath;

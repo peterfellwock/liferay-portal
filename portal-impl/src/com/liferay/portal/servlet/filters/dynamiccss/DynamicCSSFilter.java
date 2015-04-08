@@ -28,6 +28,8 @@ import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.web.PortalWebResourceConstants;
+import com.liferay.portal.kernel.web.PortalWebResourcesUtil;
 import com.liferay.portal.servlet.filters.IgnoreModuleRequestFilter;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsUtil;
@@ -107,8 +109,23 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 
 		URL resourceURL = _servletContext.getResource(requestPath);
 
+		ServletContext currentThreadServletContext = _servletContext;
+
 		if (resourceURL == null) {
-			return null;
+			String strip = PortalWebResourcesUtil.getContextPath(PortalWebResourceConstants.RESOURCE_TYPE_CSS);
+			String modifiedRequestPathString = requestPath;
+
+			if(requestPath.startsWith(strip)){
+				modifiedRequestPathString = requestPath.substring(strip.length(), requestPath.length());
+			}
+
+			resourceURL = PortalWebResourcesUtil.getServletContextResource(modifiedRequestPathString);
+
+			if (resourceURL == null) {
+				return null;
+			}
+
+			currentThreadServletContext = PortalWebResourcesUtil.getServletContext(PortalWebResourceConstants.RESOURCE_TYPE_CSS);
 		}
 
 		URLConnection urlConnection = resourceURL.openConnection();
@@ -145,7 +162,7 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 				content = StringUtil.read(urlConnection.getInputStream());
 
 				dynamicContent = DynamicCSSUtil.parseSass(
-					_servletContext, request, requestPath, content);
+					currentThreadServletContext, request, requestPath, content);
 
 				response.setContentType(ContentTypes.TEXT_CSS);
 
@@ -168,7 +185,7 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 				content = bufferCacheServletResponse.getString();
 
 				dynamicContent = DynamicCSSUtil.parseSass(
-					_servletContext, request, requestPath, content);
+					currentThreadServletContext, request, requestPath, content);
 
 				FileUtil.write(
 					cacheContentTypeFile,
@@ -198,6 +215,17 @@ public class DynamicCSSFilter extends IgnoreModuleRequestFilter {
 		}
 
 		return dynamicContent;
+	}
+
+	@Override
+	protected boolean isModuleRequest(HttpServletRequest request) {
+		String requestURI = request.getRequestURI();
+
+		if (PortalWebResourcesUtil.isResourceContextPath(requestURI)) {
+			return false;
+		}
+
+		return super.isModuleRequest(request);
 	}
 
 	@Override
