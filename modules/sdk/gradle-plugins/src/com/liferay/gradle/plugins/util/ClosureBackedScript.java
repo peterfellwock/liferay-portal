@@ -1,4 +1,3 @@
-<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -12,10 +11,29 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
---%>
 
-<%@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
+package com.liferay.gradle.plugins.util;
 
-<liferay-util:include page="/html/js/editor/ckeditor.jsp">
-	<liferay-util:param name="ckEditorConfigFileName" value="ckconfig_bbcode.jsp" />
-</liferay-util:include>
+import groovy.lang.Closure;
+import groovy.lang.Script;
+
+/**
+ * @author Andrea Di Giorgi
+ */
+public class ClosureBackedScript extends Script {
+
+	public ClosureBackedScript(Closure<?> closure) {
+		_closure = closure;
+	}
+
+	@Override
+	public Object run() {
+		_closure.setDelegate(this);
+		_closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+
+		return _closure.call();
+	}
+
+	private final Closure<?> _closure;
+
+}
