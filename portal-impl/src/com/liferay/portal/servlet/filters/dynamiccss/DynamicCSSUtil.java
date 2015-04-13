@@ -236,8 +236,8 @@ public class DynamicCSSUtil {
 			return content;
 		}
 
-		parsedContent =  replaceToken(servletContext, request, themeDisplay, theme,
-				parsedContent);
+		parsedContent =  replaceToken(servletContext, request, themeDisplay,
+				theme, parsedContent);
 
 		return parsedContent;
 	}
@@ -321,7 +321,8 @@ public class DynamicCSSUtil {
 
 			if (theme != null) {
 
-				return replaceToken( servletContext, request, themeDisplay, theme, content);
+				return replaceToken(servletContext, request, themeDisplay,
+					theme, content);
 			}
 			else {
 				return content;
@@ -343,7 +344,8 @@ public class DynamicCSSUtil {
 
 		if (!contextPath.equals(portalContextPath)) {
 			baseURL = PortalImpl.PATH_MODULE.concat(
-				GetterUtil.getString(StringPool.SLASH + servletContext.getServletContextName()));
+				GetterUtil.getString(StringPool.SLASH.concat(
+					servletContext.getServletContextName())));
 		}
 
 		if (baseURL.endsWith(StringPool.SLASH)) {
