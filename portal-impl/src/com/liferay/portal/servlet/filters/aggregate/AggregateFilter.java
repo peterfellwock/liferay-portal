@@ -35,6 +35,8 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.web.PortalWebResourceConstants;
+import com.liferay.portal.kernel.web.PortalWebResourcesUtil;
 import com.liferay.portal.minifier.MinifierUtil;
 import com.liferay.portal.servlet.filters.IgnoreModuleRequestFilter;
 import com.liferay.portal.servlet.filters.dynamiccss.DynamicCSSUtil;
@@ -260,7 +262,11 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		String bundleDirName = PropsUtil.get(
 			PropsKeys.JAVASCRIPT_BUNDLE_DIR, new Filter(bundleId));
 
-		URL bundleDirURL = _servletContext.getResource(bundleDirName);
+		ServletContext resourceServeletContext =
+			PortalWebResourcesUtil.getServletContext(
+				PortalWebResourceConstants.RESOURCE_TYPE_JS);
+
+		URL bundleDirURL = resourceServeletContext.getResource(bundleDirName);
 
 		if (bundleDirURL == null) {
 			return null;
@@ -276,7 +282,7 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			boolean staleCache = false;
 
 			for (String fileName : fileNames) {
-				URL resourceURL = _servletContext.getResource(
+				URL resourceURL = resourceServeletContext.getResource(
 					bundleDirName.concat(StringPool.SLASH).concat(fileName));
 
 				if (resourceURL == null) {
@@ -312,7 +318,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		}
 		else {
 			content = aggregateJavaScript(
-				new ServletPaths(_servletContext, bundleDirName), fileNames);
+				new ServletPaths(resourceServeletContext, bundleDirName),
+				fileNames);
 		}
 
 		response.setContentType(ContentTypes.TEXT_JAVASCRIPT);
@@ -512,6 +519,18 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 
 		return getJavaScriptContent(resourceURL.toString(), content);
 	}
+
+	@Override
+	protected boolean isModuleRequest(HttpServletRequest request) {
+		String requestURI = request.getRequestURI();
+
+		if (PortalWebResourcesUtil.isResourceContextPath(requestURI)) {
+			return false;
+		}
+
+		return super.isModuleRequest(request);
+	}
+
 
 	@Override
 	protected void processFilter(

@@ -36,6 +36,7 @@ import com.liferay.portal.service.ThemeLocalServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.tools.SassToCssBuilder;
 import com.liferay.portal.util.ClassLoaderUtil;
+import com.liferay.portal.util.PortalImpl;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.sass.compiler.SassCompiler;
@@ -235,30 +236,8 @@ public class DynamicCSSUtil {
 			return content;
 		}
 
-		String portalContextPath = PortalUtil.getPathContext();
-
-		String baseURL = portalContextPath;
-
-		String contextPath = ContextPathUtil.getContextPath(servletContext);
-
-		if (!contextPath.equals(portalContextPath)) {
-			baseURL = StringPool.SLASH.concat(
-				GetterUtil.getString(servletContext.getServletContextName()));
-		}
-
-		if (baseURL.endsWith(StringPool.SLASH)) {
-			baseURL = baseURL.substring(0, baseURL.length() - 1);
-		}
-
-		parsedContent = StringUtil.replace(
-			parsedContent,
-			new String[] {
-				"@base_url@", "@portal_ctx@", "@theme_image_path@"
-			},
-			new String[] {
-				baseURL, portalContextPath,
-				_getThemeImagesPath(request, themeDisplay, theme)
-			});
+		parsedContent =  replaceToken(servletContext, request, themeDisplay,
+				theme, parsedContent);
 
 		return parsedContent;
 	}
@@ -326,6 +305,64 @@ public class DynamicCSSUtil {
 		}
 
 		return sb.toString();
+	}
+
+	public static String replaceToken(
+			ServletContext servletContext,
+			HttpServletRequest request, String content) throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Theme theme = null;
+
+		if (themeDisplay == null) {
+			theme = _getTheme(request);
+
+			if (theme != null) {
+
+				return replaceToken(servletContext, request, themeDisplay,
+					theme, content);
+			}
+			else {
+				return content;
+			}
+		}
+
+		return content;
+	}
+
+
+	public static String replaceToken(ServletContext servletContext,
+			HttpServletRequest request, ThemeDisplay themeDisplay, Theme theme,
+			String parsedContent) throws Exception {
+		String portalContextPath = PortalUtil.getPathContext();
+
+		String baseURL = portalContextPath;
+
+		String contextPath = ContextPathUtil.getContextPath(servletContext);
+
+		if (!contextPath.equals(portalContextPath)) {
+			baseURL = PortalImpl.PATH_MODULE.concat(
+				GetterUtil.getString(StringPool.SLASH.concat(
+					servletContext.getServletContextName())));
+		}
+
+		if (baseURL.endsWith(StringPool.SLASH)) {
+			baseURL = baseURL.substring(0, baseURL.length() - 1);
+		}
+
+		parsedContent = StringUtil.replace(
+			parsedContent,
+			new String[] {
+				"@base_url@", "@portal_ctx@", "@theme_image_path@"
+			},
+			new String[] {
+				baseURL, portalContextPath,
+				_getThemeImagesPath(request, themeDisplay, theme)
+			});
+
+		return parsedContent;
 	}
 
 	private static URL _getCacheResourceURL(

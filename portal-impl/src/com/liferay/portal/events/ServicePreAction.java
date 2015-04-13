@@ -46,6 +46,8 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.web.PortalWebResourceConstants;
+import com.liferay.portal.kernel.web.PortalWebResourcesUtil;
 import com.liferay.portal.model.ColorScheme;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
@@ -818,7 +820,10 @@ public class ServicePreAction extends Action {
 		themeDisplay.setPathFriendlyURLPrivateUser(friendlyURLPrivateUserPath);
 		themeDisplay.setPathFriendlyURLPublic(friendlyURLPublicPath);
 		themeDisplay.setPathImage(imagePath);
-		themeDisplay.setPathJavaScript(contextPath.concat("/html/js"));
+		themeDisplay.setPathJavaScript(
+			PortalWebResourcesUtil.getContextPath(
+				PortalWebResourceConstants.RESOURCE_TYPE_JS).concat(
+					"/html/js"));
 		themeDisplay.setPathMain(mainPath);
 		themeDisplay.setPathSound(contextPath.concat("/html/sound"));
 		themeDisplay.setPermissionChecker(permissionChecker);
