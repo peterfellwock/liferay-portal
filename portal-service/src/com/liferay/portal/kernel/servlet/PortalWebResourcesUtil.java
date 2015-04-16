@@ -74,8 +74,9 @@ public class PortalWebResourcesUtil {
 
 			String contextPath = servletContext.getContextPath();
 
-			if(resourceName.startsWith(contextPath)){
-				resourceName = resourceName.substring(contextPath.length(), resourceName.length());
+			if (resourceName.startsWith(contextPath)) {
+				resourceName = resourceName.substring(
+					contextPath.length(), resourceName.length());
 			}
 
 			try {

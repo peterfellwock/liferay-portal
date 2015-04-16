@@ -229,18 +229,18 @@ public class DynamicCSSUtil {
 			return content;
 		}
 
-		parsedContent =  replaceToken(servletContext, request, themeDisplay, theme,
-				parsedContent);
+		parsedContent = replaceToken(servletContext, request, themeDisplay, theme,
+			parsedContent);
 
 		return parsedContent;
 	}
 
 	public static String replaceToken(
-			ServletContext servletContext,
-			HttpServletRequest request, String content) throws Exception {
+		ServletContext servletContext,
+		HttpServletRequest request, String content) throws Exception {
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			WebKeys.THEME_DISPLAY);
 
 		Theme theme = null;
 
@@ -248,8 +248,8 @@ public class DynamicCSSUtil {
 			theme = _getTheme(request);
 
 			if (theme != null) {
-
-				return replaceToken( servletContext, request, themeDisplay, theme, content);
+				return replaceToken(
+					servletContext, request, themeDisplay, theme, content);
 			}
 			else {
 				return content;
@@ -259,10 +259,10 @@ public class DynamicCSSUtil {
 		return content;
 	}
 
-
 	public static String replaceToken(ServletContext servletContext,
 			HttpServletRequest request, ThemeDisplay themeDisplay, Theme theme,
 			String parsedContent) throws Exception {
+
 		String portalContextPath = PortalUtil.getPathContext();
 
 		String baseURL = portalContextPath;
@@ -271,7 +271,8 @@ public class DynamicCSSUtil {
 
 		if (!contextPath.equals(portalContextPath)) {
 			baseURL = PortalImpl.PATH_MODULE.concat(
-				GetterUtil.getString(StringPool.SLASH + servletContext.getServletContextName()));
+				GetterUtil.getString(
+					StringPool.SLASH + servletContext.getServletContextName()));
 		}
 
 		if (baseURL.endsWith(StringPool.SLASH)) {
