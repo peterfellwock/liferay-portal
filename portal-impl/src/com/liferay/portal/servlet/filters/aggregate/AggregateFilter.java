@@ -268,7 +268,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 			PortalWebResourcesUtil.getServletContext(
 				PortalWebResourceConstants.RESOURCE_TYPE_JS);
 
-		URL bundleDirURL = portalWebResourcesServletContext.getResource(bundleDirName);
+		URL bundleDirURL = portalWebResourcesServletContext.getResource(
+			bundleDirName);
 
 		if (bundleDirURL == null) {
 			return null;
@@ -313,7 +314,8 @@ public class AggregateFilter extends IgnoreModuleRequestFilter {
 		}
 		else {
 			content = aggregateJavaScript(
-				new ServletPaths(portalWebResourcesServletContext, bundleDirName),
+				new ServletPaths(
+					portalWebResourcesServletContext, bundleDirName),
 				fileNames);
 		}
 

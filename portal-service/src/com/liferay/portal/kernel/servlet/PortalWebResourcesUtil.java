@@ -44,6 +44,7 @@ public class PortalWebResourcesUtil {
 
 	public static PortalWebResources getPortalWebResources(
 		String resourceType) {
+
 		return _instance._portalWebResourcesMap.get(resourceType);
 	}
 
@@ -51,23 +52,9 @@ public class PortalWebResourcesUtil {
 		return getPortalWebResources(resourceType).getServletContext();
 	}
 
-	public static boolean isResourceContextPath(String requestURI) {
-
-		for (PortalWebResources portalWebResources :
-			_instance._getPortalWebResourcesList() ) {
-
-			if (requestURI.startsWith(portalWebResources.getContextPath())) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	public static URL getServletContextResource(String resourceName) {
-
 		for (PortalWebResources portalWebResources :
-			_instance._getPortalWebResourcesList() ) {
+				_instance._getPortalWebResourcesList() ) {
 
 			ServletContext servletContext =
 				portalWebResources.getServletContext();
@@ -93,9 +80,16 @@ public class PortalWebResourcesUtil {
 		return null;
 	}
 
-	private Collection<PortalWebResources> _getPortalWebResourcesList() {
+	public static boolean isResourceContextPath(String requestURI) {
+		for (PortalWebResources portalWebResources :
+				_instance._getPortalWebResourcesList() ) {
 
-		return _portalWebResourcesMap.values();
+			if (requestURI.startsWith(portalWebResources.getContextPath())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static boolean isResourceAvailable(String path) {
@@ -130,17 +124,21 @@ public class PortalWebResourcesUtil {
 		_serviceTracker.open();
 	}
 
+	private Collection<PortalWebResources> _getPortalWebResourcesList() {
+		return _portalWebResourcesMap.values();
+	}
+
 	private static final PortalWebResourcesUtil _instance =
 		new PortalWebResourcesUtil();
 
+	private final Map<String, PortalWebResources>
+		_portalWebResourcesMap = new ConcurrentHashMap<>();
 	private final ServiceTracker<PortalWebResources, PortalWebResources>
 		_serviceTracker;
 
-	private final Map<String, PortalWebResources>
-	_portalWebResourcesMap = new ConcurrentHashMap<>();
-
 	private class PortalWebResourcesServiceTrackerCustomizer
-	implements ServiceTrackerCustomizer<PortalWebResources, PortalWebResources> {
+		implements ServiceTrackerCustomizer
+			<PortalWebResources, PortalWebResources> {
 
 		@Override
 		public PortalWebResources addingService(
@@ -175,6 +173,7 @@ public class PortalWebResourcesUtil {
 
 			_portalWebResourcesMap.remove(portalWebResources.getResourceType());
 		}
+
 	}
 
 }

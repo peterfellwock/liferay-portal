@@ -229,8 +229,8 @@ public class DynamicCSSUtil {
 			return content;
 		}
 
-		parsedContent = replaceToken(servletContext, request, themeDisplay, theme,
-			parsedContent);
+		parsedContent = replaceToken(
+			servletContext, request, themeDisplay, theme, parsedContent);
 
 		return parsedContent;
 	}
@@ -259,9 +259,10 @@ public class DynamicCSSUtil {
 		return content;
 	}
 
-	public static String replaceToken(ServletContext servletContext,
-			HttpServletRequest request, ThemeDisplay themeDisplay, Theme theme,
-			String parsedContent) throws Exception {
+	public static String replaceToken(
+			ServletContext servletContext, HttpServletRequest request,
+			ThemeDisplay themeDisplay, Theme theme, String parsedContent)
+		throws Exception {
 
 		String portalContextPath = PortalUtil.getPathContext();
 
