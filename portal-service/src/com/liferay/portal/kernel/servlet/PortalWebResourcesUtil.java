@@ -92,15 +92,15 @@ public class PortalWebResourcesUtil {
 		return false;
 	}
 
-	public static boolean isResourceAvailable(String path) {
-		String contextPath = getContextPath();
+	public static boolean isResourceAvailable(String path, String resourceType) {
+		String contextPath = getContextPath(resourceType);
 
 		if (path.startsWith(contextPath)) {
 			path = path.substring(contextPath.length());
 		}
 
 		try {
-			ServletContext servletContext = getServletContext();
+			ServletContext servletContext = getServletContext(resourceType);
 
 			URL url = servletContext.getResource(path);
 
