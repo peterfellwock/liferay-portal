@@ -80,19 +80,9 @@ public class PortalWebResourcesUtil {
 		return null;
 	}
 
-	public static boolean isResourceContextPath(String requestURI) {
-		for (PortalWebResources portalWebResources :
-				_instance._getPortalWebResourcesList() ) {
+	public static boolean isResourceAvailable(
+		String path, String resourceType) {
 
-			if (requestURI.startsWith(portalWebResources.getContextPath())) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public static boolean isResourceAvailable(String path, String resourceType) {
 		String contextPath = getContextPath(resourceType);
 
 		if (path.startsWith(contextPath)) {
@@ -109,6 +99,18 @@ public class PortalWebResourcesUtil {
 			}
 		}
 		catch (MalformedURLException murle) {
+		}
+
+		return false;
+	}
+
+	public static boolean isResourceContextPath(String requestURI) {
+		for (PortalWebResources portalWebResources :
+				_instance._getPortalWebResourcesList() ) {
+
+			if (requestURI.startsWith(portalWebResources.getContextPath())) {
+				return true;
+			}
 		}
 
 		return false;

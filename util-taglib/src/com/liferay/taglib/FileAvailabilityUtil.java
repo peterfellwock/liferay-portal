@@ -45,7 +45,9 @@ public class FileAvailabilityUtil {
 			return true;
 		}
 
-		if (PortalWebResourcesUtil.isResourceAvailable(path, PortalWebResourceConstants.RESOURCE_TYPE_JS)) {
+		if (PortalWebResourcesUtil.isResourceAvailable(
+				path, PortalWebResourceConstants.RESOURCE_TYPE_JS)) {
+
 			return true;
 		}
 
