@@ -53,7 +53,11 @@
 
 		<property name="bourbon.file" value="bourbon-${bourbon.version}.zip" />
 
-		<property name="bourbon.tmp.dir" value="docroot/html/BOURBON_ZIP" />
+		<tstamp>
+			<format property="tstamp.value" pattern="yyyyMMddkkmmssSSS" />
+		</tstamp>
+
+		<property name="bourbon.tmp.dir" value="${tstamp.value}/BOURBON_ZIP" />
 
 		<if>
 			<not>
@@ -63,7 +67,6 @@
 				/>
 			</not>
 			<then>
-				<delete dir="${bourbon.tmp.dir}" />
 				<delete dir="${bourbon.deploy}" />
 
 				<unzip src="third-party/${bourbon.file}" dest="${bourbon.tmp.dir}" />
@@ -74,7 +77,7 @@
 					<fileset dir="${bourbon.lib.dir}/" />
 				</copy>
 
-				<delete dir="${bourbon.tmp.dir}" />
+				<delete dir="${tstamp.value}" />
 			</then>
 		</if>
 	</target>
