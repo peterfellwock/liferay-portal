@@ -62,8 +62,7 @@ public class PortalWebResourcesUtil {
 			String contextPath = servletContext.getContextPath();
 
 			if (resourceName.startsWith(contextPath)) {
-				resourceName = resourceName.substring(
-					contextPath.length(), resourceName.length());
+				resourceName = resourceName.substring(contextPath.length());
 			}
 
 			try {
@@ -73,7 +72,7 @@ public class PortalWebResourcesUtil {
 					return url;
 				}
 			}
-			catch (MalformedURLException e) {
+			catch (MalformedURLException murle) {
 			}
 		}
 
@@ -81,18 +80,18 @@ public class PortalWebResourcesUtil {
 	}
 
 	public static boolean isResourceAvailable(
-		String path, String resourceType) {
+		String resourceName, String resourceType) {
 
 		String contextPath = getContextPath(resourceType);
 
-		if (path.startsWith(contextPath)) {
-			path = path.substring(contextPath.length());
+		if (resourceName.startsWith(contextPath)) {
+			resourceName = resourceName.substring(contextPath.length());
 		}
 
 		try {
 			ServletContext servletContext = getServletContext(resourceType);
 
-			URL url = servletContext.getResource(path);
+			URL url = servletContext.getResource(resourceName);
 
 			if (url != null) {
 				return true;
