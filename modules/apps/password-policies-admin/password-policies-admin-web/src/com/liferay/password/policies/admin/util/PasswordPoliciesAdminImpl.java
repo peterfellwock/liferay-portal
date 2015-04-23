@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.passwordpoliciesadmin.util;
+package com.liferay.password.policies.admin.util;
 
 import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.OrderByComparator;
