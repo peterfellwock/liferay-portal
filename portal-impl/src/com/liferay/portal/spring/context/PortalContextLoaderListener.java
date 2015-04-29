@@ -30,10 +30,14 @@ import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.deploy.DeployManagerUtil;
 import com.liferay.portal.kernel.deploy.hot.HotDeployUtil;
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
+import com.liferay.portal.kernel.executor.PortalExecutorManager;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.messaging.MessageBus;
+import com.liferay.portal.kernel.messaging.sender.SingleDestinationMessageSenderFactory;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.process.ClassPathUtil;
+import com.liferay.portal.kernel.scheduler.SchedulerEngineHelperUtil;
 import com.liferay.portal.kernel.servlet.DirectServletRegistryUtil;
 import com.liferay.portal.kernel.servlet.SerializableSessionAttributeListener;
 import com.liferay.portal.kernel.servlet.ServletContextPool;
@@ -66,6 +70,8 @@ import com.liferay.portal.util.InitUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebAppPool;
 import com.liferay.portlet.PortletContextBagPool;
+import com.liferay.registry.dependency.ServiceDependencyListener;
+import com.liferay.registry.dependency.ServiceDependencyManager;
 
 import java.beans.PropertyDescriptor;
 
@@ -134,9 +140,7 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			_log.error(e, e);
 		}
 
-		_indexerPostProcessorRegistry.close();
-		_schedulerEntryRegistry.close();
-		_serviceWrapperRegistry.close();
+		_serviceDependecyManager.destroy();
 
 		try {
 			ModuleFrameworkUtilAdapter.stopRuntime();
@@ -252,6 +256,39 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 			throw new RuntimeException(e);
 		}
 
+		_serviceDependecyManager = new ServiceDependencyManager();
+
+		_serviceDependecyManager.addServiceDependencyListener(
+
+			new ServiceDependencyListener() {
+
+				@Override
+				public void destroy() {
+					_indexerPostProcessorRegistry.close();
+					_schedulerEntryRegistry.close();
+					_serviceWrapperRegistry.close();
+				}
+
+				@Override
+				public void dependenciesFulfilled() {
+					_indexerPostProcessorRegistry =
+						new IndexerPostProcessorRegistry();
+					_schedulerEntryRegistry = new SchedulerEntryRegistry();
+					_serviceWrapperRegistry = new ServiceWrapperRegistry();
+				}
+
+				private IndexerPostProcessorRegistry
+					_indexerPostProcessorRegistry;
+				private SchedulerEntryRegistry _schedulerEntryRegistry;
+				private ServiceWrapperRegistry _serviceWrapperRegistry;
+
+			});
+
+		_serviceDependecyManager.registerDependencies(
+			MessageBus.class, PortalExecutorManager.class,
+			SchedulerEngineHelperUtil.class,
+			SingleDestinationMessageSenderFactory.class);
+
 		PortalContextLoaderLifecycleThreadLocal.setInitializing(true);
 
 		try {
@@ -312,10 +349,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 
 		clearFilteredPropertyDescriptorsCache(autowireCapableBeanFactory);
 
-		_indexerPostProcessorRegistry = new IndexerPostProcessorRegistry();
-		_schedulerEntryRegistry = new SchedulerEntryRegistry();
-		_serviceWrapperRegistry = new ServiceWrapperRegistry();
-
 		try {
 			ModuleFrameworkUtilAdapter.registerContext(applicationContext);
 
@@ -375,8 +408,6 @@ public class PortalContextLoaderListener extends ContextLoaderListener {
 	}
 
 	private ArrayApplicationContext _arrayApplicationContext;
-	private IndexerPostProcessorRegistry _indexerPostProcessorRegistry;
-	private SchedulerEntryRegistry _schedulerEntryRegistry;
-	private ServiceWrapperRegistry _serviceWrapperRegistry;
+	private ServiceDependencyManager _serviceDependecyManager;
 
 }
