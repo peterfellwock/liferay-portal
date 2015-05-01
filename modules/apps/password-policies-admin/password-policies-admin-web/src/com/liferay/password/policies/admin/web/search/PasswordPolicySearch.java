@@ -22,10 +22,11 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.PasswordPolicy;
+import com.liferay.portal.util.comparator.PasswordPolicyDescriptionComparator;
+import com.liferay.portal.util.comparator.PasswordPolicyNameComparator;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portlet.PortalPreferences;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
-import com.liferay.portlet.passwordpoliciesadmin.util.PasswordPoliciesAdminUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,7 +99,7 @@ public class PasswordPolicySearch extends SearchContainer<PasswordPolicy> {
 			}
 
 			OrderByComparator<PasswordPolicy> orderByComparator =
-				PasswordPoliciesAdminUtil.getPasswordPolicyOrderByComparator(
+				getPasswordPolicyOrderByComparator(
 					orderByCol, orderByType);
 
 			setOrderableHeaders(orderableHeaders);
@@ -109,6 +110,31 @@ public class PasswordPolicySearch extends SearchContainer<PasswordPolicy> {
 		catch (Exception e) {
 			_log.error(e);
 		}
+	}
+
+	private OrderByComparator<PasswordPolicy> getPasswordPolicyOrderByComparator(
+		String orderByCol, String orderByType) {
+
+		boolean orderByAsc = false;
+
+		if (orderByType.equals("asc")) {
+			orderByAsc = true;
+		}
+
+		OrderByComparator<PasswordPolicy> orderByComparator = null;
+
+		if (orderByCol.equals("name")) {
+			orderByComparator = new PasswordPolicyNameComparator(orderByAsc);
+		}
+		else if (orderByCol.equals("description")) {
+			orderByComparator = new PasswordPolicyDescriptionComparator(
+				orderByAsc);
+		}
+		else {
+			orderByComparator = new PasswordPolicyNameComparator(orderByAsc);
+		}
+
+		return orderByComparator;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
