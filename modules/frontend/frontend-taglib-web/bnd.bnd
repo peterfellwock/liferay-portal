@@ -1,0 +1,14 @@
+Bundle-Name: Liferay Frontend Taglib Web
+Bundle-SymbolicName: com.liferay.frontend.taglib.web
+Bundle-Version: 1.0.0
+Import-Package:\
+	com.liferay.portal.util,\
+	!com.liferay.portal.freemarker,\
+	!jodd.json,\
+	!jodd.util,\
+	*
+Include-Resource:\
+	classes,\
+	META-INF/resources=src/META-INF/resources,\
+	@../../../util-taglib/util-taglib.jar
+Web-ContextPath: /frontend-editors-web
