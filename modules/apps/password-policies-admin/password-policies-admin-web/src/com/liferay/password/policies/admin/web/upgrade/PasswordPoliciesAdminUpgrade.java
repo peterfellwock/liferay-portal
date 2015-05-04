@@ -12,9 +12,9 @@
  * details.
  */
 
-package com.liferay.password.policies.admin.upgrade;
+package com.liferay.password.policies.admin.web.upgrade;
 
-import com.liferay.password.policies.admin.constants.PasswordPoliciesAdminPortletKeys;
+import com.liferay.password.policies.admin.web.constants.PasswordPoliciesAdminPortletKeys;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.service.ReleaseLocalService;
@@ -65,7 +65,7 @@ public class PasswordPoliciesAdminUpgrade {
 		};
 
 		_releaseLocalService.updateRelease(
-			"com.liferay.password.policies.admin",
+			"com.liferay.password.policies.admin.web",
 			Collections.<UpgradeProcess>singletonList(upgradePortletId), 1, 1,
 			false);
 	}

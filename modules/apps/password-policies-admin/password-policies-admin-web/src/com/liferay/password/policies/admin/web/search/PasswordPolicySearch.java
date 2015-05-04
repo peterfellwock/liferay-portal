@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.password.policies.admin.search;
+package com.liferay.password.policies.admin.web.search;
 
 import com.liferay.password.policies.admin.web.constants.PasswordPoliciesAdminPortletKeys;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
@@ -98,7 +98,7 @@ public class PasswordPolicySearch extends SearchContainer<PasswordPolicy> {
 			}
 
 			OrderByComparator<PasswordPolicy> orderByComparator =
-				getPasswordPolicyOrderByComparator(
+				PasswordPoliciesAdminUtil.getPasswordPolicyOrderByComparator(
 					orderByCol, orderByType);
 
 			setOrderableHeaders(orderableHeaders);

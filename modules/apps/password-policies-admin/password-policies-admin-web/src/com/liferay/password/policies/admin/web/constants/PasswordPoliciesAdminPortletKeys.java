@@ -12,30 +12,15 @@
  * details.
  */
 
-package com.liferay.password.policies.admin.search;
-
-import com.liferay.portal.kernel.dao.search.DisplayTerms;
-import com.liferay.portal.kernel.util.ParamUtil;
-
-import javax.portlet.PortletRequest;
+package com.liferay.password.policies.admin.web.constants;
 
 /**
- * @author Scott Lee
+ * @author Drew Brokke
  */
-public class PasswordPolicyDisplayTerms extends DisplayTerms {
+public class PasswordPoliciesAdminPortletKeys {
 
-	public static final String NAME = "name";
-
-	public PasswordPolicyDisplayTerms(PortletRequest portletRequest) {
-		super(portletRequest);
-
-		name = ParamUtil.getString(portletRequest, NAME);
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	protected String name;
+	public static final String PASSWORD_POLICIES_ADMIN =
+		"com_liferay_password_policies_admin_portlet_" +
+			"PasswordPoliciesAdminPortlet";
 
 }
