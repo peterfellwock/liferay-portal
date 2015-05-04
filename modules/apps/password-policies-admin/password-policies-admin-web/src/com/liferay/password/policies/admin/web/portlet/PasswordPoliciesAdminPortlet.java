@@ -17,15 +17,15 @@ package com.liferay.password.policies.admin.web.portlet;
 import com.liferay.password.policies.admin.web.constants.PasswordPoliciesAdminPortletKeys;
 import com.liferay.password.policies.admin.web.upgrade.PasswordPoliciesAdminUpgrade;
 import com.liferay.portal.DuplicatePasswordPolicyException;
+import com.liferay.portal.NoSuchPasswordPolicyException;
+import com.liferay.portal.PasswordPolicyNameException;
+import com.liferay.portal.RequiredPasswordPolicyException;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.PasswordPolicy;
-import com.liferay.portal.NoSuchPasswordPolicyException;
-import com.liferay.portal.PasswordPolicyNameException;
-import com.liferay.portal.RequiredPasswordPolicyException;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.service.OrganizationServiceUtil;
 import com.liferay.portal.service.PasswordPolicyServiceUtil;
@@ -53,9 +53,9 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-		"com.liferay.portlet.css-class-wrapper=portlet-users-admin",
 		"com.liferay.portlet.control-panel-entry-category=users",
 		"com.liferay.portlet.control-panel-entry-weight=4.0",
+		"com.liferay.portlet.css-class-wrapper=portlet-users-admin",
 		"com.liferay.portlet.icon=/icons/password_policies_admin.png",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
@@ -231,7 +231,6 @@ public class PasswordPoliciesAdminPortlet extends MVCPortlet {
 	@Reference(unbind = "-")
 	protected void setPasswordPoliciesAdminUpgrade(
 		PasswordPoliciesAdminUpgrade passwordPoliciesAdminUpgrade) {
-
 	}
 
 }

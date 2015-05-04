@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.PasswordPolicy;
 import com.liferay.portal.util.comparator.PasswordPolicyDescriptionComparator;
 import com.liferay.portal.util.comparator.PasswordPolicyNameComparator;
-import com.liferay.portal.util.PortletKeys;
 import com.liferay.portlet.PortalPreferences;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 
@@ -99,8 +98,7 @@ public class PasswordPolicySearch extends SearchContainer<PasswordPolicy> {
 			}
 
 			OrderByComparator<PasswordPolicy> orderByComparator =
-				getPasswordPolicyOrderByComparator(
-					orderByCol, orderByType);
+				getOrderByComparator(orderByCol, orderByType);
 
 			setOrderableHeaders(orderableHeaders);
 			setOrderByCol(orderByCol);
@@ -112,7 +110,7 @@ public class PasswordPolicySearch extends SearchContainer<PasswordPolicy> {
 		}
 	}
 
-	private OrderByComparator<PasswordPolicy> getPasswordPolicyOrderByComparator(
+	private OrderByComparator<PasswordPolicy> getOrderByComparator(
 		String orderByCol, String orderByType) {
 
 		boolean orderByAsc = false;

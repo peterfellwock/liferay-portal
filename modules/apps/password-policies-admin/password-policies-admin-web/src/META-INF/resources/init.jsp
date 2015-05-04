@@ -29,6 +29,7 @@ page import="com.liferay.password.policies.admin.web.search.PasswordPolicyDispla
 page import="com.liferay.password.policies.admin.web.search.PasswordPolicySearch" %><%@
 page import="com.liferay.password.policies.admin.web.search.UserPasswordPolicyChecker" %><%@
 page import="com.liferay.portal.DuplicatePasswordPolicyException" %><%@
+page import="com.liferay.portal.PasswordPolicyNameException" %><%@
 page import="com.liferay.portal.kernel.bean.BeanParamUtil" %><%@
 page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
 page import="com.liferay.portal.kernel.portlet.LiferayWindowState" %><%@
@@ -41,30 +42,28 @@ page import="com.liferay.portal.model.OrganizationConstants" %><%@
 page import="com.liferay.portal.model.PasswordPolicy" %><%@
 page import="com.liferay.portal.model.PasswordPolicyRel" %><%@
 page import="com.liferay.portal.model.User" %><%@
-page import="com.liferay.portal.PasswordPolicyNameException" %><%@
 page import="com.liferay.portal.security.ldap.LDAPSettingsUtil" %><%@
 page import="com.liferay.portal.security.permission.ActionKeys" %><%@
+page import="com.liferay.portal.service.OrganizationLocalServiceUtil" %><%@
 page import="com.liferay.portal.service.PasswordPolicyLocalServiceUtil" %><%@
 page import="com.liferay.portal.service.PasswordPolicyRelLocalServiceUtil" %><%@
 page import="com.liferay.portal.service.UserLocalServiceUtil" %><%@
-page import="com.liferay.portal.service.OrganizationLocalServiceUtil" %><%@
 page import="com.liferay.portal.service.permission.PasswordPolicyPermissionUtil" %><%@
 page import="com.liferay.portal.service.permission.PortalPermissionUtil" %><%@
 page import="com.liferay.portal.util.PortalUtil" %><%@
+page import="com.liferay.portlet.PortletURLUtil" %><%@
 page import="com.liferay.portlet.usersadmin.search.OrganizationSearch" %><%@
 page import="com.liferay.portlet.usersadmin.search.OrganizationSearchTerms" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserSearch" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserSearchTerms" %><%@
 page import="com.liferay.portlet.usersadmin.util.UsersAdmin" %><%@
-page import="com.liferay.portlet.PortletURLUtil" %><%@
 page import="com.liferay.taglib.search.ResultRow" %>
+
+<%@ page import="java.util.LinkedHashMap" %><%@
+page import="java.util.List" %>
 
 <%@ page import="javax.portlet.PortletURL" %><%@
 page import="javax.portlet.WindowState" %>
-
-<%@ page import="java.util.List" %><%@
-page import="java.util.LinkedHashMap" %>
-
 
 <liferay-theme:defineObjects />
 <portlet:defineObjects />
