@@ -14,6 +14,8 @@
 
 package com.liferay.taglib.theme;
 
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.model.Layout;
 
 import javax.servlet.RequestDispatcher;
@@ -33,7 +35,7 @@ public class LayoutIconTag
 			HttpServletRequest request, HttpServletResponse response)
 		throws Exception {
 
-		doTag(_PAGE, layout, servletContext, request, response);
+		doTag(_PAGE, layout, PortalWebResourcesUtil.getServletContext(PortalWebResourceConstants.RESOURCE_TYPE_TAGLIB), request, response);
 	}
 
 	public static void doTag(
@@ -42,6 +44,8 @@ public class LayoutIconTag
 		throws Exception {
 
 		setRequestAttributes(request, layout);
+
+		servletContext = PortalWebResourcesUtil.getServletContext(PortalWebResourceConstants.RESOURCE_TYPE_TAGLIB);
 
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher(page);

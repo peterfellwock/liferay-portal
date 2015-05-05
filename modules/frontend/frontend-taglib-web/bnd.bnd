@@ -2,13 +2,39 @@ Bundle-Name: Liferay Frontend Taglib Web
 Bundle-SymbolicName: com.liferay.frontend.taglib.web
 Bundle-Version: 1.0.0
 Import-Package:\
-	com.liferay.portal.util,\
-	!com.liferay.portal.freemarker,\
-	!jodd.json,\
-	!jodd.util,\
+	!com.swabunga.spell.*,\
+	!net.fortuna.ical4j.model.*,\
+	!com.lowagie.text,\
+	!org.apache.*,\
+	!org.aspectj.*,\
 	*
 Include-Resource:\
 	classes,\
 	META-INF/resources=src/META-INF/resources,\
-	@../../../util-taglib/util-taglib.jar
-Web-ContextPath: /frontend-editors-web
+	@../../../lib/development/alloy-taglib.jar!/com/liferay/alloy/util/MarkupUtil.class,\
+	@../../../lib/portal/struts.jar!/META-INF/*.tld,\
+	@../../../lib/portal/struts.jar!/org/apache/struts/taglib/html/MessagesTei.class,\
+	@../../../lib/portal/commons-beanutils.jar,\
+	@../../../lib/portal/commons-logging.jar,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portal/security/sso/SSOUtil.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portal/util/PrefsPropsUtil.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portal/util/PropsUtil.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portal/util/PropsValues.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portal/util/WebKeys.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/PortletURLImpl.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/asset/util/AssetUtil.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usergroupsadmin/search/UserGroupDisplayTerms.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usergroupsadmin/search/UserGroupSearch.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usersadmin/search/GroupSearchTerms.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usersadmin/search/GroupSearch.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usersadmin/search/OrganizationDisplayTerms.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usersadmin/search/OrganizationSearch.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usersadmin/search/UserDisplayTerms.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usersadmin/search/UserSearch.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/usersadmin/search/UserSearchTerms.class,\
+	@../../../portal-impl/portal-impl.jar!/com/liferay/portlet/dynamicdatamapping/service/permission/DDMTemplatePermission.class,\
+	@../../../portal-service/portal-service.jar!/com/liferay/portlet/documentlibrary/util/DLUtil.class,\
+	@../../../util-java/util-java.jar
+Provide-Capability:\
+	osgi.extender;osgi.extender="jsp.taglib";uri="http://struts.apache.org/tags-html";version:Version="1.0.0"
+Web-ContextPath: /frontend-taglib-web

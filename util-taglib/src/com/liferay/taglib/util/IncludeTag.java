@@ -20,6 +20,8 @@ import com.liferay.portal.kernel.log.LogUtil;
 import com.liferay.portal.kernel.portlet.PortletBag;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
 import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.TrackedServletRequest;
 import com.liferay.portal.kernel.servlet.taglib.TagDynamicIdFactory;
 import com.liferay.portal.kernel.servlet.taglib.TagDynamicIdFactoryRegistry;
@@ -49,6 +51,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.tagext.BodyContent;
+
+import java.net.MalformedURLException;
 
 /**
  * @author Brian Wing Shun Chan
@@ -308,9 +312,25 @@ public class IncludeTag extends AttributesTagSupport {
 		return _page;
 	}
 
-	protected RequestDispatcher getRequestDispatcher(String page) {
+	protected RequestDispatcher getRequestDispatcher(String page) throws MalformedURLException {
+		//temporary workaround
+		ServletContext context = PortalWebResourcesUtil.getServletContext(
+			PortalWebResourceConstants.RESOURCE_TYPE_TAGLIB);
+
+		if (context.getResource(page) == null) {
+			context = PortalWebResourcesUtil.getServletContext(PortalWebResourceConstants.RESOURCE_TYPE_JS);
+
+			if (context.getResource(page) == null) {
+				context = PortalWebResourcesUtil.getServletContext(PortalWebResourceConstants.RESOURCE_TYPE_EDITOR);
+
+				if (context.getResource(page) == null) {
+					context = servletContext;
+				}
+			}
+		}
+
 		return DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
-			servletContext, page);
+			context, page);
 	}
 
 	protected String getStartPage() {
