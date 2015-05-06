@@ -186,6 +186,7 @@ page import="java.text.SimpleDateFormat" %>
 page import="java.util.Arrays" %><%@
 page import="java.util.Calendar" %><%@
 page import="java.util.Collection" %><%@
+page import="java.util.Collections" %><%@
 page import="java.util.Date" %><%@
 page import="java.util.HashMap" %><%@
 page import="java.util.HashSet" %><%@

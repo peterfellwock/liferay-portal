@@ -16,6 +16,8 @@ package com.liferay.portal.servlet.taglib.ui;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorEntry;
 import com.liferay.portal.model.User;
 
@@ -47,6 +49,11 @@ public abstract class BaseFormNavigatorEntry<T>
 	@Override
 	public abstract String getLabel(Locale locale);
 
+	public ServletContext getServletContext() {
+		return PortalWebResourcesUtil.getServletContext(
+			PortalWebResourceConstants.RESOURCE_TYPE_TAGLIB);
+	}
+
 	@Override
 	public boolean isVisible(User user, T formModelBean) {
 		return true;
@@ -56,7 +63,7 @@ public abstract class BaseFormNavigatorEntry<T>
 	public void render(HttpServletRequest request, HttpServletResponse response)
 		throws IOException {
 
-		ServletContext servletContext = request.getServletContext();
+		ServletContext servletContext = getServletContext();
 
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher(getJspPath());
