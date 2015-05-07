@@ -69,11 +69,12 @@ public class VelocityManager extends BaseTemplateManager {
 		HttpServletRequest request, HttpServletResponse response) {
 
 		ServletContext context = request.getServletContext();
-		
-		if (request.getRequestURI().contains("front")) {
-			context = PortalWebResourcesUtil.getServletContext(PortalWebResourceConstants.RESOURCE_TYPE_TAGLIB);
-		}
-		
+
+		//may not need to make any changes in here. but this solution isn't currently working.
+		//if (request.getRequestURI().contains("front")) {
+		//	context = PortalWebResourcesUtil.getServletContext(PortalWebResourceConstants.RESOURCE_TYPE_TAGLIB);
+		//}
+
 		VelocityTaglib velocityTaglib = new VelocityTaglibImpl(
 				context, request, response, contextObjects);
 
