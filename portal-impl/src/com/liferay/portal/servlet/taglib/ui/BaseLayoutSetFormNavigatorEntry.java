@@ -15,11 +15,15 @@
 package com.liferay.portal.servlet.taglib.ui;
 
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorConstants;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.LayoutSet;
+import com.liferay.portal.util.PortalUtil;
 
 import java.util.Locale;
+
+import javax.servlet.ServletContext;
 
 /**
  * @author Sergio González
@@ -43,6 +47,11 @@ public abstract class BaseLayoutSetFormNavigatorEntry
 	@Override
 	public String getLabel(Locale locale) {
 		return LanguageUtil.get(locale, getKey());
+	}
+
+	@Override
+	public ServletContext getServletContext() {
+		return ServletContextPool.get(PortalUtil.getServletContextName());
 	}
 
 }

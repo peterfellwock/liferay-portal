@@ -14,9 +14,13 @@
 
 package com.liferay.site.admin.web.servlet.taglib.ui;
 
+import javax.servlet.ServletContext;
+
+import com.liferay.portal.kernel.servlet.ServletContextPool;
 import com.liferay.portal.kernel.servlet.taglib.ui.FormNavigatorConstants;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.servlet.taglib.ui.BaseFormNavigatorEntry;
+import com.liferay.portal.util.PortalUtil;
 
 /**
  * @author Sergio González
@@ -27,6 +31,11 @@ public abstract class BaseSiteFormNavigatorEntry
 	@Override
 	public String getFormNavigatorId() {
 		return FormNavigatorConstants.FORM_NAVIGATOR_ID_SITES;
+	}
+
+	@Override
+	public ServletContext getServletContext() {
+		return ServletContextPool.get(PortalUtil.getServletContextName());
 	}
 
 }

@@ -14,6 +14,8 @@
 
 package com.liferay.taglib.util;
 
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.servlet.PipingServletResponse;
 
@@ -40,8 +42,9 @@ public class PortalIncludeUtil {
 		HttpServletResponse response =
 			(HttpServletResponse)pageContext.getResponse();
 
-		ServletContext servletContext = (ServletContext)request.getAttribute(
-			WebKeys.CTX);
+		ServletContext servletContext =
+			PortalWebResourcesUtil.getServletContext(
+				PortalWebResourceConstants.RESOURCE_TYPE_TAGLIB);
 
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher(path);
