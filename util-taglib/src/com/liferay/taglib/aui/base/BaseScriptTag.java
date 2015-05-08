@@ -14,7 +14,12 @@
 
 package com.liferay.taglib.aui.base;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.jsp.JspException;
+
+import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 
 /**
  * @author Eduardo Lundgren

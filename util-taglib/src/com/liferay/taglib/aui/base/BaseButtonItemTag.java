@@ -14,8 +14,13 @@
 
 package com.liferay.taglib.aui.base;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
+
+import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 
 /**
  * @author Eduardo Lundgren
@@ -128,6 +133,14 @@ public abstract class BaseButtonItemTag extends com.liferay.taglib.util.IncludeT
 
 	public boolean getRendered() {
 		return _rendered;
+	}
+	
+	@Override
+	protected RequestDispatcher getRequestDispatcher(String page) {
+		return DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+			PortalWebResourcesUtil.getServletContext(
+				PortalWebResourceConstants.RESOURCE_TYPE_AUI_TAGLIB),
+			page);
 	}
 
 	public java.lang.Object getRoot() {
