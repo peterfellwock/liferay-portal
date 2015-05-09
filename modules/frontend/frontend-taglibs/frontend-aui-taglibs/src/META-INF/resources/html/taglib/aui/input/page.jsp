@@ -16,6 +16,13 @@
 
 <%@ include file="/html/taglib/aui/input/init.jsp" %>
 
+
+<% String valueStringLocal = null; %>
+
+<%
+com.pfellwock.util.P.p("\n\n\n---------------------------------1");
+%>
+
 <liferay-util:buffer var="labelContent">
 	<c:if test="<%= Validator.isNotNull(label) %>">
 		<liferay-ui:message key="<%= label %>" localizeKey="<%= localizeLabel %>" />
@@ -117,6 +124,10 @@
 	</c:if>
 </liferay-util:buffer>
 
+<%
+com.pfellwock.util.P.p("\n\n\n---------------------------------2");
+%>
+
 <c:if test='<%= !type.equals("hidden") && !wrappedField && useInputWrapper %>'>
 	<div class="<%= inputWrapperClass %>">
 </c:if>
@@ -183,24 +194,29 @@ boolean choiceField = checkboxField || radioField;
 	</c:when>
 	<c:when test='<%= baseType.equals("checkbox") %>'>
 
+
+<%
+com.pfellwock.util.P.p("\n\n\n---------------------------------3");
+%>
+
 		<%
-		String valueString = null;
+		valueStringLocal = null;
 
 		if (value != null) {
-			valueString = value.toString();
+			valueStringLocal = value.toString();
 
-			if (Validator.isBoolean(valueString)) {
-				checked = GetterUtil.getBoolean(valueString);
+			if (Validator.isBoolean(valueStringLocal)) {
+				checked = GetterUtil.getBoolean(valueStringLocal);
 
-				valueString = null;
+				valueStringLocal = null;
 			}
 		}
 
 		if (!ignoreRequestValue && Validator.isNotNull(ParamUtil.getString(request, "checkboxNames"))) {
-			if (Validator.isNotNull(valueString)) {
+			if (Validator.isNotNull(valueStringLocal)) {
 				String[] requestValues = ParamUtil.getParameterValues(request, name);
 
-				checked = ArrayUtil.contains(requestValues, valueString);
+				checked = ArrayUtil.contains(requestValues, valueStringLocal);
 			}
 			else {
 				checked = ParamUtil.getBoolean(request, name, checked);
@@ -208,32 +224,37 @@ boolean choiceField = checkboxField || radioField;
 		}
 		%>
 
-		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> onClick="<%= onClick %>" <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="checkbox" <%= Validator.isNotNull(valueString) ? ("value=\"" + HtmlUtil.escapeAttribute(valueString)) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
+		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> onClick="<%= onClick %>" <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="checkbox" <%= Validator.isNotNull(valueStringLocal) ? ("value=\"" + HtmlUtil.escapeAttribute(valueStringLocal)) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
 	</c:when>
 	<c:when test='<%= type.equals("radio") %>'>
 
 		<%
-		String valueString = String.valueOf(checked);
+		valueStringLocal = String.valueOf(checked);
 
 		if (value != null) {
-			valueString = value.toString();
+			valueStringLocal = value.toString();
 		}
 
 		if (!ignoreRequestValue) {
 			String requestValue = ParamUtil.getString(request, name);
 
 			if (Validator.isNotNull(requestValue)) {
-				checked = valueString.equals(requestValue);
+				checked = valueStringLocal.equals(requestValue);
 			}
 		}
 		%>
 
-		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="radio" value="<%= HtmlUtil.escapeAttribute(valueString) %>" <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
+		<input <%= checked ? "checked" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="radio" value="<%= HtmlUtil.escapeAttribute(valueStringLocal) %>" <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
 	</c:when>
 	<c:when test='<%= type.equals("resource") %>'>
 		<liferay-ui:input-resource id="<%= id %>" title="<%= title %>" url="<%= String.valueOf(value) %>" />
 	</c:when>
 	<c:when test='<%= type.equals("timeZone") %>'>
+
+<%
+com.pfellwock.util.P.p("\n\n\n---------------------------------4");
+%>
+
 
 		<%
 		int displayStyle = TimeZone.LONG;
@@ -262,20 +283,20 @@ boolean choiceField = checkboxField || radioField;
 	<c:otherwise>
 
 		<%
-		String valueString = StringPool.BLANK;
+		valueStringLocal = StringPool.BLANK;
 
 		if (value != null) {
-			valueString = value.toString();
+			valueStringLocal = value.toString();
 		}
 
 		if (type.equals("hidden") && (value == null)) {
-			valueString = BeanPropertiesUtil.getStringSilent(bean, name);
+			valueStringLocal = BeanPropertiesUtil.getStringSilent(bean, name);
 		}
 		else if (!ignoreRequestValue && (Validator.isNull(type) || type.equals("email") || type.equals("text") || type.equals("textarea"))) {
-			valueString = BeanParamUtil.getStringSilent(bean, request, name, valueString);
+			valueStringLocal = BeanParamUtil.getStringSilent(bean, request, name, valueStringLocal);
 
 			if (Validator.isNotNull(fieldParam)) {
-				valueString = ParamUtil.getString(request, fieldParam, valueString);
+				valueStringLocal = ParamUtil.getString(request, fieldParam, valueStringLocal);
 			}
 		}
 		%>
@@ -297,12 +318,12 @@ boolean choiceField = checkboxField || radioField;
 					onClick="<%= onClick %>"
 					placeholder="<%= placeholder %>"
 					type='<%= type.equals("text") ? "input" : type %>'
-					xml="<%= valueString %>"
+					xml="<%= valueStringLocal %>"
 				/>
 			</c:when>
 			<c:when test='<%= type.equals("editor") %>'>
 				<liferay-ui:input-editor
-					contents="<%= valueString %>"
+					contents="<%= valueStringLocal %>"
 					contentsLanguageId="<%= languageId %>"
 					cssClass="<%= cssClass %>"
 					editorName="ckeditor"
@@ -312,11 +333,16 @@ boolean choiceField = checkboxField || radioField;
 			</c:when>
 			<c:when test='<%= type.equals("textarea") %>'>
 
+
+<%
+com.pfellwock.util.P.p("\n\n\n---------------------------------5");
+%>
+
 				<%
 				String[] storedDimensions = resizable ? StringUtil.split(SessionClicks.get(request, _TEXTAREA_WIDTH_HEIGHT_PREFIX + namespace + id, StringPool.BLANK)) : StringPool.EMPTY_ARRAY;
 				%>
 
-				<textarea class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= (storedDimensions.length > 1) ? "style=\"height: " + storedDimensions[0] + "; width: " + storedDimensions[1] + ";" + title + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %>><%= HtmlUtil.escape(valueString) %></textarea>
+				<textarea class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= (storedDimensions.length > 1) ? "style=\"height: " + storedDimensions[0] + "; width: " + storedDimensions[1] + ";" + title + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %>><%= HtmlUtil.escape(valueStringLocal) %></textarea>
 
 				<c:if test="<%= autoSize %>">
 					<aui:script use="aui-autosize-deprecated">
@@ -347,7 +373,7 @@ boolean choiceField = checkboxField || radioField;
 
 			</c:when>
 			<c:otherwise>
-				<input <%= type.equals("image") ? "alt=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= (max != null) ? "max=\"" + max + "\"": StringPool.BLANK %> <%= (min != null) ? "min=\"" + min + "\"": StringPool.BLANK %> <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="<%= Validator.isNull(type) ? "text" : type %>" <%= !type.equals("image") ? "value=\"" + HtmlUtil.escapeAttribute(valueString) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
+				<input <%= type.equals("image") ? "alt=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> class="<%= fieldCssClass %>" <%= disabled ? "disabled" : StringPool.BLANK %> id="<%= namespace + id %>" <%= (max != null) ? "max=\"" + max + "\"": StringPool.BLANK %> <%= (min != null) ? "min=\"" + min + "\"": StringPool.BLANK %> <%= multiple ? "multiple" : StringPool.BLANK %> name="<%= namespace + name %>" <%= Validator.isNotNull(onChange) ? "onChange=\"" + onChange + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(onClick) ? "onClick=\"" + onClick + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(placeholder) ? "placeholder=\"" + LanguageUtil.get(request, placeholder) + "\"" : StringPool.BLANK %> <%= Validator.isNotNull(title) ? "title=\"" + LanguageUtil.get(request, title) + "\"" : StringPool.BLANK %> type="<%= Validator.isNull(type) ? "text" : type %>" <%= !type.equals("image") ? "value=\"" + HtmlUtil.escapeAttribute(valueStringLocal) + "\"" : StringPool.BLANK %> <%= AUIUtil.buildData(data) %> <%= InlineUtil.buildDynamicAttributes(dynamicAttributes) %> />
 			</c:otherwise>
 		</c:choose>
 
@@ -376,6 +402,11 @@ boolean choiceField = checkboxField || radioField;
 <c:if test='<%= !type.equals("hidden") && !wrappedField && useInputWrapper %>'>
 	</div>
 </c:if>
+
+<%
+com.pfellwock.util.P.p("\n\n\n---------------------------------6");
+%>
+
 
 <%!
 private long _getClassPK(Object bean, long classPK) {

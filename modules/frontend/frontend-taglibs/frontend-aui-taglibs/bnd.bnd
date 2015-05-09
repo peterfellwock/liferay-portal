@@ -12,14 +12,10 @@ Import-Package:\
 	!org.apache.commons.validator,\
 	!org.apache.poi.*,\
 	!org.aspectj.*,\
-	!com.liferay.util,\
-	com.liferay.portal.util,\
-	com.liferay.util,\
 	*
 Include-Resource:\
 	classes,\
 	META-INF/resources=src/META-INF/resources,\
 	@../../../../lib/development/alloy-taglib.jar,\
-	@../../../../util-java/util-java.jar,\
 	@../../../../util-taglib/util-taglib.jar
 Web-ContextPath: /frontend-aui-taglib-web
