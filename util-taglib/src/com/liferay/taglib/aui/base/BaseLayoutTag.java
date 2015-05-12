@@ -14,8 +14,13 @@
 
 package com.liferay.taglib.aui.base;
 
+import com.liferay.portal.kernel.servlet.DirectRequestDispatcherFactoryUtil;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.JspException;
+import javax.servlet.RequestDispatcher;
 
 /**
  * @author Eduardo Lundgren
@@ -48,6 +53,14 @@ public abstract class BaseLayoutTag extends com.liferay.taglib.util.IncludeTag {
 		super.cleanUp();
 
 		_cssClass = null;
+	}
+
+	@Override
+	protected RequestDispatcher getRequestDispatcher(String page) {
+		return DirectRequestDispatcherFactoryUtil.getRequestDispatcher(
+			PortalWebResourcesUtil.getServletContext(
+				PortalWebResourceConstants.RESOURCE_TYPE_AUI_TAGLIB),
+			page);
 	}
 
 	@Override
