@@ -14,22 +14,22 @@
  */
 --%>
 
-<%@ include file="/html/portlet/shopping/init.jsp" %>
+<%@ include file="init.jsp" %>
 
 <%
 String tabs1 = ParamUtil.getString(request, "tabs1", "categories");
 %>
 
-<liferay-util:include page="/html/portlet/shopping/tabs1.jsp" />
+<liferay-util:include page="tabs1.jsp" />
 
 <c:choose>
 	<c:when test='<%= tabs1.equals("categories") %>'>
-		<%@ include file="/html/portlet/shopping/categories.jspf" %>
+		<%@ include file="categories.jspf" %>
 	</c:when>
 	<c:when test='<%= tabs1.equals("orders") && !user.isDefaultUser() %>'>
-		<%@ include file="/html/portlet/shopping/orders.jspf" %>
+		<%@ include file="orders.jspf" %>
 	</c:when>
 	<c:when test='<%= tabs1.equals("coupons") %>'>
-		<%@ include file="/html/portlet/shopping/coupons.jspf" %>
+		<%@ include file="coupons.jspf" %>
 	</c:when>
 </c:choose>
