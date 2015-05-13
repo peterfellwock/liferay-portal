@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping;
+package com.liferay.shopping.exception;
 
 import com.liferay.portal.kernel.exception.PortalException;
 
