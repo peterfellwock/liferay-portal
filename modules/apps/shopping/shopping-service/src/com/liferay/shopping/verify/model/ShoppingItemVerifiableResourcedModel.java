@@ -12,9 +12,10 @@
  * details.
  */
 
-package com.liferay.portal.verify.model;
+package com.liferay.shopping.verify.model;
 
-import com.liferay.portlet.shopping.model.ShoppingItem;
+import com.liferay.portal.verify.model.VerifiableResourcedModel;
+import com.liferay.shopping.model.ShoppingItem;
 
 /**
  * @author Brian Wing Shun Chan
