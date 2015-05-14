@@ -14,14 +14,19 @@
 
 package com.liferay.shopping.service.impl;
 
-import java.util.List;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.shopping.model.ShoppingCategory;
 import com.liferay.shopping.service.base.ShoppingCategoryServiceBaseImpl;
 import com.liferay.shopping.service.permission.ShoppingCategoryPermission;
+
+import java.util.List;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * @author Brian Wing Shun Chan
@@ -30,12 +35,29 @@ public class ShoppingCategoryServiceImpl
 	extends ShoppingCategoryServiceBaseImpl {
 
 	@Override
+	public void afterPropertiesSet() {
+		Bundle bundle = FrameworkUtil.getBundle(getClass());
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		_serviceTracker = new ServiceTracker<>(
+			bundleContext, ShoppingCategoryPermission.class, null);
+
+		_serviceTracker.open();
+	}
+
+	@Override
+	public void destroy() {
+		_serviceTracker.close();
+	}
+
+	@Override
 	public ShoppingCategory addCategory(
 			long parentCategoryId, String name, String description,
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		ShoppingCategoryPermission.check(
+		getShoppingCategoryPermission().check(
 			getPermissionChecker(), serviceContext.getScopeGroupId(),
 			parentCategoryId, ActionKeys.ADD_CATEGORY);
 
@@ -48,7 +70,7 @@ public class ShoppingCategoryServiceImpl
 		ShoppingCategory category = shoppingCategoryLocalService.getCategory(
 			categoryId);
 
-		ShoppingCategoryPermission.check(
+		getShoppingCategoryPermission().check(
 			getPermissionChecker(), category, ActionKeys.DELETE);
 
 		shoppingCategoryLocalService.deleteCategory(categoryId);
@@ -80,7 +102,7 @@ public class ShoppingCategoryServiceImpl
 		ShoppingCategory category = shoppingCategoryLocalService.getCategory(
 			categoryId);
 
-		ShoppingCategoryPermission.check(
+		getShoppingCategoryPermission().check(
 			getPermissionChecker(), category, ActionKeys.VIEW);
 
 		return category;
@@ -111,12 +133,20 @@ public class ShoppingCategoryServiceImpl
 		ShoppingCategory category = shoppingCategoryLocalService.getCategory(
 			categoryId);
 
-		ShoppingCategoryPermission.check(
+		getShoppingCategoryPermission().check(
 			getPermissionChecker(), category, ActionKeys.UPDATE);
 
 		return shoppingCategoryLocalService.updateCategory(
 			categoryId, parentCategoryId, name, description,
 			mergeWithParentCategory, serviceContext);
 	}
+
+	private ShoppingCategoryPermission getShoppingCategoryPermission() {
+		return _serviceTracker.getService();
+	}
+
+	private ServiceTracker
+		<ShoppingCategoryPermission, ShoppingCategoryPermission>
+			_serviceTracker;
 
 }

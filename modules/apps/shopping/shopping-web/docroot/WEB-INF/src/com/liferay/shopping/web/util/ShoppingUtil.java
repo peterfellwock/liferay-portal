@@ -12,24 +12,7 @@
  * details.
  */
 
-package com.liferay.shopping.util;
-
-import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.portlet.PortletRequest;
-import javax.portlet.PortletSession;
-import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
-import javax.portlet.WindowState;
-import javax.servlet.http.HttpServletRequest;
+package com.liferay.shopping.web.util;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -68,11 +51,30 @@ import com.liferay.shopping.service.ShoppingCartLocalServiceUtil;
 import com.liferay.shopping.service.ShoppingCategoryLocalServiceUtil;
 import com.liferay.shopping.service.ShoppingOrderItemLocalServiceUtil;
 import com.liferay.shopping.service.persistence.ShoppingItemPriceUtil;
-import com.liferay.shopping.settings.ShoppingGroupServiceSettings;
 import com.liferay.shopping.util.comparator.ItemMinQuantityComparator;
 import com.liferay.shopping.util.comparator.ItemNameComparator;
 import com.liferay.shopping.util.comparator.ItemPriceComparator;
 import com.liferay.shopping.util.comparator.ItemSKUComparator;
+import com.liferay.shopping.web.settings.ShoppingGroupServiceSettings;
+
+import java.text.NumberFormat;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletSession;
+import javax.portlet.PortletURL;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
+import javax.portlet.WindowState;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Brian Wing Shun Chan
@@ -796,9 +798,9 @@ public class ShoppingUtil {
 		List<String> names = new ArrayList<>();
 		List<String[]> values = new ArrayList<>();
 
-		for (int i = 0; i < itemFields.length; i++) {
-			names.add(itemFields[i].getName());
-			values.add(StringUtil.split(itemFields[i].getValues()));
+		for (ShoppingItemField itemField : itemFields) {
+			names.add(itemField.getName());
+			values.add(StringUtil.split(itemField.getValues()));
 		}
 
 		int numOfRows = 1;
@@ -1016,8 +1018,8 @@ public class ShoppingUtil {
 		else {
 			String[] fieldsQuantities = item.getFieldsQuantitiesArray();
 
-			for (int i = 0; i < fieldsQuantities.length; i++) {
-				if (GetterUtil.getInteger(fieldsQuantities[i]) > 0) {
+			for (String fieldsQuantitie : fieldsQuantities) {
+				if (GetterUtil.getInteger(fieldsQuantitie) > 0) {
 					return true;
 				}
 			}

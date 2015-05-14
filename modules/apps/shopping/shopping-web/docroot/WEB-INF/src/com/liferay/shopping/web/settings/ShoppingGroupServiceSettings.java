@@ -14,12 +14,6 @@
 
 package com.liferay.shopping.web.settings;
 
-import java.util.Currency;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.settings.FallbackKeys;
 import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
@@ -33,8 +27,13 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.shopping.settings.ShoppingGroupServiceSettings;
 import com.liferay.shopping.util.ShoppingConstants;
+
+import java.util.Currency;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Brian Wing Shun Chan
@@ -68,9 +67,7 @@ public class ShoppingGroupServiceSettings {
 
 			Locale[] locales = Locale.getAvailableLocales();
 
-			for (int i = 0; i < locales.length; i++) {
-				Locale locale = locales[i];
-
+			for (Locale locale : locales) {
 				if (locale.getCountry().length() == 2) {
 					Currency currency = Currency.getInstance(locale);
 

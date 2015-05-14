@@ -14,8 +14,6 @@
 
 package com.liferay.shopping.service.permission;
 
-import org.osgi.service.component.annotations.Component;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
@@ -26,6 +24,9 @@ import com.liferay.shopping.model.ShoppingCategory;
 import com.liferay.shopping.model.ShoppingCategoryConstants;
 import com.liferay.shopping.model.ShoppingItem;
 import com.liferay.shopping.service.ShoppingItemLocalServiceUtil;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
@@ -38,7 +39,7 @@ import com.liferay.shopping.service.ShoppingItemLocalServiceUtil;
 )
 public class ShoppingItemPermission implements BaseModelPermissionChecker {
 
-	public static void check(
+	public void check(
 			PermissionChecker permissionChecker, long itemId, String actionId)
 		throws PortalException {
 
@@ -47,7 +48,7 @@ public class ShoppingItemPermission implements BaseModelPermissionChecker {
 		}
 	}
 
-	public static void check(
+	public void check(
 			PermissionChecker permissionChecker, ShoppingItem item,
 			String actionId)
 		throws PortalException {
@@ -57,7 +58,7 @@ public class ShoppingItemPermission implements BaseModelPermissionChecker {
 		}
 	}
 
-	public static boolean contains(
+	public boolean contains(
 			PermissionChecker permissionChecker, long itemId, String actionId)
 		throws PortalException {
 
@@ -66,7 +67,7 @@ public class ShoppingItemPermission implements BaseModelPermissionChecker {
 		return contains(permissionChecker, item, actionId);
 	}
 
-	public static boolean contains(
+	public boolean contains(
 			PermissionChecker permissionChecker, ShoppingItem item,
 			String actionId)
 		throws PortalException {
@@ -86,7 +87,7 @@ public class ShoppingItemPermission implements BaseModelPermissionChecker {
 			else {
 				ShoppingCategory category = item.getCategory();
 
-				if (!ShoppingCategoryPermission.contains(
+				if (!_shoppingCategoryPermission.contains(
 						permissionChecker, category, actionId)) {
 
 					return false;
@@ -114,5 +115,14 @@ public class ShoppingItemPermission implements BaseModelPermissionChecker {
 
 		check(permissionChecker, primaryKey, actionId);
 	}
+
+	@Reference
+	protected void setShoppingCategoryPermission(
+		ShoppingCategoryPermission shoppingCategoryPermission) {
+
+		_shoppingCategoryPermission = shoppingCategoryPermission;
+	}
+
+	private ShoppingCategoryPermission _shoppingCategoryPermission;
 
 }

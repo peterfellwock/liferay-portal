@@ -14,17 +14,18 @@
 
 package com.liferay.shopping.service.permission;
 
-import org.osgi.service.component.annotations.Component;
-
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.shopping.model.ShoppingCategoryConstants;
 import com.liferay.shopping.model.ShoppingCategory;
+import com.liferay.shopping.model.ShoppingCategoryConstants;
+import com.liferay.shopping.service.ShoppingCategoryLocalService;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
@@ -33,11 +34,14 @@ import com.liferay.shopping.model.ShoppingCategory;
 	immediate = true,
 	property = {
 		"model.class.name=com.liferay.shopping.model.ShoppingCategory"
+	},
+	service = {
+		BaseModelPermissionChecker.class, ShoppingCategoryPermission.class
 	}
 )
 public class ShoppingCategoryPermission implements BaseModelPermissionChecker {
 
-	public static void check(
+	public void check(
 			PermissionChecker permissionChecker, long groupId, long categoryId,
 			String actionId)
 		throws PortalException {
@@ -47,7 +51,7 @@ public class ShoppingCategoryPermission implements BaseModelPermissionChecker {
 		}
 	}
 
-	public static void check(
+	public void check(
 			PermissionChecker permissionChecker, ShoppingCategory category,
 			String actionId)
 		throws PortalException {
@@ -57,7 +61,7 @@ public class ShoppingCategoryPermission implements BaseModelPermissionChecker {
 		}
 	}
 
-	public static boolean contains(
+	public boolean contains(
 			PermissionChecker permissionChecker, long groupId, long categoryId,
 			String actionId)
 		throws PortalException {
@@ -70,13 +74,13 @@ public class ShoppingCategoryPermission implements BaseModelPermissionChecker {
 		}
 		else {
 			ShoppingCategory category =
-				ShoppingCategoryLocalServiceUtil.getCategory(categoryId);
+				_shoppingCategoryLocalService.getCategory(categoryId);
 
 			return contains(permissionChecker, category, actionId);
 		}
 	}
 
-	public static boolean contains(
+	public boolean contains(
 			PermissionChecker permissionChecker, ShoppingCategory category,
 			String actionId)
 		throws PortalException {
@@ -93,7 +97,7 @@ public class ShoppingCategoryPermission implements BaseModelPermissionChecker {
 			while (categoryId !=
 						ShoppingCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) {
 
-				category = ShoppingCategoryLocalServiceUtil.getCategory(
+				category = _shoppingCategoryLocalService.getCategory(
 					categoryId);
 
 				if (!_hasPermission(permissionChecker, category, actionId)) {
@@ -119,7 +123,7 @@ public class ShoppingCategoryPermission implements BaseModelPermissionChecker {
 		check(permissionChecker, groupId, primaryKey, actionId);
 	}
 
-	private static boolean _hasPermission(
+	private boolean _hasPermission(
 		PermissionChecker permissionChecker, ShoppingCategory category,
 		String actionId) {
 
@@ -135,5 +139,14 @@ public class ShoppingCategoryPermission implements BaseModelPermissionChecker {
 
 		return false;
 	}
+
+	@Reference
+	protected void setShoppingCategoryLocalService(
+		ShoppingCategoryLocalService shoppingCategoryLocalService) {
+
+		_shoppingCategoryLocalService = shoppingCategoryLocalService;
+	}
+
+	private ShoppingCategoryLocalService _shoppingCategoryLocalService;
 
 }

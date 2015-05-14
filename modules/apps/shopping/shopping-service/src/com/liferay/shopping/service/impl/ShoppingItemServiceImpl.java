@@ -14,9 +14,6 @@
 
 package com.liferay.shopping.service.impl;
 
-import java.io.File;
-import java.util.List;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.security.permission.ActionKeys;
@@ -28,10 +25,42 @@ import com.liferay.shopping.service.base.ShoppingItemServiceBaseImpl;
 import com.liferay.shopping.service.permission.ShoppingCategoryPermission;
 import com.liferay.shopping.service.permission.ShoppingItemPermission;
 
+import java.io.File;
+
+import java.util.List;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.util.tracker.ServiceTracker;
+
 /**
  * @author Brian Wing Shun Chan
  */
 public class ShoppingItemServiceImpl extends ShoppingItemServiceBaseImpl {
+
+	@Override
+	public void afterPropertiesSet() {
+		Bundle bundle = FrameworkUtil.getBundle(getClass());
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		_shoppingCategoryPermissionTracker = new ServiceTracker<>(
+			bundleContext, ShoppingCategoryPermission.class, null);
+
+		_shoppingCategoryPermissionTracker.open();
+
+		_shoppingItemPermissionTracker = new ServiceTracker<>(
+			bundleContext, ShoppingItemPermission.class, null);
+
+		_shoppingItemPermissionTracker.open();
+	}
+
+	@Override
+	public void destroy() {
+		_shoppingCategoryPermissionTracker.close();
+		_shoppingItemPermissionTracker.close();
+	}
 
 	@Override
 	public ShoppingItem addItem(
@@ -45,7 +74,7 @@ public class ShoppingItemServiceImpl extends ShoppingItemServiceBaseImpl {
 			List<ShoppingItemPrice> itemPrices, ServiceContext serviceContext)
 		throws PortalException {
 
-		ShoppingCategoryPermission.check(
+		getShoppingCategoryPermission().check(
 			getPermissionChecker(), groupId, categoryId, ActionKeys.ADD_ITEM);
 
 		return shoppingItemLocalService.addItem(
@@ -58,7 +87,7 @@ public class ShoppingItemServiceImpl extends ShoppingItemServiceBaseImpl {
 
 	@Override
 	public void deleteItem(long itemId) throws PortalException {
-		ShoppingItemPermission.check(
+		getShoppingItemPermission().check(
 			getPermissionChecker(), itemId, ActionKeys.DELETE);
 
 		shoppingItemLocalService.deleteItem(itemId);
@@ -71,7 +100,7 @@ public class ShoppingItemServiceImpl extends ShoppingItemServiceBaseImpl {
 
 	@Override
 	public ShoppingItem getItem(long itemId) throws PortalException {
-		ShoppingItemPermission.check(
+		getShoppingItemPermission().check(
 			getPermissionChecker(), itemId, ActionKeys.VIEW);
 
 		return shoppingItemLocalService.getItem(itemId);
@@ -119,7 +148,7 @@ public class ShoppingItemServiceImpl extends ShoppingItemServiceBaseImpl {
 			List<ShoppingItemPrice> itemPrices, ServiceContext serviceContext)
 		throws PortalException {
 
-		ShoppingItemPermission.check(
+		getShoppingItemPermission().check(
 			getPermissionChecker(), itemId, ActionKeys.UPDATE);
 
 		return shoppingItemLocalService.updateItem(
@@ -129,5 +158,21 @@ public class ShoppingItemServiceImpl extends ShoppingItemServiceBaseImpl {
 			mediumImageURL, mediumFile, largeImage, largeImageURL, largeFile,
 			itemFields, itemPrices, serviceContext);
 	}
+
+	private ShoppingCategoryPermission getShoppingCategoryPermission() {
+		return _shoppingCategoryPermissionTracker.getService();
+	}
+
+	private ShoppingItemPermission getShoppingItemPermission() {
+		return _shoppingItemPermissionTracker.getService();
+	}
+
+	private ServiceTracker
+		<ShoppingCategoryPermission, ShoppingCategoryPermission>
+			_shoppingCategoryPermissionTracker;
+
+	private ServiceTracker
+		<ShoppingItemPermission, ShoppingItemPermission>
+			_shoppingItemPermissionTracker;
 
 }
