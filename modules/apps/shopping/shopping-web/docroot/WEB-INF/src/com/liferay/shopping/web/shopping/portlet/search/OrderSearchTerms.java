@@ -12,9 +12,9 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.search;
+package com.liferay.shopping.search;
 
-import com.liferay.portlet.shopping.model.ShoppingOrderConstants;
+import com.liferay.shopping.model.ShoppingOrderConstants;
 
 import javax.portlet.PortletRequest;
 

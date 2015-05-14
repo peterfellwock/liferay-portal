@@ -12,22 +12,21 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.impl;
+package com.liferay.shopping.service.impl;
+
+import java.io.File;
+import java.util.List;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.ServiceContext;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.model.ShoppingItemField;
-import com.liferay.portlet.shopping.model.ShoppingItemPrice;
-import com.liferay.portlet.shopping.service.base.ShoppingItemServiceBaseImpl;
-import com.liferay.portlet.shopping.service.permission.ShoppingCategoryPermission;
-import com.liferay.portlet.shopping.service.permission.ShoppingItemPermission;
-
-import java.io.File;
-
-import java.util.List;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.ShoppingItemField;
+import com.liferay.shopping.model.ShoppingItemPrice;
+import com.liferay.shopping.service.base.ShoppingItemServiceBaseImpl;
+import com.liferay.shopping.service.permission.ShoppingCategoryPermission;
+import com.liferay.shopping.service.permission.ShoppingItemPermission;
 
 /**
  * @author Brian Wing Shun Chan

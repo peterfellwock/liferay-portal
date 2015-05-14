@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.shopping.settings;
+package com.liferay.shopping.web.settings;
 
 import java.util.Currency;
 import java.util.Locale;
@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.shopping.settings.ShoppingGroupServiceSettings;
 import com.liferay.shopping.util.ShoppingConstants;
 
 /**

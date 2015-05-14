@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.action;
+package com.liferay.shopping.action;
 
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
@@ -24,9 +24,9 @@ import com.liferay.portal.service.ServiceContextFactory;
 import com.liferay.portal.struts.PortletAction;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.WebKeys;
-import com.liferay.portlet.shopping.NoSuchOrderException;
-import com.liferay.portlet.shopping.service.ShoppingOrderServiceUtil;
-import com.liferay.portlet.shopping.util.ShoppingUtil;
+import com.liferay.shopping.NoSuchOrderException;
+import com.liferay.shopping.service.ShoppingOrderServiceUtil;
+import com.liferay.shopping.util.ShoppingUtil;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;

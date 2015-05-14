@@ -292,6 +292,11 @@ public class ShoppingCategoryWrapper implements ShoppingCategory,
 	}
 
 	@Override
+	public boolean isRoot() {
+		return _shoppingCategory.isRoot();
+	}
+
+	@Override
 	public void persist() {
 		_shoppingCategory.persist();
 	}

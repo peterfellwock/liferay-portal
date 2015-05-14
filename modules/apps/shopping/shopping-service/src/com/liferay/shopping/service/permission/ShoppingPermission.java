@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.permission;
+package com.liferay.shopping.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.security.auth.PrincipalException;
@@ -23,7 +23,7 @@ import com.liferay.portal.security.permission.PermissionChecker;
  */
 public class ShoppingPermission {
 
-	public static final String RESOURCE_NAME = "com.liferay.portlet.shopping";
+	public static final String RESOURCE_NAME = "com.liferay.shopping";
 
 	public static void check(
 			PermissionChecker permissionChecker, long groupId, String actionId)

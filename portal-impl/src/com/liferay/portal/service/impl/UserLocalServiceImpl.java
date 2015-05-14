@@ -1902,10 +1902,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		membershipRequestLocalService.deleteMembershipRequestsByUserId(
 			user.getUserId());
 
-		// Shopping cart
-
-		shoppingCartLocalService.deleteUserCarts(user.getUserId());
-
 		// Social
 
 		socialActivityLocalService.deleteUserActivities(user.getUserId());

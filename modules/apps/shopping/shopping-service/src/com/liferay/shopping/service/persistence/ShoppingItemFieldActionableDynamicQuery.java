@@ -12,13 +12,13 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.persistence;
+package com.liferay.shopping.service.persistence;
 
 import com.liferay.portal.kernel.dao.orm.BaseActionableDynamicQuery;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 
-import com.liferay.portlet.shopping.model.ShoppingItemField;
-import com.liferay.portlet.shopping.service.ShoppingItemFieldLocalServiceUtil;
+import com.liferay.shopping.model.ShoppingItemField;
+import com.liferay.shopping.service.ShoppingItemFieldLocalServiceUtil;
 
 /**
  * @author Brian Wing Shun Chan

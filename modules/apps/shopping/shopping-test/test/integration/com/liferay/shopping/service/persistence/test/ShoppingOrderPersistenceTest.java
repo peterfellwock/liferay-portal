@@ -36,7 +36,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.shopping.exception.NoSuchOrderException;
 import com.liferay.shopping.model.ShoppingOrder;
@@ -378,23 +377,23 @@ public class ShoppingOrderPersistenceTest {
 		Assert.assertEquals(existingShoppingOrder, newShoppingOrder);
 	}
 
-	@Test
+	@Test(expected = NoSuchOrderException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchOrderException");
-		}
-		catch (NoSuchOrderException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
 		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 			getOrderByComparator());
+	}
+
+	@Test
+	public void testFilterFindByGroupId() throws Exception {
+		_persistence.filterFindByGroupId(0, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
 	protected OrderByComparator<ShoppingOrder> getOrderByComparator() {
@@ -615,10 +614,6 @@ public class ShoppingOrderPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ShoppingOrder newShoppingOrder = addShoppingOrder();
 
 		_persistence.clearCache();

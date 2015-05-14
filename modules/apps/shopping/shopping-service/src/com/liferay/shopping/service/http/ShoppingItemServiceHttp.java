@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.http;
+package com.liferay.shopping.service.http;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -23,7 +23,7 @@ import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.security.auth.HttpPrincipal;
 import com.liferay.portal.service.http.TunnelUtil;
 
-import com.liferay.portlet.shopping.service.ShoppingItemServiceUtil;
+import com.liferay.shopping.service.ShoppingItemServiceUtil;
 
 /**
  * Provides the HTTP utility for the
@@ -55,7 +55,7 @@ import com.liferay.portlet.shopping.service.ShoppingItemServiceUtil;
  */
 @ProviderType
 public class ShoppingItemServiceHttp {
-	public static com.liferay.portlet.shopping.model.ShoppingItem addItem(
+	public static com.liferay.shopping.model.ShoppingItem addItem(
 		HttpPrincipal httpPrincipal, long groupId, long categoryId,
 		java.lang.String sku, java.lang.String name,
 		java.lang.String description, java.lang.String properties,
@@ -66,8 +66,8 @@ public class ShoppingItemServiceHttp {
 		java.lang.String mediumImageURL, java.io.File mediumFile,
 		boolean largeImage, java.lang.String largeImageURL,
 		java.io.File largeFile,
-		java.util.List<com.liferay.portlet.shopping.model.ShoppingItemField> itemFields,
-		java.util.List<com.liferay.portlet.shopping.model.ShoppingItemPrice> itemPrices,
+		java.util.List<com.liferay.shopping.model.ShoppingItemField> itemFields,
+		java.util.List<com.liferay.shopping.model.ShoppingItemPrice> itemPrices,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
@@ -95,7 +95,7 @@ public class ShoppingItemServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingItem)returnObj;
+			return (com.liferay.shopping.model.ShoppingItem)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -158,7 +158,7 @@ public class ShoppingItemServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingItem getItem(
+	public static com.liferay.shopping.model.ShoppingItem getItem(
 		HttpPrincipal httpPrincipal, long itemId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
@@ -180,7 +180,7 @@ public class ShoppingItemServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingItem)returnObj;
+			return (com.liferay.shopping.model.ShoppingItem)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -189,7 +189,7 @@ public class ShoppingItemServiceHttp {
 		}
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingItem> getItems(
+	public static java.util.List<com.liferay.shopping.model.ShoppingItem> getItems(
 		HttpPrincipal httpPrincipal, long groupId, long categoryId) {
 		try {
 			MethodKey methodKey = new MethodKey(ShoppingItemServiceUtil.class,
@@ -207,7 +207,7 @@ public class ShoppingItemServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (java.util.List<com.liferay.portlet.shopping.model.ShoppingItem>)returnObj;
+			return (java.util.List<com.liferay.shopping.model.ShoppingItem>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -216,10 +216,10 @@ public class ShoppingItemServiceHttp {
 		}
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingItem> getItems(
+	public static java.util.List<com.liferay.shopping.model.ShoppingItem> getItems(
 		HttpPrincipal httpPrincipal, long groupId, long categoryId, int start,
 		int end,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portlet.shopping.model.ShoppingItem> obc) {
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.shopping.model.ShoppingItem> obc) {
 		try {
 			MethodKey methodKey = new MethodKey(ShoppingItemServiceUtil.class,
 					"getItems", _getItemsParameterTypes5);
@@ -236,7 +236,7 @@ public class ShoppingItemServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (java.util.List<com.liferay.portlet.shopping.model.ShoppingItem>)returnObj;
+			return (java.util.List<com.liferay.shopping.model.ShoppingItem>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -272,9 +272,9 @@ public class ShoppingItemServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingItem[] getItemsPrevAndNext(
+	public static com.liferay.shopping.model.ShoppingItem[] getItemsPrevAndNext(
 		HttpPrincipal httpPrincipal, long itemId,
-		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portlet.shopping.model.ShoppingItem> obc)
+		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.shopping.model.ShoppingItem> obc)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
 			MethodKey methodKey = new MethodKey(ShoppingItemServiceUtil.class,
@@ -296,7 +296,7 @@ public class ShoppingItemServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingItem[])returnObj;
+			return (com.liferay.shopping.model.ShoppingItem[])returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -305,7 +305,7 @@ public class ShoppingItemServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingItem updateItem(
+	public static com.liferay.shopping.model.ShoppingItem updateItem(
 		HttpPrincipal httpPrincipal, long itemId, long groupId,
 		long categoryId, java.lang.String sku, java.lang.String name,
 		java.lang.String description, java.lang.String properties,
@@ -316,8 +316,8 @@ public class ShoppingItemServiceHttp {
 		java.lang.String mediumImageURL, java.io.File mediumFile,
 		boolean largeImage, java.lang.String largeImageURL,
 		java.io.File largeFile,
-		java.util.List<com.liferay.portlet.shopping.model.ShoppingItemField> itemFields,
-		java.util.List<com.liferay.portlet.shopping.model.ShoppingItemPrice> itemPrices,
+		java.util.List<com.liferay.shopping.model.ShoppingItemField> itemFields,
+		java.util.List<com.liferay.shopping.model.ShoppingItemPrice> itemPrices,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
@@ -345,7 +345,7 @@ public class ShoppingItemServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingItem)returnObj;
+			return (com.liferay.shopping.model.ShoppingItem)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);

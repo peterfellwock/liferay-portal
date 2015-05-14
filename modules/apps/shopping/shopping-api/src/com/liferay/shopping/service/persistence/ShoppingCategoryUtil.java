@@ -229,6 +229,71 @@ public class ShoppingCategoryUtil {
 	}
 
 	/**
+	* Returns all the shopping categories that the user has permission to view where groupId = &#63;.
+	*
+	* @param groupId the group ID
+	* @return the matching shopping categories that the user has permission to view
+	*/
+	public static List<ShoppingCategory> filterFindByGroupId(long groupId) {
+		return getPersistence().filterFindByGroupId(groupId);
+	}
+
+	/**
+	* Returns a range of all the shopping categories that the user has permission to view where groupId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ShoppingCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param start the lower bound of the range of shopping categories
+	* @param end the upper bound of the range of shopping categories (not inclusive)
+	* @return the range of matching shopping categories that the user has permission to view
+	*/
+	public static List<ShoppingCategory> filterFindByGroupId(long groupId,
+		int start, int end) {
+		return getPersistence().filterFindByGroupId(groupId, start, end);
+	}
+
+	/**
+	* Returns an ordered range of all the shopping categories that the user has permissions to view where groupId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ShoppingCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param start the lower bound of the range of shopping categories
+	* @param end the upper bound of the range of shopping categories (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching shopping categories that the user has permission to view
+	*/
+	public static List<ShoppingCategory> filterFindByGroupId(long groupId,
+		int start, int end,
+		OrderByComparator<ShoppingCategory> orderByComparator) {
+		return getPersistence()
+				   .filterFindByGroupId(groupId, start, end, orderByComparator);
+	}
+
+	/**
+	* Returns the shopping categories before and after the current shopping category in the ordered set of shopping categories that the user has permission to view where groupId = &#63;.
+	*
+	* @param categoryId the primary key of the current shopping category
+	* @param groupId the group ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next shopping category
+	* @throws com.liferay.shopping.NoSuchCategoryException if a shopping category with the primary key could not be found
+	*/
+	public static ShoppingCategory[] filterFindByGroupId_PrevAndNext(
+		long categoryId, long groupId,
+		OrderByComparator<ShoppingCategory> orderByComparator)
+		throws com.liferay.shopping.exception.NoSuchCategoryException {
+		return getPersistence()
+				   .filterFindByGroupId_PrevAndNext(categoryId, groupId,
+			orderByComparator);
+	}
+
+	/**
 	* Removes all the shopping categories where groupId = &#63; from the database.
 	*
 	* @param groupId the group ID
@@ -245,6 +310,16 @@ public class ShoppingCategoryUtil {
 	*/
 	public static int countByGroupId(long groupId) {
 		return getPersistence().countByGroupId(groupId);
+	}
+
+	/**
+	* Returns the number of shopping categories that the user has permission to view where groupId = &#63;.
+	*
+	* @param groupId the group ID
+	* @return the number of matching shopping categories that the user has permission to view
+	*/
+	public static int filterCountByGroupId(long groupId) {
+		return getPersistence().filterCountByGroupId(groupId);
 	}
 
 	/**
@@ -384,6 +459,78 @@ public class ShoppingCategoryUtil {
 	}
 
 	/**
+	* Returns all the shopping categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @return the matching shopping categories that the user has permission to view
+	*/
+	public static List<ShoppingCategory> filterFindByG_P(long groupId,
+		long parentCategoryId) {
+		return getPersistence().filterFindByG_P(groupId, parentCategoryId);
+	}
+
+	/**
+	* Returns a range of all the shopping categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ShoppingCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param start the lower bound of the range of shopping categories
+	* @param end the upper bound of the range of shopping categories (not inclusive)
+	* @return the range of matching shopping categories that the user has permission to view
+	*/
+	public static List<ShoppingCategory> filterFindByG_P(long groupId,
+		long parentCategoryId, int start, int end) {
+		return getPersistence()
+				   .filterFindByG_P(groupId, parentCategoryId, start, end);
+	}
+
+	/**
+	* Returns an ordered range of all the shopping categories that the user has permissions to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ShoppingCategoryModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param start the lower bound of the range of shopping categories
+	* @param end the upper bound of the range of shopping categories (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching shopping categories that the user has permission to view
+	*/
+	public static List<ShoppingCategory> filterFindByG_P(long groupId,
+		long parentCategoryId, int start, int end,
+		OrderByComparator<ShoppingCategory> orderByComparator) {
+		return getPersistence()
+				   .filterFindByG_P(groupId, parentCategoryId, start, end,
+			orderByComparator);
+	}
+
+	/**
+	* Returns the shopping categories before and after the current shopping category in the ordered set of shopping categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param categoryId the primary key of the current shopping category
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next shopping category
+	* @throws com.liferay.shopping.NoSuchCategoryException if a shopping category with the primary key could not be found
+	*/
+	public static ShoppingCategory[] filterFindByG_P_PrevAndNext(
+		long categoryId, long groupId, long parentCategoryId,
+		OrderByComparator<ShoppingCategory> orderByComparator)
+		throws com.liferay.shopping.exception.NoSuchCategoryException {
+		return getPersistence()
+				   .filterFindByG_P_PrevAndNext(categoryId, groupId,
+			parentCategoryId, orderByComparator);
+	}
+
+	/**
 	* Removes all the shopping categories where groupId = &#63; and parentCategoryId = &#63; from the database.
 	*
 	* @param groupId the group ID
@@ -402,6 +549,17 @@ public class ShoppingCategoryUtil {
 	*/
 	public static int countByG_P(long groupId, long parentCategoryId) {
 		return getPersistence().countByG_P(groupId, parentCategoryId);
+	}
+
+	/**
+	* Returns the number of shopping categories that the user has permission to view where groupId = &#63; and parentCategoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param parentCategoryId the parent category ID
+	* @return the number of matching shopping categories that the user has permission to view
+	*/
+	public static int filterCountByG_P(long groupId, long parentCategoryId) {
+		return getPersistence().filterCountByG_P(groupId, parentCategoryId);
 	}
 
 	/**

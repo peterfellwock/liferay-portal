@@ -12,7 +12,11 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.impl;
+package com.liferay.shopping.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.CharPool;
@@ -22,25 +26,21 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portlet.shopping.CouponCodeException;
-import com.liferay.portlet.shopping.CouponDateException;
-import com.liferay.portlet.shopping.CouponDescriptionException;
-import com.liferay.portlet.shopping.CouponDiscountException;
-import com.liferay.portlet.shopping.CouponEndDateException;
-import com.liferay.portlet.shopping.CouponLimitCategoriesException;
-import com.liferay.portlet.shopping.CouponLimitSKUsException;
-import com.liferay.portlet.shopping.CouponMinimumOrderException;
-import com.liferay.portlet.shopping.CouponNameException;
-import com.liferay.portlet.shopping.CouponStartDateException;
-import com.liferay.portlet.shopping.DuplicateCouponCodeException;
-import com.liferay.portlet.shopping.model.ShoppingCategory;
-import com.liferay.portlet.shopping.model.ShoppingCoupon;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.service.base.ShoppingCouponLocalServiceBaseImpl;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import com.liferay.shopping.exception.CouponCodeException;
+import com.liferay.shopping.exception.CouponDateException;
+import com.liferay.shopping.exception.CouponDescriptionException;
+import com.liferay.shopping.exception.CouponDiscountException;
+import com.liferay.shopping.exception.CouponEndDateException;
+import com.liferay.shopping.exception.CouponLimitCategoriesException;
+import com.liferay.shopping.exception.CouponLimitSKUsException;
+import com.liferay.shopping.exception.CouponMinimumOrderException;
+import com.liferay.shopping.exception.CouponNameException;
+import com.liferay.shopping.exception.CouponStartDateException;
+import com.liferay.shopping.exception.DuplicateCouponCodeException;
+import com.liferay.shopping.model.ShoppingCategory;
+import com.liferay.shopping.model.ShoppingCoupon;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.service.base.ShoppingCouponLocalServiceBaseImpl;
 
 /**
  * @author Brian Wing Shun Chan

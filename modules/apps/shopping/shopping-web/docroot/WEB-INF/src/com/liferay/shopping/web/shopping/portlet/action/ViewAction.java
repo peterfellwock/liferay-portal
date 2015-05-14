@@ -12,12 +12,12 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.action;
+package com.liferay.shopping.action;
 
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.struts.PortletAction;
-import com.liferay.portlet.shopping.NoSuchCategoryException;
+import com.liferay.shopping.NoSuchCategoryException;
 
 import javax.portlet.PortletConfig;
 import javax.portlet.RenderRequest;

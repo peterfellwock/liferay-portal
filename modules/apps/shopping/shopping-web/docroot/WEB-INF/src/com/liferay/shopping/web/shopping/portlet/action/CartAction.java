@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.action;
+package com.liferay.shopping.action;
 
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
@@ -21,17 +21,17 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.struts.PortletAction;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portlet.shopping.CartMinQuantityException;
-import com.liferay.portlet.shopping.CouponActiveException;
-import com.liferay.portlet.shopping.CouponEndDateException;
-import com.liferay.portlet.shopping.CouponStartDateException;
-import com.liferay.portlet.shopping.NoSuchCouponException;
-import com.liferay.portlet.shopping.NoSuchItemException;
-import com.liferay.portlet.shopping.model.ShoppingCart;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.service.ShoppingCartLocalServiceUtil;
-import com.liferay.portlet.shopping.service.ShoppingItemLocalServiceUtil;
-import com.liferay.portlet.shopping.util.ShoppingUtil;
+import com.liferay.shopping.CartMinQuantityException;
+import com.liferay.shopping.CouponActiveException;
+import com.liferay.shopping.CouponEndDateException;
+import com.liferay.shopping.CouponStartDateException;
+import com.liferay.shopping.NoSuchCouponException;
+import com.liferay.shopping.NoSuchItemException;
+import com.liferay.shopping.model.ShoppingCart;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.service.ShoppingCartLocalServiceUtil;
+import com.liferay.shopping.service.ShoppingItemLocalServiceUtil;
+import com.liferay.shopping.util.ShoppingUtil;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;

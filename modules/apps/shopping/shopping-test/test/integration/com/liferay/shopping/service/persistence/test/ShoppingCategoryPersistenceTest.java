@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PersistenceTestRule;
-import com.liferay.portal.util.PropsValues;
 
 import com.liferay.shopping.exception.NoSuchCategoryException;
 import com.liferay.shopping.model.ShoppingCategory;
@@ -202,23 +201,23 @@ public class ShoppingCategoryPersistenceTest {
 		Assert.assertEquals(existingShoppingCategory, newShoppingCategory);
 	}
 
-	@Test
+	@Test(expected = NoSuchCategoryException.class)
 	public void testFindByPrimaryKeyMissing() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
-		try {
-			_persistence.findByPrimaryKey(pk);
-
-			Assert.fail("Missing entity did not throw NoSuchCategoryException");
-		}
-		catch (NoSuchCategoryException nsee) {
-		}
+		_persistence.findByPrimaryKey(pk);
 	}
 
 	@Test
 	public void testFindAll() throws Exception {
 		_persistence.findAll(QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 			getOrderByComparator());
+	}
+
+	@Test
+	public void testFilterFindByGroupId() throws Exception {
+		_persistence.filterFindByGroupId(0, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, getOrderByComparator());
 	}
 
 	protected OrderByComparator<ShoppingCategory> getOrderByComparator() {
@@ -424,10 +423,6 @@ public class ShoppingCategoryPersistenceTest {
 
 	@Test
 	public void testResetOriginalValues() throws Exception {
-		if (!PropsValues.HIBERNATE_CACHE_USE_SECOND_LEVEL_CACHE) {
-			return;
-		}
-
 		ShoppingCategory newShoppingCategory = addShoppingCategory();
 
 		_persistence.clearCache();

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.http;
+package com.liferay.shopping.service.http;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -23,7 +23,7 @@ import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.security.auth.HttpPrincipal;
 import com.liferay.portal.service.http.TunnelUtil;
 
-import com.liferay.portlet.shopping.service.ShoppingCouponServiceUtil;
+import com.liferay.shopping.service.ShoppingCouponServiceUtil;
 
 /**
  * Provides the HTTP utility for the
@@ -55,7 +55,7 @@ import com.liferay.portlet.shopping.service.ShoppingCouponServiceUtil;
  */
 @ProviderType
 public class ShoppingCouponServiceHttp {
-	public static com.liferay.portlet.shopping.model.ShoppingCoupon addCoupon(
+	public static com.liferay.shopping.model.ShoppingCoupon addCoupon(
 		HttpPrincipal httpPrincipal, java.lang.String code, boolean autoCode,
 		java.lang.String name, java.lang.String description,
 		int startDateMonth, int startDateDay, int startDateYear,
@@ -90,7 +90,7 @@ public class ShoppingCouponServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingCoupon)returnObj;
+			return (com.liferay.shopping.model.ShoppingCoupon)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -127,7 +127,7 @@ public class ShoppingCouponServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingCoupon getCoupon(
+	public static com.liferay.shopping.model.ShoppingCoupon getCoupon(
 		HttpPrincipal httpPrincipal, long groupId, long couponId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
@@ -150,7 +150,7 @@ public class ShoppingCouponServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingCoupon)returnObj;
+			return (com.liferay.shopping.model.ShoppingCoupon)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -159,7 +159,7 @@ public class ShoppingCouponServiceHttp {
 		}
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingCoupon> search(
+	public static java.util.List<com.liferay.shopping.model.ShoppingCoupon> search(
 		HttpPrincipal httpPrincipal, long groupId, long companyId,
 		java.lang.String code, boolean active, java.lang.String discountType,
 		boolean andOperator, int start, int end)
@@ -185,7 +185,7 @@ public class ShoppingCouponServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (java.util.List<com.liferay.portlet.shopping.model.ShoppingCoupon>)returnObj;
+			return (java.util.List<com.liferay.shopping.model.ShoppingCoupon>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -194,7 +194,7 @@ public class ShoppingCouponServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingCoupon updateCoupon(
+	public static com.liferay.shopping.model.ShoppingCoupon updateCoupon(
 		HttpPrincipal httpPrincipal, long couponId, java.lang.String name,
 		java.lang.String description, int startDateMonth, int startDateDay,
 		int startDateYear, int startDateHour, int startDateMinute,
@@ -228,7 +228,7 @@ public class ShoppingCouponServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingCoupon)returnObj;
+			return (com.liferay.shopping.model.ShoppingCoupon)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);

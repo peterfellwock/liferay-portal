@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.http;
+package com.liferay.shopping.service.http;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -23,7 +23,7 @@ import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.security.auth.HttpPrincipal;
 import com.liferay.portal.service.http.TunnelUtil;
 
-import com.liferay.portlet.shopping.service.ShoppingCategoryServiceUtil;
+import com.liferay.shopping.service.ShoppingCategoryServiceUtil;
 
 /**
  * Provides the HTTP utility for the
@@ -55,7 +55,7 @@ import com.liferay.portlet.shopping.service.ShoppingCategoryServiceUtil;
  */
 @ProviderType
 public class ShoppingCategoryServiceHttp {
-	public static com.liferay.portlet.shopping.model.ShoppingCategory addCategory(
+	public static com.liferay.shopping.model.ShoppingCategory addCategory(
 		HttpPrincipal httpPrincipal, long parentCategoryId,
 		java.lang.String name, java.lang.String description,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -80,7 +80,7 @@ public class ShoppingCategoryServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingCategory)returnObj;
+			return (com.liferay.shopping.model.ShoppingCategory)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -117,7 +117,7 @@ public class ShoppingCategoryServiceHttp {
 		}
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingCategory> getCategories(
+	public static java.util.List<com.liferay.shopping.model.ShoppingCategory> getCategories(
 		HttpPrincipal httpPrincipal, long groupId) {
 		try {
 			MethodKey methodKey = new MethodKey(ShoppingCategoryServiceUtil.class,
@@ -134,7 +134,7 @@ public class ShoppingCategoryServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (java.util.List<com.liferay.portlet.shopping.model.ShoppingCategory>)returnObj;
+			return (java.util.List<com.liferay.shopping.model.ShoppingCategory>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -143,7 +143,7 @@ public class ShoppingCategoryServiceHttp {
 		}
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingCategory> getCategories(
+	public static java.util.List<com.liferay.shopping.model.ShoppingCategory> getCategories(
 		HttpPrincipal httpPrincipal, long groupId, long parentCategoryId,
 		int start, int end) {
 		try {
@@ -162,7 +162,7 @@ public class ShoppingCategoryServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (java.util.List<com.liferay.portlet.shopping.model.ShoppingCategory>)returnObj;
+			return (java.util.List<com.liferay.shopping.model.ShoppingCategory>)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -198,7 +198,7 @@ public class ShoppingCategoryServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingCategory getCategory(
+	public static com.liferay.shopping.model.ShoppingCategory getCategory(
 		HttpPrincipal httpPrincipal, long categoryId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
@@ -221,7 +221,7 @@ public class ShoppingCategoryServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingCategory)returnObj;
+			return (com.liferay.shopping.model.ShoppingCategory)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -254,7 +254,7 @@ public class ShoppingCategoryServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingCategory updateCategory(
+	public static com.liferay.shopping.model.ShoppingCategory updateCategory(
 		HttpPrincipal httpPrincipal, long categoryId, long parentCategoryId,
 		java.lang.String name, java.lang.String description,
 		boolean mergeWithParentCategory,
@@ -281,7 +281,7 @@ public class ShoppingCategoryServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingCategory)returnObj;
+			return (com.liferay.shopping.model.ShoppingCategory)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);

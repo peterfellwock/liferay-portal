@@ -12,10 +12,10 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.util.comparator;
+package com.liferay.shopping.util.comparator;
 
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portlet.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.ShoppingItem;
 
 /**
  * @author Brian Wing Shun Chan

@@ -176,6 +176,11 @@ public class ShoppingItemFieldWrapper implements ShoppingItemField,
 	}
 
 	@Override
+	public java.lang.String[] getValuesArray() {
+		return _shoppingItemField.getValuesArray();
+	}
+
+	@Override
 	public int hashCode() {
 		return _shoppingItemField.hashCode();
 	}
@@ -291,6 +296,11 @@ public class ShoppingItemFieldWrapper implements ShoppingItemField,
 	@Override
 	public void setValues(java.lang.String values) {
 		_shoppingItemField.setValues(values);
+	}
+
+	@Override
+	public void setValuesArray(java.lang.String[] valuesArray) {
+		_shoppingItemField.setValuesArray(valuesArray);
 	}
 
 	@Override

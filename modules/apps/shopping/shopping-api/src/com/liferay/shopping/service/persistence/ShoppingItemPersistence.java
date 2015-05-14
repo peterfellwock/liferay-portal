@@ -282,6 +282,65 @@ public interface ShoppingItemPersistence extends BasePersistence<ShoppingItem> {
 		throws com.liferay.shopping.exception.NoSuchItemException;
 
 	/**
+	* Returns all the shopping items that the user has permission to view where groupId = &#63; and categoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param categoryId the category ID
+	* @return the matching shopping items that the user has permission to view
+	*/
+	public java.util.List<ShoppingItem> filterFindByG_C(long groupId,
+		long categoryId);
+
+	/**
+	* Returns a range of all the shopping items that the user has permission to view where groupId = &#63; and categoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ShoppingItemModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param categoryId the category ID
+	* @param start the lower bound of the range of shopping items
+	* @param end the upper bound of the range of shopping items (not inclusive)
+	* @return the range of matching shopping items that the user has permission to view
+	*/
+	public java.util.List<ShoppingItem> filterFindByG_C(long groupId,
+		long categoryId, int start, int end);
+
+	/**
+	* Returns an ordered range of all the shopping items that the user has permissions to view where groupId = &#63; and categoryId = &#63;.
+	*
+	* <p>
+	* Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link ShoppingItemModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	* </p>
+	*
+	* @param groupId the group ID
+	* @param categoryId the category ID
+	* @param start the lower bound of the range of shopping items
+	* @param end the upper bound of the range of shopping items (not inclusive)
+	* @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	* @return the ordered range of matching shopping items that the user has permission to view
+	*/
+	public java.util.List<ShoppingItem> filterFindByG_C(long groupId,
+		long categoryId, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<ShoppingItem> orderByComparator);
+
+	/**
+	* Returns the shopping items before and after the current shopping item in the ordered set of shopping items that the user has permission to view where groupId = &#63; and categoryId = &#63;.
+	*
+	* @param itemId the primary key of the current shopping item
+	* @param groupId the group ID
+	* @param categoryId the category ID
+	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
+	* @return the previous, current, and next shopping item
+	* @throws com.liferay.shopping.NoSuchItemException if a shopping item with the primary key could not be found
+	*/
+	public ShoppingItem[] filterFindByG_C_PrevAndNext(long itemId,
+		long groupId, long categoryId,
+		com.liferay.portal.kernel.util.OrderByComparator<ShoppingItem> orderByComparator)
+		throws com.liferay.shopping.exception.NoSuchItemException;
+
+	/**
 	* Removes all the shopping items where groupId = &#63; and categoryId = &#63; from the database.
 	*
 	* @param groupId the group ID
@@ -297,6 +356,15 @@ public interface ShoppingItemPersistence extends BasePersistence<ShoppingItem> {
 	* @return the number of matching shopping items
 	*/
 	public int countByG_C(long groupId, long categoryId);
+
+	/**
+	* Returns the number of shopping items that the user has permission to view where groupId = &#63; and categoryId = &#63;.
+	*
+	* @param groupId the group ID
+	* @param categoryId the category ID
+	* @return the number of matching shopping items that the user has permission to view
+	*/
+	public int filterCountByG_C(long groupId, long categoryId);
 
 	/**
 	* Returns the shopping item where companyId = &#63; and sku = &#63; or throws a {@link com.liferay.shopping.NoSuchItemException} if it could not be found.

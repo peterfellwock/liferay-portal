@@ -14,12 +14,6 @@
 
 package com.liferay.shopping.upgrade;
 
-import com.liferay.polls.upgrade.v1_0_0.UpgradeClassNames;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.upgrade.UpgradeProcess;
-import com.liferay.portal.service.ReleaseLocalService;
-import com.liferay.portal.upgrade.util.UpgradePortletId;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +21,11 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import org.springframework.context.ApplicationContext;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.upgrade.UpgradeProcess;
+import com.liferay.portal.service.ReleaseLocalService;
+import com.liferay.portal.upgrade.util.UpgradePortletId;
+import com.liferay.shopping.upgrade.v1_0_0.UpgradeClassNames;
 
 /**
  * @author Peter Fellwock
@@ -37,6 +35,8 @@ import org.springframework.context.ApplicationContext;
 )
 public class ShoppingServiceUpgrade {
 
+	
+	/**
 	@Reference(
 		target =
 			"(org.springframework.context.service.name=" +
@@ -67,5 +67,7 @@ public class ShoppingServiceUpgrade {
 	}
 
 	private ReleaseLocalService _releaseLocalService;
+	
+	**/
 
 }

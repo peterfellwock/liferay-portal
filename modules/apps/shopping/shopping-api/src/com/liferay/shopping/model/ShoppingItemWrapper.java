@@ -309,6 +309,11 @@ public class ShoppingItemWrapper implements ShoppingItem,
 		return _shoppingItem.compareTo(shoppingItem);
 	}
 
+	@Override
+	public com.liferay.shopping.model.ShoppingCategory getCategory() {
+		return _shoppingItem.getCategory();
+	}
+
 	/**
 	* Returns the category ID of this shopping item.
 	*
@@ -394,6 +399,11 @@ public class ShoppingItemWrapper implements ShoppingItem,
 		return _shoppingItem.getFieldsQuantities();
 	}
 
+	@Override
+	public java.lang.String[] getFieldsQuantitiesArray() {
+		return _shoppingItem.getFieldsQuantitiesArray();
+	}
+
 	/**
 	* Returns the group ID of this shopping item.
 	*
@@ -412,6 +422,12 @@ public class ShoppingItemWrapper implements ShoppingItem,
 	@Override
 	public long getItemId() {
 		return _shoppingItem.getItemId();
+	}
+
+	@Override
+	public java.util.List<com.liferay.shopping.model.ShoppingItemPrice> getItemPrices()
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _shoppingItem.getItemPrices();
 	}
 
 	/**
@@ -579,6 +595,12 @@ public class ShoppingItemWrapper implements ShoppingItem,
 		return _shoppingItem.getShipping();
 	}
 
+	@Override
+	public java.lang.String getShoppingItemImageURL(
+		com.liferay.portal.theme.ThemeDisplay themeDisplay) {
+		return _shoppingItem.getShoppingItemImageURL(themeDisplay);
+	}
+
 	/**
 	* Returns the sku of this shopping item.
 	*
@@ -712,6 +734,11 @@ public class ShoppingItemWrapper implements ShoppingItem,
 	@Override
 	public boolean isFields() {
 		return _shoppingItem.isFields();
+	}
+
+	@Override
+	public boolean isInfiniteStock() {
+		return _shoppingItem.isInfiniteStock();
 	}
 
 	/**
@@ -895,6 +922,12 @@ public class ShoppingItemWrapper implements ShoppingItem,
 	@Override
 	public void setFieldsQuantities(java.lang.String fieldsQuantities) {
 		_shoppingItem.setFieldsQuantities(fieldsQuantities);
+	}
+
+	@Override
+	public void setFieldsQuantitiesArray(
+		java.lang.String[] fieldsQuantitiesArray) {
+		_shoppingItem.setFieldsQuantitiesArray(fieldsQuantitiesArray);
 	}
 
 	/**

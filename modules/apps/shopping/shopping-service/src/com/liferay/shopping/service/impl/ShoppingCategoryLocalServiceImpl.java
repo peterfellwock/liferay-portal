@@ -12,23 +12,23 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.impl;
+package com.liferay.shopping.service.impl;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.service.ServiceContext;
-import com.liferay.portlet.shopping.CategoryNameException;
-import com.liferay.portlet.shopping.model.ShoppingCategory;
-import com.liferay.portlet.shopping.model.ShoppingCategoryConstants;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.service.base.ShoppingCategoryLocalServiceBaseImpl;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import com.liferay.shopping.exception.CategoryNameException;
+import com.liferay.shopping.model.ShoppingCategory;
+import com.liferay.shopping.model.ShoppingCategoryConstants;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.service.base.ShoppingCategoryLocalServiceBaseImpl;
 
 /**
  * @author Brian Wing Shun Chan

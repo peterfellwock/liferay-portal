@@ -42,7 +42,7 @@
 		</permissions>
 	</portlet-resource>
 	<model-resource>
-		<model-name>com.liferay.portlet.shopping</model-name>
+		<model-name>com.liferay.shopping</model-name>
 		<portlet-ref>
 			<portlet-name>34_WAR_shoppingweb</portlet-name>
 			<portlet-name>197_WAR_shoppingweb</portlet-name>
@@ -74,7 +74,7 @@
 		</permissions>
 	</model-resource>
 	<model-resource>
-		<model-name>com.liferay.portlet.shopping.model.ShoppingCategory</model-name>
+		<model-name>com.liferay.shopping.model.ShoppingCategory</model-name>
 		<portlet-ref>
 			<portlet-name>34_WAR_shoppingweb</portlet-name>
 			<portlet-name>197_WAR_shoppingweb</portlet-name>
@@ -103,7 +103,7 @@
 		</permissions>
 	</model-resource>
 	<model-resource>
-		<model-name>com.liferay.portlet.shopping.model.ShoppingItem</model-name>
+		<model-name>com.liferay.shopping.model.ShoppingItem</model-name>
 		<portlet-ref>
 			<portlet-name>34_WAR_shoppingweb</portlet-name>
 			<portlet-name>197_WAR_shoppingweb</portlet-name>
@@ -128,7 +128,7 @@
 		</permissions>
 	</model-resource>
 	<model-resource>
-		<model-name>com.liferay.portlet.shopping.model.ShoppingOrder</model-name>
+		<model-name>com.liferay.shopping.model.ShoppingOrder</model-name>
 		<portlet-ref>
 			<portlet-name>34_WAR_shoppingweb</portlet-name>
 			<portlet-name>197_WAR_shoppingweb</portlet-name>

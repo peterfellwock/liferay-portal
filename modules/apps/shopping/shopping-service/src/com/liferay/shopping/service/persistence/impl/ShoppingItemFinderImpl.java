@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.persistence.impl;
+package com.liferay.shopping.service.persistence.impl;
 
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -26,9 +26,9 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.model.impl.ShoppingItemImpl;
-import com.liferay.portlet.shopping.service.persistence.ShoppingItemFinder;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.impl.ShoppingItemImpl;
+import com.liferay.shopping.service.persistence.ShoppingItemFinder;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.util.Iterator;

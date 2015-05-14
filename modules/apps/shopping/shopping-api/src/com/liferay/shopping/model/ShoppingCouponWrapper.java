@@ -408,6 +408,21 @@ public class ShoppingCouponWrapper implements ShoppingCoupon,
 	}
 
 	@Override
+	public boolean hasValidDateRange() {
+		return _shoppingCoupon.hasValidDateRange();
+	}
+
+	@Override
+	public boolean hasValidEndDate() {
+		return _shoppingCoupon.hasValidEndDate();
+	}
+
+	@Override
+	public boolean hasValidStartDate() {
+		return _shoppingCoupon.hasValidStartDate();
+	}
+
+	@Override
 	public int hashCode() {
 		return _shoppingCoupon.hashCode();
 	}

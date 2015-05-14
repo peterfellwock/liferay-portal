@@ -34,4 +34,12 @@ public interface ShoppingCart extends ShoppingCartModel, PersistedModel {
 	 *
 	 * Never modify this interface directly. Add methods to {@link com.liferay.shopping.model.impl.ShoppingCartImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
+	public void addItemId(long itemId, java.lang.String fields);
+
+	public com.liferay.shopping.model.ShoppingCoupon getCoupon()
+		throws com.liferay.portal.kernel.exception.PortalException;
+
+	public java.util.Map<com.liferay.shopping.model.ShoppingCartItem, java.lang.Integer> getItems();
+
+	public int getItemsSize();
 }

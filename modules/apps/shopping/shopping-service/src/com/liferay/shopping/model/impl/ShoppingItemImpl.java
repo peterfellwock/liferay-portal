@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.model.impl;
+package com.liferay.shopping.model.impl;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -21,12 +21,12 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.webserver.WebServerServletTokenUtil;
-import com.liferay.portlet.shopping.model.ShoppingCategory;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.model.ShoppingItemPrice;
-import com.liferay.portlet.shopping.service.ShoppingCategoryLocalServiceUtil;
-import com.liferay.portlet.shopping.service.ShoppingItemPriceLocalServiceUtil;
-import com.liferay.portlet.shopping.util.comparator.ItemNameComparator;
+import com.liferay.shopping.model.ShoppingCategory;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.ShoppingItemPrice;
+import com.liferay.shopping.service.ShoppingCategoryLocalServiceUtil;
+import com.liferay.shopping.service.ShoppingItemPriceLocalServiceUtil;
+import com.liferay.shopping.util.comparator.ItemNameComparator;
 
 import java.util.List;
 

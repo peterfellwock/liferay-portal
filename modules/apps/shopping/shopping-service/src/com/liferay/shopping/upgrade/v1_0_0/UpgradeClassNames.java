@@ -14,16 +14,13 @@
 
 package com.liferay.shopping.upgrade.v1_0_0;
 
-import com.liferay.shopping.model.ShoppingChoice;
-import com.liferay.shopping.model.ShoppingQuestion;
-import com.liferay.shopping.model.ShoppingVote;
+import java.util.Collections;
+import java.util.List;
+
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.upgrade.util.classname.ClassNameDependency;
 import com.liferay.portal.upgrade.util.classname.ClassNameDependencyUpgrader;
 import com.liferay.portal.upgrade.util.classname.dependency.ResourcePermissionClassNameDependency;
-
-import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Miguel Pastor
@@ -44,6 +41,7 @@ public class UpgradeClassNames extends UpgradeProcess {
 
 		classNameDependencyUpgrader.upgrade();
 
+		/**
 		classNameDependencyUpgrader = new ClassNameDependencyUpgrader(
 			"com.liferay.portlet.shopping.model.ShoppingChoice",
 			ShoppingChoice.class.getName(), classNameDependencies);
@@ -59,6 +57,8 @@ public class UpgradeClassNames extends UpgradeProcess {
 		classNameDependencyUpgrader = new ClassNameDependencyUpgrader(
 			"com.liferay.portlet.shopping.model.ShoppingVote",
 			ShoppingVote.class.getName(), classNameDependencies);
+			
+			**/
 
 		classNameDependencyUpgrader.upgrade();
 	}

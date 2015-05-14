@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.persistence;
+package com.liferay.shopping.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -48,19 +48,19 @@ public class ShoppingItemFinderUtil {
 		return getFinder().filterCountByG_C(groupId, categoryIds);
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingItem> findByFeatured(
+	public static java.util.List<com.liferay.shopping.model.ShoppingItem> findByFeatured(
 		long groupId, long[] categoryIds, int numOfItems) {
 		return getFinder().findByFeatured(groupId, categoryIds, numOfItems);
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingItem> findByKeywords(
+	public static java.util.List<com.liferay.shopping.model.ShoppingItem> findByKeywords(
 		long groupId, long[] categoryIds, java.lang.String keywords, int start,
 		int end) {
 		return getFinder()
 				   .findByKeywords(groupId, categoryIds, keywords, start, end);
 	}
 
-	public static java.util.List<com.liferay.portlet.shopping.model.ShoppingItem> findBySale(
+	public static java.util.List<com.liferay.shopping.model.ShoppingItem> findBySale(
 		long groupId, long[] categoryIds, int numOfItems) {
 		return getFinder().findBySale(groupId, categoryIds, numOfItems);
 	}

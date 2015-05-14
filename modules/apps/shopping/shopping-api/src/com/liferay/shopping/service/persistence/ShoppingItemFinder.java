@@ -22,4 +22,26 @@ import aQute.bnd.annotation.ProviderType;
  */
 @ProviderType
 public interface ShoppingItemFinder {
+	public int countByG_C(long groupId,
+		java.util.List<java.lang.Long> categoryIds);
+
+	public int countByFeatured(long groupId, long[] categoryIds);
+
+	public int countByKeywords(long groupId, long[] categoryIds,
+		java.lang.String keywords);
+
+	public int countBySale(long groupId, long[] categoryIds);
+
+	public int filterCountByG_C(long groupId,
+		java.util.List<java.lang.Long> categoryIds);
+
+	public java.util.List<com.liferay.shopping.model.ShoppingItem> findByFeatured(
+		long groupId, long[] categoryIds, int numOfItems);
+
+	public java.util.List<com.liferay.shopping.model.ShoppingItem> findByKeywords(
+		long groupId, long[] categoryIds, java.lang.String keywords, int start,
+		int end);
+
+	public java.util.List<com.liferay.shopping.model.ShoppingItem> findBySale(
+		long groupId, long[] categoryIds, int numOfItems);
 }

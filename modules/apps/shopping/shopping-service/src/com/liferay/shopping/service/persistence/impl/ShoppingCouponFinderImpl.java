@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.persistence.impl;
+package com.liferay.shopping.service.persistence.impl;
 
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -21,9 +21,9 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.Type;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
-import com.liferay.portlet.shopping.model.ShoppingCoupon;
-import com.liferay.portlet.shopping.model.impl.ShoppingCouponImpl;
-import com.liferay.portlet.shopping.service.persistence.ShoppingCouponFinder;
+import com.liferay.shopping.model.ShoppingCoupon;
+import com.liferay.shopping.model.impl.ShoppingCouponImpl;
+import com.liferay.shopping.service.persistence.ShoppingCouponFinder;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.util.Iterator;

@@ -12,14 +12,14 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.permission;
+package com.liferay.shopping.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
-import com.liferay.portlet.shopping.model.ShoppingOrder;
-import com.liferay.portlet.shopping.service.ShoppingOrderLocalServiceUtil;
+import com.liferay.shopping.model.ShoppingOrder;
+import com.liferay.shopping.service.ShoppingOrderLocalServiceUtil;
 
 /**
  * @author Brian Wing Shun Chan

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.util;
+package com.liferay.shopping.util;
 
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;

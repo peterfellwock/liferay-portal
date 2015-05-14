@@ -12,10 +12,10 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.lar;
+package com.liferay.shopping.lar;
 
 import com.liferay.portal.kernel.lar.BasePortletDataHandler;
-import com.liferay.portlet.shopping.util.ShoppingConstants;
+import com.liferay.shopping.util.ShoppingConstants;
 
 /**
  * @author Iván Zaera

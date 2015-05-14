@@ -12,16 +12,16 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.impl;
-
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.model.ShoppingItemPrice;
-import com.liferay.portlet.shopping.model.ShoppingItemPriceConstants;
-import com.liferay.portlet.shopping.service.base.ShoppingItemPriceLocalServiceBaseImpl;
+package com.liferay.shopping.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.ShoppingItemPrice;
+import com.liferay.shopping.model.ShoppingItemPriceConstants;
+import com.liferay.shopping.service.base.ShoppingItemPriceLocalServiceBaseImpl;
 
 /**
  * @author Brian Wing Shun Chan

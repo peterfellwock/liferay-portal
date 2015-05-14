@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.action;
+package com.liferay.shopping.action;
 
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedReader;
 import com.liferay.portal.kernel.log.Log;
@@ -23,11 +23,11 @@ import com.liferay.portal.kernel.util.UnsyncPrintWriterPool;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextFactory;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portlet.shopping.NoSuchOrderException;
-import com.liferay.portlet.shopping.ShoppingGroupServiceSettings;
-import com.liferay.portlet.shopping.model.ShoppingOrder;
-import com.liferay.portlet.shopping.service.ShoppingOrderLocalServiceUtil;
-import com.liferay.portlet.shopping.util.ShoppingUtil;
+import com.liferay.shopping.NoSuchOrderException;
+import com.liferay.shopping.ShoppingGroupServiceSettings;
+import com.liferay.shopping.model.ShoppingOrder;
+import com.liferay.shopping.service.ShoppingOrderLocalServiceUtil;
+import com.liferay.shopping.util.ShoppingUtil;
 
 import java.io.InputStreamReader;
 import java.io.PrintWriter;

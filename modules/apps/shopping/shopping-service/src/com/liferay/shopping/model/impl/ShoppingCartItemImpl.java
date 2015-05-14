@@ -12,14 +12,14 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.model.impl;
+package com.liferay.shopping.model.impl;
 
 import com.liferay.portal.kernel.util.HashCode;
 import com.liferay.portal.kernel.util.HashCodeFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portlet.shopping.model.ShoppingCartItem;
-import com.liferay.portlet.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.ShoppingCartItem;
+import com.liferay.shopping.model.ShoppingItem;
 
 /**
  * @author Brian Wing Shun Chan

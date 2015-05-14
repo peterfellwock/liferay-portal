@@ -12,7 +12,13 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.impl;
+package com.liferay.shopping.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -20,25 +26,19 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.User;
 import com.liferay.portal.util.PropsUtil;
-import com.liferay.portlet.shopping.CartMinQuantityException;
-import com.liferay.portlet.shopping.CouponActiveException;
-import com.liferay.portlet.shopping.CouponEndDateException;
-import com.liferay.portlet.shopping.CouponStartDateException;
-import com.liferay.portlet.shopping.NoSuchCouponException;
-import com.liferay.portlet.shopping.model.ShoppingCart;
-import com.liferay.portlet.shopping.model.ShoppingCartItem;
-import com.liferay.portlet.shopping.model.ShoppingCategory;
-import com.liferay.portlet.shopping.model.ShoppingCoupon;
-import com.liferay.portlet.shopping.model.ShoppingItem;
-import com.liferay.portlet.shopping.model.impl.ShoppingCartItemImpl;
-import com.liferay.portlet.shopping.service.base.ShoppingCartLocalServiceBaseImpl;
-import com.liferay.portlet.shopping.util.ShoppingUtil;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import com.liferay.shopping.exception.CartMinQuantityException;
+import com.liferay.shopping.exception.CouponActiveException;
+import com.liferay.shopping.exception.CouponEndDateException;
+import com.liferay.shopping.exception.CouponStartDateException;
+import com.liferay.shopping.exception.NoSuchCouponException;
+import com.liferay.shopping.model.ShoppingCart;
+import com.liferay.shopping.model.ShoppingCartItem;
+import com.liferay.shopping.model.ShoppingCategory;
+import com.liferay.shopping.model.ShoppingCoupon;
+import com.liferay.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.impl.ShoppingCartItemImpl;
+import com.liferay.shopping.service.base.ShoppingCartLocalServiceBaseImpl;
+import com.liferay.shopping.util.ShoppingUtil;
 
 /**
  * @author Brian Wing Shun Chan

@@ -12,58 +12,52 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.util.comparator;
+package com.liferay.shopping.util.comparator;
 
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portlet.shopping.model.ShoppingItem;
+import com.liferay.shopping.model.ShoppingItem;
 
 /**
  * @author Brian Wing Shun Chan
  */
-public class ItemMinQuantityComparator extends OrderByComparator<ShoppingItem> {
+public class ItemNameComparator extends OrderByComparator<ShoppingItem> {
 
 	public static final String ORDER_BY_ASC =
-		"ShoppingItem.categoryId ASC, ShoppingItem.minQuantity ASC, " +
-			"ShoppingItem.name ASC";
+		"ShoppingItem.categoryId ASC, ShoppingItem.name ASC";
 
 	public static final String ORDER_BY_DESC =
-		"ShoppingItem.categoryId DESC, ShoppingItem.minQuantity DESC, " +
-			"ShoppingItem.name DESC";
+		"ShoppingItem.categoryId DESC, ShoppingItem.name DESC";
 
-	public static final String[] ORDER_BY_FIELDS = {
-		"categoryId", "minQuantity", "name"
-	};
+	public static final String[] ORDER_BY_FIELDS = {"categoryId", "name"};
 
-	public ItemMinQuantityComparator() {
+	public ItemNameComparator() {
 		this(false);
 	}
 
-	public ItemMinQuantityComparator(boolean ascending) {
+	public ItemNameComparator(boolean ascending) {
 		_ascending = ascending;
 	}
 
 	@Override
 	public int compare(ShoppingItem item1, ShoppingItem item2) {
-		Long categoryId1 = new Long(item1.getCategoryId());
-		Long categoryId2 = new Long(item2.getCategoryId());
+		Long categoryId1 = item1.getCategoryId();
+		Long categoryId2 = item2.getCategoryId();
 
 		int value = categoryId1.compareTo(categoryId2);
-
-		if (value == 0) {
-			if (item1.getMinQuantity() < item2.getMinQuantity()) {
-				value = -1;
-			}
-			else if (item1.getMinQuantity() > item2.getMinQuantity()) {
-				value = 1;
-			}
-		}
 
 		if (value == 0) {
 			String name1 = StringUtil.toLowerCase(item1.getName());
 			String name2 = StringUtil.toLowerCase(item2.getName());
 
 			value = name1.compareTo(name2);
+
+			if (value == 0) {
+				Long itemId1 = item1.getItemId();
+				Long itemId2 = item2.getItemId();
+
+				value = itemId1.compareTo(itemId2);
+			}
 		}
 
 		if (_ascending) {

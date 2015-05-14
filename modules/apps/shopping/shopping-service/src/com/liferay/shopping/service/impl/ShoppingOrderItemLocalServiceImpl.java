@@ -12,10 +12,10 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.impl;
+package com.liferay.shopping.service.impl;
 
-import com.liferay.portlet.shopping.model.ShoppingOrderItem;
-import com.liferay.portlet.shopping.service.base.ShoppingOrderItemLocalServiceBaseImpl;
+import com.liferay.shopping.model.ShoppingOrderItem;
+import com.liferay.shopping.service.base.ShoppingOrderItemLocalServiceBaseImpl;
 
 import java.util.List;
 

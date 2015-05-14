@@ -12,9 +12,9 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.model.impl;
+package com.liferay.shopping.model.impl;
 
-import com.liferay.portlet.shopping.model.ShoppingCategoryConstants;
+import com.liferay.shopping.model.ShoppingCategoryConstants;
 
 /**
  * @author Brian Wing Shun Chan

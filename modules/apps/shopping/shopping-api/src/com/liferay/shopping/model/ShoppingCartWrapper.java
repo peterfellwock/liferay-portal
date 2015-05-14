@@ -138,6 +138,11 @@ public class ShoppingCartWrapper implements ShoppingCart,
 	}
 
 	@Override
+	public void addItemId(long itemId, java.lang.String fields) {
+		_shoppingCart.addItemId(itemId, fields);
+	}
+
+	@Override
 	public java.lang.Object clone() {
 		return new ShoppingCartWrapper((ShoppingCart)_shoppingCart.clone());
 	}
@@ -175,6 +180,12 @@ public class ShoppingCartWrapper implements ShoppingCart,
 	@Override
 	public long getCompanyId() {
 		return _shoppingCart.getCompanyId();
+	}
+
+	@Override
+	public com.liferay.shopping.model.ShoppingCoupon getCoupon()
+		throws com.liferay.portal.kernel.exception.PortalException {
+		return _shoppingCart.getCoupon();
 	}
 
 	/**
@@ -230,6 +241,16 @@ public class ShoppingCartWrapper implements ShoppingCart,
 	@Override
 	public java.lang.String getItemIds() {
 		return _shoppingCart.getItemIds();
+	}
+
+	@Override
+	public Map<com.liferay.shopping.model.ShoppingCartItem, java.lang.Integer> getItems() {
+		return _shoppingCart.getItems();
+	}
+
+	@Override
+	public int getItemsSize() {
+		return _shoppingCart.getItemsSize();
 	}
 
 	/**

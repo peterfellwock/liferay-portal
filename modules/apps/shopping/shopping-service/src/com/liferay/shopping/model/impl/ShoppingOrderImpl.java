@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.model.impl;
+package com.liferay.shopping.model.impl;
 
 /**
  * @author Brian Wing Shun Chan

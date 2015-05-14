@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.http;
+package com.liferay.shopping.service.http;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -23,7 +23,7 @@ import com.liferay.portal.kernel.util.MethodKey;
 import com.liferay.portal.security.auth.HttpPrincipal;
 import com.liferay.portal.service.http.TunnelUtil;
 
-import com.liferay.portlet.shopping.service.ShoppingOrderServiceUtil;
+import com.liferay.shopping.service.ShoppingOrderServiceUtil;
 
 /**
  * Provides the HTTP utility for the
@@ -115,7 +115,7 @@ public class ShoppingOrderServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingOrder getOrder(
+	public static com.liferay.shopping.model.ShoppingOrder getOrder(
 		HttpPrincipal httpPrincipal, long groupId, long orderId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		try {
@@ -138,7 +138,7 @@ public class ShoppingOrderServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingOrder)returnObj;
+			return (com.liferay.shopping.model.ShoppingOrder)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -176,7 +176,7 @@ public class ShoppingOrderServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingOrder updateOrder(
+	public static com.liferay.shopping.model.ShoppingOrder updateOrder(
 		HttpPrincipal httpPrincipal, long groupId, long orderId,
 		java.lang.String ppTxnId, java.lang.String ppPaymentStatus,
 		double ppPaymentGross, java.lang.String ppReceiverEmail,
@@ -203,7 +203,7 @@ public class ShoppingOrderServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingOrder)returnObj;
+			return (com.liferay.shopping.model.ShoppingOrder)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);
@@ -212,7 +212,7 @@ public class ShoppingOrderServiceHttp {
 		}
 	}
 
-	public static com.liferay.portlet.shopping.model.ShoppingOrder updateOrder(
+	public static com.liferay.shopping.model.ShoppingOrder updateOrder(
 		HttpPrincipal httpPrincipal, long groupId, long orderId,
 		java.lang.String billingFirstName, java.lang.String billingLastName,
 		java.lang.String billingEmailAddress, java.lang.String billingCompany,
@@ -256,7 +256,7 @@ public class ShoppingOrderServiceHttp {
 				throw new com.liferay.portal.kernel.exception.SystemException(e);
 			}
 
-			return (com.liferay.portlet.shopping.model.ShoppingOrder)returnObj;
+			return (com.liferay.shopping.model.ShoppingOrder)returnObj;
 		}
 		catch (com.liferay.portal.kernel.exception.SystemException se) {
 			_log.error(se, se);

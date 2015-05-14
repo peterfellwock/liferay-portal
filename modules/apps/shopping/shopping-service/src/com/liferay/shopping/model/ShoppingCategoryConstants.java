@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.model;
+package com.liferay.shopping.model;
 
 /**
  * @author Alexander Chow

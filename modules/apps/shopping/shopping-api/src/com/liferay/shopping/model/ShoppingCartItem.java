@@ -12,13 +12,22 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.util;
+package com.liferay.shopping.model;
+
+import java.io.Serializable;
 
 /**
- * @author Eduardo Garcia
+ * @author Brian Wing Shun Chan
  */
-public class ShoppingConstants {
+public interface ShoppingCartItem
+	extends Comparable<ShoppingCartItem>, Serializable {
 
-	public static final String SERVICE_NAME = "com.liferay.portlet.shopping";
+	public String getCartItemId();
+
+	public String getFields();
+
+	public String[] getFieldsArray();
+
+	public ShoppingItem getItem();
 
 }

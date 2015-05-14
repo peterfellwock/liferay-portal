@@ -12,7 +12,9 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.permission;
+package com.liferay.shopping.service.permission;
+
+import org.osgi.service.component.annotations.Component;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
@@ -21,16 +23,16 @@ import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.BaseModelPermissionChecker;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.shopping.model.ShoppingCategory;
-import com.liferay.portlet.shopping.model.ShoppingCategoryConstants;
-import com.liferay.portlet.shopping.service.ShoppingCategoryLocalServiceUtil;
+import com.liferay.shopping.model.ShoppingCategoryConstants;
+import com.liferay.shopping.model.ShoppingCategory;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@OSGiBeanProperties(
+@Component(
+	immediate = true,
 	property = {
-		"model.class.name=com.liferay.portlet.shopping.model.ShoppingCategory"
+		"model.class.name=com.liferay.shopping.model.ShoppingCategory"
 	}
 )
 public class ShoppingCategoryPermission implements BaseModelPermissionChecker {

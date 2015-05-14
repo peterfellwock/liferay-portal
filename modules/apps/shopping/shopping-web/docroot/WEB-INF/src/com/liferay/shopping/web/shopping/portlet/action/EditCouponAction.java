@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.action;
+package com.liferay.shopping.action;
 
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
@@ -24,20 +24,20 @@ import com.liferay.portal.service.ServiceContextFactory;
 import com.liferay.portal.struts.PortletAction;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.WebKeys;
-import com.liferay.portlet.shopping.CouponCodeException;
-import com.liferay.portlet.shopping.CouponDateException;
-import com.liferay.portlet.shopping.CouponDescriptionException;
-import com.liferay.portlet.shopping.CouponDiscountException;
-import com.liferay.portlet.shopping.CouponEndDateException;
-import com.liferay.portlet.shopping.CouponLimitCategoriesException;
-import com.liferay.portlet.shopping.CouponLimitSKUsException;
-import com.liferay.portlet.shopping.CouponMinimumOrderException;
-import com.liferay.portlet.shopping.CouponNameException;
-import com.liferay.portlet.shopping.CouponStartDateException;
-import com.liferay.portlet.shopping.DuplicateCouponCodeException;
-import com.liferay.portlet.shopping.NoSuchCouponException;
-import com.liferay.portlet.shopping.model.ShoppingCoupon;
-import com.liferay.portlet.shopping.service.ShoppingCouponServiceUtil;
+import com.liferay.shopping.CouponCodeException;
+import com.liferay.shopping.CouponDateException;
+import com.liferay.shopping.CouponDescriptionException;
+import com.liferay.shopping.CouponDiscountException;
+import com.liferay.shopping.CouponEndDateException;
+import com.liferay.shopping.CouponLimitCategoriesException;
+import com.liferay.shopping.CouponLimitSKUsException;
+import com.liferay.shopping.CouponMinimumOrderException;
+import com.liferay.shopping.CouponNameException;
+import com.liferay.shopping.CouponStartDateException;
+import com.liferay.shopping.DuplicateCouponCodeException;
+import com.liferay.shopping.NoSuchCouponException;
+import com.liferay.shopping.model.ShoppingCoupon;
+import com.liferay.shopping.service.ShoppingCouponServiceUtil;
 
 import java.util.Calendar;
 

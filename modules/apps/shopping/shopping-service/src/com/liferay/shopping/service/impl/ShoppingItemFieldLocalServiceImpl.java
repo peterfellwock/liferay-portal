@@ -12,12 +12,12 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.impl;
-
-import com.liferay.portlet.shopping.model.ShoppingItemField;
-import com.liferay.portlet.shopping.service.base.ShoppingItemFieldLocalServiceBaseImpl;
+package com.liferay.shopping.service.impl;
 
 import java.util.List;
+
+import com.liferay.shopping.model.ShoppingItemField;
+import com.liferay.shopping.service.base.ShoppingItemFieldLocalServiceBaseImpl;
 
 /**
  * @author Brian Wing Shun Chan
