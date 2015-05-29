@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.lar.PortletDataContext;
 import com.liferay.portal.kernel.lar.PortletDataException;
 import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.lar.StagedModelModifiedDateComparator;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -42,6 +43,7 @@ import java.util.Map;
 /**
  * @author Daniel Kocsis
  */
+@OSGiBeanProperties
 public class DDLRecordStagedModelDataHandler
 	extends BaseStagedModelDataHandler<DDLRecord> {
 
@@ -187,7 +189,9 @@ public class DDLRecordStagedModelDataHandler
 			throw new PortletDataException(e);
 		}
 
-		if (!ArrayUtil.contains(getExportableStatuses(), status)) {
+		if (!portletDataContext.isInitialPublication() &&
+			!ArrayUtil.contains(getExportableStatuses(), status)) {
+
 			PortletDataException pde = new PortletDataException(
 				PortletDataException.STATUS_UNAVAILABLE);
 

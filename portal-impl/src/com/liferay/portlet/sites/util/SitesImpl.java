@@ -71,6 +71,8 @@ import com.liferay.portal.security.permission.PermissionThreadLocal;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
 import com.liferay.portal.service.BackgroundTaskLocalServiceUtil;
 import com.liferay.portal.service.ExportImportConfigurationLocalServiceUtil;
+import com.liferay.portal.service.ExportImportLocalServiceUtil;
+import com.liferay.portal.service.ExportImportServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.GroupServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
@@ -96,7 +98,6 @@ import com.liferay.portal.service.permission.PortalPermissionUtil;
 import com.liferay.portal.service.permission.PortletPermissionUtil;
 import com.liferay.portal.service.persistence.LayoutSetUtil;
 import com.liferay.portal.service.persistence.LayoutUtil;
-import com.liferay.portal.theme.PortletDisplay;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
@@ -195,19 +196,12 @@ public class SitesImpl implements Sites {
 			HttpServletRequest request, RenderResponse renderResponse)
 		throws Exception {
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			com.liferay.portal.kernel.util.WebKeys.THEME_DISPLAY);
-
-		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
-
-		String portletName = portletDisplay.getPortletName();
-
-		if ((renderResponse == null) ||
-			portletName.equals(PortletKeys.GROUP_PAGES) ||
-			portletName.equals(PortletKeys.MY_PAGES)) {
-
+		if (renderResponse == null) {
 			return;
 		}
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			com.liferay.portal.kernel.util.WebKeys.THEME_DISPLAY);
 
 		Group unescapedGroup = group.toUnescapedModel();
 
@@ -318,7 +312,7 @@ public class SitesImpl implements Sites {
 					exportSettingsMap, WorkflowConstants.STATUS_DRAFT,
 					new ServiceContext());
 
-		File file = LayoutLocalServiceUtil.exportLayoutsAsFile(
+		File file = ExportImportLocalServiceUtil.exportLayoutsAsFile(
 			exportConfiguration);
 
 		try {
@@ -339,7 +333,8 @@ public class SitesImpl implements Sites {
 						importSettingsMap, WorkflowConstants.STATUS_DRAFT,
 						new ServiceContext());
 
-			LayoutLocalServiceUtil.importLayouts(importConfiguration, file);
+			ExportImportLocalServiceUtil.importLayouts(
+				importConfiguration, file);
 		}
 		finally {
 			file.delete();
@@ -645,7 +640,7 @@ public class SitesImpl implements Sites {
 					settingsMap, WorkflowConstants.STATUS_DRAFT,
 					new ServiceContext());
 
-		return LayoutLocalServiceUtil.exportLayoutsAsFile(
+		return ExportImportLocalServiceUtil.exportLayoutsAsFile(
 			exportImportConfiguration);
 	}
 
@@ -910,7 +905,8 @@ public class SitesImpl implements Sites {
 					importSettingsMap, WorkflowConstants.STATUS_DRAFT,
 					serviceContext);
 
-		LayoutServiceUtil.importLayouts(exportImportConfiguration, inputStream);
+		ExportImportServiceUtil.importLayouts(
+			exportImportConfiguration, inputStream);
 	}
 
 	@Override
@@ -1890,7 +1886,7 @@ public class SitesImpl implements Sites {
 						settingsMap, WorkflowConstants.STATUS_DRAFT,
 						new ServiceContext());
 
-			file = LayoutLocalServiceUtil.exportLayoutsAsFile(
+			file = ExportImportLocalServiceUtil.exportLayoutsAsFile(
 				exportImportConfiguration);
 
 			newFile = true;
@@ -1911,7 +1907,8 @@ public class SitesImpl implements Sites {
 					importSettingsMap, WorkflowConstants.STATUS_DRAFT,
 					new ServiceContext());
 
-		LayoutLocalServiceUtil.importLayouts(exportImportConfiguration, file);
+		ExportImportLocalServiceUtil.importLayouts(
+			exportImportConfiguration, file);
 
 		if (newFile) {
 			try {

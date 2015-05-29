@@ -169,6 +169,11 @@
 	<td></td>
 </tr>
 <tr>
+	<td>MOVE_TO_RECYCLE_BIN</td>
+	<td>//button[contains(.,'Move to the Recycle Bin')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>MOVE_THREAD</td>
 	<td>//button[contains(.,'Move Thread')]</td>
 	<td></td>
@@ -251,6 +256,11 @@
 <tr>
 	<td>REPLY</td>
 	<td>//button[contains(.,'Reply')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPLY_AS</td>
+	<td>//button[contains(.,'Reply As...')]</td>
 	<td></td>
 </tr>
 <tr>

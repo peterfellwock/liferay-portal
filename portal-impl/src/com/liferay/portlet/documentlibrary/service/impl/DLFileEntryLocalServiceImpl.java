@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.image.ImageBag;
 import com.liferay.portal.kernel.image.ImageToolUtil;
 import com.liferay.portal.kernel.increment.BufferedIncrement;
 import com.liferay.portal.kernel.increment.NumberIncrement;
+import com.liferay.portal.kernel.interval.IntervalActionProcessor;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.log.Log;
@@ -109,6 +110,7 @@ import com.liferay.portlet.expando.model.ExpandoColumnConstants;
 import com.liferay.portlet.expando.model.ExpandoRow;
 import com.liferay.portlet.expando.model.ExpandoTable;
 import com.liferay.portlet.expando.util.ExpandoBridgeFactoryUtil;
+import com.liferay.portlet.expando.util.ExpandoBridgeUtil;
 
 import java.awt.image.RenderedImage;
 
@@ -597,22 +599,37 @@ public class DLFileEntryLocalServiceImpl
 	}
 
 	@Override
-	public void convertExtraSettings(String[] keys) throws PortalException {
-		int count = dlFileEntryFinder.countByExtraSettings();
+	public void convertExtraSettings(final String[] keys)
+		throws PortalException {
 
-		int pages = count / Indexer.DEFAULT_INTERVAL;
+		int total = dlFileEntryFinder.countByExtraSettings();
 
-		for (int i = 0; i <= pages; i++) {
-			int start = (i * Indexer.DEFAULT_INTERVAL);
-			int end = start + Indexer.DEFAULT_INTERVAL;
+		final IntervalActionProcessor<Void> intervalActionProcessor =
+			new IntervalActionProcessor<>(total);
 
-			List<DLFileEntry> dlFileEntries =
-				dlFileEntryFinder.findByExtraSettings(start, end);
+		intervalActionProcessor.setPerformIntervalActionMethod(
+			new IntervalActionProcessor.PerformIntervalActionMethod<Void>() {
 
-			for (DLFileEntry dlFileEntry : dlFileEntries) {
-				convertExtraSettings(dlFileEntry, keys);
-			}
-		}
+				@Override
+				public Void performIntervalAction(int start, int end)
+					throws PortalException {
+
+					List<DLFileEntry> dlFileEntries =
+						dlFileEntryFinder.findByExtraSettings(start, end);
+
+					for (DLFileEntry dlFileEntry : dlFileEntries) {
+						convertExtraSettings(dlFileEntry, keys);
+					}
+
+					intervalActionProcessor.incrementStart(
+						dlFileEntries.size());
+
+					return null;
+				}
+
+			});
+
+		intervalActionProcessor.performIntervalActions();
 	}
 
 	@Override
@@ -646,6 +663,10 @@ public class DLFileEntryLocalServiceImpl
 		DLFileVersion dlFileVersion = dlFileEntry.getFileVersion();
 
 		DLFileVersion newDlFileVersion = newDlFileEntry.getFileVersion();
+
+		ExpandoBridgeUtil.copyExpandoBridgeAttributes(
+			dlFileVersion.getExpandoBridge(),
+			newDlFileVersion.getExpandoBridge());
 
 		copyFileEntryMetadata(
 			dlFileVersion.getCompanyId(), dlFileVersion.getFileEntryTypeId(),
@@ -694,28 +715,45 @@ public class DLFileEntryLocalServiceImpl
 
 	@Override
 	public void deleteFileEntries(
-			long groupId, long folderId, boolean includeTrashedEntries)
+			long groupId, final long folderId,
+			final boolean includeTrashedEntries)
 		throws PortalException {
 
-		int count = dlFileEntryPersistence.countByG_F(groupId, folderId);
+		ActionableDynamicQuery actionableDynamicQuery =
+			dlFileEntryLocalService.getActionableDynamicQuery();
 
-		int pages = count / _DELETE_INTERVAL;
+		actionableDynamicQuery.setAddCriteriaMethod(
+			new ActionableDynamicQuery.AddCriteriaMethod() {
 
-		for (int i = 0; i <= pages; i++) {
-			int start = (i * _DELETE_INTERVAL);
-			int end = start + _DELETE_INTERVAL;
+				@Override
+				public void addCriteria(DynamicQuery dynamicQuery) {
+					Property folderIdproperty = PropertyFactoryUtil.forName(
+						"folderId");
 
-			List<DLFileEntry> dlFileEntries = dlFileEntryPersistence.findByG_F(
-				groupId, folderId, start, end);
-
-			for (DLFileEntry dlFileEntry : dlFileEntries) {
-				if (includeTrashedEntries ||
-					!dlFileEntry.isInTrashExplicitly()) {
-
-					dlFileEntryLocalService.deleteFileEntry(dlFileEntry);
+					dynamicQuery.add(folderIdproperty.eq(folderId));
 				}
-			}
-		}
+
+			});
+		actionableDynamicQuery.setGroupId(groupId);
+		actionableDynamicQuery.setPerformActionMethod(
+			new ActionableDynamicQuery.PerformActionMethod() {
+
+				@Override
+				public void performAction(Object object)
+					throws PortalException {
+
+					DLFileEntry dlFileEntry = (DLFileEntry)object;
+
+					if (includeTrashedEntries ||
+						!dlFileEntry.isInTrashExplicitly()) {
+
+						dlFileEntryLocalService.deleteFileEntry(dlFileEntry);
+					}
+				}
+
+			});
+
+		actionableDynamicQuery.performActions();
 	}
 
 	@Indexable(type = IndexableType.DELETE)
@@ -925,28 +963,44 @@ public class DLFileEntryLocalServiceImpl
 
 	@Override
 	public void deleteRepositoryFileEntries(
-			long repositoryId, long folderId, boolean includeTrashedEntries)
+			final long repositoryId, final long folderId,
+			final boolean includeTrashedEntries)
 		throws PortalException {
 
-		int count = dlFileEntryPersistence.countByR_F(repositoryId, folderId);
+		int total = dlFileEntryPersistence.countByR_F(repositoryId, folderId);
 
-		int pages = count / _DELETE_INTERVAL;
+		final IntervalActionProcessor<Void> intervalActionProcessor =
+			new IntervalActionProcessor<>(total);
 
-		for (int i = 0; i <= pages; i++) {
-			int start = (i * _DELETE_INTERVAL);
-			int end = start + _DELETE_INTERVAL;
+		intervalActionProcessor.setPerformIntervalActionMethod(
+			new IntervalActionProcessor.PerformIntervalActionMethod<Void>() {
 
-			List<DLFileEntry> dlFileEntries = dlFileEntryPersistence.findByR_F(
-				repositoryId, folderId, start, end);
+				@Override
+				public Void performIntervalAction(int start, int end)
+					throws PortalException {
 
-			for (DLFileEntry dlFileEntry : dlFileEntries) {
-				if (includeTrashedEntries ||
-					!dlFileEntry.isInTrashExplicitly()) {
+					List<DLFileEntry> dlFileEntries =
+						dlFileEntryPersistence.findByR_F(
+							repositoryId, folderId, start, end);
 
-					dlFileEntryLocalService.deleteFileEntry(dlFileEntry);
+					for (DLFileEntry dlFileEntry : dlFileEntries) {
+						if (includeTrashedEntries ||
+							!dlFileEntry.isInTrashExplicitly()) {
+
+							dlFileEntryLocalService.deleteFileEntry(
+								dlFileEntry);
+						}
+						else {
+							intervalActionProcessor.incrementStart();
+						}
+					}
+
+					return null;
 				}
-			}
-		}
+
+			});
+
+		intervalActionProcessor.performIntervalActions();
 	}
 
 	@Override
@@ -2517,7 +2571,8 @@ public class DLFileEntryLocalServiceImpl
 
 		if (!checkedOut && dlFileVersion.isApproved() &&
 			!Validator.equals(
-				dlFileVersion.getUuid(), serviceContext.getUuid())) {
+				dlFileVersion.getUuid(),
+				serviceContext.getUuidWithoutReset())) {
 
 			autoCheckIn = true;
 		}
@@ -2535,8 +2590,14 @@ public class DLFileEntryLocalServiceImpl
 		}
 
 		if (checkedOut || autoCheckIn) {
+			ExpandoBridge oldExpandoBridge = dlFileVersion.getExpandoBridge();
+
 			dlFileVersion = dlFileVersionLocalService.getLatestFileVersion(
 				fileEntryId, false);
+
+			ExpandoBridgeUtil.setExpandoBridgeAttributes(
+				oldExpandoBridge, dlFileVersion.getExpandoBridge(),
+				serviceContext);
 		}
 
 		try {
@@ -2759,8 +2820,6 @@ public class DLFileEntryLocalServiceImpl
 			}
 		}
 	}
-
-	private static final int _DELETE_INTERVAL = 100;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DLFileEntryLocalServiceImpl.class);

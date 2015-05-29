@@ -18,7 +18,7 @@
 
 <%
 DLItemSelectorCriterion dlItemSelectorCriterion = (DLItemSelectorCriterion)request.getAttribute(DLItemSelectorView.DL_ITEM_SELECTOR_CRITERION);
-String itemSelectedCallback = (String)request.getAttribute(DLItemSelectorView.ITEM_SELECTED_CALLBACK);
+String itemSelectedEventName = HtmlUtil.escape(ParamUtil.getString(request, DLItemSelectorView.ITEM_SELECTED_EVENT_NAME));
 PortletURL portletURL = (PortletURL)request.getAttribute(DLItemSelectorView.PORTLET_URL);
 
 long groupId = ParamUtil.getLong(request, "groupId", scopeGroupId);
@@ -348,7 +348,8 @@ if (folderId > 0) {
 				<%
 				Map<String, Object> data = new HashMap<String, Object>();
 
-				data.put("fileEntryid", fileEntry.getFileEntryId());
+				data.put("fileEntryId", fileEntry.getFileEntryId());
+				data.put("url", DLUtil.getPreviewURL(fileEntry, fileEntry.getFileVersion(), themeDisplay, StringPool.BLANK, false, false));
 				%>
 
 				<aui:button cssClass="selector-button" data="<%= data %>" value="choose" />
@@ -359,7 +360,9 @@ if (folderId > 0) {
 	</liferay-ui:search-container>
 </aui:form>
 
-<aui:script>
+<aui:script use="aui-base">
+	var Util = Liferay.Util;
+
 	var container = $('#<portlet:namespace />selectDocumentFm');
 
 	var selectorButtons = container.find('.selector-button');
@@ -368,9 +371,24 @@ if (folderId > 0) {
 		'click',
 		'.selector-button',
 		function(event) {
-			var fileEntryId = event.target.getAttribute('data-fileEntryId');
+			Util.getOpener().Liferay.fire(
+				'<%= itemSelectedEventName %>',
+				{
 
-			<%= itemSelectedCallback %>('<%= FileEntry.class.getName() %>', fileEntryId);
+					<%
+					String ckEditorFuncNum = ParamUtil.getString(request, "CKEditorFuncNum");
+					%>
+
+					<c:if test="<%= Validator.isNotNull(ckEditorFuncNum) %>">
+						ckeditorfuncnum: <%= ckEditorFuncNum %>,
+					</c:if>
+
+					returnType : '<%= FileEntry.class.getName() %>',
+					url : event.target.getAttribute('data-url')
+				}
+			);
+
+			Util.getWindow().destroy();
 		}
 	);
 </aui:script>

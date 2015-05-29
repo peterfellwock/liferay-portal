@@ -29,9 +29,13 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.PortalSessionThreadLocal;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResources;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.ProtectedServletRequest;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateManager;
+import com.liferay.portal.kernel.util.ClassLoaderUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
@@ -48,7 +52,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.DocumentException;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.kernel.xml.SAXReaderUtil;
+import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupConstants;
@@ -81,7 +85,6 @@ import com.liferay.portal.servlet.filters.i18n.I18nFilter;
 import com.liferay.portal.setup.SetupWizardSampleDataUtil;
 import com.liferay.portal.struts.PortletRequestProcessor;
 import com.liferay.portal.struts.StrutsUtil;
-import com.liferay.portal.util.ClassLoaderUtil;
 import com.liferay.portal.util.ExtRegistry;
 import com.liferay.portal.util.MaintenanceUtil;
 import com.liferay.portal.util.PortalInstances;
@@ -606,7 +609,7 @@ public class MainServlet extends ActionServlet {
 	}
 
 	protected void checkWebSettings(String xml) throws DocumentException {
-		Document doc = SAXReaderUtil.read(xml);
+		Document doc = UnsecureSAXReaderUtil.read(xml);
 
 		Element root = doc.getRootElement();
 
@@ -850,7 +853,9 @@ public class MainServlet extends ActionServlet {
 							_log.debug("Initialize layout templates");
 						}
 
-						ServletContext servletContext = getServletContext();
+						ServletContext servletContext =
+							PortalWebResourcesUtil.getServletContext(
+							PortalWebResourceConstants.RESOURCE_TYPE_LAYOUTTPL);
 
 						String[] xmls = new String[] {
 							HttpUtil.URLtoString(
@@ -889,8 +894,13 @@ public class MainServlet extends ActionServlet {
 			"(&(language.type=" + TemplateConstants.LANG_TYPE_VM +
 				")(objectClass=" + TemplateManager.class.getName() + "))");
 
+		Filter layouttpl = registry.getFilter(
+			"(&(resource.type=" +
+				PortalWebResourceConstants.RESOURCE_TYPE_LAYOUTTPL +
+			")(objectClass=" + PortalWebResources.class.getName() + "))");
+
 		serviceDependencyManager.registerDependencies(
-			freeMarkerFilter, velocityFilter);
+			freeMarkerFilter, velocityFilter, layouttpl);
 	}
 
 	protected PluginPackage initPluginPackage() throws Exception {
