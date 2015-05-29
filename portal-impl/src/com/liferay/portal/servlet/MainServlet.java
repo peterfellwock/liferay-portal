@@ -889,8 +889,13 @@ public class MainServlet extends ActionServlet {
 			"(&(language.type=" + TemplateConstants.LANG_TYPE_VM +
 				")(objectClass=" + TemplateManager.class.getName() + "))");
 
+		Filter layouttpl = registry.getFilter(
+			"(&(resource.type=" +
+				PortalWebResourceConstants.RESOURCE_TYPE_LAYOUTTPL +
+			")(objectClass=" + PortalWebResources.class.getName() + "))");
+
 		serviceDependencyManager.registerDependencies(
-			freeMarkerFilter, velocityFilter);
+			freeMarkerFilter, velocityFilter, layouttpl);
 	}
 
 	protected PluginPackage initPluginPackage() throws Exception {
