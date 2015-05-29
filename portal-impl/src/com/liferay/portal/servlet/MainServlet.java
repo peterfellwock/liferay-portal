@@ -29,6 +29,9 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.servlet.PortalSessionThreadLocal;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResources;
+import com.liferay.portal.kernel.servlet.PortalWebResourcesUtil;
 import com.liferay.portal.kernel.servlet.ProtectedServletRequest;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.template.TemplateManager;
@@ -850,7 +853,9 @@ public class MainServlet extends ActionServlet {
 							_log.debug("Initialize layout templates");
 						}
 
-						ServletContext servletContext = getServletContext();
+						ServletContext servletContext =
+							PortalWebResourcesUtil.getServletContext(
+							PortalWebResourceConstants.RESOURCE_TYPE_LAYOUTTPL);
 
 						String[] xmls = new String[] {
 							HttpUtil.URLtoString(
