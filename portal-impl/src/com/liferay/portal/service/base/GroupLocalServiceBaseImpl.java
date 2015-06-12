@@ -88,12 +88,6 @@ import com.liferay.portlet.asset.service.persistence.AssetVocabularyFinder;
 import com.liferay.portlet.asset.service.persistence.AssetVocabularyPersistence;
 import com.liferay.portlet.expando.service.persistence.ExpandoRowPersistence;
 import com.liferay.portlet.exportimport.service.persistence.ExportImportConfigurationPersistence;
-import com.liferay.portlet.shopping.service.persistence.ShoppingCartPersistence;
-import com.liferay.portlet.shopping.service.persistence.ShoppingCategoryPersistence;
-import com.liferay.portlet.shopping.service.persistence.ShoppingCouponFinder;
-import com.liferay.portlet.shopping.service.persistence.ShoppingCouponPersistence;
-import com.liferay.portlet.shopping.service.persistence.ShoppingOrderFinder;
-import com.liferay.portlet.shopping.service.persistence.ShoppingOrderPersistence;
 import com.liferay.portlet.social.service.persistence.SocialActivityFinder;
 import com.liferay.portlet.social.service.persistence.SocialActivityPersistence;
 import com.liferay.portlet.social.service.persistence.SocialActivitySettingPersistence;
@@ -1574,6 +1568,7 @@ public abstract class GroupLocalServiceBaseImpl extends BaseLocalServiceImpl
 	}
 
 	/**
+<<<<<<< HEAD
 	 * Returns the export import local service.
 	 *
 	 * @return the export import local service
@@ -1953,6 +1948,8 @@ public abstract class GroupLocalServiceBaseImpl extends BaseLocalServiceImpl
 	}
 
 	/**
+=======
+>>>>>>> LPS-55355 Remove Peristence in core
 	 * Returns the social activity local service.
 	 *
 	 * @return the social activity local service
@@ -3818,32 +3815,6 @@ public abstract class GroupLocalServiceBaseImpl extends BaseLocalServiceImpl
 	protected com.liferay.portlet.exportimport.service.StagingLocalService stagingLocalService;
 	@BeanReference(type = com.liferay.portlet.exportimport.service.StagingService.class)
 	protected com.liferay.portlet.exportimport.service.StagingService stagingService;
-	@BeanReference(type = com.liferay.portlet.shopping.service.ShoppingCartLocalService.class)
-	protected com.liferay.portlet.shopping.service.ShoppingCartLocalService shoppingCartLocalService;
-	@BeanReference(type = ShoppingCartPersistence.class)
-	protected ShoppingCartPersistence shoppingCartPersistence;
-	@BeanReference(type = com.liferay.portlet.shopping.service.ShoppingCategoryLocalService.class)
-	protected com.liferay.portlet.shopping.service.ShoppingCategoryLocalService shoppingCategoryLocalService;
-	@BeanReference(type = com.liferay.portlet.shopping.service.ShoppingCategoryService.class)
-	protected com.liferay.portlet.shopping.service.ShoppingCategoryService shoppingCategoryService;
-	@BeanReference(type = ShoppingCategoryPersistence.class)
-	protected ShoppingCategoryPersistence shoppingCategoryPersistence;
-	@BeanReference(type = com.liferay.portlet.shopping.service.ShoppingCouponLocalService.class)
-	protected com.liferay.portlet.shopping.service.ShoppingCouponLocalService shoppingCouponLocalService;
-	@BeanReference(type = com.liferay.portlet.shopping.service.ShoppingCouponService.class)
-	protected com.liferay.portlet.shopping.service.ShoppingCouponService shoppingCouponService;
-	@BeanReference(type = ShoppingCouponPersistence.class)
-	protected ShoppingCouponPersistence shoppingCouponPersistence;
-	@BeanReference(type = ShoppingCouponFinder.class)
-	protected ShoppingCouponFinder shoppingCouponFinder;
-	@BeanReference(type = com.liferay.portlet.shopping.service.ShoppingOrderLocalService.class)
-	protected com.liferay.portlet.shopping.service.ShoppingOrderLocalService shoppingOrderLocalService;
-	@BeanReference(type = com.liferay.portlet.shopping.service.ShoppingOrderService.class)
-	protected com.liferay.portlet.shopping.service.ShoppingOrderService shoppingOrderService;
-	@BeanReference(type = ShoppingOrderPersistence.class)
-	protected ShoppingOrderPersistence shoppingOrderPersistence;
-	@BeanReference(type = ShoppingOrderFinder.class)
-	protected ShoppingOrderFinder shoppingOrderFinder;
 	@BeanReference(type = com.liferay.portlet.social.service.SocialActivityLocalService.class)
 	protected com.liferay.portlet.social.service.SocialActivityLocalService socialActivityLocalService;
 	@BeanReference(type = com.liferay.portlet.social.service.SocialActivityService.class)
