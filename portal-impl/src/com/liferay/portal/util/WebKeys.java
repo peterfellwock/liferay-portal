@@ -199,8 +199,6 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 
 	public static final String LANGUAGE_ID = "LANGUAGE_ID";
 
-	public static final String LAYOUT_CONTENT = "LAYOUT_CONTENT";
-
 	public static final String LAYOUT_DEFAULT = "LAYOUT_DEFAULT";
 
 	public static final String LAYOUT_DESCRIPTIONS = "LAYOUT_DESCRIPTIONS";
@@ -310,8 +308,6 @@ public class WebKeys implements com.liferay.portal.kernel.util.WebKeys {
 	public static final String PORTLET_CONTENT_JSP = "PORTLET_CONTENT_JSP";
 
 	public static final String PORTLET_PARALLEL_RENDER = "PORTLET_PARALLEL_RENDER";
-
-	public static final String PORTLET_RENDER_PARAMETERS = "PORTLET_RENDER_PARAMETERS_";
 
 	public static final String PORTLET_STRUTS_ACTION = "PORTLET_STRUTS_ACTION";
 

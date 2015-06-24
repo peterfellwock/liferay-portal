@@ -155,15 +155,19 @@ public class ServiceContextAdviceTest {
 
 	private class TestInterceptedClass {
 
+		@SuppressWarnings("unused")
 		public void method() {
 		}
 
+		@SuppressWarnings("unused")
 		public void method(Object obj) {
 		}
 
+		@SuppressWarnings("unused")
 		public void method(ServiceContext serviceContext) {
 		}
 
+		@SuppressWarnings("unused")
 		public void method(TestServiceContextWrapper serviceContextWrapper) {
 		}
 
