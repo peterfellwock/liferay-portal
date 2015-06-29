@@ -11,13 +11,11 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
-
 package com.liferay.portal.deploy.hot;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.log.SanitizerLogWrapper;
-import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -28,10 +26,16 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.util.CustomJspRegistryUtil;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.ServiceReference;
+import com.liferay.registry.ServiceTracker;
+import com.liferay.registry.ServiceTrackerCustomizer;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,73 +57,7 @@ public class CustomJspBagRegistryUtil {
 			String servletContextName, CustomJspBag customJspBag)
 		throws Exception {
 
-		String customJspDir = customJspBag.getCustomJspDir();
-		boolean customJspGlobal = customJspBag.isCustomJspGlobal();
-		List<String> customJsps = customJspBag.getCustomJsps();
-
-		String portalWebDir = PortalUtil.getPortalWebDir();
-
-		for (String customJsp : customJsps) {
-			int pos = customJsp.indexOf(customJspDir);
-
-			String portalJsp = customJsp.substring(pos + customJspDir.length());
-
-			if (customJspGlobal) {
-				File portalJspFile = new File(portalWebDir + portalJsp);
-				File portalJspBackupFile = getPortalJspBackupFile(
-					portalJspFile);
-
-				if (portalJspBackupFile.exists()) {
-					FileUtil.copyFile(portalJspBackupFile, portalJspFile);
-
-					portalJspBackupFile.delete();
-				}
-				else if (portalJspFile.exists()) {
-					portalJspFile.delete();
-				}
-			}
-			else {
-				portalJsp = CustomJspRegistryUtil.getCustomJspFileName(
-					servletContextName, portalJsp);
-
-				File portalJspFile = new File(portalWebDir + portalJsp);
-
-				if (portalJspFile.exists()) {
-					portalJspFile.delete();
-				}
-			}
-		}
-
-		if (!customJspGlobal) {
-			CustomJspRegistryUtil.unregisterServletContextName(
-				servletContextName);
-		}
-	}
-
-	public void getCustomJsps(
-		ServletContext servletContext, String resourcePath,
-		List<String> customJsps) {
-
-		Set<String> resourcePaths = servletContext.getResourcePaths(
-			resourcePath);
-
-		if ((resourcePaths == null) || resourcePaths.isEmpty()) {
-			return;
-		}
-
-		for (String curResourcePath : resourcePaths) {
-			if (curResourcePath.endsWith(StringPool.SLASH)) {
-				getCustomJsps(servletContext, curResourcePath, customJsps);
-			}
-			else {
-				String customJsp = curResourcePath;
-
-				customJsp = StringUtil.replace(
-					customJsp, StringPool.DOUBLE_SLASH, StringPool.SLASH);
-
-				customJsps.add(customJsp);
-			}
-		}
+		////unregister
 	}
 
 	public String getPortalJsp(String customJsp, String customJspDir) {
@@ -184,7 +122,8 @@ public class CustomJspBagRegistryUtil {
 
 			FileUtil.write(
 				portalWebDir + portalJsp,
-				customJspBag.getCustomJspInputStream(customJsp));
+				getCustomJspInputStream(
+					customJspBag.getServletContext(), customJsp));
 		}
 
 		if (!customJspGlobal) {
@@ -193,10 +132,15 @@ public class CustomJspBagRegistryUtil {
 		}
 	}
 
-	public void initCustomJspDir(
+	public InputStream getCustomJspInputStream(
+		ServletContext servletContext, String customJsp) {
+
+			return servletContext.getResourceAsStream(customJsp);
+	}
+
+	public void register(
 			ServletContext servletContext, String servletContextName,
-			ClassLoader portletClassLoader, PluginPackage pluginPackage,
-			Element rootElement)
+			String pluginPackageName, Element rootElement)
 		throws Exception {
 
 		String customJspDir = rootElement.elementText("custom-jsp-dir");
@@ -212,47 +156,43 @@ public class CustomJspBagRegistryUtil {
 		boolean customJspGlobal = GetterUtil.getBoolean(
 			rootElement.elementText("custom-jsp-global"), true);
 
-		List<String> customJsps = new ArrayList<>();
+		CustomJspBag customJspBag = new CustomJspBagImpl(
+			servletContext, customJspDir, customJspGlobal, pluginPackageName);
 
-		getCustomJsps(servletContext, customJspDir, customJsps);
+		register(customJspBag);
+	}
 
-		if (customJsps.isEmpty()) {
-			return;
-		}
+	public static void getCustomJsps(
+			ServletContext servletContext, String resourcePath,
+			List<String> customJsps) {
 
-		CustomJspBag customJspBag = new CustomJspBag(
-			servletContext, customJspDir, customJspGlobal, customJsps);
+			Set<String> resourcePaths = servletContext.getResourcePaths(
+				resourcePath);
 
-		if (_log.isDebugEnabled()) {
-			StringBundler sb = new StringBundler(customJsps.size() * 2);
-
-			sb.append("Custom JSP files:\n");
-
-			for (int i = 0; i < customJsps.size(); i++) {
-				String customJsp = customJsps.get(0);
-
-				sb.append(customJsp);
-
-				if ((i + 1) < customJsps.size()) {
-					sb.append(StringPool.NEW_LINE);
-				}
+			if ((resourcePaths == null) || resourcePaths.isEmpty()) {
+				return;
 			}
 
-			Log log = SanitizerLogWrapper.allowCRLF(_log);
+			for (String curResourcePath : resourcePaths) {
+				if (curResourcePath.endsWith(StringPool.SLASH)) {
+					getCustomJsps(servletContext, curResourcePath, customJsps);
+				}
+				else {
+					String customJsp = curResourcePath;
 
-			log.debug(sb.toString());
+					customJsp = StringUtil.replace(
+						customJsp, StringPool.DOUBLE_SLASH, StringPool.SLASH);
+
+					customJsps.add(customJsp);
+				}
+			}
 		}
 
-		if (customJspGlobal && !_customJspBagsMap.isEmpty() &&
-			!_customJspBagsMap.containsKey(servletContextName)) {
+	public void register(CustomJspBag customJspBag) {
 
-			verifyCustomJsps(servletContextName, customJspBag);
-		}
+		Registry registry = RegistryUtil.getRegistry();
 
-		_customJspBagsMap.put(servletContextName, customJspBag);
-
-		initCustomJspBag(
-			servletContextName, pluginPackage.getName(), customJspBag);
+		registry.registerService(CustomJspBag.class, customJspBag);
 	}
 
 	public CustomJspBag remove(String servletContextName) {
@@ -344,5 +284,160 @@ public class CustomJspBagRegistryUtil {
 		new CustomJspBagRegistryUtil();
 
 	private final Map<String, CustomJspBag> _customJspBagsMap = new HashMap<>();
+
+	private CustomJspBagRegistryUtil() {
+
+		Registry registry = RegistryUtil.getRegistry();
+
+		_serviceTracker = registry.trackServices(
+			CustomJspBag.class,
+			new CustomJspBagRegistryUtilServiceTrackerCustomizer());
+
+		_serviceTracker.open();
+	}
+
+		private class CustomJspBagRegistryUtilServiceTrackerCustomizer
+		implements ServiceTrackerCustomizer<CustomJspBag, CustomJspBag> {
+
+		@Override
+		public CustomJspBag addingService(
+			ServiceReference<CustomJspBag> serviceReference) {
+
+			Registry registry = RegistryUtil.getRegistry();
+
+			CustomJspBag customJspBag = registry.getService(serviceReference);
+
+			List<String> customJsps = customJspBag.getCustomJsps();
+
+			if (customJsps.isEmpty()) {
+				getCustomJsps(
+					customJspBag.getServletContext(),
+					customJspBag.getCustomJspDir(),
+					customJspBag.getCustomJsps());
+
+				customJsps = customJspBag.getCustomJsps();
+
+				if (customJsps.isEmpty()) {
+					return null;
+				}
+			}
+
+			if (_log.isDebugEnabled()) {
+				StringBundler sb = new StringBundler(customJsps.size() * 2);
+
+				sb.append("Custom JSP files:\n");
+
+				for (int i = 0; i < customJsps.size(); i++) {
+					String customJsp = customJsps.get(0);
+
+					sb.append(customJsp);
+
+					if ((i + 1) < customJsps.size()) {
+						sb.append(StringPool.NEW_LINE);
+					}
+				}
+
+				Log log = SanitizerLogWrapper.allowCRLF(_log);
+
+				log.debug(sb.toString());
+			}
+
+			String servletContextName = customJspBag.getServletContextName();
+
+			if (
+					customJspBag.isCustomJspGlobal() &&
+				!_customJspBagsMap.isEmpty() &&
+				!_customJspBagsMap.containsKey(servletContextName)) {
+
+				try {
+					verifyCustomJsps(servletContextName, customJspBag);
+				}
+				catch (DuplicateCustomJspException e) {
+					return null;
+				}
+			}
+
+			_customJspBagsMap.put(servletContextName, customJspBag);
+
+			try {
+				initCustomJspBag(
+					servletContextName, customJspBag.getPluginPackageName(),
+					customJspBag);
+			}
+			catch (Exception e) {
+				return null;
+			}
+
+			return customJspBag;
+		}
+
+		@Override
+		public void modifiedService(
+			ServiceReference<CustomJspBag> serviceReference,
+			CustomJspBag customJspBag) {
+		}
+
+		@Override
+		public void removedService(
+			ServiceReference<CustomJspBag> serviceReference,
+			CustomJspBag customJspBag) {
+
+			Registry registry = RegistryUtil.getRegistry();
+
+			registry.ungetService(serviceReference);
+
+			String customJspDir = customJspBag.getCustomJspDir();
+			boolean customJspGlobal = customJspBag.isCustomJspGlobal();
+			List<String> customJsps = customJspBag.getCustomJsps();
+
+			String portalWebDir = PortalUtil.getPortalWebDir();
+
+			for (String customJsp : customJsps) {
+				int pos = customJsp.indexOf(customJspDir);
+
+				String portalJsp = customJsp.substring(
+					pos + customJspDir.length());
+
+				if (customJspGlobal) {
+					File portalJspFile = new File(portalWebDir + portalJsp);
+					File portalJspBackupFile = getPortalJspBackupFile(
+						portalJspFile);
+
+					if (portalJspBackupFile.exists()) {
+						try {
+							FileUtil.copyFile(
+								portalJspBackupFile, portalJspFile);
+						}
+						catch (IOException e) {
+							return;
+						}
+
+						portalJspBackupFile.delete();
+					}
+					else if (portalJspFile.exists()) {
+						portalJspFile.delete();
+					}
+				}
+				else {
+					portalJsp = CustomJspRegistryUtil.getCustomJspFileName(
+						customJspBag.getServletContextName(), portalJsp);
+
+					File portalJspFile = new File(portalWebDir + portalJsp);
+
+					if (portalJspFile.exists()) {
+						portalJspFile.delete();
+					}
+				}
+			}
+
+			if (!customJspGlobal) {
+				CustomJspRegistryUtil.unregisterServletContextName(
+					customJspBag.getServletContextName());
+			}
+		}
+	}
+
+	private final ServiceTracker<CustomJspBag, CustomJspBag>
+	_serviceTracker;
 
 }

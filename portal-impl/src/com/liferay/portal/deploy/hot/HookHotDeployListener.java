@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.lock.LockListener;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.sanitizer.Sanitizer;
 import com.liferay.portal.kernel.search.IndexerPostProcessor;
 import com.liferay.portal.kernel.security.auth.verifier.AuthVerifier;
@@ -481,13 +482,15 @@ public class HookHotDeployListener
 		initLanguageProperties(
 			servletContextName, portletClassLoader, rootElement);
 
+		PluginPackage pluginPackage = hotDeployEvent.getPluginPackage();
+
 		try {
 			CustomJspBagRegistryUtil customJspBagRegistryUtil =
 				CustomJspBagRegistryUtil.getInstance();
 
-			customJspBagRegistryUtil.initCustomJspDir(
-				servletContext, servletContextName, portletClassLoader,
-				hotDeployEvent.getPluginPackage(), rootElement);
+			customJspBagRegistryUtil.register(
+				servletContext, servletContextName, pluginPackage.getName(),
+				rootElement);
 		}
 		catch (DuplicateCustomJspException dcje) {
 			if (_log.isWarnEnabled()) {

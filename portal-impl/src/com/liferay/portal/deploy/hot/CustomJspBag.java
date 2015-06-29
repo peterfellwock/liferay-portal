@@ -14,42 +14,21 @@
 
 package com.liferay.portal.deploy.hot;
 
-import java.io.InputStream;
-
 import java.util.List;
 
 import javax.servlet.ServletContext;
-public class CustomJspBag {
+public interface CustomJspBag {
 
-	public CustomJspBag(
-		ServletContext servletContext, String customJspDir,
-		boolean customJspGlobal, List<String> customJsps) {
+	public String getCustomJspDir();
 
-		_servletContext = servletContext;
-		_customJspDir = customJspDir;
-		_customJspGlobal = customJspGlobal;
-		_customJsps = customJsps;
-	}
+	public List<String> getCustomJsps();
 
-	public String getCustomJspDir() {
-		return _customJspDir;
-	}
+	public String getPluginPackageName();
 
-	public InputStream getCustomJspInputStream(String customJsp) {
-		return _servletContext.getResourceAsStream(customJsp);
-	}
+	public ServletContext getServletContext();
 
-	public List<String> getCustomJsps() {
-		return _customJsps;
-	}
+	public String getServletContextName();
 
-	public boolean isCustomJspGlobal() {
-		return _customJspGlobal;
-	}
-
-	private final String _customJspDir;
-	private final boolean _customJspGlobal;
-	private final List<String> _customJsps;
-	private final ServletContext _servletContext;
+	public boolean isCustomJspGlobal();
 
 }
