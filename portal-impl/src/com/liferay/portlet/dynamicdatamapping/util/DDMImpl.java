@@ -215,6 +215,18 @@ public class DDMImpl implements DDM {
 	}
 
 	@Override
+	public DDMFormValues getDDMFormValues(
+			DDMStructure ddmStructure, String fieldNamespace,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		Fields fields = getFields(
+			ddmStructure.getStructureId(), fieldNamespace, serviceContext);
+
+		return FieldsToDDMFormValuesConverterUtil.convert(ddmStructure, fields);
+	}
+
+	@Override
 	public DDMPermissionHandler getDDMPermissionHandler(long classNameId) {
 		DDMDisplay ddmDisplay = getDDMDisplay(classNameId);
 
@@ -905,7 +917,7 @@ public class DDMImpl implements DDM {
 	protected int getFieldValueIndex(
 		String[] fieldsDisplayValues, String fieldName, String instanceId) {
 
-		if (instanceId == null) {
+		if (Validator.isNull(instanceId)) {
 			return -1;
 		}
 
@@ -950,7 +962,7 @@ public class DDMImpl implements DDM {
 			Serializable fieldValue = serviceContext.getAttribute(
 				fieldNameValue);
 
-			if (fieldValue == null) {
+			if (Validator.isNull(fieldValue)) {
 				fieldValue = predefinedValue.getString(
 					serviceContext.getLocale());
 			}
@@ -963,7 +975,7 @@ public class DDMImpl implements DDM {
 			else if (fieldDataType.equals(FieldConstants.DATE)) {
 				Date fieldValueDate = null;
 
-				if (fieldValue == null) {
+				if (Validator.isNull(fieldValue)) {
 					int fieldValueMonth = GetterUtil.getInteger(
 						serviceContext.getAttribute(fieldNameValue + "Month"));
 					int fieldValueDay = GetterUtil.getInteger(
@@ -1006,7 +1018,7 @@ public class DDMImpl implements DDM {
 				}
 			}
 
-			if (fieldValue == null) {
+			if (Validator.isNull(fieldValue)) {
 				return null;
 			}
 

@@ -29,7 +29,7 @@
 		<execute macro="Workflow#tearDownPortalWorkflow" />
 	</tear-down>
 
-	<command name="ConfirmMemberInviteSiteByEmailNonUserViaWorkflow" priority="5">
+	<command name="ConfirmMemberInviteSiteByEmailNonUserViaWorkflow" priority="4">
 		<var name="siteDescription" value="Workflow Site Description" />
 		<var name="siteName" value="Workflow Site Name" />
 		<var name="siteType" value="Open" />
@@ -73,6 +73,7 @@
 
 		<execute macro="SOMembersPortlet#inviteMemberByEmail">
 			<var name="userEmailAddress" value="${userEmailAddress}" />
+			<var name="userName" value="${userName}" />
 		</execute>
 
 		<execute macro="SOMembersAdministration#createAccountViaSiteInviteEmail">
@@ -93,6 +94,7 @@
 		<execute macro="User#loginPG">
 			<var name="password" value="test" />
 			<var name="userEmailAddress" value="${adminEmailAddress}" />
+			<var name="userScreenName" value="${userScreenName}" />
 		</execute>
 
 		<execute macro="Page#gotoMyAccount">

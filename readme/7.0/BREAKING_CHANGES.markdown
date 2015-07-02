@@ -20,7 +20,7 @@ feature or API will be dropped in an upcoming version.
 replaces an old API, in spite of the old API being kept in Liferay Portal for
 backwards compatibility.
 
-*This document has been reviewed through commit `6d3a2a4`.*
+*This document has been reviewed through commit `e32f122`.*
 
 ## Breaking Changes Contribution Guidelines
 
@@ -2002,36 +2002,128 @@ FreeMarker or any other framework.
 
 ---------------------------------------
 
-### Removed ckconfig files for CKEditor configuration
+### Removed ckconfig Files Used for CKEditor Configuration
 - **Date:** 2015-Jun-16
 - **JIRA Ticket:** LPS-55518
 
 #### What changed?
 
 The files `ckconfig.jsp`, `ckconfig-ext.jsp`, `ckconfig_bbcode.jsp`,
-`ckconfig_bbcode-ext.jsp`, `ckconfig_creole.jsp` and `ckconfig_creole-ext.jsp`
+`ckconfig_bbcode-ext.jsp`, `ckconfig_creole.jsp`, and `ckconfig_creole-ext.jsp`
 have been removed and are no longer used to configure the CKEditor instances
-created using the `liferay-ui:input-editor` taglib.
+created using the `liferay-ui:input-editor` tag.
 
 #### Who is affected?
 
-Any hook or plugin-ext overriding these files to modify the editor
+This affects any hook or plugin-ext overriding these files to modify the editor
 configuration.
 
 #### How should I update my code?
 
 Depending on the changes, different extension methods are available:
+
 - For CKEditor configuration options, an implementation of
 `EditorConfigContributor` can be created to pass or modify the expected
 parameters.
-- For CKEditor instance manipulation (setting attributes, adding listeners...),
-a `DynamicInclude` extension point
+- For CKEditor instance manipulation (setting attributes, adding listeners,
+etc.), the `DynamicInclude` extension point
 `js#ckeditor[_creole|_bbcode]#onEditorCreated` has been added to provide the
-possibility of injecting javascript when needed.
+possibility of injecting JavaScript, when needed.
 
 #### Why was this change made?
 
 This change is part of a greater effort to provide mechanisms to extend and
 configure any editor in Liferay Portal in a coherent and extensible way.
+
+---------------------------------------
+
+### Removed the liferay-ui:journal-article taglib
+- **Date:** 2015-Jun-29
+- **JIRA Ticket:** LPS-56383
+
+#### What changed?
+
+The `liferay-ui:journal-article` taglib was removed.
+
+#### Who is affected?
+
+This affects developers using the `liferay-ui:journal-article` tag.
+
+#### How should I update my code?
+
+Use the `liferay-ui:asset-display` taglib instead.
+
+Old code:
+    
+    <liferay-ui:journal-article
+        articleId="<%= article.getArticleId() %>"
+    />
+
+New code:
+
+    <liferay-ui:asset-display
+        className="<%= JournalArticleResource.class.getName() %>"
+        template="<%= article.getResourcePrimKey() %>"
+    />
+
+#### Why was this change made?
+
+The `liferay-ui:asset-display` is a generic way to display any type of asset.
+
+---------------------------------------
+
+### Java package names changed for portlets extracted as modules
+- **Date:** 2015-Jun-29
+- **JIRA Ticket:** LPS-56383 and others
+
+#### What changed?
+
+The java package names changed for those portlets that were extracted as OSGi
+modules in 7.0. Here follows the complete list:
+
+- com.liferay.portlet.bookmarks -> com.liferay.bookmarks
+- com.liferay.portlet.dynamicdatalists -> com.liferay.dynamicdatalists
+- com.liferay.portlet.journal -> com.liferay.journal
+- com.liferay.portlet.polls -> com.liferay.polls
+- com.liferay.portlet.wiki -> com.liferay.wiki
+
+#### Who is affected?
+
+This affects developers using the portlets API from their own plugins.
+
+#### How should I update my code?
+
+Update the package imports to use the new package names. Any literal usage of
+the portlet className should also be updated.
+
+#### Why was this change made?
+
+Package names have been adapted to the new condition of Liferay portlets as
+OSGi services.
+
+---------------------------------------
+
+### DLFileEntryTypes_DDMStructures is no longer available
+- **Date:** 2015-Jul-1
+- **JIRA Ticket:** LPS-56660 and others
+
+#### What changed?
+
+DLFileEntryTypes_DDMStructures mapping table is not longer available.
+
+#### Who is affected?
+
+This might affect developers using the Document Library File Entry Type Local
+Service API.
+
+#### How should I update my code?
+
+Update the calls to addDDMStructureLinks deleteDDMStructureLinks 
+updateDDMStructureLinks if you want
+to add/remove or update references between DLFileEntryType and DDMStructures.
+
+#### Why was this change made?
+
+This change was made to reduce the coupling between the two applications.
 
 ---------------------------------------

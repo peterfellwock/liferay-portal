@@ -43,6 +43,7 @@ import com.liferay.portal.kernel.captcha.CaptchaConfigurationException;
 import com.liferay.portal.kernel.captcha.CaptchaMaxChallengesException;
 import com.liferay.portal.kernel.captcha.CaptchaTextException;
 import com.liferay.portal.kernel.captcha.CaptchaUtil;
+import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManagerUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.util.Constants;
@@ -105,7 +106,8 @@ public class CreateAccountAction extends PortletAction {
 		Company company = themeDisplay.getCompany();
 
 		if (!company.isStrangers()) {
-			throw new PrincipalException();
+			throw new PrincipalException(
+				"Strangers are not allowed to access the portal");
 		}
 
 		String cmd = ParamUtil.getString(actionRequest, Constants.CMD);
@@ -291,7 +293,7 @@ public class CreateAccountAction extends PortletAction {
 
 		if (openIdPending) {
 			session.setAttribute(
-				WebKeys.OPEN_ID_LOGIN, new Long(user.getUserId()));
+				WebKeys.OPEN_ID_LOGIN, Long.valueOf(user.getUserId()));
 
 			session.removeAttribute(WebKeys.OPEN_ID_LOGIN_PENDING);
 		}
@@ -356,7 +358,8 @@ public class CreateAccountAction extends PortletAction {
 			themeDisplay.getCompanyId(), emailAddress);
 
 		if (anonymousUser.getStatus() != WorkflowConstants.STATUS_INCOMPLETE) {
-			throw new PrincipalException();
+			throw new PrincipalException(
+				"Unable to reset user " + anonymousUser.getUuid());
 		}
 
 		UserLocalServiceUtil.deleteUser(anonymousUser.getUserId());
@@ -379,7 +382,8 @@ public class CreateAccountAction extends PortletAction {
 			HttpServletResponse response = PortalUtil.getHttpServletResponse(
 				actionResponse);
 
-			LoginUtil.login(request, response, login, password, false, null);
+			AuthenticatedSessionManagerUtil.login(
+				request, response, login, password, false, null);
 		}
 		else {
 			PortletURL loginURL = LoginUtil.getLoginURL(

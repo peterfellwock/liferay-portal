@@ -52,11 +52,15 @@ import javax.portlet.WindowState;
  */
 public class MVCPortlet extends LiferayPortlet {
 
+	public static final String MVC_PATH =
+		MVCPortlet.class.getName() + "#MVC_PATH";
+
 	@Override
 	public void destroy() {
 		super.destroy();
 
 		_mvcActionCommandCache.close();
+		_mvcRenderCommandCache.close();
 		_mvcResourceCommandCache.close();
 	}
 
@@ -194,13 +198,20 @@ public class MVCPortlet extends LiferayPortlet {
 			getInitParameter("copy-request-parameters"), true);
 
 		_mvcActionCommandCache = new MVCCommandCache(
-			MVCActionCommand.EMPTY, getInitParameter("action.package.prefix"),
+			MVCActionCommand.EMPTY,
+			getInitParameter("mvc-action-command-package-prefix"),
 			getPortletName(), MVCActionCommand.class.getName(),
 			"ActionCommand");
+		_mvcRenderCommandCache = new MVCCommandCache(
+			MVCRenderCommand.EMPTY,
+			getInitParameter("mvc-render-command-package-prefix"),
+			getPortletName(), MVCRenderCommand.class.getName(),
+			"RenderCommand");
 		_mvcResourceCommandCache = new MVCCommandCache(
 			MVCResourceCommand.EMPTY,
-			getInitParameter("resource.package.prefix"), getPortletName(),
-			MVCResourceCommand.class.getName(), "ResourceCommand");
+			getInitParameter("mvc-resource-command-package-prefix"),
+			getPortletName(), MVCResourceCommand.class.getName(),
+			"ResourceCommand");
 	}
 
 	public void invokeTaglibDiscussion(
@@ -233,6 +244,29 @@ public class MVCPortlet extends LiferayPortlet {
 		if (copyRequestParameters) {
 			PortalUtil.copyRequestParameters(actionRequest, actionResponse);
 		}
+	}
+
+	@Override
+	public void render(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		String mvcRenderCommandName = ParamUtil.getString(
+			renderRequest, "mvcRenderCommandName");
+
+		MVCRenderCommand mvcRenderCommand =
+			(MVCRenderCommand)_mvcRenderCommandCache.getMVCCommand(
+				mvcRenderCommandName);
+
+		String mvcPath = null;
+
+		if (mvcRenderCommand != MVCRenderCommand.EMPTY) {
+			mvcPath = mvcRenderCommand.render(renderRequest, renderResponse);
+		}
+
+		renderRequest.setAttribute(MVC_PATH, mvcPath);
+
+		super.render(renderRequest, renderResponse);
 	}
 
 	@Override
@@ -399,6 +433,10 @@ public class MVCPortlet extends LiferayPortlet {
 	protected String getPath(PortletRequest portletRequest) {
 		String mvcPath = portletRequest.getParameter("mvcPath");
 
+		if (mvcPath == null) {
+			mvcPath = (String)portletRequest.getAttribute(MVC_PATH);
+		}
+
 		// Check deprecated parameter
 
 		if (mvcPath == null) {
@@ -521,6 +559,7 @@ public class MVCPortlet extends LiferayPortlet {
 	private static final Log _log = LogFactoryUtil.getLog(MVCPortlet.class);
 
 	private MVCCommandCache _mvcActionCommandCache;
+	private MVCCommandCache _mvcRenderCommandCache;
 	private MVCCommandCache _mvcResourceCommandCache;
 
 }

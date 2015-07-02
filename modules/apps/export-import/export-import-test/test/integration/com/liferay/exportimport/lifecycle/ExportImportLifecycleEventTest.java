@@ -15,6 +15,7 @@
 package com.liferay.exportimport.lifecycle;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.journal.model.JournalFolderConstants;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.portal.NoSuchGroupException;
 import com.liferay.portal.NoSuchLayoutException;
@@ -46,7 +47,6 @@ import com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleEvent;
 import com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleEventListenerRegistryUtil;
 import com.liferay.portlet.exportimport.lifecycle.ExportImportLifecycleListener;
 import com.liferay.portlet.exportimport.staging.StagingUtil;
-import com.liferay.portlet.journal.model.JournalFolderConstants;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -64,14 +64,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.powermock.api.mockito.PowerMockito;
-
 /**
  * @author Daniel Kocsis
  */
 @RunWith(Arquillian.class)
 @Sync(cleanTransaction = true)
-public class ExportImportLifecycleEventTest extends PowerMockito {
+public class ExportImportLifecycleEventTest {
 
 	@ClassRule
 	@Rule

@@ -309,7 +309,7 @@ String displayStyle = journalDisplayContext.getDisplayStyle();
 					tempRowURL.setParameter("folderId", String.valueOf(curArticle.getFolderId()));
 					tempRowURL.setParameter("articleId", curArticle.getArticleId());
 
-					tempRowURL.setParameter("status", String.valueOf(status));
+					tempRowURL.setParameter("status", String.valueOf(curArticle.getStatus()));
 
 					request.setAttribute("view_entries.jsp-article", curArticle);
 
@@ -330,7 +330,7 @@ String displayStyle = journalDisplayContext.getDisplayStyle();
 					<%
 					String folderImage = "folder_empty_article";
 
-					if (PropsValues.JOURNAL_FOLDER_ICON_CHECK_COUNT && (JournalFolderServiceUtil.getFoldersAndArticlesCount(scopeGroupId, curFolder.getFolderId()) > 0)) {
+					if (JournalServiceConfigurationValues.JOURNAL_FOLDER_ICON_CHECK_COUNT && (JournalFolderServiceUtil.getFoldersAndArticlesCount(scopeGroupId, curFolder.getFolderId()) > 0)) {
 						folderImage = "folder_full_article";
 					}
 
