@@ -483,6 +483,13 @@ public class HookHotDeployListener
 			servletContextName, portletClassLoader, rootElement);
 
 		PluginPackage pluginPackage = hotDeployEvent.getPluginPackage();
+		
+		if (!checkPermission(
+				PACLConstants.PORTAL_HOOK_PERMISSION_CUSTOM_JSP_DIR,
+				portletClassLoader, null, "Rejecting custom JSP directory")) {
+
+			return;
+		}
 
 		try {
 			CustomJspBagRegistryUtil customJspBagRegistryUtil =
