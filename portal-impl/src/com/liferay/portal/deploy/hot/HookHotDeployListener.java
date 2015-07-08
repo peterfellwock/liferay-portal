@@ -491,15 +491,30 @@ public class HookHotDeployListener
 			return;
 		}
 
+		String customJspDir = rootElement.elementText("custom-jsp-dir");
+
+		if (Validator.isNull(customJspDir)) {
+			return;
+		}
+
+		if (_log.isDebugEnabled()) {
+			_log.debug("Custom JSP directory: " + customJspDir);
+		}
+
+		boolean customJspGlobal = GetterUtil.getBoolean(
+			rootElement.elementText("custom-jsp-global"), true);
+
 		try {
+			CustomJspBag customJspBag = new CustomJspBagImpl(
+				servletContext, customJspDir, customJspGlobal,
+				pluginPackage.getName());
+
 			CustomJspBagRegistryUtil customJspBagRegistryUtil =
 				CustomJspBagRegistryUtil.getInstance();
 
-			customJspBagRegistryUtil.register(
-				servletContext, servletContextName, pluginPackage.getName(),
-				rootElement);
+			customJspBagRegistryUtil.register(customJspBag);
 		}
-		catch (DuplicateCustomJspException dcje) {
+		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(servletContextName + " will be undeployed");
 			}

@@ -19,12 +19,10 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.log.SanitizerLogWrapper;
 import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.util.CustomJspRegistryUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.registry.Registry;
@@ -130,31 +128,6 @@ public class CustomJspBagRegistryUtil {
 				servletContextName, displayName);
 		}
 	}
-
-		public void register(
-				ServletContext servletContext, String servletContextName,
-				String pluginPackageName, Element rootElement)
-			throws Exception {
-
-			String customJspDir = rootElement.elementText("custom-jsp-dir");
-
-			if (Validator.isNull(customJspDir)) {
-				return;
-			}
-
-			if (_log.isDebugEnabled()) {
-				_log.debug("Custom JSP directory: " + customJspDir);
-			}
-
-			boolean customJspGlobal = GetterUtil.getBoolean(
-				rootElement.elementText("custom-jsp-global"), true);
-
-			CustomJspBag customJspBag = new CustomJspBagImpl(
-				servletContext, customJspDir, customJspGlobal,
-				pluginPackageName);
-
-			register(customJspBag);
-		}
 
 		public InputStream getCustomJspInputStream(
 				ServletContext servletContext, String customJsp) {
