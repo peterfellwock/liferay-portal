@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.pluginsadmin;
+package com.liferay.pluginsadmin.web.portlet;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.pluginsadmin.action;
+package com.liferay.pluginsadmin.web.portlet.action;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -64,7 +64,7 @@ public class EditPluginAction extends BaseMVCActionCommand {
 
 				sendRedirect(
 					actionRequest, actionResponse,
-					"/html/portlet/plugins_admin/error.jsp");
+					"/error.jsp");
 			}
 			else {
 				throw e;

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.pluginsadmin.action;
+package com.liferay.pluginsadmin.web.portlet.action;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
@@ -36,7 +36,7 @@ public class EditPluginMVSCRenderCommand implements MVCRenderCommand {
 	public String render(
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
-		return "/html/portlet/plugins_admin/edit_plugin.jsp";
+		return "/edit_plugin.jsp";
 	}
 
 }
