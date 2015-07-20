@@ -2397,8 +2397,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 	}
 
 	protected void cacheUniqueFindersCache(
-		CalendarNotificationTemplate calendarNotificationTemplate) {
-		if (calendarNotificationTemplate.isNew()) {
+		CalendarNotificationTemplate calendarNotificationTemplate, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					calendarNotificationTemplate.getUuid(),
 					calendarNotificationTemplate.getGroupId()
@@ -2744,7 +2744,7 @@ public class CalendarNotificationTemplatePersistenceImpl
 			calendarNotificationTemplate, false);
 
 		clearUniqueFindersCache(calendarNotificationTemplate);
-		cacheUniqueFindersCache(calendarNotificationTemplate);
+		cacheUniqueFindersCache(calendarNotificationTemplate, isNew);
 
 		calendarNotificationTemplate.resetOriginalValues();
 
@@ -3145,16 +3145,8 @@ public class CalendarNotificationTemplatePersistenceImpl
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = CalendarNotificationTemplateModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				CalendarNotificationTemplateModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return CalendarNotificationTemplateModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

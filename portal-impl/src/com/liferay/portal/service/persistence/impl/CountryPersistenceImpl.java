@@ -1348,8 +1348,8 @@ public class CountryPersistenceImpl extends BasePersistenceImpl<Country>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(Country country) {
-		if (country.isNew()) {
+	protected void cacheUniqueFindersCache(Country country, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { country.getName() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_NAME, args,
@@ -1601,7 +1601,7 @@ public class CountryPersistenceImpl extends BasePersistenceImpl<Country>
 			CountryImpl.class, country.getPrimaryKey(), country, false);
 
 		clearUniqueFindersCache(country);
-		cacheUniqueFindersCache(country);
+		cacheUniqueFindersCache(country, isNew);
 
 		country.resetOriginalValues();
 
@@ -1989,15 +1989,8 @@ public class CountryPersistenceImpl extends BasePersistenceImpl<Country>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = CountryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + CountryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return CountryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

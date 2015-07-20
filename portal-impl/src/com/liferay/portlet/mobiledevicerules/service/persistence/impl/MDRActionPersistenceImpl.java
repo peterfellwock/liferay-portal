@@ -1995,8 +1995,8 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MDRAction mdrAction) {
-		if (mdrAction.isNew()) {
+	protected void cacheUniqueFindersCache(MDRAction mdrAction, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mdrAction.getUuid(), mdrAction.getGroupId()
 				};
@@ -2273,7 +2273,7 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 			MDRActionImpl.class, mdrAction.getPrimaryKey(), mdrAction, false);
 
 		clearUniqueFindersCache(mdrAction);
-		cacheUniqueFindersCache(mdrAction);
+		cacheUniqueFindersCache(mdrAction, isNew);
 
 		mdrAction.resetOriginalValues();
 
@@ -2668,15 +2668,8 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = MDRActionModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + MDRActionModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MDRActionModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

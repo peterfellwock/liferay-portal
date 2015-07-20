@@ -1886,8 +1886,9 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MBStatsUser mbStatsUser) {
-		if (mbStatsUser.isNew()) {
+	protected void cacheUniqueFindersCache(MBStatsUser mbStatsUser,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mbStatsUser.getGroupId(), mbStatsUser.getUserId()
 				};
@@ -2112,7 +2113,7 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 			false);
 
 		clearUniqueFindersCache(mbStatsUser);
-		cacheUniqueFindersCache(mbStatsUser);
+		cacheUniqueFindersCache(mbStatsUser, isNew);
 
 		mbStatsUser.resetOriginalValues();
 
@@ -2492,15 +2493,8 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = MBStatsUserModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + MBStatsUserModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MBStatsUserModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

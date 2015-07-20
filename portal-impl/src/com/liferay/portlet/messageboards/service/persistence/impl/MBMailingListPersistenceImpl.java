@@ -2223,8 +2223,9 @@ public class MBMailingListPersistenceImpl extends BasePersistenceImpl<MBMailingL
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MBMailingList mbMailingList) {
-		if (mbMailingList.isNew()) {
+	protected void cacheUniqueFindersCache(MBMailingList mbMailingList,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mbMailingList.getUuid(), mbMailingList.getGroupId()
 				};
@@ -2544,7 +2545,7 @@ public class MBMailingListPersistenceImpl extends BasePersistenceImpl<MBMailingL
 			mbMailingList, false);
 
 		clearUniqueFindersCache(mbMailingList);
-		cacheUniqueFindersCache(mbMailingList);
+		cacheUniqueFindersCache(mbMailingList, isNew);
 
 		mbMailingList.resetOriginalValues();
 
@@ -2950,15 +2951,8 @@ public class MBMailingListPersistenceImpl extends BasePersistenceImpl<MBMailingL
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = MBMailingListModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + MBMailingListModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MBMailingListModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -4400,8 +4400,8 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 	}
 
 	protected void cacheUniqueFindersCache(
-		PortletPreferences portletPreferences) {
-		if (portletPreferences.isNew()) {
+		PortletPreferences portletPreferences, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					portletPreferences.getOwnerId(),
 					portletPreferences.getOwnerType(),
@@ -4752,7 +4752,7 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			portletPreferences, false);
 
 		clearUniqueFindersCache(portletPreferences);
-		cacheUniqueFindersCache(portletPreferences);
+		cacheUniqueFindersCache(portletPreferences, isNew);
 
 		portletPreferences.resetOriginalValues();
 
@@ -5138,16 +5138,8 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = PortletPreferencesModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				PortletPreferencesModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return PortletPreferencesModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

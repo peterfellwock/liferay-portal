@@ -5971,8 +5971,9 @@ public class SocialActivityPersistenceImpl extends BasePersistenceImpl<SocialAct
 		}
 	}
 
-	protected void cacheUniqueFindersCache(SocialActivity socialActivity) {
-		if (socialActivity.isNew()) {
+	protected void cacheUniqueFindersCache(SocialActivity socialActivity,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { socialActivity.getMirrorActivityId() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_MIRRORACTIVITYID,
@@ -6425,7 +6426,7 @@ public class SocialActivityPersistenceImpl extends BasePersistenceImpl<SocialAct
 			socialActivity, false);
 
 		clearUniqueFindersCache(socialActivity);
-		cacheUniqueFindersCache(socialActivity);
+		cacheUniqueFindersCache(socialActivity, isNew);
 
 		socialActivity.resetOriginalValues();
 
@@ -6820,16 +6821,8 @@ public class SocialActivityPersistenceImpl extends BasePersistenceImpl<SocialAct
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = SocialActivityModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				SocialActivityModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return SocialActivityModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

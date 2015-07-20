@@ -11539,8 +11539,9 @@ public class DDMTemplatePersistenceImpl extends BasePersistenceImpl<DDMTemplate>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(DDMTemplate ddmTemplate) {
-		if (ddmTemplate.isNew()) {
+	protected void cacheUniqueFindersCache(DDMTemplate ddmTemplate,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					ddmTemplate.getUuid(), ddmTemplate.getGroupId()
 				};
@@ -12103,7 +12104,7 @@ public class DDMTemplatePersistenceImpl extends BasePersistenceImpl<DDMTemplate>
 			false);
 
 		clearUniqueFindersCache(ddmTemplate);
-		cacheUniqueFindersCache(ddmTemplate);
+		cacheUniqueFindersCache(ddmTemplate, isNew);
 
 		ddmTemplate.resetOriginalValues();
 
@@ -12508,15 +12509,8 @@ public class DDMTemplatePersistenceImpl extends BasePersistenceImpl<DDMTemplate>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = DDMTemplateModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + DDMTemplateModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return DDMTemplateModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -2703,8 +2703,9 @@ public class SCProductEntryPersistenceImpl extends BasePersistenceImpl<SCProduct
 		}
 	}
 
-	protected void cacheUniqueFindersCache(SCProductEntry scProductEntry) {
-		if (scProductEntry.isNew()) {
+	protected void cacheUniqueFindersCache(SCProductEntry scProductEntry,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					scProductEntry.getRepoGroupId(),
 					scProductEntry.getRepoArtifactId()
@@ -2981,7 +2982,7 @@ public class SCProductEntryPersistenceImpl extends BasePersistenceImpl<SCProduct
 			scProductEntry, false);
 
 		clearUniqueFindersCache(scProductEntry);
-		cacheUniqueFindersCache(scProductEntry);
+		cacheUniqueFindersCache(scProductEntry, isNew);
 
 		scProductEntry.resetOriginalValues();
 
@@ -3653,16 +3654,8 @@ public class SCProductEntryPersistenceImpl extends BasePersistenceImpl<SCProduct
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = SCProductEntryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				SCProductEntryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return SCProductEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

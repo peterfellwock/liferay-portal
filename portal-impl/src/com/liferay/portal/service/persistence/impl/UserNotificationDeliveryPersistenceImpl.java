@@ -1007,8 +1007,8 @@ public class UserNotificationDeliveryPersistenceImpl extends BasePersistenceImpl
 	}
 
 	protected void cacheUniqueFindersCache(
-		UserNotificationDelivery userNotificationDelivery) {
-		if (userNotificationDelivery.isNew()) {
+		UserNotificationDelivery userNotificationDelivery, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					userNotificationDelivery.getUserId(),
 					userNotificationDelivery.getPortletId(),
@@ -1238,7 +1238,7 @@ public class UserNotificationDeliveryPersistenceImpl extends BasePersistenceImpl
 			false);
 
 		clearUniqueFindersCache(userNotificationDelivery);
-		cacheUniqueFindersCache(userNotificationDelivery);
+		cacheUniqueFindersCache(userNotificationDelivery, isNew);
 
 		userNotificationDelivery.resetOriginalValues();
 
@@ -1628,16 +1628,8 @@ public class UserNotificationDeliveryPersistenceImpl extends BasePersistenceImpl
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = UserNotificationDeliveryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				UserNotificationDeliveryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return UserNotificationDeliveryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

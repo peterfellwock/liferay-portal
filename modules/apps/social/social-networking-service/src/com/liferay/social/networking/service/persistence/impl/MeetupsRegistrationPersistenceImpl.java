@@ -1431,8 +1431,8 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	}
 
 	protected void cacheUniqueFindersCache(
-		MeetupsRegistration meetupsRegistration) {
-		if (meetupsRegistration.isNew()) {
+		MeetupsRegistration meetupsRegistration, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					meetupsRegistration.getUserId(),
 					meetupsRegistration.getMeetupsEntryId()
@@ -1696,7 +1696,7 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 			meetupsRegistration, false);
 
 		clearUniqueFindersCache(meetupsRegistration);
-		cacheUniqueFindersCache(meetupsRegistration);
+		cacheUniqueFindersCache(meetupsRegistration, isNew);
 
 		meetupsRegistration.resetOriginalValues();
 
@@ -2084,16 +2084,8 @@ public class MeetupsRegistrationPersistenceImpl extends BasePersistenceImpl<Meet
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = MeetupsRegistrationModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				MeetupsRegistrationModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MeetupsRegistrationModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

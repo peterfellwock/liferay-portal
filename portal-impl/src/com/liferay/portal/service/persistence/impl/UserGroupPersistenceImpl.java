@@ -4052,8 +4052,8 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(UserGroup userGroup) {
-		if (userGroup.isNew()) {
+	protected void cacheUniqueFindersCache(UserGroup userGroup, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					userGroup.getCompanyId(), userGroup.getName()
 				};
@@ -4358,7 +4358,7 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 			UserGroupImpl.class, userGroup.getPrimaryKey(), userGroup, false);
 
 		clearUniqueFindersCache(userGroup);
-		cacheUniqueFindersCache(userGroup);
+		cacheUniqueFindersCache(userGroup, isNew);
 
 		userGroup.resetOriginalValues();
 
@@ -5538,15 +5538,8 @@ public class UserGroupPersistenceImpl extends BasePersistenceImpl<UserGroup>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = UserGroupModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + UserGroupModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return UserGroupModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -4478,8 +4478,8 @@ public class WikiNodePersistenceImpl extends BasePersistenceImpl<WikiNode>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(WikiNode wikiNode) {
-		if (wikiNode.isNew()) {
+	protected void cacheUniqueFindersCache(WikiNode wikiNode, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					wikiNode.getUuid(), wikiNode.getGroupId()
 				};
@@ -4846,7 +4846,7 @@ public class WikiNodePersistenceImpl extends BasePersistenceImpl<WikiNode>
 			WikiNodeImpl.class, wikiNode.getPrimaryKey(), wikiNode, false);
 
 		clearUniqueFindersCache(wikiNode);
-		cacheUniqueFindersCache(wikiNode);
+		cacheUniqueFindersCache(wikiNode, isNew);
 
 		wikiNode.resetOriginalValues();
 
@@ -5239,15 +5239,8 @@ public class WikiNodePersistenceImpl extends BasePersistenceImpl<WikiNode>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = WikiNodeModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + WikiNodeModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return WikiNodeModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

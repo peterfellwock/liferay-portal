@@ -1389,8 +1389,8 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 	}
 
 	protected void cacheUniqueFindersCache(
-		ResourceBlockPermission resourceBlockPermission) {
-		if (resourceBlockPermission.isNew()) {
+		ResourceBlockPermission resourceBlockPermission, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					resourceBlockPermission.getResourceBlockId(),
 					resourceBlockPermission.getRoleId()
@@ -1627,7 +1627,7 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 			false);
 
 		clearUniqueFindersCache(resourceBlockPermission);
-		cacheUniqueFindersCache(resourceBlockPermission);
+		cacheUniqueFindersCache(resourceBlockPermission, isNew);
 
 		resourceBlockPermission.resetOriginalValues();
 
@@ -2013,16 +2013,8 @@ public class ResourceBlockPermissionPersistenceImpl extends BasePersistenceImpl<
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ResourceBlockPermissionModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				ResourceBlockPermissionModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ResourceBlockPermissionModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -2268,8 +2268,9 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 		}
 	}
 
-	protected void cacheUniqueFindersCache(RepositoryEntry repositoryEntry) {
-		if (repositoryEntry.isNew()) {
+	protected void cacheUniqueFindersCache(RepositoryEntry repositoryEntry,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					repositoryEntry.getUuid(), repositoryEntry.getGroupId()
 				};
@@ -2592,7 +2593,7 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 			repositoryEntry, false);
 
 		clearUniqueFindersCache(repositoryEntry);
-		cacheUniqueFindersCache(repositoryEntry);
+		cacheUniqueFindersCache(repositoryEntry, isNew);
 
 		repositoryEntry.resetOriginalValues();
 
@@ -2985,16 +2986,8 @@ public class RepositoryEntryPersistenceImpl extends BasePersistenceImpl<Reposito
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = RepositoryEntryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				RepositoryEntryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return RepositoryEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

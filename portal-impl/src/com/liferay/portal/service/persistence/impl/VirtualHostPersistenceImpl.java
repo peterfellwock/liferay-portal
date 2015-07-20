@@ -634,8 +634,9 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(VirtualHost virtualHost) {
-		if (virtualHost.isNew()) {
+	protected void cacheUniqueFindersCache(VirtualHost virtualHost,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { virtualHost.getHostname() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_HOSTNAME, args,
@@ -853,7 +854,7 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 			false);
 
 		clearUniqueFindersCache(virtualHost);
-		cacheUniqueFindersCache(virtualHost);
+		cacheUniqueFindersCache(virtualHost, isNew);
 
 		virtualHost.resetOriginalValues();
 
@@ -1233,15 +1234,8 @@ public class VirtualHostPersistenceImpl extends BasePersistenceImpl<VirtualHost>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = VirtualHostModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + VirtualHostModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return VirtualHostModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -21125,8 +21125,8 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(WikiPage wikiPage) {
-		if (wikiPage.isNew()) {
+	protected void cacheUniqueFindersCache(WikiPage wikiPage, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					wikiPage.getUuid(), wikiPage.getGroupId()
 				};
@@ -22072,7 +22072,7 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 			WikiPageImpl.class, wikiPage.getPrimaryKey(), wikiPage, false);
 
 		clearUniqueFindersCache(wikiPage);
-		cacheUniqueFindersCache(wikiPage);
+		cacheUniqueFindersCache(wikiPage, isNew);
 
 		wikiPage.resetOriginalValues();
 
@@ -22473,15 +22473,8 @@ public class WikiPagePersistenceImpl extends BasePersistenceImpl<WikiPage>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = WikiPageModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + WikiPageModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return WikiPageModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -12532,8 +12532,8 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(MBThread mbThread) {
-		if (mbThread.isNew()) {
+	protected void cacheUniqueFindersCache(MBThread mbThread, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					mbThread.getUuid(), mbThread.getGroupId()
 				};
@@ -12968,7 +12968,7 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 			MBThreadImpl.class, mbThread.getPrimaryKey(), mbThread, false);
 
 		clearUniqueFindersCache(mbThread);
-		cacheUniqueFindersCache(mbThread);
+		cacheUniqueFindersCache(mbThread, isNew);
 
 		mbThread.resetOriginalValues();
 
@@ -13368,15 +13368,8 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = MBThreadModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + MBThreadModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return MBThreadModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

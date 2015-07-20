@@ -6358,8 +6358,9 @@ public class CalendarResourcePersistenceImpl extends BasePersistenceImpl<Calenda
 		}
 	}
 
-	protected void cacheUniqueFindersCache(CalendarResource calendarResource) {
-		if (calendarResource.isNew()) {
+	protected void cacheUniqueFindersCache(CalendarResource calendarResource,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					calendarResource.getUuid(), calendarResource.getGroupId()
 				};
@@ -6761,7 +6762,7 @@ public class CalendarResourcePersistenceImpl extends BasePersistenceImpl<Calenda
 			calendarResource, false);
 
 		clearUniqueFindersCache(calendarResource);
-		cacheUniqueFindersCache(calendarResource);
+		cacheUniqueFindersCache(calendarResource, isNew);
 
 		calendarResource.resetOriginalValues();
 
@@ -7160,16 +7161,8 @@ public class CalendarResourcePersistenceImpl extends BasePersistenceImpl<Calenda
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = CalendarResourceModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				CalendarResourceModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return CalendarResourceModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

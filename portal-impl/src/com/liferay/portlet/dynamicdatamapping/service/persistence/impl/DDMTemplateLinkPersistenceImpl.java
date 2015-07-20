@@ -1366,8 +1366,9 @@ public class DDMTemplateLinkPersistenceImpl extends BasePersistenceImpl<DDMTempl
 		}
 	}
 
-	protected void cacheUniqueFindersCache(DDMTemplateLink ddmTemplateLink) {
-		if (ddmTemplateLink.isNew()) {
+	protected void cacheUniqueFindersCache(DDMTemplateLink ddmTemplateLink,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					ddmTemplateLink.getClassNameId(),
 					ddmTemplateLink.getClassPK()
@@ -1599,7 +1600,7 @@ public class DDMTemplateLinkPersistenceImpl extends BasePersistenceImpl<DDMTempl
 			ddmTemplateLink, false);
 
 		clearUniqueFindersCache(ddmTemplateLink);
-		cacheUniqueFindersCache(ddmTemplateLink);
+		cacheUniqueFindersCache(ddmTemplateLink, isNew);
 
 		ddmTemplateLink.resetOriginalValues();
 
@@ -1979,16 +1980,8 @@ public class DDMTemplateLinkPersistenceImpl extends BasePersistenceImpl<DDMTempl
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = DDMTemplateLinkModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				DDMTemplateLinkModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return DDMTemplateLinkModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

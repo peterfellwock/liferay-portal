@@ -11,6 +11,7 @@ Export-Package:\
 	com.liferay.journal.service.configuration.configurator,\
 	com.liferay.journal.service.impl,\
 	com.liferay.journal.service.permission,\
+	com.liferay.journal.service.util,\
 	com.liferay.journal.social,\
 	com.liferay.journal.transformer,\
 	com.liferay.journal.trash,\
@@ -30,6 +31,7 @@ Include-Resource:\
 	@../../../../util-java/util-java.jar!/com/liferay/util/RSSUtil.class,\
 	@../../../../util-java/util-java.jar!/com/liferay/util/dao/orm/CustomSQL.class,\
 	@../../../../util-java/util-java.jar!/com/liferay/util/dao/orm/CustomSQLUtil.class,\
+	@../../../../util-java/util-java.jar!/com/liferay/util/xml/Dom4jUtil.class,\
 	@../../../../util-java/util-java.jar!/com/liferay/util/xml/XMLUtil.class
 Liferay-Service: true
 Require-Capability:\

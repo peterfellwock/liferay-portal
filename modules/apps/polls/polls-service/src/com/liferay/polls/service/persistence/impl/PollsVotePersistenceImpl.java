@@ -2693,8 +2693,8 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(PollsVote pollsVote) {
-		if (pollsVote.isNew()) {
+	protected void cacheUniqueFindersCache(PollsVote pollsVote, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					pollsVote.getUuid(), pollsVote.getGroupId()
 				};
@@ -3021,7 +3021,7 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 			PollsVoteImpl.class, pollsVote.getPrimaryKey(), pollsVote, false);
 
 		clearUniqueFindersCache(pollsVote);
-		cacheUniqueFindersCache(pollsVote);
+		cacheUniqueFindersCache(pollsVote, isNew);
 
 		pollsVote.resetOriginalValues();
 
@@ -3412,15 +3412,8 @@ public class PollsVotePersistenceImpl extends BasePersistenceImpl<PollsVote>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = PollsVoteModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + PollsVoteModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return PollsVoteModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

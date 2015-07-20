@@ -2012,8 +2012,9 @@ public class LayoutBranchPersistenceImpl extends BasePersistenceImpl<LayoutBranc
 		}
 	}
 
-	protected void cacheUniqueFindersCache(LayoutBranch layoutBranch) {
-		if (layoutBranch.isNew()) {
+	protected void cacheUniqueFindersCache(LayoutBranch layoutBranch,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					layoutBranch.getLayoutSetBranchId(), layoutBranch.getPlid(),
 					layoutBranch.getName()
@@ -2272,7 +2273,7 @@ public class LayoutBranchPersistenceImpl extends BasePersistenceImpl<LayoutBranc
 			false);
 
 		clearUniqueFindersCache(layoutBranch);
-		cacheUniqueFindersCache(layoutBranch);
+		cacheUniqueFindersCache(layoutBranch, isNew);
 
 		layoutBranch.resetOriginalValues();
 
@@ -2658,15 +2659,8 @@ public class LayoutBranchPersistenceImpl extends BasePersistenceImpl<LayoutBranc
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = LayoutBranchModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + LayoutBranchModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return LayoutBranchModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

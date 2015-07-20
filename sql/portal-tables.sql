@@ -1622,14 +1622,6 @@ create table ServiceComponent (
 	data_ TEXT null
 );
 
-create table Shard (
-	mvccVersion LONG default 0,
-	shardId LONG not null primary key,
-	classNameId LONG,
-	classPK LONG,
-	name VARCHAR(75) null
-);
-
 create table ShoppingCart (
 	cartId LONG not null primary key,
 	groupId LONG,
@@ -1942,6 +1934,7 @@ create table SystemEvent (
 
 create table Team (
 	mvccVersion LONG default 0,
+	uuid_ VARCHAR(75) null,
 	teamId LONG not null primary key,
 	companyId LONG,
 	userId LONG,

@@ -1682,8 +1682,9 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ResourceBlock resourceBlock) {
-		if (resourceBlock.isNew()) {
+	protected void cacheUniqueFindersCache(ResourceBlock resourceBlock,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					resourceBlock.getCompanyId(), resourceBlock.getGroupId(),
 					resourceBlock.getName(), resourceBlock.getPermissionsHash()
@@ -1925,7 +1926,7 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 			resourceBlock, false);
 
 		clearUniqueFindersCache(resourceBlock);
-		cacheUniqueFindersCache(resourceBlock);
+		cacheUniqueFindersCache(resourceBlock, isNew);
 
 		resourceBlock.resetOriginalValues();
 
@@ -2307,15 +2308,8 @@ public class ResourceBlockPersistenceImpl extends BasePersistenceImpl<ResourceBl
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ResourceBlockModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + ResourceBlockModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ResourceBlockModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

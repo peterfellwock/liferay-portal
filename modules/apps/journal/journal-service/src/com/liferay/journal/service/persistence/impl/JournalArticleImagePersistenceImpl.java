@@ -2214,8 +2214,8 @@ public class JournalArticleImagePersistenceImpl extends BasePersistenceImpl<Jour
 	}
 
 	protected void cacheUniqueFindersCache(
-		JournalArticleImage journalArticleImage) {
-		if (journalArticleImage.isNew()) {
+		JournalArticleImage journalArticleImage, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					journalArticleImage.getGroupId(),
 					journalArticleImage.getArticleId(),
@@ -2488,7 +2488,7 @@ public class JournalArticleImagePersistenceImpl extends BasePersistenceImpl<Jour
 			journalArticleImage, false);
 
 		clearUniqueFindersCache(journalArticleImage);
-		cacheUniqueFindersCache(journalArticleImage);
+		cacheUniqueFindersCache(journalArticleImage, isNew);
 
 		journalArticleImage.resetOriginalValues();
 
@@ -2875,16 +2875,8 @@ public class JournalArticleImagePersistenceImpl extends BasePersistenceImpl<Jour
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = JournalArticleImageModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				JournalArticleImageModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return JournalArticleImageModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

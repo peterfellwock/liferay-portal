@@ -919,8 +919,8 @@ public class AnnouncementsDeliveryPersistenceImpl extends BasePersistenceImpl<An
 	}
 
 	protected void cacheUniqueFindersCache(
-		AnnouncementsDelivery announcementsDelivery) {
-		if (announcementsDelivery.isNew()) {
+		AnnouncementsDelivery announcementsDelivery, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					announcementsDelivery.getUserId(),
 					announcementsDelivery.getType()
@@ -1135,7 +1135,7 @@ public class AnnouncementsDeliveryPersistenceImpl extends BasePersistenceImpl<An
 			announcementsDelivery.getPrimaryKey(), announcementsDelivery, false);
 
 		clearUniqueFindersCache(announcementsDelivery);
-		cacheUniqueFindersCache(announcementsDelivery);
+		cacheUniqueFindersCache(announcementsDelivery, isNew);
 
 		announcementsDelivery.resetOriginalValues();
 
@@ -1526,16 +1526,8 @@ public class AnnouncementsDeliveryPersistenceImpl extends BasePersistenceImpl<An
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = AnnouncementsDeliveryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				AnnouncementsDeliveryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return AnnouncementsDeliveryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

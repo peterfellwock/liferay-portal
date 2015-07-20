@@ -307,8 +307,8 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 	}
 
 	<#if entity.getUniqueFinderList()?size &gt; 0>
-		protected void cacheUniqueFindersCache(${entity.name} ${entity.varName}) {
-			if (${entity.varName}.isNew()) {
+		protected void cacheUniqueFindersCache(${entity.name} ${entity.varName}, boolean isNew) {
+			if (isNew) {
 				<#list entity.getUniqueFinderList() as finder>
 					<#assign finderColsList = finder.getColumns()>
 
@@ -774,7 +774,7 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 
 		<#if uniqueFinderList?size &gt; 0>
 			clearUniqueFindersCache(${entity.varName});
-			cacheUniqueFindersCache(${entity.varName});
+			cacheUniqueFindersCache(${entity.varName}, isNew);
 		</#if>
 
 		${entity.varName}.resetOriginalValues();
@@ -1435,14 +1435,8 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 	</#if>
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ${entity.name}ModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " + columnName + " for table " + ${entity.name}ModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ${entity.name}ModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	<#if entity.isHierarchicalTree()>

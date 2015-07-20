@@ -2982,8 +2982,8 @@ public class DDLRecordPersistenceImpl extends BasePersistenceImpl<DDLRecord>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(DDLRecord ddlRecord) {
-		if (ddlRecord.isNew()) {
+	protected void cacheUniqueFindersCache(DDLRecord ddlRecord, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					ddlRecord.getUuid(), ddlRecord.getGroupId()
 				};
@@ -3300,7 +3300,7 @@ public class DDLRecordPersistenceImpl extends BasePersistenceImpl<DDLRecord>
 			DDLRecordImpl.class, ddlRecord.getPrimaryKey(), ddlRecord, false);
 
 		clearUniqueFindersCache(ddlRecord);
-		cacheUniqueFindersCache(ddlRecord);
+		cacheUniqueFindersCache(ddlRecord, isNew);
 
 		ddlRecord.resetOriginalValues();
 
@@ -3694,15 +3694,8 @@ public class DDLRecordPersistenceImpl extends BasePersistenceImpl<DDLRecord>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = DDLRecordModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + DDLRecordModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return DDLRecordModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

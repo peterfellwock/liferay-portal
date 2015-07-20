@@ -1332,8 +1332,8 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(Company company) {
-		if (company.isNew()) {
+	protected void cacheUniqueFindersCache(Company company, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { company.getWebId() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_WEBID, args,
@@ -1586,7 +1586,7 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 			CompanyImpl.class, company.getPrimaryKey(), company, false);
 
 		clearUniqueFindersCache(company);
-		cacheUniqueFindersCache(company);
+		cacheUniqueFindersCache(company, isNew);
 
 		company.resetOriginalValues();
 
@@ -1976,15 +1976,8 @@ public class CompanyPersistenceImpl extends BasePersistenceImpl<Company>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = CompanyModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + CompanyModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return CompanyModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

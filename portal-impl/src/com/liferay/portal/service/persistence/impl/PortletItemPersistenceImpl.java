@@ -1634,8 +1634,9 @@ public class PortletItemPersistenceImpl extends BasePersistenceImpl<PortletItem>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(PortletItem portletItem) {
-		if (portletItem.isNew()) {
+	protected void cacheUniqueFindersCache(PortletItem portletItem,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					portletItem.getGroupId(), portletItem.getName(),
 					portletItem.getPortletId(), portletItem.getClassNameId()
@@ -1898,7 +1899,7 @@ public class PortletItemPersistenceImpl extends BasePersistenceImpl<PortletItem>
 			false);
 
 		clearUniqueFindersCache(portletItem);
-		cacheUniqueFindersCache(portletItem);
+		cacheUniqueFindersCache(portletItem, isNew);
 
 		portletItem.resetOriginalValues();
 
@@ -2284,15 +2285,8 @@ public class PortletItemPersistenceImpl extends BasePersistenceImpl<PortletItem>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = PortletItemModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + PortletItemModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return PortletItemModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

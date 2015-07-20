@@ -4762,8 +4762,9 @@ public class LayoutFriendlyURLPersistenceImpl extends BasePersistenceImpl<Layout
 		}
 	}
 
-	protected void cacheUniqueFindersCache(LayoutFriendlyURL layoutFriendlyURL) {
-		if (layoutFriendlyURL.isNew()) {
+	protected void cacheUniqueFindersCache(
+		LayoutFriendlyURL layoutFriendlyURL, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					layoutFriendlyURL.getUuid(), layoutFriendlyURL.getGroupId()
 				};
@@ -5216,7 +5217,7 @@ public class LayoutFriendlyURLPersistenceImpl extends BasePersistenceImpl<Layout
 			layoutFriendlyURL, false);
 
 		clearUniqueFindersCache(layoutFriendlyURL);
-		cacheUniqueFindersCache(layoutFriendlyURL);
+		cacheUniqueFindersCache(layoutFriendlyURL, isNew);
 
 		layoutFriendlyURL.resetOriginalValues();
 
@@ -5612,16 +5613,8 @@ public class LayoutFriendlyURLPersistenceImpl extends BasePersistenceImpl<Layout
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = LayoutFriendlyURLModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				LayoutFriendlyURLModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return LayoutFriendlyURLModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

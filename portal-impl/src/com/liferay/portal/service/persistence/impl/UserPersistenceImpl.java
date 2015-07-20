@@ -6915,8 +6915,8 @@ public class UserPersistenceImpl extends BasePersistenceImpl<User>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(User user) {
-		if (user.isNew()) {
+	protected void cacheUniqueFindersCache(User user, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { user.getContactId() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_CONTACTID, args,
@@ -7544,7 +7544,7 @@ public class UserPersistenceImpl extends BasePersistenceImpl<User>
 			UserImpl.class, user.getPrimaryKey(), user, false);
 
 		clearUniqueFindersCache(user);
-		cacheUniqueFindersCache(user);
+		cacheUniqueFindersCache(user, isNew);
 
 		user.resetOriginalValues();
 
@@ -9288,15 +9288,8 @@ public class UserPersistenceImpl extends BasePersistenceImpl<User>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = UserModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + UserModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return UserModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

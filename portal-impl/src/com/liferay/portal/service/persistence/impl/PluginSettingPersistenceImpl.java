@@ -973,8 +973,9 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 		}
 	}
 
-	protected void cacheUniqueFindersCache(PluginSetting pluginSetting) {
-		if (pluginSetting.isNew()) {
+	protected void cacheUniqueFindersCache(PluginSetting pluginSetting,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					pluginSetting.getCompanyId(), pluginSetting.getPluginId(),
 					pluginSetting.getPluginType()
@@ -1190,7 +1191,7 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 			pluginSetting, false);
 
 		clearUniqueFindersCache(pluginSetting);
-		cacheUniqueFindersCache(pluginSetting);
+		cacheUniqueFindersCache(pluginSetting, isNew);
 
 		pluginSetting.resetOriginalValues();
 
@@ -1577,15 +1578,8 @@ public class PluginSettingPersistenceImpl extends BasePersistenceImpl<PluginSett
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = PluginSettingModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + PluginSettingModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return PluginSettingModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

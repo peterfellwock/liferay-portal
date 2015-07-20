@@ -2517,8 +2517,8 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 	}
 
 	protected void cacheUniqueFindersCache(
-		SocialActivityCounter socialActivityCounter) {
-		if (socialActivityCounter.isNew()) {
+		SocialActivityCounter socialActivityCounter, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					socialActivityCounter.getGroupId(),
 					socialActivityCounter.getClassNameId(),
@@ -2853,7 +2853,7 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 			socialActivityCounter.getPrimaryKey(), socialActivityCounter, false);
 
 		clearUniqueFindersCache(socialActivityCounter);
-		cacheUniqueFindersCache(socialActivityCounter);
+		cacheUniqueFindersCache(socialActivityCounter, isNew);
 
 		socialActivityCounter.resetOriginalValues();
 
@@ -3250,16 +3250,8 @@ public class SocialActivityCounterPersistenceImpl extends BasePersistenceImpl<So
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = SocialActivityCounterModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				SocialActivityCounterModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return SocialActivityCounterModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

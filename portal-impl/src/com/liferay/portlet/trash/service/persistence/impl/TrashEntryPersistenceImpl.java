@@ -2404,8 +2404,8 @@ public class TrashEntryPersistenceImpl extends BasePersistenceImpl<TrashEntry>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(TrashEntry trashEntry) {
-		if (trashEntry.isNew()) {
+	protected void cacheUniqueFindersCache(TrashEntry trashEntry, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					trashEntry.getClassNameId(), trashEntry.getClassPK()
 				};
@@ -2651,7 +2651,7 @@ public class TrashEntryPersistenceImpl extends BasePersistenceImpl<TrashEntry>
 			TrashEntryImpl.class, trashEntry.getPrimaryKey(), trashEntry, false);
 
 		clearUniqueFindersCache(trashEntry);
-		cacheUniqueFindersCache(trashEntry);
+		cacheUniqueFindersCache(trashEntry, isNew);
 
 		trashEntry.resetOriginalValues();
 
@@ -3037,15 +3037,8 @@ public class TrashEntryPersistenceImpl extends BasePersistenceImpl<TrashEntry>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = TrashEntryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + TrashEntryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return TrashEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

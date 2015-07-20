@@ -974,8 +974,9 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ServiceComponent serviceComponent) {
-		if (serviceComponent.isNew()) {
+	protected void cacheUniqueFindersCache(ServiceComponent serviceComponent,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					serviceComponent.getBuildNamespace(),
 					serviceComponent.getBuildNumber()
@@ -1191,7 +1192,7 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 			serviceComponent, false);
 
 		clearUniqueFindersCache(serviceComponent);
-		cacheUniqueFindersCache(serviceComponent);
+		cacheUniqueFindersCache(serviceComponent, isNew);
 
 		serviceComponent.resetOriginalValues();
 
@@ -1580,16 +1581,8 @@ public class ServiceComponentPersistenceImpl extends BasePersistenceImpl<Service
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ServiceComponentModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				ServiceComponentModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ServiceComponentModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

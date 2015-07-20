@@ -10324,8 +10324,9 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 		}
 	}
 
-	protected void cacheUniqueFindersCache(AssetCategory assetCategory) {
-		if (assetCategory.isNew()) {
+	protected void cacheUniqueFindersCache(AssetCategory assetCategory,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					assetCategory.getUuid(), assetCategory.getGroupId()
 				};
@@ -10852,7 +10853,7 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 			assetCategory, false);
 
 		clearUniqueFindersCache(assetCategory);
-		cacheUniqueFindersCache(assetCategory);
+		cacheUniqueFindersCache(assetCategory, isNew);
 
 		assetCategory.resetOriginalValues();
 
@@ -11523,15 +11524,8 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = AssetCategoryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + AssetCategoryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return AssetCategoryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	@Override

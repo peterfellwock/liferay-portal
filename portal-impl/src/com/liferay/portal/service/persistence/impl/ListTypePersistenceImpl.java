@@ -983,8 +983,8 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ListType listType) {
-		if (listType.isNew()) {
+	protected void cacheUniqueFindersCache(ListType listType, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { listType.getName(), listType.getType() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_N_T, args,
@@ -1184,7 +1184,7 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 			ListTypeImpl.class, listType.getPrimaryKey(), listType, false);
 
 		clearUniqueFindersCache(listType);
-		cacheUniqueFindersCache(listType);
+		cacheUniqueFindersCache(listType, isNew);
 
 		listType.resetOriginalValues();
 
@@ -1567,15 +1567,8 @@ public class ListTypePersistenceImpl extends BasePersistenceImpl<ListType>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ListTypeModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + ListTypeModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ListTypeModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

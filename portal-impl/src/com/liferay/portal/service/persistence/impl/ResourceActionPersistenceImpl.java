@@ -981,8 +981,9 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ResourceAction resourceAction) {
-		if (resourceAction.isNew()) {
+	protected void cacheUniqueFindersCache(ResourceAction resourceAction,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					resourceAction.getName(), resourceAction.getActionId()
 				};
@@ -1191,7 +1192,7 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 			resourceAction, false);
 
 		clearUniqueFindersCache(resourceAction);
-		cacheUniqueFindersCache(resourceAction);
+		cacheUniqueFindersCache(resourceAction, isNew);
 
 		resourceAction.resetOriginalValues();
 
@@ -1572,16 +1573,8 @@ public class ResourceActionPersistenceImpl extends BasePersistenceImpl<ResourceA
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ResourceActionModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				ResourceActionModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ResourceActionModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

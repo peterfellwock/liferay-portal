@@ -2032,8 +2032,8 @@ public class SocialActivityLimitPersistenceImpl extends BasePersistenceImpl<Soci
 	}
 
 	protected void cacheUniqueFindersCache(
-		SocialActivityLimit socialActivityLimit) {
-		if (socialActivityLimit.isNew()) {
+		SocialActivityLimit socialActivityLimit, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					socialActivityLimit.getGroupId(),
 					socialActivityLimit.getUserId(),
@@ -2302,7 +2302,7 @@ public class SocialActivityLimitPersistenceImpl extends BasePersistenceImpl<Soci
 			socialActivityLimit, false);
 
 		clearUniqueFindersCache(socialActivityLimit);
-		cacheUniqueFindersCache(socialActivityLimit);
+		cacheUniqueFindersCache(socialActivityLimit, isNew);
 
 		socialActivityLimit.resetOriginalValues();
 
@@ -2690,16 +2690,8 @@ public class SocialActivityLimitPersistenceImpl extends BasePersistenceImpl<Soci
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = SocialActivityLimitModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				SocialActivityLimitModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return SocialActivityLimitModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

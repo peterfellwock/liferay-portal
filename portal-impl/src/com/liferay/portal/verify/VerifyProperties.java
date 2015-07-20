@@ -515,6 +515,23 @@ public class VerifyProperties extends VerifyProcess {
 			"com.liferay.portal.security.auth.verifier"
 		},
 
+		// Blogs
+
+		new String[] {
+			"blogs.display.templates.config", "display.templates.config",
+			"com.liferay.blogs.web"
+		},
+
+		new String[] {
+			"blogs.entry.check.interval", "entry.check.interval",
+			"com.liferay.blogs.web"
+		},
+
+		new String[] {
+			"blogs.linkback.job.interval", "linkback.job.interval",
+			"com.liferay.blogs.web"
+		},
+
 		// Bookmarks
 
 		new String[] {
@@ -624,6 +641,13 @@ public class VerifyProperties extends VerifyProcess {
 		new String[] {
 			"cas.service.url", "service.url",
 			"com.liferay.portal.security.sso.cas"
+		},
+
+		// Cluster Link
+
+		new String[] {
+			"cluster.link.debug.enabled", "cluster.link.debug.enabled",
+			"com.liferay.portal.cluster"
 		},
 
 		// Currency Converter
@@ -1359,6 +1383,19 @@ public class VerifyProperties extends VerifyProcess {
 			"com.liferay.site.navigation.site.map.web"
 		},
 
+		// Staging
+
+		new String[] {
+			"staging.draft.export.import.configuration.check.interval",
+			"draft.export.import.configuration.check.interval",
+			"com.liferay.exportimport.web"
+		},
+		new String[] {
+			"staging.draft.export.import.configuration.clean.up.count",
+			"draft.export.import.configuration.clean.up.count",
+			"com.liferay.exportimport.web"
+		},
+
 		// Tags Compiler
 
 		new String[] {
@@ -1556,14 +1593,14 @@ public class VerifyProperties extends VerifyProcess {
 		"ratings.max.score", "ratings.min.score", "scheduler.classes",
 		"schema.run.minimal", "search.container.page.iterator.page.values",
 		"service.builder.service.read.only.prefixes", "shard.available.names",
-		"siteminder.auth.enabled", "siteminder.import.from.ldap",
-		"siteminder.user.header", "sites.form.add.advanced",
-		"sites.form.add.main", "sites.form.add.miscellaneous",
-		"sites.form.add.seo", "sites.form.update.advanced",
-		"sites.form.update.main", "sites.form.update.miscellaneous",
-		"sites.form.update.seo", "staging.lock.enabled",
-		"table.mapper.cacheless.mapping.table.names", "tck.url",
-		"users.form.add.identification", "users.form.add.main",
+		"shard.default.name", "shard.selector", "siteminder.auth.enabled",
+		"siteminder.import.from.ldap", "siteminder.user.header",
+		"sites.form.add.advanced", "sites.form.add.main",
+		"sites.form.add.miscellaneous", "sites.form.add.seo",
+		"sites.form.update.advanced", "sites.form.update.main",
+		"sites.form.update.miscellaneous", "sites.form.update.seo",
+		"staging.lock.enabled", "table.mapper.cacheless.mapping.table.names",
+		"tck.url", "users.form.add.identification", "users.form.add.main",
 		"users.form.add.miscellaneous", "users.form.my.account.identification",
 		"users.form.my.account.main", "users.form.my.account.miscellaneous",
 		"users.form.update.identification", "users.form.update.main",

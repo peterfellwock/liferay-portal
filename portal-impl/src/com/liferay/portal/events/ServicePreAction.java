@@ -355,7 +355,7 @@ public class ServicePreAction extends Action {
 				Group sourceGroup = GroupLocalServiceUtil.getGroup(
 					sourceGroupId);
 
-				if (layout.isPublicLayout() ||
+				if (layout.isTypeControlPanel() || layout.isPublicLayout() ||
 					SitesUtil.isUserGroupLayoutSetViewable(
 						permissionChecker, layout.getGroup())) {
 
@@ -710,7 +710,8 @@ public class ServicePreAction extends Action {
 		boolean wapTheme = BrowserSnifferUtil.isWap(request);
 
 		if ((layout != null) &&
-			(group.isControlPanel() || group.isUserPersonalPanel())) {
+			(layout.isTypeControlPanel() || group.isControlPanel() ||
+			 group.isUserPersonalPanel())) {
 
 			String themeId = PrefsPropsUtil.getString(
 				companyId, PropsKeys.CONTROL_PANEL_LAYOUT_REGULAR_THEME_ID);
@@ -1104,7 +1105,7 @@ public class ServicePreAction extends Action {
 						PortletRequest.RENDER_PHASE);
 
 					publishToLiveURL.setParameter(
-						"struts_action", "/export_import/publish_layouts");
+						"mvcRenderCommandName", "publishLayouts");
 
 					if (layout.isPrivateLayout()) {
 						publishToLiveURL.setParameter("tabs1", "private-pages");

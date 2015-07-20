@@ -5855,8 +5855,9 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 		}
 	}
 
-	protected void cacheUniqueFindersCache(DLFileShortcut dlFileShortcut) {
-		if (dlFileShortcut.isNew()) {
+	protected void cacheUniqueFindersCache(DLFileShortcut dlFileShortcut,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					dlFileShortcut.getUuid(), dlFileShortcut.getGroupId()
 				};
@@ -6226,7 +6227,7 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 			dlFileShortcut, false);
 
 		clearUniqueFindersCache(dlFileShortcut);
-		cacheUniqueFindersCache(dlFileShortcut);
+		cacheUniqueFindersCache(dlFileShortcut, isNew);
 
 		dlFileShortcut.resetOriginalValues();
 
@@ -6624,16 +6625,8 @@ public class DLFileShortcutPersistenceImpl extends BasePersistenceImpl<DLFileSho
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = DLFileShortcutModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				DLFileShortcutModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return DLFileShortcutModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

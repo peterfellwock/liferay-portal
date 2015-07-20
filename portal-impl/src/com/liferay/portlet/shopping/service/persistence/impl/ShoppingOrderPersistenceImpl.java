@@ -2548,8 +2548,9 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ShoppingOrder shoppingOrder) {
-		if (shoppingOrder.isNew()) {
+	protected void cacheUniqueFindersCache(ShoppingOrder shoppingOrder,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { shoppingOrder.getNumber() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_NUMBER, args,
@@ -2824,7 +2825,7 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 			shoppingOrder, false);
 
 		clearUniqueFindersCache(shoppingOrder);
-		cacheUniqueFindersCache(shoppingOrder);
+		cacheUniqueFindersCache(shoppingOrder, isNew);
 
 		shoppingOrder.resetOriginalValues();
 
@@ -3255,15 +3256,8 @@ public class ShoppingOrderPersistenceImpl extends BasePersistenceImpl<ShoppingOr
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ShoppingOrderModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + ShoppingOrderModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ShoppingOrderModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

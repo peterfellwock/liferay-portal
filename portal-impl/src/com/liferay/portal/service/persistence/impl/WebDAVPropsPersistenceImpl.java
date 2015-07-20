@@ -396,8 +396,9 @@ public class WebDAVPropsPersistenceImpl extends BasePersistenceImpl<WebDAVProps>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(WebDAVProps webDAVProps) {
-		if (webDAVProps.isNew()) {
+	protected void cacheUniqueFindersCache(WebDAVProps webDAVProps,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					webDAVProps.getClassNameId(), webDAVProps.getClassPK()
 				};
@@ -609,7 +610,7 @@ public class WebDAVPropsPersistenceImpl extends BasePersistenceImpl<WebDAVProps>
 			false);
 
 		clearUniqueFindersCache(webDAVProps);
-		cacheUniqueFindersCache(webDAVProps);
+		cacheUniqueFindersCache(webDAVProps, isNew);
 
 		webDAVProps.resetOriginalValues();
 
@@ -992,15 +993,8 @@ public class WebDAVPropsPersistenceImpl extends BasePersistenceImpl<WebDAVProps>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = WebDAVPropsModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + WebDAVPropsModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return WebDAVPropsModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

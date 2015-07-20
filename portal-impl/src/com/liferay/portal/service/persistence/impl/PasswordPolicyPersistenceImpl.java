@@ -3421,8 +3421,9 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 		}
 	}
 
-	protected void cacheUniqueFindersCache(PasswordPolicy passwordPolicy) {
-		if (passwordPolicy.isNew()) {
+	protected void cacheUniqueFindersCache(PasswordPolicy passwordPolicy,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					passwordPolicy.getCompanyId(),
 					passwordPolicy.getDefaultPolicy()
@@ -3745,7 +3746,7 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			passwordPolicy, false);
 
 		clearUniqueFindersCache(passwordPolicy);
-		cacheUniqueFindersCache(passwordPolicy);
+		cacheUniqueFindersCache(passwordPolicy, isNew);
 
 		passwordPolicy.resetOriginalValues();
 
@@ -4161,16 +4162,8 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = PasswordPolicyModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				PasswordPolicyModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return PasswordPolicyModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -490,9 +490,6 @@ create index IX_8377A211 on SCProductVersion (productEntryId);
 
 create unique index IX_4F0315B8 on ServiceComponent (buildNamespace, buildNumber);
 
-create index IX_DA5F4359 on Shard (classNameId, classPK);
-create index IX_941BA8C3 on Shard (name);
-
 create unique index IX_FC46FE16 on ShoppingCart (groupId, userId);
 create index IX_54101CC8 on ShoppingCart (userId);
 
@@ -574,6 +571,8 @@ create index IX_FFCBB747 on SystemEvent (groupId, classNameId, classPK, type_);
 create index IX_A19C89FF on SystemEvent (groupId, systemEventSetKey);
 
 create unique index IX_143DC786 on Team (groupId, name);
+create index IX_5D47F637 on Team (uuid_, companyId);
+create unique index IX_39F69E79 on Team (uuid_, groupId);
 
 create index IX_1E8DFB2E on Ticket (classNameId, classPK, type_);
 create index IX_B2468446 on Ticket (key_);

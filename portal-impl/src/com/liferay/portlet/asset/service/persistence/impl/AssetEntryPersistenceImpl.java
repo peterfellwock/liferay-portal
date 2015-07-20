@@ -3664,8 +3664,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(AssetEntry assetEntry) {
-		if (assetEntry.isNew()) {
+	protected void cacheUniqueFindersCache(AssetEntry assetEntry, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					assetEntry.getGroupId(), assetEntry.getClassUuid()
 				};
@@ -4027,7 +4027,7 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 			AssetEntryImpl.class, assetEntry.getPrimaryKey(), assetEntry, false);
 
 		clearUniqueFindersCache(assetEntry);
-		cacheUniqueFindersCache(assetEntry);
+		cacheUniqueFindersCache(assetEntry, isNew);
 
 		assetEntry.resetOriginalValues();
 
@@ -4978,15 +4978,8 @@ public class AssetEntryPersistenceImpl extends BasePersistenceImpl<AssetEntry>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = AssetEntryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + AssetEntryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return AssetEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

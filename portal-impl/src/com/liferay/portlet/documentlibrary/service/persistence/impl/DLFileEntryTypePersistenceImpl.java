@@ -3061,8 +3061,9 @@ public class DLFileEntryTypePersistenceImpl extends BasePersistenceImpl<DLFileEn
 		}
 	}
 
-	protected void cacheUniqueFindersCache(DLFileEntryType dlFileEntryType) {
-		if (dlFileEntryType.isNew()) {
+	protected void cacheUniqueFindersCache(DLFileEntryType dlFileEntryType,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					dlFileEntryType.getUuid(), dlFileEntryType.getGroupId()
 				};
@@ -3386,7 +3387,7 @@ public class DLFileEntryTypePersistenceImpl extends BasePersistenceImpl<DLFileEn
 			dlFileEntryType, false);
 
 		clearUniqueFindersCache(dlFileEntryType);
-		cacheUniqueFindersCache(dlFileEntryType);
+		cacheUniqueFindersCache(dlFileEntryType, isNew);
 
 		dlFileEntryType.resetOriginalValues();
 
@@ -4053,16 +4054,8 @@ public class DLFileEntryTypePersistenceImpl extends BasePersistenceImpl<DLFileEn
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = DLFileEntryTypeModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				DLFileEntryTypeModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return DLFileEntryTypeModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

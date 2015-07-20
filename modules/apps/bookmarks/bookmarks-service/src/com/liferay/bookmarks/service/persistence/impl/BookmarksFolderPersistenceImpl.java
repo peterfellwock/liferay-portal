@@ -6825,8 +6825,9 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 		}
 	}
 
-	protected void cacheUniqueFindersCache(BookmarksFolder bookmarksFolder) {
-		if (bookmarksFolder.isNew()) {
+	protected void cacheUniqueFindersCache(BookmarksFolder bookmarksFolder,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					bookmarksFolder.getUuid(), bookmarksFolder.getGroupId()
 				};
@@ -7189,7 +7190,7 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 			bookmarksFolder, false);
 
 		clearUniqueFindersCache(bookmarksFolder);
-		cacheUniqueFindersCache(bookmarksFolder);
+		cacheUniqueFindersCache(bookmarksFolder, isNew);
 
 		bookmarksFolder.resetOriginalValues();
 
@@ -7588,16 +7589,8 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = BookmarksFolderModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				BookmarksFolderModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return BookmarksFolderModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

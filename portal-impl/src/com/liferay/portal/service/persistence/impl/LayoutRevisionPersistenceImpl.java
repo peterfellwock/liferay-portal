@@ -5672,8 +5672,9 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 		}
 	}
 
-	protected void cacheUniqueFindersCache(LayoutRevision layoutRevision) {
-		if (layoutRevision.isNew()) {
+	protected void cacheUniqueFindersCache(LayoutRevision layoutRevision,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					layoutRevision.getLayoutSetBranchId(),
 					layoutRevision.getHead(), layoutRevision.getPlid()
@@ -6083,7 +6084,7 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 			layoutRevision, false);
 
 		clearUniqueFindersCache(layoutRevision);
-		cacheUniqueFindersCache(layoutRevision);
+		cacheUniqueFindersCache(layoutRevision, isNew);
 
 		layoutRevision.resetOriginalValues();
 
@@ -6490,16 +6491,8 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = LayoutRevisionModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				LayoutRevisionModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return LayoutRevisionModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -3733,8 +3733,8 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(Calendar calendar) {
-		if (calendar.isNew()) {
+	protected void cacheUniqueFindersCache(Calendar calendar, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					calendar.getUuid(), calendar.getGroupId()
 				};
@@ -4053,7 +4053,7 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 			CalendarImpl.class, calendar.getPrimaryKey(), calendar, false);
 
 		clearUniqueFindersCache(calendar);
-		cacheUniqueFindersCache(calendar);
+		cacheUniqueFindersCache(calendar, isNew);
 
 		calendar.resetOriginalValues();
 
@@ -4449,15 +4449,8 @@ public class CalendarPersistenceImpl extends BasePersistenceImpl<Calendar>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = CalendarModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + CalendarModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return CalendarModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

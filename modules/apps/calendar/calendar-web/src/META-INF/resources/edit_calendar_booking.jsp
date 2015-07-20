@@ -166,6 +166,7 @@ for (long otherCalendarId : otherCalendarIds) {
 	<aui:input name="updateCalendarBookingInstance" type="hidden" />
 
 	<liferay-ui:error exception="<%= CalendarBookingDurationException.class %>" message="please-enter-a-start-date-that-comes-before-the-end-date" />
+	<liferay-ui:error exception="<%= CalendarBookingRecurrenceException.class %>" message="the-last-repeating-date-should-come-after-the-event-start-date" />
 
 	<liferay-ui:asset-categories-error />
 
@@ -426,7 +427,7 @@ for (long otherCalendarId : otherCalendarIds) {
 				item.set('disabled', true);
 			}
 		);
-	}
+	};
 
 	var calendarsMenu = Liferay.CalendarUtil.getCalendarsMenu(
 		{

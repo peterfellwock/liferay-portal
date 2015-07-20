@@ -3164,8 +3164,8 @@ public class SACPEntryPersistenceImpl extends BasePersistenceImpl<SACPEntry>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(SACPEntry sacpEntry) {
-		if (sacpEntry.isNew()) {
+	protected void cacheUniqueFindersCache(SACPEntry sacpEntry, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					sacpEntry.getCompanyId(), sacpEntry.getName()
 				};
@@ -3443,7 +3443,7 @@ public class SACPEntryPersistenceImpl extends BasePersistenceImpl<SACPEntry>
 			SACPEntryImpl.class, sacpEntry.getPrimaryKey(), sacpEntry, false);
 
 		clearUniqueFindersCache(sacpEntry);
-		cacheUniqueFindersCache(sacpEntry);
+		cacheUniqueFindersCache(sacpEntry, isNew);
 
 		sacpEntry.resetOriginalValues();
 
@@ -3834,15 +3834,8 @@ public class SACPEntryPersistenceImpl extends BasePersistenceImpl<SACPEntry>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = SACPEntryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + SACPEntryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return SACPEntryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

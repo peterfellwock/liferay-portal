@@ -2185,8 +2185,9 @@ public class ShoppingCategoryPersistenceImpl extends BasePersistenceImpl<Shoppin
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ShoppingCategory shoppingCategory) {
-		if (shoppingCategory.isNew()) {
+	protected void cacheUniqueFindersCache(ShoppingCategory shoppingCategory,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					shoppingCategory.getGroupId(), shoppingCategory.getName()
 				};
@@ -2440,7 +2441,7 @@ public class ShoppingCategoryPersistenceImpl extends BasePersistenceImpl<Shoppin
 			shoppingCategory, false);
 
 		clearUniqueFindersCache(shoppingCategory);
-		cacheUniqueFindersCache(shoppingCategory);
+		cacheUniqueFindersCache(shoppingCategory, isNew);
 
 		shoppingCategory.resetOriginalValues();
 
@@ -2828,16 +2829,8 @@ public class ShoppingCategoryPersistenceImpl extends BasePersistenceImpl<Shoppin
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ShoppingCategoryModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				ShoppingCategoryModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ShoppingCategoryModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

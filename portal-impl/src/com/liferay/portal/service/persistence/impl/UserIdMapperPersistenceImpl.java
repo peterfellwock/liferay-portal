@@ -1196,8 +1196,9 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 		}
 	}
 
-	protected void cacheUniqueFindersCache(UserIdMapper userIdMapper) {
-		if (userIdMapper.isNew()) {
+	protected void cacheUniqueFindersCache(UserIdMapper userIdMapper,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					userIdMapper.getUserId(), userIdMapper.getType()
 				};
@@ -1445,7 +1446,7 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 			false);
 
 		clearUniqueFindersCache(userIdMapper);
-		cacheUniqueFindersCache(userIdMapper);
+		cacheUniqueFindersCache(userIdMapper, isNew);
 
 		userIdMapper.resetOriginalValues();
 
@@ -1831,15 +1832,8 @@ public class UserIdMapperPersistenceImpl extends BasePersistenceImpl<UserIdMappe
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = UserIdMapperModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + UserIdMapperModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return UserIdMapperModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

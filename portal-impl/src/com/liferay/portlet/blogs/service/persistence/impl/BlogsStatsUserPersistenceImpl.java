@@ -2919,8 +2919,9 @@ public class BlogsStatsUserPersistenceImpl extends BasePersistenceImpl<BlogsStat
 		}
 	}
 
-	protected void cacheUniqueFindersCache(BlogsStatsUser blogsStatsUser) {
-		if (blogsStatsUser.isNew()) {
+	protected void cacheUniqueFindersCache(BlogsStatsUser blogsStatsUser,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					blogsStatsUser.getGroupId(), blogsStatsUser.getUserId()
 				};
@@ -3167,7 +3168,7 @@ public class BlogsStatsUserPersistenceImpl extends BasePersistenceImpl<BlogsStat
 			blogsStatsUser, false);
 
 		clearUniqueFindersCache(blogsStatsUser);
-		cacheUniqueFindersCache(blogsStatsUser);
+		cacheUniqueFindersCache(blogsStatsUser, isNew);
 
 		blogsStatsUser.resetOriginalValues();
 
@@ -3552,16 +3553,8 @@ public class BlogsStatsUserPersistenceImpl extends BasePersistenceImpl<BlogsStat
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = BlogsStatsUserModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				BlogsStatsUserModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return BlogsStatsUserModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

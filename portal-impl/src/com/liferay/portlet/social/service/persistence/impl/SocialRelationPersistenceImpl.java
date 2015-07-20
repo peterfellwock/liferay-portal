@@ -5500,8 +5500,9 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 		}
 	}
 
-	protected void cacheUniqueFindersCache(SocialRelation socialRelation) {
-		if (socialRelation.isNew()) {
+	protected void cacheUniqueFindersCache(SocialRelation socialRelation,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					socialRelation.getUserId1(), socialRelation.getUserId2(),
 					socialRelation.getType()
@@ -5899,7 +5900,7 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 			socialRelation, false);
 
 		clearUniqueFindersCache(socialRelation);
-		cacheUniqueFindersCache(socialRelation);
+		cacheUniqueFindersCache(socialRelation, isNew);
 
 		socialRelation.resetOriginalValues();
 
@@ -6287,16 +6288,8 @@ public class SocialRelationPersistenceImpl extends BasePersistenceImpl<SocialRel
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = SocialRelationModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				SocialRelationModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return SocialRelationModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

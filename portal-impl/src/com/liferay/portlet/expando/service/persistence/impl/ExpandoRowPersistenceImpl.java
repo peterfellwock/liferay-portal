@@ -1345,8 +1345,8 @@ public class ExpandoRowPersistenceImpl extends BasePersistenceImpl<ExpandoRow>
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ExpandoRow expandoRow) {
-		if (expandoRow.isNew()) {
+	protected void cacheUniqueFindersCache(ExpandoRow expandoRow, boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					expandoRow.getTableId(), expandoRow.getClassPK()
 				};
@@ -1568,7 +1568,7 @@ public class ExpandoRowPersistenceImpl extends BasePersistenceImpl<ExpandoRow>
 			ExpandoRowImpl.class, expandoRow.getPrimaryKey(), expandoRow, false);
 
 		clearUniqueFindersCache(expandoRow);
-		cacheUniqueFindersCache(expandoRow);
+		cacheUniqueFindersCache(expandoRow, isNew);
 
 		expandoRow.resetOriginalValues();
 
@@ -1952,15 +1952,8 @@ public class ExpandoRowPersistenceImpl extends BasePersistenceImpl<ExpandoRow>
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ExpandoRowModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + ExpandoRowModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ExpandoRowModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

@@ -215,10 +215,6 @@ public interface PropsKeys {
 
 	public static final String BASIC_AUTH_PASSWORD_REQUIRED = "basic.auth.password.required";
 
-	public static final String BLOGS_COMMENT_RATINGS_ENABLED = "blogs.comment.ratings.enabled";
-
-	public static final String BLOGS_DISPLAY_STYLE = "blogs.display.style";
-
 	public static final String BLOGS_DISPLAY_TEMPLATES_CONFIG = "blogs.display.templates.config";
 
 	public static final String BLOGS_EMAIL_ENTRY_ADDED_BODY = "blogs.email.entry.added.body";
@@ -243,8 +239,6 @@ public interface PropsKeys {
 
 	public static final String BLOGS_ENTRY_PREVIOUS_AND_NEXT_NAVIGATION_ENABLED = "blogs.entry.previous.and.next.navigation.enabled";
 
-	public static final String BLOGS_FLAGS_ENABLED = "blogs.flags.enabled";
-
 	public static final String BLOGS_IMAGE_ALLOY_EDITOR_MAX_SIZE = "blogs.image.alloy.editor.max.size";
 
 	public static final String BLOGS_IMAGE_COVER_MAX_SIZE = "blogs.image.cover.max.size";
@@ -263,19 +257,7 @@ public interface PropsKeys {
 
 	public static final String BLOGS_PUBLISH_TO_LIVE_BY_DEFAULT = "blogs.publish.to.live.by.default";
 
-	public static final String BLOGS_RATINGS_ENABLED = "blogs.ratings.enabled";
-
-	public static final String BLOGS_RELATED_ASSETS_ENABLED = "blogs.related.assets.enabled";
-
 	public static final String BLOGS_RSS_ABSTRACT_LENGTH = "blogs.rss.abstract.length";
-
-	public static final String BLOGS_RSS_ENABLED = "blogs.rss.enabled";
-
-	public static final String BLOGS_SOCIAL_BOOKMARKS_DISPLAY_POSITION = "blogs.social.bookmarks.display.position";
-
-	public static final String BLOGS_SOCIAL_BOOKMARKS_DISPLAY_STYLE = "blogs.social.bookmarks.display.style";
-
-	public static final String BLOGS_SOCIAL_BOOKMARKS_ENABLED = "blogs.social.bookmarks.enabled";
 
 	public static final String BLOGS_TRACKBACK_ENABLED = "blogs.trackback.enabled";
 
@@ -385,15 +367,15 @@ public interface PropsKeys {
 
 	public static final String CLUSTER_LINK_AUTODETECT_ADDRESS = "cluster.link.autodetect.address";
 
-	public static final String CLUSTER_LINK_CHANNEL_NAME_PREFIX = "cluster.link.channel.name.prefix";
+	public static final String CLUSTER_LINK_CHANNEL_NAME_CONTROL = "cluster.link.channel.name.control";
+
+	public static final String CLUSTER_LINK_CHANNEL_NAME_TRANSPORT = "cluster.link.channel.name.transport";
 
 	public static final String CLUSTER_LINK_CHANNEL_PROPERTIES_CONTROL = "cluster.link.channel.properties.control";
 
 	public static final String CLUSTER_LINK_CHANNEL_PROPERTIES_TRANSPORT = "cluster.link.channel.properties.transport";
 
 	public static final String CLUSTER_LINK_CHANNEL_SYSTEM_PROPERTIES = "cluster.link.channel.system.properties";
-
-	public static final String CLUSTER_LINK_DEBUG_ENABLED = "cluster.link.debug.enabled";
 
 	public static final String CLUSTER_LINK_ENABLED = "cluster.link.enabled";
 
@@ -2152,10 +2134,6 @@ public interface PropsKeys {
 	public static final String SETUP_WIZARD_ADD_SAMPLE_DATA = "setup.wizard.add.sample.data";
 
 	public static final String SETUP_WIZARD_ENABLED = "setup.wizard.enabled";
-
-	public static final String SHARD_DEFAULT_NAME = "shard.default.name";
-
-	public static final String SHARD_SELECTOR = "shard.selector";
 
 	public static final String SHAREPOINT_STORAGE_CLASS = "sharepoint.storage.class";
 

@@ -4503,8 +4503,9 @@ public class AssetVocabularyPersistenceImpl extends BasePersistenceImpl<AssetVoc
 		}
 	}
 
-	protected void cacheUniqueFindersCache(AssetVocabulary assetVocabulary) {
-		if (assetVocabulary.isNew()) {
+	protected void cacheUniqueFindersCache(AssetVocabulary assetVocabulary,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] {
 					assetVocabulary.getUuid(), assetVocabulary.getGroupId()
 				};
@@ -4842,7 +4843,7 @@ public class AssetVocabularyPersistenceImpl extends BasePersistenceImpl<AssetVoc
 			assetVocabulary, false);
 
 		clearUniqueFindersCache(assetVocabulary);
-		cacheUniqueFindersCache(assetVocabulary);
+		cacheUniqueFindersCache(assetVocabulary, isNew);
 
 		assetVocabulary.resetOriginalValues();
 
@@ -5235,16 +5236,8 @@ public class AssetVocabularyPersistenceImpl extends BasePersistenceImpl<AssetVoc
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = AssetVocabularyModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " +
-				AssetVocabularyModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return AssetVocabularyModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**

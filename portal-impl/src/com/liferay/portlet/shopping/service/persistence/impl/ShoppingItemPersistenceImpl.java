@@ -1968,8 +1968,9 @@ public class ShoppingItemPersistenceImpl extends BasePersistenceImpl<ShoppingIte
 		}
 	}
 
-	protected void cacheUniqueFindersCache(ShoppingItem shoppingItem) {
-		if (shoppingItem.isNew()) {
+	protected void cacheUniqueFindersCache(ShoppingItem shoppingItem,
+		boolean isNew) {
+		if (isNew) {
 			Object[] args = new Object[] { shoppingItem.getSmallImageId() };
 
 			FinderCacheUtil.putResult(FINDER_PATH_COUNT_BY_SMALLIMAGEID, args,
@@ -2293,7 +2294,7 @@ public class ShoppingItemPersistenceImpl extends BasePersistenceImpl<ShoppingIte
 			false);
 
 		clearUniqueFindersCache(shoppingItem);
-		cacheUniqueFindersCache(shoppingItem);
+		cacheUniqueFindersCache(shoppingItem, isNew);
 
 		shoppingItem.resetOriginalValues();
 
@@ -2707,15 +2708,8 @@ public class ShoppingItemPersistenceImpl extends BasePersistenceImpl<ShoppingIte
 	}
 
 	@Override
-	protected int getColumnType(String columnName) {
-		Integer type = ShoppingItemModelImpl.TABLE_COLUMNS_MAP.get(columnName);
-
-		if (type == null) {
-			throw new IllegalArgumentException("Unknown column name " +
-				columnName + " for table " + ShoppingItemModelImpl.TABLE_NAME);
-		}
-
-		return type;
+	protected Map<String, Integer> getTableColumnsMap() {
+		return ShoppingItemModelImpl.TABLE_COLUMNS_MAP;
 	}
 
 	/**
