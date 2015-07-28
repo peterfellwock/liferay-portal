@@ -25,7 +25,7 @@
 		<%@ include file="/themes.jspf" %>
 	</c:when>
 	<c:when test='<%= tabs2.equals("layout-template-plugins") %>'>
-		<%@ include file=/layout_templates.jspf" %>
+		<%@ include file="/layout_templates.jspf" %>
 	</c:when>
 	<c:when test='<%= tabs2.equals("hook-plugins") %>'>
 	</c:when>
