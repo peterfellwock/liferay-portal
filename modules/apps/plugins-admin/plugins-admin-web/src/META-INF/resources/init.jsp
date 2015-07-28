@@ -14,8 +14,74 @@
  */
 --%>
 
-<%@ include file="/html/portlet/init.jsp" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 
-<%@ page import="com.liferay.portal.util.comparator.RoleRoleIdComparator" %>
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
-<%@ include file="/html/portlet/plugins_admin/init-ext.jsp" %>
+<%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
+taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
+taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %><%@
+taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
+
+<%@ page import="com.liferay.portal.DuplicateGroupException" %><%@
+page import="com.liferay.portal.util.comparator.RoleRoleIdComparator" %><%@
+page import="com.liferay.portal.kernel.util.ParamUtil" %><%@
+page import="com.liferay.portal.kernel.util.HttpUtil" %><%@
+page import="com.liferay.portal.kernel.util.ListUtil" %><%@
+
+page import="com.liferay.portal.kernel.language.LanguageUtil" %>
+
+<%@ page import="java.util.ArrayList" %><%@
+page import="java.util.HashSet" %><%@
+page import="java.util.LinkedHashMap" %><%@
+page import="java.util.List" %><%@
+page import="java.util.Locale" %><%@
+page import="java.util.Map" %><%@
+page import="java.util.Set" %>
+
+<%@ page import="javax.portlet.PortletURL" %><%@
+page import="javax.portlet.WindowState" %>
+
+<%@ page import="com.liferay.portal.service.ThemeLocalServiceUtil" %><%@
+page import="com.liferay.portal.kernel.plugin.PluginPackage" %><%@
+page import="com.liferay.portal.model.PluginSetting" %><%@
+page import="com.liferay.portal.model.Plugin" %><%@
+page import="com.liferay.portal.model.Portlet" %><%@
+page import="com.liferay.portlet.PortletURLUtil" %><%@
+page import="com.liferay.portal.service.PluginSettingLocalServiceUtil" %><%@
+page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@ 
+page import="com.liferay.portal.model.ColorScheme" %><%@ 
+page import="com.liferay.portal.model.RoleConstants" %><%@ 
+page import="com.liferay.portal.model.ResourceConstants" %><%@ 
+page import="com.liferay.portal.service.ResourcePermissionLocalServiceUtil" %><%@ 
+page import="com.liferay.portal.security.permission.ResourceActionsUtil" %><%@ 
+page import="com.liferay.portal.service.RoleLocalServiceUtil" %><%@ 
+page import="com.liferay.portal.model.Role" %><%@
+page import="com.liferay.portal.security.permission.ActionKeys" %><%@ 
+page import="com.liferay.portlet.rolesadmin.util.RolesAdminUtil" %><%@ 
+page import="com.liferay.portal.kernel.util.Constants" %><%@ 
+page import="com.liferay.portal.util.PortletKeys" %><%@
+page import="com.liferay.portal.kernel.util.StringPool" %><%@ 
+page import="com.liferay.portal.kernel.util.StringUtil" %><%@ 
+page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@  
+page import="com.liferay.portal.service.PortletLocalServiceUtil" %><%@
+page import="com.liferay.portal.util.comparator.PortletTitleComparator" %><%@
+page import="com.liferay.portal.util.PortalUtil" %><%@ 
+page import="com.liferay.portal.kernel.util.Validator" %>
+
+<portlet:defineObjects />
+
+<liferay-theme:defineObjects />
+
+<%
+WindowState windowState = liferayPortletRequest.getWindowState();
+
+PortletURL currentURLObj = PortletURLUtil.getCurrent(liferayPortletRequest, liferayPortletResponse);
+
+String currentURL = currentURLObj.toString();
+
+%>
+
+
+<%@ include file="/init-ext.jsp" %>

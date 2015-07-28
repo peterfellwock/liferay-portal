@@ -14,7 +14,7 @@
  */
 --%>
 
-<%@ include file="/html/portlet/plugins_admin/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 String tabs2 = ParamUtil.getString(request, "tabs2");
@@ -29,4 +29,4 @@ PortletURL marketplaceURL = null;
 boolean showEditPluginHREF = true;
 %>
 
-<%@ include file="/html/portlet/plugins_admin/plugins.jspf" %>
+<%@ include file="/plugins.jspf" %>

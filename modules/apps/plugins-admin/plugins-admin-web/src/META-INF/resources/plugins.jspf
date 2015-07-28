@@ -22,16 +22,16 @@
 
 <c:choose>
 	<c:when test='<%= tabs2.equals("theme-plugins") %>'>
-		<%@ include file="/html/portlet/plugins_admin/themes.jspf" %>
+		<%@ include file="/themes.jspf" %>
 	</c:when>
 	<c:when test='<%= tabs2.equals("layout-template-plugins") %>'>
-		<%@ include file="/html/portlet/plugins_admin/layout_templates.jspf" %>
+		<%@ include file=/layout_templates.jspf" %>
 	</c:when>
 	<c:when test='<%= tabs2.equals("hook-plugins") %>'>
 	</c:when>
 	<c:when test='<%= tabs2.equals("web-plugins") %>'>
 	</c:when>
 	<c:otherwise>
-		<%@ include file="/html/portlet/plugins_admin/portlets.jspf" %>
+		<%@ include file="/portlets.jspf" %>
 	</c:otherwise>
 </c:choose>
