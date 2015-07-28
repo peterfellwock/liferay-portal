@@ -14,9 +14,15 @@
 
 package com.liferay.pluginsadmin.web.portlet.action;
 
+import java.util.Arrays;
+
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
+
+import org.osgi.service.component.annotations.Component;
+
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -27,18 +33,13 @@ import com.liferay.portal.service.PortletServiceUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
 
-import java.util.Arrays;
-
-import javax.portlet.ActionRequest;
-import javax.portlet.ActionResponse;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Jorge Ferrer
  * @author Peter Fellwock
  */
 
-@OSGiBeanProperties(
+@Component(
 	property = {
 		"javax.portlet.name=" + PortletKeys.PLUGINS_ADMIN,
 		"mvc.command.name=/plugins_admin/edit_plugin"
