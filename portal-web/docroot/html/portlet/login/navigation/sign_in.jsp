@@ -21,7 +21,7 @@ String mvcRenderCommandName = ParamUtil.getString(request, "mvcRenderCommandName
 
 boolean showSignInIcon = false;
 
-if (Validator.isNotNull(strutsAction) && !mvcRenderCommandName.equals("/login/login")) {
+if (Validator.isNotNull(mvcRenderCommandName) && !mvcRenderCommandName.equals("/login/login")) {
 	showSignInIcon = true;
 }
 %>
