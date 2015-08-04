@@ -37,7 +37,6 @@ public class LoginActionMVCRenderCommand implements MVCRenderCommand {
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
 		return "/portlet/login/login.jsp";
-		
 	}
 	
 	public static void afterPropertiesSet() {

@@ -19,7 +19,5 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
 /**
  * @author Peter Fellwock
  */
-
 public class LoginPortlet extends MVCPortlet {
-	
 }

@@ -71,7 +71,7 @@ import org.apache.struts.action.ActionMapping;
 		"mvc.command.name=/login/login"
 	}
 )
-public class LoginAction  extends BaseMVCActionCommand {
+public class LoginAction extends BaseMVCActionCommand {
 
 	@Override
 	protected void doProcessAction(
