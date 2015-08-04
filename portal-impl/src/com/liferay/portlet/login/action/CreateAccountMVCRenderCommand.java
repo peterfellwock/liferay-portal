@@ -46,12 +46,12 @@ public class CreateAccountMVCRenderCommand implements MVCRenderCommand {
 		Company company = themeDisplay.getCompany();
 
 		if (!company.isStrangers()) {
-			return "/portlet/login/open_id.jsp";
+			return "/html/portlet/login/open_id.jsp";
 		}
 
 		renderResponse.setTitle(themeDisplay.translate("create-account"));
 
-		return "/portlet/login/create_account.jsp";
+		return "/html/portlet/login/create_account.jsp";
 	}
 
 }

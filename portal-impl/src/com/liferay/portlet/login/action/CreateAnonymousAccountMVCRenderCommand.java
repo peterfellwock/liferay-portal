@@ -48,7 +48,7 @@ public class CreateAnonymousAccountMVCRenderCommand implements MVCRenderCommand 
 		Company company = themeDisplay.getCompany();
 
 		if (!company.isStrangers()) {
-			return "/portlet/login/login.jsp";
+			return "/html/portlet/login/login.jsp";
 		}
 		
 		PortletConfig portletConfig = (PortletConfig)renderRequest.getAttribute(
@@ -57,12 +57,12 @@ public class CreateAnonymousAccountMVCRenderCommand implements MVCRenderCommand 
 		String portletName = portletConfig.getPortletName();
 
 		if (!portletName.equals(PortletKeys.FAST_LOGIN)) {
-			return "/portlet/login/login.jsp";
+			return "/html/portlet/login/login.jsp";
 		}
 
 		renderResponse.setTitle(themeDisplay.translate("anonymous-account"));
 
-		return "/portlet/login/create_anonymous_account.jsp";
+		return "/html/portlet/login/create_anonymous_account.jsp";
 	}
 
 }

@@ -180,7 +180,7 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 					//	actionRequest, actionResponse,
 					//	"/portlet/login/update_account.jsp");
 					actionResponse.setRenderParameter(
-						"mvcPath", "/portlet/login/update_account.jsp");
+						"mvcPath", "/html/portlet/login/update_account.jsp");
 				}
 			}
 			else {
