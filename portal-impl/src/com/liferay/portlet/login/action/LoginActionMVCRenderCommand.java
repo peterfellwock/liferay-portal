@@ -27,6 +27,7 @@ import javax.portlet.RenderResponse;
 @OSGiBeanProperties(
 	property = {
 		"javax.portlet.name=" + PortletKeys.FAST_LOGIN,
+		"javax.portlet.name=" + PortletKeys.LOGIN,
 		"mvc.command.name=/login/login"
 	}
 )

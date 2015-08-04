@@ -91,6 +91,7 @@ import javax.servlet.http.HttpSession;
 @OSGiBeanProperties(
 	property = {
 		"javax.portlet.name=" + PortletKeys.FAST_LOGIN,
+		"javax.portlet.name=" + PortletKeys.LOGIN,
 		"mvc.command.name=/login/create_account"
 	}
 )

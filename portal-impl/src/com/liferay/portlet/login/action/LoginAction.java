@@ -68,6 +68,7 @@ import org.apache.struts.action.ActionMapping;
 @OSGiBeanProperties(
 	property = {
 		"javax.portlet.name=" + PortletKeys.FAST_LOGIN,
+		"javax.portlet.name=" + PortletKeys.LOGIN,
 		"mvc.command.name=/login/login"
 	}
 )
