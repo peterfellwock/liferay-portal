@@ -175,9 +175,11 @@ public class CreateAccountAction extends BaseMVCActionCommand {
 					SessionErrors.add(actionRequest, e.getClass(), e);
 				}
 				else {
-					sendRedirect(
-						actionRequest, actionResponse,
-						"/portlet/login/update_account.jsp");
+					//sendRedirect(
+					//	actionRequest, actionResponse,
+					//	"/portlet/login/update_account.jsp");
+					actionResponse.setRenderParameter(
+						"mvcPath", "/portlet/login/update_account.jsp");
 				}
 			}
 			else {
