@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.security.auth.AuthException;
-import com.liferay.portal.struts.PortletAction;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
@@ -46,20 +45,13 @@ import com.liferay.portlet.PortletURLImpl;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletConfig;
 import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 import javax.portlet.WindowState;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
-import org.apache.struts.action.ActionForm;
-import org.apache.struts.action.ActionForward;
-import org.apache.struts.action.ActionMapping;
 
 /**
  * @author Brian Wing Shun Chan
@@ -72,7 +64,7 @@ import org.apache.struts.action.ActionMapping;
 		"mvc.command.name=/login/login"
 	}
 )
-public class LoginAction extends BaseMVCActionCommand {
+public class LoginMVCActionCommand extends BaseMVCActionCommand {
 
 	@Override
 	protected void doProcessAction(
@@ -280,6 +272,6 @@ public class LoginAction extends BaseMVCActionCommand {
 
 	private static final boolean _CHECK_METHOD_ON_PROCESS_ACTION = false;
 
-	private static final Log _log = LogFactoryUtil.getLog(LoginAction.class);
+	private static final Log _log = LogFactoryUtil.getLog(LoginMVCActionCommand.class);
 
 }

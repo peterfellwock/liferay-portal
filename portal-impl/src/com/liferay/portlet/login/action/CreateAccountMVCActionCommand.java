@@ -95,7 +95,7 @@ import javax.servlet.http.HttpSession;
 		"mvc.command.name=/login/create_account"
 	}
 )
-public class CreateAccountAction extends BaseMVCActionCommand {
+public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 
 	@Override
 	protected void doProcessAction(

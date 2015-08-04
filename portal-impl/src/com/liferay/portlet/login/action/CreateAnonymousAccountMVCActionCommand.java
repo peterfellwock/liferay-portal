@@ -73,7 +73,7 @@ import javax.servlet.http.HttpServletRequest;
 		"mvc.command.name=/login/create_anonymous_account"
 	}
 )
-public class CreateAnonymousAccountAction  extends BaseMVCActionCommand {
+public class CreateAnonymousAccountMVCActionCommand extends BaseMVCActionCommand {
 
 	@Override
 	protected void doProcessAction(
@@ -322,6 +322,6 @@ public class CreateAnonymousAccountAction  extends BaseMVCActionCommand {
 	private static final boolean _CHECK_METHOD_ON_PROCESS_ACTION = false;
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		CreateAnonymousAccountAction.class);
+		CreateAnonymousAccountMVCActionCommand.class);
 
 }

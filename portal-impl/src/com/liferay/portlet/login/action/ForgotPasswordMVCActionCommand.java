@@ -68,7 +68,7 @@ import org.apache.struts.action.ActionMapping;
 		"mvc.command.name=/login/forgot_password"
 	}
 )
-public class ForgotPasswordAction extends BaseMVCActionCommand {
+public class ForgotPasswordMVCActionCommand extends BaseMVCActionCommand {
 
 	@Override
 	protected void doProcessAction(

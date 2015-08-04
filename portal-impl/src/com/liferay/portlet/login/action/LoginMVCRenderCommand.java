@@ -31,7 +31,7 @@ import javax.portlet.RenderResponse;
 		"mvc.command.name=/login/login"
 	}
 )
-public class LoginActionMVCRenderCommand implements MVCRenderCommand {
+public class LoginMVCRenderCommand implements MVCRenderCommand {
 
 	@Override
 	public String render(
@@ -42,7 +42,7 @@ public class LoginActionMVCRenderCommand implements MVCRenderCommand {
 	
 	public static void afterPropertiesSet() {
 		System.out.println("-----------------------------------------------");
-		System.out.println("-----I AM SET LoginActionMVCRenderCommand------");
+		System.out.println("-----I AM SET LoginMVCRenderCommand------");
 		System.out.println("-----------------------------------------------");
 		System.out.println("-----------------------------------------------");
 	}
