@@ -39,5 +39,12 @@ public class LoginActionMVCRenderCommand implements MVCRenderCommand {
 		return "/portlet/login/login.jsp";
 		
 	}
+	
+	public static void afterPropertiesSet() {
+		System.out.println("-----------------------------------------------");
+		System.out.println("-----I AM SET LoginActionMVCRenderCommand------");
+		System.out.println("-----------------------------------------------");
+		System.out.println("-----------------------------------------------");
+	}
 
 }
