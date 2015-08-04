@@ -227,7 +227,7 @@
 	<portlet>
 		<portlet-name>58</portlet-name>
 		<display-name>Login</display-name>
-		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
+		<portlet-class>com.liferay.portlet.login.LoginPortlet</portlet-class>
 		<init-param>
 			<name>config-template</name>
 			<value>/html/portlet/login/configuration.jsp</value>
@@ -237,8 +237,8 @@
 			<value>/html/portlet/login/</value>
 		</init-param>
 		<init-param>
-			<name>view-action</name>
-			<value>/login/login</value>
+			<name>view-template</name>
+			<value>/html/portlet/login/login.jsp</value>
 		</init-param>
 		<expiration-cache>0</expiration-cache>
 		<supports>
@@ -626,8 +626,8 @@
 			<value>/html/portlet/login/</value>
 		</init-param>
 		<init-param>
-			<name>view-action</name>
-			<value>/login/login/view.jsp</value>
+			<name>view-template</name>
+			<value>/html/portlet/login/login.jsp</value>
 		</init-param>
 		<expiration-cache>0</expiration-cache>
 		<supports>
