@@ -36,7 +36,8 @@ import javax.portlet.RenderResponse;
 		"mvc.command.name=/login/create_anonymous_account"
 	}
 )
-public class CreateAnonymousAccountMVCRenderCommand implements MVCRenderCommand {
+public class CreateAnonymousAccountMVCRenderCommand
+	implements MVCRenderCommand {
 
 	@Override
 	public String render(
@@ -50,7 +51,7 @@ public class CreateAnonymousAccountMVCRenderCommand implements MVCRenderCommand 
 		if (!company.isStrangers()) {
 			return "/html/portlet/login/login.jsp";
 		}
-		
+
 		PortletConfig portletConfig = (PortletConfig)renderRequest.getAttribute(
 			JavaConstants.JAVAX_PORTLET_CONFIG);
 

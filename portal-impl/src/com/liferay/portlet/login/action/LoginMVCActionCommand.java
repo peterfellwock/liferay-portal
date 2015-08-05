@@ -49,6 +49,7 @@ import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -118,14 +119,14 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 				}
 			}
 			else if (e instanceof CompanyMaxUsersException ||
-					 e instanceof CookieNotSupportedException ||
-					 e instanceof NoSuchUserException ||
-					 e instanceof PasswordExpiredException ||
-					 e instanceof UserEmailAddressException ||
-					 e instanceof UserIdException ||
-					 e instanceof UserLockoutException ||
-					 e instanceof UserPasswordException ||
-					 e instanceof UserScreenNameException) {
+					e instanceof CookieNotSupportedException ||
+					e instanceof NoSuchUserException ||
+					e instanceof PasswordExpiredException ||
+					e instanceof UserEmailAddressException ||
+					e instanceof UserIdException ||
+					e instanceof UserLockoutException ||
+					e instanceof UserPasswordException ||
+					e instanceof UserScreenNameException) {
 
 				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
@@ -140,8 +141,6 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 			postProcessAuthFailure(actionRequest, actionResponse);
 		}
 	}
-
-
 
 	protected String getCompleteRedirectURL(
 		HttpServletRequest request, String redirect) {
@@ -165,13 +164,6 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 
 		return portalURL.concat(redirect);
 	}
-
-	/** not sure about this method????
-	@Override
-	protected boolean isCheckMethodOnProcessAction() {
-		return _CHECK_METHOD_ON_PROCESS_ACTION;
-	}
-	**/
 
 	protected void login(
 			ThemeDisplay themeDisplay, ActionRequest actionRequest,
@@ -270,8 +262,7 @@ public class LoginMVCActionCommand extends BaseMVCActionCommand {
 		actionResponse.sendRedirect(portletURL.toString());
 	}
 
-	private static final boolean _CHECK_METHOD_ON_PROCESS_ACTION = false;
-
-	private static final Log _log = LogFactoryUtil.getLog(LoginMVCActionCommand.class);
+	private static final Log _log = LogFactoryUtil.getLog(
+		LoginMVCActionCommand.class);
 
 }
