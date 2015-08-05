@@ -116,7 +116,8 @@ public class CreateAnonymousAccountMVCActionCommand
 			actionRequest, PortletKeys.FAST_LOGIN, themeDisplay.getPlid(),
 			PortletRequest.RENDER_PHASE);
 
-		portletURL.setParameter("struts_action", "/login/login_redirect");
+		portletURL.setParameter(
+			"mvcRenderCommandName", "/login/login_redirect");
 		portletURL.setParameter("emailAddress", emailAddress);
 		portletURL.setParameter("anonymousUser", Boolean.TRUE.toString());
 		portletURL.setWindowState(LiferayWindowState.POP_UP);
