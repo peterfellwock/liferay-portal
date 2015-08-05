@@ -39,15 +39,15 @@ import com.liferay.portal.UserPasswordException;
 import com.liferay.portal.UserScreenNameException;
 import com.liferay.portal.UserSmsException;
 import com.liferay.portal.WebsiteURLException;
-import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.captcha.CaptchaConfigurationException;
 import com.liferay.portal.kernel.captcha.CaptchaMaxChallengesException;
 import com.liferay.portal.kernel.captcha.CaptchaTextException;
 import com.liferay.portal.kernel.captcha.CaptchaUtil;
+import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.security.auth.session.AuthenticatedSessionManagerUtil;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
+import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -68,10 +68,10 @@ import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.service.UserServiceUtil;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.login.util.LoginUtil;
-import com.liferay.portal.util.PortletKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -162,7 +162,7 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 			}
 			else if (e instanceof
 						UserEmailAddressException.MustNotBeDuplicate ||
-					 e instanceof UserScreenNameException.MustNotBeDuplicate) {
+					e instanceof UserScreenNameException.MustNotBeDuplicate) {
 
 				String emailAddress = ParamUtil.getString(
 					actionRequest, "emailAddress");
@@ -322,13 +322,6 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 	protected boolean isAutoScreenName() {
 		return _AUTO_SCREEN_NAME;
 	}
-
-	/**
-	@Override
-	protected boolean isCheckMethodOnProcessAction() {
-		return _CHECK_METHOD_ON_PROCESS_ACTION;
-	}
-	**/
 
 	protected void resetUser(
 			ActionRequest actionRequest, ActionResponse actionResponse)
@@ -506,7 +499,5 @@ public class CreateAccountMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	private static final boolean _AUTO_SCREEN_NAME = false;
-
-	private static final boolean _CHECK_METHOD_ON_PROCESS_ACTION = false;
 
 }

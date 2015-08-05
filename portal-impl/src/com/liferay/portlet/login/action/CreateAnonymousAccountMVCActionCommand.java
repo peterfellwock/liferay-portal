@@ -14,8 +14,6 @@
 
 package com.liferay.portlet.login.action;
 
-import java.io.IOException;
-
 import com.liferay.portal.CompanyMaxUsersException;
 import com.liferay.portal.ContactNameException;
 import com.liferay.portal.EmailAddressException;
@@ -54,11 +52,14 @@ import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.PortletURLFactoryUtil;
 
+import java.io.IOException;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -73,7 +74,8 @@ import javax.servlet.http.HttpServletRequest;
 		"mvc.command.name=/login/create_anonymous_account"
 	}
 )
-public class CreateAnonymousAccountMVCActionCommand extends BaseMVCActionCommand {
+public class CreateAnonymousAccountMVCActionCommand
+	extends BaseMVCActionCommand {
 
 	@Override
 	protected void doProcessAction(
@@ -92,7 +94,7 @@ public class CreateAnonymousAccountMVCActionCommand extends BaseMVCActionCommand
 
 		PortletConfig portletConfig = (PortletConfig)actionRequest.getAttribute(
 			JavaConstants.JAVAX_PORTLET_CONFIG);
-		
+
 		String portletName = portletConfig.getPortletName();
 
 		if (!portletName.equals(PortletKeys.FAST_LOGIN)) {
@@ -142,12 +144,12 @@ public class CreateAnonymousAccountMVCActionCommand extends BaseMVCActionCommand
 				writeJSON(actionRequest, actionResponse, jsonObject);
 			}
 			else if (e instanceof CaptchaConfigurationException ||
-					 e instanceof CaptchaTextException ||
-					 e instanceof CompanyMaxUsersException ||
-					 e instanceof ContactNameException ||
-					 e instanceof EmailAddressException ||
-					 e instanceof GroupFriendlyURLException ||
-					 e instanceof UserEmailAddressException) {
+					e instanceof CaptchaTextException ||
+					e instanceof CompanyMaxUsersException ||
+					e instanceof ContactNameException ||
+					e instanceof EmailAddressException ||
+					e instanceof GroupFriendlyURLException ||
+					e instanceof UserEmailAddressException) {
 
 				SessionErrors.add(actionRequest, e.getClass(), e);
 			}
@@ -249,15 +251,6 @@ public class CreateAnonymousAccountMVCActionCommand extends BaseMVCActionCommand
 		}
 	}
 
-	/** not sure about this method????
-	
-	@Override
-	protected boolean isCheckMethodOnProcessAction() {
-		return _CHECK_METHOD_ON_PROCESS_ACTION;
-	}
-	
-	**/
-
 	protected JSONObject updateIncompleteUser(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
@@ -308,7 +301,7 @@ public class CreateAnonymousAccountMVCActionCommand extends BaseMVCActionCommand
 
 		return jsonObject;
 	}
-	
+
 
 	private void writeJSON(ActionRequest actionRequest,
 			ActionResponse actionResponse, JSONObject jsonObject)
@@ -316,10 +309,8 @@ public class CreateAnonymousAccountMVCActionCommand extends BaseMVCActionCommand
 
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse, jsonObject);
-		
-	}
 
-	private static final boolean _CHECK_METHOD_ON_PROCESS_ACTION = false;
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		CreateAnonymousAccountMVCActionCommand.class);
