@@ -12,31 +12,33 @@
  * details.
  */
 
-package com.liferay.portlet.pluginsadmin.action;
+package com.liferay.pluginsadmin.web.portlet.action;
 
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.kernel.spring.osgi.OSGiBeanProperties;
 import com.liferay.portal.util.PortletKeys;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Peter Fellwock
  */
-@OSGiBeanProperties(
+@Component(
 	property = {
-		"javax.portlet.name=" + PortletKeys.PLUGINS_ADMIN, "mvc.command.name=/"
+		"javax.portlet.name=" + PortletKeys.PLUGINS_ADMIN,
+		"mvc.command.name=/plugins_admin/edit_plugin"
 	},
 	service = MVCRenderCommand.class
 )
-public class ViewPluginMVCRenderCommand implements MVCRenderCommand {
+public class EditPluginMVCRenderCommand implements MVCRenderCommand {
 
 	@Override
 	public String render(
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
-		return "/html/portlet/plugins_admin/view.jsp";
+		return "/edit_plugin.jsp";
 	}
 
 }
