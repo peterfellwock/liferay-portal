@@ -14,11 +14,11 @@
 
 package com.liferay.pluginsadmin.web.upgrade;
 
+import com.liferay.pluginsadmin.web.constants.PluginsAdminPortletKeys;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.service.ReleaseLocalService;
 import com.liferay.portal.upgrade.util.UpgradePortletId;
-import com.liferay.portal.util.PortletKeys;
 
 import java.util.Collections;
 
@@ -54,7 +54,7 @@ public class PluginsAdminWebUpgrade {
 			protected String[][] getRenamePortletIdsArray() {
 				return new String[][] {
 					new String[] {
-						"132", PortletKeys.PLUGINS_ADMIN
+						"132", PluginsAdminPortletKeys.PLUGINS_ADMIN
 					}
 				};
 			}
