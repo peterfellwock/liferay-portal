@@ -14,8 +14,8 @@
 
 package com.liferay.pluginsadmin.web.portlet.action;
 
+import com.liferay.pluginsadmin.web.constants.PluginsAdminPortletKeys;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
-import com.liferay.portal.util.PortletKeys;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -27,7 +27,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	property = {
-		"javax.portlet.name=" + PortletKeys.PLUGINS_ADMIN,
+		"javax.portlet.name=" + PluginsAdminPortletKeys.PLUGINS_ADMIN,
 		"mvc.command.name=/plugins_admin/edit_plugin"
 	},
 	service = MVCRenderCommand.class
