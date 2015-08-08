@@ -12,13 +12,13 @@
  * details.
  */
 
-package com.liferay.product.menu.control.panel.application.list;
+package com.liferay.pluginsadmin.web.application.list;
 
 import com.liferay.application.list.BaseControlPanelEntryPanelApp;
 import com.liferay.application.list.PanelApp;
 import com.liferay.application.list.constants.PanelCategoryKeys;
+import com.liferay.pluginsadmin.web.constants.PluginsAdminPortletKeys;
 import com.liferay.portal.service.PortletLocalService;
-import com.liferay.portal.util.PortletKeys;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -44,7 +44,7 @@ public class PluginsConfigurationPanelApp
 
 	@Override
 	public String getPortletId() {
-		return PortletKeys.PLUGINS_ADMIN;
+		return PluginsAdminPortletKeys.PLUGINS_ADMIN;
 	}
 
 	@Reference(unbind = "-")
