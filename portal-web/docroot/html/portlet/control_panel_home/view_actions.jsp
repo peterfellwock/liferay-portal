@@ -44,17 +44,6 @@
 
 								<aui:button data="<%= data %>" href="<%= appManagerURL %>" id="controlPanelHomeActionManageApps" primary="<%= true %>" value="manage-apps" />
 							</c:when>
-							<c:otherwise>
-								<p>
-									<liferay-ui:message key="do-you-want-to-manage-the-installed-apps" />
-								</p>
-
-								<liferay-portlet:renderURL portletName="<%= PortletKeys.PLUGINS_ADMIN %>" var="pluginsAdminURL">
-									<portlet:param name="redirect" value="<%= PortalUtil.getCurrentURL(request) %>" />
-								</liferay-portlet:renderURL>
-
-								<aui:button data="<%= data %>" href="<%= pluginsAdminURL %>" id="controlPanelHomeActionManageApps" primary="<%= true %>" value="manage-apps" />
-							</c:otherwise>
 						</c:choose>
 					</c:when>
 					<c:when test="<%= category.equals(PortletCategoryKeys.CONFIGURATION) %>">
@@ -62,7 +51,7 @@
 							<liferay-ui:message key="do-you-want-to-modify-any-settings-of-your-portal" />
 						</p>
 
-						<liferay-portlet:renderURL portletName="<%= PortletKeys.PORTAL_SETTINGS %>" var="editPortalSettingsURL">
+						<liferay-portlet:renderURL portletName="com_liferay_pluginsadmin_web_portlet_PluginsAdminPortlet" var="editPortalSettingsURL">
 							<portlet:param name="redirect" value="<%= PortalUtil.getCurrentURL(request) %>" />
 						</liferay-portlet:renderURL>
 
