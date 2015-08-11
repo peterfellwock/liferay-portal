@@ -1,3 +1,4 @@
+<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -11,13 +12,26 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+--%>
 
-package com.liferay.portlet.pluginsadmin;
+<liferay-ui:tabs
+	names="portlet-plugins,theme-plugins,layout-template-plugins"
+	param="tabs2"
+	url="<%= portletURL.toString() %>"
+/>
 
-import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-
-/**
- * @author Peter Fellwock
- */
-public class PluginsAdminPortlet extends MVCPortlet {
-}
+<c:choose>
+	<c:when test='<%= tabs2.equals("theme-plugins") %>'>
+		<%@ include file="/themes.jspf" %>
+	</c:when>
+	<c:when test='<%= tabs2.equals("layout-template-plugins") %>'>
+		<%@ include file="/layout_templates.jspf" %>
+	</c:when>
+	<c:when test='<%= tabs2.equals("hook-plugins") %>'>
+	</c:when>
+	<c:when test='<%= tabs2.equals("web-plugins") %>'>
+	</c:when>
+	<c:otherwise>
+		<%@ include file="/portlets.jspf" %>
+	</c:otherwise>
+</c:choose>
