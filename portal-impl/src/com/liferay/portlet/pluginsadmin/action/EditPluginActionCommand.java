@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.pluginsadmin.action;
 
+import com.liferay.pluginsadmin.web.constants.PluginsAdminPortletKeys;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -26,7 +27,6 @@ import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.service.PluginSettingServiceUtil;
 import com.liferay.portal.service.PortletServiceUtil;
 import com.liferay.portal.util.PortalUtil;
-import com.liferay.portal.util.PortletKeys;
 
 import java.util.Arrays;
 
@@ -41,7 +41,7 @@ import javax.portlet.ActionResponse;
 
 @OSGiBeanProperties(
 	property = {
-		"javax.portlet.name=" + PortletKeys.PLUGINS_ADMIN,
+		"javax.portlet.name=" + PluginsAdminPortletKeys.PLUGINS_ADMIN,
 		"mvc.command.name=/plugins_admin/edit_plugin"
 	},
 	service = MVCActionCommand.class
