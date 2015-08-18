@@ -12,15 +12,17 @@
  * details.
  */
 
-package com.liferay.portlet.shopping.service.permission;
+package com.liferay.shopping.service.pemission.test;
 
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.permission.test.BasePermissionTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.MainServletTestRule;
-import com.liferay.portlet.shopping.model.ShoppingCategory;
-import com.liferay.portlet.shopping.util.test.ShoppingTestUtil;
+import com.liferay.shopping.model.ShoppingCategory;
+import com.liferay.shopping.service.permission.ShoppingCategoryPermission;
+import com.liferay.shopping.service.permission.ShoppingPermission;
+import com.liferay.shopping.util.test.ShoppingTestUtil;
 
 import org.junit.Assert;
 import org.junit.ClassRule;
