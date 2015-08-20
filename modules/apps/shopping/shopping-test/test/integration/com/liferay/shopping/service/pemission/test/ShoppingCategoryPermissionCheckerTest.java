@@ -14,7 +14,9 @@
 
 package com.liferay.shopping.service.pemission.test;
 
+import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.permission.test.BasePermissionTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -28,11 +30,14 @@ import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author Eric Chin
  * @author Shinn Lok
  */
+@RunWith(Arquillian.class)
+@Sync
 public class ShoppingCategoryPermissionCheckerTest
 	extends BasePermissionTestCase {
 
