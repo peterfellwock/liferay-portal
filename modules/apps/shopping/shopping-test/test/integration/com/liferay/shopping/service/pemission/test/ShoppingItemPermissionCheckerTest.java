@@ -70,7 +70,7 @@ public class ShoppingItemPermissionCheckerTest extends BasePermissionTestCase {
 
 	@Before
 	@Override
-	protected void doSetUp() throws Exception {
+	public void doSetUp() throws Exception {
 		_item = ShoppingTestUtil.addItem(group.getGroupId());
 
 		ShoppingCategory category = ShoppingTestUtil.addCategory(

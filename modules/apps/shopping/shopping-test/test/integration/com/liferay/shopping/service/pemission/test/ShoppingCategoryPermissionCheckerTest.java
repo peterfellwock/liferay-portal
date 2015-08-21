@@ -69,7 +69,7 @@ public class ShoppingCategoryPermissionCheckerTest
 
 	@Before
 	@Override
-	protected void doSetUp() throws Exception {
+	public void doSetUp() throws Exception {
 		_category = ShoppingTestUtil.addCategory(group.getGroupId());
 
 		_subcategory = ShoppingTestUtil.addCategory(
