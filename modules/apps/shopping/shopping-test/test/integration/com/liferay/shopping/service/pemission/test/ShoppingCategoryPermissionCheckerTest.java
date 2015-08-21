@@ -50,6 +50,17 @@ public class ShoppingCategoryPermissionCheckerTest
 
 	@Before
 	@Override
+	public void doSetUp() throws Exception {
+		_category = ShoppingTestUtil.addCategory(group.getGroupId());
+
+		_subcategory = ShoppingTestUtil.addCategory(
+			group.getGroupId(), _category.getCategoryId());
+
+		super.setUp();
+	}
+
+	@Before
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 	}
@@ -71,17 +82,6 @@ public class ShoppingCategoryPermissionCheckerTest
 		Assert.assertFalse(
 			ShoppingCategoryPermission.contains(
 				permissionChecker, _subcategory, ActionKeys.VIEW));
-	}
-
-	@Before
-	@Override
-	protected void doSetUp() throws Exception {
-		_category = ShoppingTestUtil.addCategory(group.getGroupId());
-
-		_subcategory = ShoppingTestUtil.addCategory(
-			group.getGroupId(), _category.getCategoryId());
-
-		super.setUp();
 	}
 
 	@Override

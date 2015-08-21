@@ -50,6 +50,18 @@ public class ShoppingItemPermissionCheckerTest extends BasePermissionTestCase {
 
 	@Before
 	@Override
+	public void doSetUp() throws Exception {
+		_item = ShoppingTestUtil.addItem(group.getGroupId());
+
+		ShoppingCategory category = ShoppingTestUtil.addCategory(
+			group.getGroupId());
+
+		_subitem = ShoppingTestUtil.addItem(
+			group.getGroupId(), category.getCategoryId());
+	}
+
+	@Before
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
 	}
@@ -71,18 +83,6 @@ public class ShoppingItemPermissionCheckerTest extends BasePermissionTestCase {
 		Assert.assertFalse(
 			ShoppingItemPermission.contains(
 				permissionChecker, _subitem, ActionKeys.VIEW));
-	}
-
-	@Before
-	@Override
-	protected void doSetUp() throws Exception {
-		_item = ShoppingTestUtil.addItem(group.getGroupId());
-
-		ShoppingCategory category = ShoppingTestUtil.addCategory(
-			group.getGroupId());
-
-		_subitem = ShoppingTestUtil.addItem(
-			group.getGroupId(), category.getCategoryId());
 	}
 
 	@Override
