@@ -27,6 +27,7 @@ import com.liferay.shopping.service.permission.ShoppingPermission;
 import com.liferay.shopping.util.test.ShoppingTestUtil;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -66,12 +67,15 @@ public class ShoppingCategoryPermissionCheckerTest
 				permissionChecker, _subcategory, ActionKeys.VIEW));
 	}
 
+	@Before
 	@Override
 	protected void doSetUp() throws Exception {
 		_category = ShoppingTestUtil.addCategory(group.getGroupId());
 
 		_subcategory = ShoppingTestUtil.addCategory(
 			group.getGroupId(), _category.getCategoryId());
+		
+		super.setUp();
 	}
 
 	@Override

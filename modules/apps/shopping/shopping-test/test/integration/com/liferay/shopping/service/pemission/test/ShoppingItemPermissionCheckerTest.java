@@ -21,7 +21,6 @@ import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.permission.test.BasePermissionTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.MainServletTestRule;
-
 import com.liferay.shopping.model.ShoppingCategory;
 import com.liferay.shopping.model.ShoppingItem;
 import com.liferay.shopping.service.permission.ShoppingItemPermission;
@@ -29,6 +28,7 @@ import com.liferay.shopping.service.permission.ShoppingPermission;
 import com.liferay.shopping.util.test.ShoppingTestUtil;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -68,6 +68,7 @@ public class ShoppingItemPermissionCheckerTest extends BasePermissionTestCase {
 				permissionChecker, _subitem, ActionKeys.VIEW));
 	}
 
+	@Before
 	@Override
 	protected void doSetUp() throws Exception {
 		_item = ShoppingTestUtil.addItem(group.getGroupId());
