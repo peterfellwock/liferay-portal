@@ -48,6 +48,12 @@ public class ShoppingCategoryPermissionCheckerTest
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(), MainServletTestRule.INSTANCE);
 
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+	}
+
 	@Test
 	public void testContains() throws Exception {
 		Assert.assertTrue(
@@ -69,12 +75,12 @@ public class ShoppingCategoryPermissionCheckerTest
 
 	@Before
 	@Override
-	public void doSetUp() throws Exception {
+	protected void doSetUp() throws Exception {
 		_category = ShoppingTestUtil.addCategory(group.getGroupId());
 
 		_subcategory = ShoppingTestUtil.addCategory(
 			group.getGroupId(), _category.getCategoryId());
-		
+
 		super.setUp();
 	}
 

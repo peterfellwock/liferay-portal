@@ -31,9 +31,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.runner.RunWith;
 import org.junit.Test;
-
+import org.junit.runner.RunWith;
 
 /**
  * @author Eric Chin
@@ -48,6 +47,12 @@ public class ShoppingItemPermissionCheckerTest extends BasePermissionTestCase {
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
 			new LiferayIntegrationTestRule(), MainServletTestRule.INSTANCE);
+
+	@Before
+	@Override
+	public void setUp() throws Exception {
+		super.setUp();
+	}
 
 	@Test
 	public void testContains() throws Exception {
@@ -70,7 +75,7 @@ public class ShoppingItemPermissionCheckerTest extends BasePermissionTestCase {
 
 	@Before
 	@Override
-	public void doSetUp() throws Exception {
+	protected void doSetUp() throws Exception {
 		_item = ShoppingTestUtil.addItem(group.getGroupId());
 
 		ShoppingCategory category = ShoppingTestUtil.addCategory(
