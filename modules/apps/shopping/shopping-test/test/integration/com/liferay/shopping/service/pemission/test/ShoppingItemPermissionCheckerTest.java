@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.test.rule.Sync;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.permission.test.BasePermissionTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.test.rule.MainServletTestRule;
 import com.liferay.shopping.model.ShoppingCategory;
 import com.liferay.shopping.model.ShoppingItem;
 import com.liferay.shopping.service.permission.ShoppingItemPermission;
@@ -46,7 +45,7 @@ public class ShoppingItemPermissionCheckerTest extends BasePermissionTestCase {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			new LiferayIntegrationTestRule(), MainServletTestRule.INSTANCE);
+			new LiferayIntegrationTestRule());
 
 	@Before
 	@Override

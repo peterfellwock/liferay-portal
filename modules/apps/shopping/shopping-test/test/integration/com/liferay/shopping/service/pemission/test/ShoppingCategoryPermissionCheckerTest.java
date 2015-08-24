@@ -17,10 +17,10 @@ package com.liferay.shopping.service.pemission.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.Sync;
+import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.service.permission.test.BasePermissionTestCase;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portal.test.rule.MainServletTestRule;
 import com.liferay.shopping.model.ShoppingCategory;
 import com.liferay.shopping.service.permission.ShoppingCategoryPermission;
 import com.liferay.shopping.service.permission.ShoppingPermission;
@@ -46,42 +46,57 @@ public class ShoppingCategoryPermissionCheckerTest
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			new LiferayIntegrationTestRule(), MainServletTestRule.INSTANCE);
+			new LiferayIntegrationTestRule(), 
+			SynchronousDestinationTestRule.INSTANCE);
 
 	@Before
 	@Override
 	public void doSetUp() throws Exception {
+		
+		System.out.println("--------------------------------------------doSetUp");
+		
 		_category = ShoppingTestUtil.addCategory(group.getGroupId());
 
 		_subcategory = ShoppingTestUtil.addCategory(
 			group.getGroupId(), _category.getCategoryId());
 
-		super.setUp();
 	}
 
 	@Before
 	@Override
 	public void setUp() throws Exception {
+		System.out.println("--------------------------------------------preSetUp");
 		super.setUp();
+		System.out.println("--------------------------------------------postSetUp");
 	}
 
 	@Test
 	public void testContains() throws Exception {
+		
+		System.out.println("--------------------------------------------1");
+		
 		Assert.assertTrue(
 			ShoppingCategoryPermission.contains(
 				permissionChecker, _category, ActionKeys.VIEW));
 		Assert.assertTrue(
 			ShoppingCategoryPermission.contains(
 				permissionChecker, _subcategory, ActionKeys.VIEW));
+		
+		System.out.println("--------------------------------------------2");
 
 		removePortletModelViewPermission();
 
 		Assert.assertFalse(
 			ShoppingCategoryPermission.contains(
 				permissionChecker, _category, ActionKeys.VIEW));
+		
+		System.out.println("--------------------------------------------3");
+		
 		Assert.assertFalse(
 			ShoppingCategoryPermission.contains(
 				permissionChecker, _subcategory, ActionKeys.VIEW));
+		
+		System.out.println("--------------------------------------------4");
 	}
 
 	@Override
