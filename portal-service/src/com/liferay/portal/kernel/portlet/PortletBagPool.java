@@ -50,10 +50,23 @@ public class PortletBagPool {
 
 		_instance._reset();
 	}
+	
+	public static void print() {
+		_instance._print();
+	}
 
 	private PortletBagPool() {
 		_portletBagPool = new ConcurrentHashMap<>();
 	}
+	
+	private void _print() {
+		System.out.println("+++++++++++++++++_portletBagPool.keySet+++++++++++++++++++");
+		for(String portletId : _portletBagPool.keySet()){
+			System.out.println("pId:" + portletId);
+		}
+		System.out.println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+	}
+	
 
 	private PortletBag _get(String portletId) {
 		return _portletBagPool.get(portletId);
