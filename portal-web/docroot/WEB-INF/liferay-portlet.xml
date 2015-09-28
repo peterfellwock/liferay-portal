@@ -225,6 +225,13 @@
 		<add-default-resource>true</add-default-resource>
 		<system>true</system>
 	</portlet>
+	<portlet>
+		<portlet-name>com_liferay_login_web_portlet_LoginPortlet</portlet-name>
+		<use-default-template>false</use-default-template>
+		<private-request-attributes>false</private-request-attributes>
+		<private-session-attributes>false</private-session-attributes>
+		<render-weight>50</render-weight>
+	</portlet>
 	<role-mapper>
 		<role-name>administrator</role-name>
 		<role-link>Administrator</role-link>

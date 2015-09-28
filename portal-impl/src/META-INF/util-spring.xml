@@ -8,6 +8,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd"
 >
 	<bean id="com.liferay.mail.util.DummyHook" class="com.liferay.mail.util.DummyHook" />
+	<bean id="com.liferay.portal.login.StubLoginPortlet" class="com.liferay.portal.login.StubLoginPortlet" />
 	<bean class="com.liferay.portal.convert.ConvertDatabase" />
 	<bean class="com.liferay.portal.convert.ConvertDocumentLibrary" />
 	<bean class="com.liferay.portal.convert.ConvertDocumentLibraryExtraSettings" />
