@@ -36,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
 @Component(
 	immediate = true,
 	property = {
-			"javax.portlet.name=" + ConfigurationAdminPortletKeys.CONFIGURATION_ADMIN
+		"javax.portlet.name=" + ConfigurationAdminPortletKeys.CONFIGURATION_ADMIN
 	},
 	service = CustomUserAttributes.class
 )
