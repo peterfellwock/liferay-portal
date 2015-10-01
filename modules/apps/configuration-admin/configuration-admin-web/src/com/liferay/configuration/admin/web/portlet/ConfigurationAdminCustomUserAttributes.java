@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.configuration.admin.web.util;
+package com.liferay.configuration.admin.web.portlet;
 
 import com.liferay.configuration.admin.web.constants.ConfigurationAdminPortletKeys;
 import com.liferay.portal.kernel.util.Validator;
