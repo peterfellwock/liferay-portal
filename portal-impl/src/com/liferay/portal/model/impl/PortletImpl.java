@@ -1353,13 +1353,7 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public PortletLayoutListener getPortletLayoutListenerInstance() {
 		
-		System.out.println("PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---");
-		System.out.println("getPortletLayoutListenerInstance: getRootPortletId():" + getRootPortletId());
-		PortletBagPool.print();
-		
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
-		
-		System.out.println("getPortletLayoutListenerInstance: PortletBagPool():" + portletBag);
 
 		List<PortletLayoutListener> portletLayoutListenerInstances =
 			portletBag.getPortletLayoutListenerInstances();
