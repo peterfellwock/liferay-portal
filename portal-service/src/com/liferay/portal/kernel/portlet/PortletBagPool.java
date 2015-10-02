@@ -50,11 +50,11 @@ public class PortletBagPool {
 
 		_instance._reset();
 	}
-
+	
 	private PortletBagPool() {
 		_portletBagPool = new ConcurrentHashMap<>();
 	}
-
+	
 	private PortletBag _get(String portletId) {
 		return _portletBagPool.get(portletId);
 	}

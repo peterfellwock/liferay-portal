@@ -1343,6 +1343,11 @@ public class LayoutTypePortletImpl
 
 		try {
 			if (_enablePortletLayoutListener) {
+				
+				System.out.println("PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---PETER---");
+				System.out.println("before: portletId:" + portletId);
+				System.out.println("before: portletClass:" + portlet.getClass().getName());
+				
 				PortletLayoutListener portletLayoutListener =
 					portlet.getPortletLayoutListenerInstance();
 

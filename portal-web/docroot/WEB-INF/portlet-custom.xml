@@ -90,37 +90,6 @@
 		</security-role-ref>
 	</portlet>
 	<portlet>
-		<portlet-name>58</portlet-name>
-		<display-name>Login</display-name>
-		<portlet-class>com.liferay.portlet.login.LoginPortlet</portlet-class>
-		<init-param>
-			<name>config-template</name>
-			<value>/html/portlet/login/configuration.jsp</value>
-		</init-param>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/login/</value>
-		</init-param>
-		<init-param>
-			<name>view-template</name>
-			<value>/html/portlet/login/login.jsp</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<security-role-ref>
-			<role-name>guest</role-name>
-		</security-role-ref>
-		<security-role-ref>
-			<role-name>power-user</role-name>
-		</security-role-ref>
-		<security-role-ref>
-			<role-name>user</role-name>
-		</security-role-ref>
-	</portlet>
-	<portlet>
 		<portlet-name>64</portlet-name>
 		<display-name>Recent Documents</display-name>
 		<portlet-class>com.liferay.portlet.StrutsPortlet</portlet-class>
@@ -290,37 +259,6 @@
 		</security-role-ref>
 	</portlet>
 	<portlet>
-		<portlet-name>164</portlet-name>
-		<display-name>Fast Login</display-name>
-		<portlet-class>com.liferay.portlet.login.LoginPortlet</portlet-class>
-		<init-param>
-			<name>config-template</name>
-			<value>/html/portlet/login/configuration.jsp</value>
-		</init-param>
-		<init-param>
-			<name>template-path</name>
-			<value>/html/portlet/login/</value>
-		</init-param>
-		<init-param>
-			<name>view-template</name>
-			<value>/html/portlet/login/login.jsp</value>
-		</init-param>
-		<expiration-cache>0</expiration-cache>
-		<supports>
-			<mime-type>text/html</mime-type>
-		</supports>
-		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
-		<security-role-ref>
-			<role-name>guest</role-name>
-		</security-role-ref>
-		<security-role-ref>
-			<role-name>power-user</role-name>
-		</security-role-ref>
-		<security-role-ref>
-			<role-name>user</role-name>
-		</security-role-ref>
-	</portlet>
-	<portlet>
 		<portlet-name>176</portlet-name>
 		<display-name>License Manager</display-name>
 		<portlet-class>com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet</portlet-class>
@@ -425,6 +363,25 @@
 			<name>view-action</name>
 			<value>/image_uploader/view</value>
 		</init-param>
+		<expiration-cache>0</expiration-cache>
+		<supports>
+			<mime-type>text/html</mime-type>
+		</supports>
+		<resource-bundle>com.liferay.portlet.StrutsResourceBundle</resource-bundle>
+		<security-role-ref>
+			<role-name>guest</role-name>
+		</security-role-ref>
+		<security-role-ref>
+			<role-name>power-user</role-name>
+		</security-role-ref>
+		<security-role-ref>
+			<role-name>user</role-name>
+		</security-role-ref>
+	</portlet>
+	<portlet>
+	<portlet-name>com_liferay_login_web_portlet_LoginPortlet</portlet-name>
+		<display-name>Dummy Login</display-name>
+		<portlet-class>com.liferay.portal.login.StubLoginPortlet</portlet-class>
 		<expiration-cache>0</expiration-cache>
 		<supports>
 			<mime-type>text/html</mime-type>

@@ -88,7 +88,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.portlet.PortletMode;
 import javax.portlet.WindowState;
-
 import javax.servlet.ServletContext;
 
 /**
@@ -1353,10 +1352,15 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public PortletLayoutListener getPortletLayoutListenerInstance() {
+		
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
 		List<PortletLayoutListener> portletLayoutListenerInstances =
 			portletBag.getPortletLayoutListenerInstances();
+
+		if ( portletBag == null) {
+			return null;
+		}
 
 		if (portletLayoutListenerInstances.isEmpty()) {
 			return null;

@@ -168,11 +168,21 @@ public class PortletTracker
 			_portletLocalService.getPortletById(portletId);
 
 		if (portletModel != null) {
-			_log.error("Portlet id " + portletId + " is already in use");
-
-			bundleContext.ungetService(serviceReference);
-
-			return null;
+			
+			System.out.println("------------------------------portletModel.getPortletClass()>" + portletModel.getPortletClass());
+			
+			if("com.liferay.portal.login.StubLoginPortlet"
+				.equals(portletModel.getPortletClass())){
+			
+				System.out.println("+++++++++++++++++++++++++++++++REPLACE PORTLET::" + portletId);
+			}
+			else{
+				_log.error("Portlet id " + portletId + " is already in use");
+	
+				bundleContext.ungetService(serviceReference);
+	
+				return null;
+			}
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -306,7 +316,7 @@ public class PortletTracker
 
 		PortletBagFactory portletBagFactory = new BundlePortletBagFactory(
 			portlet);
-
+		
 		portletBagFactory.setClassLoader(bundleWiring.getClassLoader());
 		portletBagFactory.setServletContext(
 			bundlePortletApp.getServletContext());
