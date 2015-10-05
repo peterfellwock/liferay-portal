@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.SearchEngineUtil;
-import com.liferay.portal.kernel.search.background.task.ReindexStatusMessageSenderUtil;
+import com.liferay.portal.kernel.search.ReindexStatusMessageSenderUtil2;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.util.PropsValues;
 
@@ -89,7 +89,9 @@ public class SearchEngineInitializer implements Runnable {
 		stopWatch.start();
 
 		try {
-			ReindexStatusMessageSenderUtil.sendStatusMessage("hi");
+			ReindexStatusMessageSenderUtil2.hello();
+			
+			ReindexStatusMessageSenderUtil2.sendStatusMessage("hi");
 
 			SearchEngineUtil.removeCompany(_companyId);
 

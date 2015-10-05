@@ -9,7 +9,8 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd"
 >
 
-	<bean id="com.liferay.portal.kernel.search.background.task.ReindexStatusMessageSenderUtil" class="com.liferay.portal.kernel.search.background.task.ReindexStatusMessageSenderUtil">
+
+	<bean id="com.liferay.portal.kernel.search.ReindexStatusMessageSenderUtil2" class="com.liferay.portal.kernel.search.ReindexStatusMessageSenderUtil2" >
 		<property name="reindexStatusMessageSender">
 			<bean class="com.liferay.portal.search.background.task.ReindexStatusMessageSenderImpl">
 				<property name="backgroundTaskStatusMessageSender">
