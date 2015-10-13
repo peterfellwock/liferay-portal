@@ -358,8 +358,8 @@ public class TeamLocalServiceWrapper implements TeamLocalService,
 
 	@Override
 	public java.util.List<com.liferay.portal.model.Team> getRecursiveUserTeams(
-		long userId, long groupId) {
-		return _teamLocalService.getRecursiveUserTeams(userId, groupId);
+		long groupId, long userId) {
+		return _teamLocalService.getRecursiveUserTeams(groupId, userId);
 	}
 
 	@Override
