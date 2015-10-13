@@ -330,8 +330,8 @@ public class TeamLocalServiceUtil {
 	}
 
 	public static java.util.List<com.liferay.portal.model.Team> getRecursiveUserTeams(
-		long userId, long groupId) {
-		return getService().getRecursiveUserTeams(userId, groupId);
+		long groupId, long userId) {
+		return getService().getRecursiveUserTeams(groupId, userId);
 	}
 
 	public static com.liferay.portal.model.Team getTeam(long groupId,

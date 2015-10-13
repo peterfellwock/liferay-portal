@@ -261,7 +261,7 @@ public interface TeamLocalService extends BaseLocalService,
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public java.util.List<com.liferay.portal.model.Team> getRecursiveUserTeams(
-		long userId, long groupId);
+		long groupId, long userId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public com.liferay.portal.model.Team getTeam(long groupId,
