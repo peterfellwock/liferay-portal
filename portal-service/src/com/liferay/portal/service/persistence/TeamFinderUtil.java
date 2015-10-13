@@ -57,10 +57,10 @@ public class TeamFinderUtil {
 			obc);
 	}
 
-	public static java.util.List<com.liferay.portal.model.Team> findByUserId(
-		long userId, long groupId, int start, int end,
+	public static java.util.List<com.liferay.portal.model.Team> findByG_U(
+		long groupId, long userId, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator<com.liferay.portal.model.Team> obc) {
-		return getFinder().findByUserId(userId, groupId, start, end, obc);
+		return getFinder().findByG_U(groupId, userId, start, end, obc);
 	}
 
 	public static TeamFinder getFinder() {
