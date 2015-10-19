@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portal.kernel.app;
+package com.liferay.portal.license.util;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -35,6 +35,7 @@ public class AppRegistryUtil {
 	}
 
 	private AppRegistryUtil() {
+System.out.println("###INITING");
 		Registry registry = RegistryUtil.getRegistry();
 
 		_serviceTracker = registry.trackServices(
@@ -72,7 +73,7 @@ public class AppRegistryUtil {
 		@Override
 		public AppVerifier addingService(
 			ServiceReference<AppVerifier> serviceReference) {
-
+System.out.println("###ADDING SERVICE");
 			Registry registry = RegistryUtil.getRegistry();
 
 			AppVerifier appVerifier = registry.getService(serviceReference);

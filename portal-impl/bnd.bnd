@@ -19,6 +19,7 @@ Export-Package:\
 	com.liferay.portal.security.access.control,\
 	com.liferay.portal.security.lang,\
 	com.liferay.portal.service.http,\
+	com.liferay.portal.license.util,\
 	com.liferay.portal.servlet.filters.authverifier,\
 	com.liferay.portal.service.permission,\
 	com.liferay.portal.spring.aop,\

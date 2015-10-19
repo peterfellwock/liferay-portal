@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portal.kernel.app;
+package com.liferay.portal.license.util;
 
 /**
  * @author Amos Fong
