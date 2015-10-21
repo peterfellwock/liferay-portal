@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.directory.asset;
+package com.liferay.directory.web.portlet.asset;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.model.Group;
