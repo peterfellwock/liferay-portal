@@ -61,6 +61,7 @@ import com.liferay.portal.util.WebAppPool;
 import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.InvokerPortlet;
 import com.liferay.portlet.PortletBagFactory;
+import com.liferay.portlet.PortletContextBag;
 import com.liferay.portlet.PortletContextBagPool;
 import com.liferay.portlet.PortletInstanceFactory;
 import com.liferay.registry.util.StringPlus;
@@ -236,6 +237,18 @@ public class PortletTracker
 			portletCategory.separate(portletModel.getRootPortletId());
 		}
 
+		PortletContextBag portletContextBag = PortletContextBagPool.remove(
+			bundlePortletApp.getServletContextName());
+
+		if ((portletContextBag != null) &&
+			(portletContextBag instanceof BundlePortletContextBag)) {
+
+			BundlePortletContextBag bundlePortletContextBag =
+				(BundlePortletContextBag)portletContextBag;
+
+			bundlePortletContextBag.close();
+		}
+
 		PortletBag portletBag = PortletBagPool.remove(
 			portletModel.getRootPortletId());
 
@@ -300,10 +313,8 @@ public class PortletTracker
 		collectLiferayFeatures(serviceReference, portletModel);
 
 		BundlePortletContextBag portletContextBag = new BundlePortletContextBag(
-			bundlePortletApp.getServletContextName());
-
-		bundlePortletApp.setCustomUserAttributes(
-			portletContextBag.getCustomUserAttributesDefinitions());
+			portletId, bundlePortletApp.getServletContextName(),
+			bundle.getBundleContext());
 
 		PortletContextBagPool.put(
 			bundlePortletApp.getServletContextName(), portletContextBag);

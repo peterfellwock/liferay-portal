@@ -14,68 +14,93 @@
 
 package com.liferay.portal.portlet.tracker.internal;
 
+import com.liferay.osgi.service.tracker.map.ServiceRankingPropertyServiceReferenceComparator;
+import com.liferay.osgi.service.tracker.map.ServiceReferenceMapper;
+import com.liferay.osgi.service.tracker.map.ServiceTrackerMap;
+import com.liferay.osgi.service.tracker.map.ServiceTrackerMapFactory;
+import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portlet.CustomUserAttributes;
 import com.liferay.portlet.PortletContextBag;
-import com.liferay.registry.Filter;
-import com.liferay.registry.Registry;
-import com.liferay.registry.RegistryUtil;
-import com.liferay.registry.collections.ServiceTrackerCollections;
-import com.liferay.registry.collections.ServiceTrackerList;
+import com.liferay.registry.util.StringPlus;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
 
 /**
  * @author Peter Fellwock
+ * @author Raymond Augé
  */
 public class BundlePortletContextBag extends PortletContextBag {
 
-	public BundlePortletContextBag(String servletContextName) {
+	public BundlePortletContextBag(
+		String portletId, String servletContextName,
+		BundleContext bundleContext) {
+
 		super(servletContextName);
 
-		Registry registry = RegistryUtil.getRegistry();
+		ServiceTrackerMap<String,CustomUserAttributes> serviceTrackerMap = null;
 
-		Filter filter = registry.getFilter(
-			"(&(custom.user.attribute=*)" +
-			"(javax.portlet.name=ALL)" +
-			"(objectClass=" + CustomUserAttributes.class.getName() + "))");
+		try {
+			serviceTrackerMap = ServiceTrackerMapFactory.singleValueMap(
+				bundleContext, CustomUserAttributes.class,
+				"(&(custom.user.attribute=*)(|(javax.portlet.name=" +
+					portletId + ")(javax.portlet.name=ALL)))",
+				new CustomUserAttributesServiceReferenceMapper(),
+				new ServiceRankingPropertyServiceReferenceComparator
+					<CustomUserAttributes>());
+		}
+		catch (InvalidSyntaxException ise) {
+			ReflectionUtil.throwException(ise);
+		}
 
-		_customUserAttributesList = ServiceTrackerCollections.list(
-			CustomUserAttributes.class, filter);
+		_customUserAttributesMap = serviceTrackerMap;
+
+		_customUserAttributesMap.open();
 	}
 
+	public void close() {
+		_customUserAttributesMap.close();
+	}
+
+	@Override
 	public Map<String, CustomUserAttributes> getCustomUserAttributes() {
 		Map<String, CustomUserAttributes> customUserAttributesMap =
 			new HashMap<>();
 
-		for (CustomUserAttributes customUserAttributes :
-				_customUserAttributesList) {
+		customUserAttributesMap.putAll(super.getCustomUserAttributes());
 
+		for (String key : _customUserAttributesMap.keySet()) {
 			customUserAttributesMap.put(
-				customUserAttributes.getClass().getName(),
-				customUserAttributes);
+				key, customUserAttributesMap.get(key));
 		}
 
 		return customUserAttributesMap;
 	}
 
-	public Map<String, String> getCustomUserAttributesDefinitions() {
-		Map<String, CustomUserAttributes> customUserAttributes =
-			getCustomUserAttributes();
+	private final ServiceTrackerMap<String, CustomUserAttributes>
+		_customUserAttributesMap;
 
-		Set<String> classNames = customUserAttributes.keySet();
+	private class CustomUserAttributesServiceReferenceMapper
+		implements ServiceReferenceMapper<String, CustomUserAttributes> {
 
-		Map<String, String> customUserAttributesDefinitions = new HashMap<>();
+		@Override
+		public void map(
+			ServiceReference<CustomUserAttributes> serviceReference,
+			Emitter<String> emitter) {
 
-		for (String className : classNames) {
-			customUserAttributesDefinitions.put(className, className);
+			List<String> customUserAttributeKeys = StringPlus.asList(
+				serviceReference.getProperty("custom.user.attribute"));
+
+			for (String customUserAttributeKey : customUserAttributeKeys) {
+				emitter.emit(customUserAttributeKey);
+			}
 		}
 
-		return customUserAttributesDefinitions;
 	}
-
-	private final ServiceTrackerList<CustomUserAttributes>
-		_customUserAttributesList;
 
 }
