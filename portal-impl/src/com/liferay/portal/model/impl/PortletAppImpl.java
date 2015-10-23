@@ -192,13 +192,6 @@ public class PortletAppImpl implements PortletApp {
 	}
 
 	@Override
-	public void setCustomUserAttributes(
-		Map<String, String> customUserAttributes) {
-
-		_customUserAttributes = customUserAttributes;
-	}
-
-	@Override
 	public void setDefaultNamespace(String defaultNamespace) {
 		_defaultNamespace = defaultNamespace;
 	}
@@ -237,7 +230,8 @@ public class PortletAppImpl implements PortletApp {
 	private final Map<String, String[]> _containerRuntimeOptions =
 		new HashMap<>();
 	private String _contextPath = StringPool.BLANK;
-	private Map<String, String> _customUserAttributes = new LinkedHashMap<>();
+	private final Map<String, String> _customUserAttributes =
+		new LinkedHashMap<>();
 	private String _defaultNamespace = XMLConstants.NULL_NS_URI;
 	private final Set<EventDefinition> _eventDefinitions =
 		new LinkedHashSet<>();
