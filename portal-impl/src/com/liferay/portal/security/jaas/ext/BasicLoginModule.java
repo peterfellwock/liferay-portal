@@ -86,6 +86,16 @@ public class BasicLoginModule implements LoginModule {
 			credentials = authenticate();
 		}
 		catch (Exception e) {
+			
+			System.out.println("--------------------------------------------------------------");
+			System.out.println("--------------------------------------------------------------");
+			System.out.println("----------------------JAASS ERROR TEST------------------------");
+			System.out.println("--------------------------------------------------------------");
+			e.printStackTrace(System.out);
+			e.printStackTrace(System.err);
+			System.out.println("--------------------------------------------------------------");
+			System.out.println("--------------------------------------------------------------");
+			System.out.println("--------------------------------------------------------------");
 			_log.error(e.getMessage());
 
 			throw new LoginException();
