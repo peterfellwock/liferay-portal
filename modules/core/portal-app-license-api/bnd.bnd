@@ -1,0 +1,7 @@
+Bundle-Name: Liferay Portal License API
+Bundle-SymbolicName: com.liferay.portal.app.license.api
+Bundle-Version: 1.0.0
+Export-Package: com.liferay.portal.app.license
+Include-Resource: classes
+Import-Package:\
+	com.liferay.portal.app.license
