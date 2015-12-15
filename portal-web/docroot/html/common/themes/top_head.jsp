@@ -154,6 +154,20 @@ StringBundler pageTopSB = OutputTag.getData(request, WebKeys.PAGE_TOP);
 
 <link class="lfr-css-file" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, themeDisplay.getPathThemeCss() + "/main.css")) %>" rel="stylesheet" type="text/css" />
 
+<%-- Themelet CSS --%>
+
+<%
+String productMenuThemeletPath = ThemeletUtil.getThemeletContextPaths("product-menu");
+
+if (Validator.isNotNull(productMenuThemeletPath)) {
+%>
+
+	<link class="lfr-css-file" href="<%= HtmlUtil.escapeAttribute(PortalUtil.getStaticResourceURL(request, productMenuThemeletPath + "/main.css")) %>" rel="stylesheet" type="text/css" />
+
+<%
+}
+%>
+
 <%-- User Inputted Layout CSS --%>
 
 <c:if test="<%= (layout != null) && Validator.isNotNull(layout.getCssText()) %>">
