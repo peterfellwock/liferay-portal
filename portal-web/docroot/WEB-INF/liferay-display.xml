@@ -10,7 +10,4 @@
 		<portlet id="158" />
 		<portlet id="196" />
 	</category>
-	<category name="category.sample">
-		<portlet id="47" />
-	</category>
 </display>
