@@ -1316,6 +1316,11 @@
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
+		<attribute>
+			<name>search</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
 	</tag>
 	<tag>
 		<description>Creates an error message to display to the user.</description>
@@ -3275,12 +3280,6 @@
 		<attribute>
 			<description>Whether to translate the arguments into the user's language. The default value is <![CDATA[<code>true</code>]]>.</description>
 			<name>translateArguments</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-		<attribute>
-			<name>resourceBundle</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>boolean</type>
