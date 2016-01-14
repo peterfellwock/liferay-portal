@@ -37,7 +37,7 @@ import org.osgi.service.component.annotations.Component;
 	property = {
 		"com.liferay.portlet.css-class-wrapper=portlet-hello-world",
 		"com.liferay.portlet.display-category=category.sample",
-		"com.liferay.portlet.icon=/icons/announcements.png",
+		"com.liferay.portlet.icon=/icons/hello-world.png",
 		"com.liferay.portlet.preferences-owned-by-group=true",
 		"com.liferay.portlet.private-request-attributes=false",
 		"com.liferay.portlet.private-session-attributes=false",
@@ -46,6 +46,7 @@ import org.osgi.service.component.annotations.Component;
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.display-name=Hello World",
 		"javax.portlet.expiration-cache=0",
+		"javax.portlet.init-param.always-display-default-configuration-icons=true",
 		"javax.portlet.name=" + HelloWorldPortletKeys.HELLO_WORLD,
 		"javax.portlet.resource-bundle=content.Language",
 		"javax.portlet.security-role-ref=guest,power-user,user",
