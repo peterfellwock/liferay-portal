@@ -12,13 +12,13 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.service.persistence.impl;
+package com.liferay.calendar.service.persistence.impl;
 
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
-import com.liferay.portlet.calendar.model.CalEvent;
-import com.liferay.portlet.calendar.service.persistence.CalEventPersistence;
+import com.liferay.calendar.model.CalEvent;
+import com.liferay.calendar.service.persistence.CalEventPersistence;
 
 import java.util.Set;
 

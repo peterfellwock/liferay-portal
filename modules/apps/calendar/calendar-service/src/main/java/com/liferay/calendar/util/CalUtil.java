@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.util;
+package com.liferay.calendar.util;
 
 import com.liferay.portal.kernel.cal.TZSRecurrence;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
@@ -26,7 +26,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.calendar.model.CalEvent;
+import com.liferay.calendar.model.CalEvent;
 import com.liferay.util.ContentUtil;
 
 import java.util.Calendar;

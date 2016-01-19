@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model.impl;
+package com.liferay.calendar.model.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -21,7 +21,7 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.CacheModel;
 
-import com.liferay.portlet.calendar.model.CalEvent;
+import com.liferay.calendar.model.CalEvent;
 
 import java.io.Externalizable;
 import java.io.IOException;

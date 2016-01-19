@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.service.persistence.impl;
+package com.liferay.calendar.service.persistence.impl;
 
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -24,10 +24,10 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portlet.calendar.model.CalEvent;
-import com.liferay.portlet.calendar.model.CalEventConstants;
-import com.liferay.portlet.calendar.model.impl.CalEventImpl;
-import com.liferay.portlet.calendar.service.persistence.CalEventFinder;
+import com.liferay.calendar.model.CalEvent;
+import com.liferay.calendar.model.CalEventConstants;
+import com.liferay.calendar.model.impl.CalEventImpl;
+import com.liferay.calendar.service.persistence.CalEventFinder;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
 import java.sql.Timestamp;
