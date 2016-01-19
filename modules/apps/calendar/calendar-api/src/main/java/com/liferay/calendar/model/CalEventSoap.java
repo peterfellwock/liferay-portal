@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model;
+package com.liferay.calendar.model;
 
 import aQute.bnd.annotation.ProviderType;
 

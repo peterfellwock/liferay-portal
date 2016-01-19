@@ -12,13 +12,13 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.service.persistence;
+package com.liferay.calendar.service.persistence;
 
 import com.liferay.portal.kernel.dao.orm.DefaultActionableDynamicQuery;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 
-import com.liferay.portlet.calendar.model.CalEvent;
-import com.liferay.portlet.calendar.service.CalEventLocalServiceUtil;
+import com.liferay.calendar.model.CalEvent;
+import com.liferay.calendar.service.CalEventLocalServiceUtil;
 
 /**
  * @author Brian Wing Shun Chan

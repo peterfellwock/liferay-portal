@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model;
+package com.liferay.calendar.model;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -230,7 +230,7 @@ public class CalEventWrapper implements CalEvent, ModelWrapper<CalEvent> {
 	}
 
 	@Override
-	public int compareTo(com.liferay.portlet.calendar.model.CalEvent calEvent) {
+	public int compareTo(com.liferay.calendar.model.CalEvent calEvent) {
 		return _calEvent.compareTo(calEvent);
 	}
 
@@ -844,12 +844,12 @@ public class CalEventWrapper implements CalEvent, ModelWrapper<CalEvent> {
 	}
 
 	@Override
-	public com.liferay.portal.model.CacheModel<com.liferay.portlet.calendar.model.CalEvent> toCacheModel() {
+	public com.liferay.portal.model.CacheModel<com.liferay.calendar.model.CalEvent> toCacheModel() {
 		return _calEvent.toCacheModel();
 	}
 
 	@Override
-	public com.liferay.portlet.calendar.model.CalEvent toEscapedModel() {
+	public com.liferay.calendar.model.CalEvent toEscapedModel() {
 		return new CalEventWrapper(_calEvent.toEscapedModel());
 	}
 
@@ -859,7 +859,7 @@ public class CalEventWrapper implements CalEvent, ModelWrapper<CalEvent> {
 	}
 
 	@Override
-	public com.liferay.portlet.calendar.model.CalEvent toUnescapedModel() {
+	public com.liferay.calendar.model.CalEvent toUnescapedModel() {
 		return new CalEventWrapper(_calEvent.toUnescapedModel());
 	}
 
