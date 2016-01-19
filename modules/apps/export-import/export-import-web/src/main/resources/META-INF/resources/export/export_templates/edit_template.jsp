@@ -146,15 +146,15 @@ renderResponse.setTitle((exportImportConfiguration == null) ? LanguageUtil.get(r
 					<liferay-staging:content cmd="<%= cmd %>" parameterMap="<%= parameterMap %>" type="<%= Constants.EXPORT %>" />
 
 					<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" cssClass="options-group" label="permissions">
-						<%@ include file="/permissions.jspf" %>
+						<aui:input helpMessage='<%= group.isCompany() ? "publish-global-permissions-help" : "export-import-permissions-help" %>' label="permissions" name="<%= PortletDataHandlerKeys.PERMISSIONS %>" type="toggle-switch" value="<%= MapUtil.getBoolean(parameterMap, PortletDataHandlerKeys.PERMISSIONS, false) %>" />
 					</aui:fieldset>
 				</aui:fieldset-group>
 			</div>
 
 			<aui:button-row>
-				<aui:button type="submit" value="save" />
+				<aui:button cssClass="btn-lg" type="submit" value="save" />
 
-				<aui:button href="<%= portletURL.toString() %>" type="reset" value="cancel" />
+				<aui:button cssClass="btn-lg" href="<%= portletURL.toString() %>" type="reset" value="cancel" />
 			</aui:button-row>
 		</aui:form>
 	</div>

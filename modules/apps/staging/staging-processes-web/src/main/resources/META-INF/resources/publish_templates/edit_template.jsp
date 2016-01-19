@@ -204,7 +204,7 @@ renderResponse.setTitle((exportImportConfiguration == null) ? LanguageUtil.get(r
 						<liferay-staging:deletions cmd="<%= Constants.PUBLISH %>" />
 
 						<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" cssClass="options-group" label="permissions">
-							<%@ include file="/new_publication/permissions.jspf" %>
+							<aui:input helpMessage='<%= group.isCompany() ? "publish-global-permissions-help" : "export-import-permissions-help" %>' label="permissions" name="<%= PortletDataHandlerKeys.PERMISSIONS %>" type="toggle-switch" />
 						</aui:fieldset>
 
 						<c:if test="<%= !localPublishing %>">
@@ -216,9 +216,9 @@ renderResponse.setTitle((exportImportConfiguration == null) ? LanguageUtil.get(r
 				</div>
 
 				<aui:button-row>
-					<aui:button type="submit" value="save" />
+					<aui:button cssClass="btn-lg" type="submit" value="save" />
 
-					<aui:button href="<%= renderURL.toString() %>" type="reset" value="cancel" />
+					<aui:button cssClass="btn-lg" href="<%= renderURL.toString() %>" type="reset" value="cancel" />
 				</aui:button-row>
 			</div>
 		</aui:form>
