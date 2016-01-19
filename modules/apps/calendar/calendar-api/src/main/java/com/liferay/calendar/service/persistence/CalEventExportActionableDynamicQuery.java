@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.service.persistence;
+package com.liferay.calendar.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -20,7 +20,7 @@ import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.util.PortalUtil;
 
-import com.liferay.portlet.calendar.model.CalEvent;
+import com.liferay.calendar.model.CalEvent;
 import com.liferay.portlet.exportimport.lar.ExportImportHelperUtil;
 import com.liferay.portlet.exportimport.lar.ManifestSummary;
 import com.liferay.portlet.exportimport.lar.PortletDataContext;
@@ -29,7 +29,7 @@ import com.liferay.portlet.exportimport.lar.StagedModelType;
 
 /**
  * @author Brian Wing Shun Chan
- * @deprecated As of 7.0.0, replaced by {@link com.liferay.portlet.calendar.service.CalEventLocalServiceUtil#getExportActionableDynamicQuery(PortletDataContext)}
+ * @deprecated As of 7.0.0, replaced by {@link com.liferay.calendar.service.CalEventLocalServiceUtil#getExportActionableDynamicQuery(PortletDataContext)}
  * @generated
  */
 @Deprecated

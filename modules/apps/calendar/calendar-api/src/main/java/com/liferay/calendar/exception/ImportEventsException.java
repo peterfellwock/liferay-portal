@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar;
+package com.liferay.calendar;
 
 import com.liferay.portal.kernel.exception.PortalException;
 

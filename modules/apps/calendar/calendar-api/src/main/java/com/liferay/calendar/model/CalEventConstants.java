@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model;
+package com.liferay.calendar.model;
 
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;

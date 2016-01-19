@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.service.persistence;
+package com.liferay.calendar.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -28,15 +28,15 @@ public interface CalEventFinder {
 		java.util.Date startDateLT, boolean timeZoneSensitive,
 		java.lang.String[] types);
 
-	public java.util.List<com.liferay.portlet.calendar.model.CalEvent> findByFutureReminders();
+	public java.util.List<com.liferay.calendar.model.CalEvent> findByFutureReminders();
 
-	public java.util.List<com.liferay.portlet.calendar.model.CalEvent> findByNoAssets();
+	public java.util.List<com.liferay.calendar.model.CalEvent> findByNoAssets();
 
-	public java.util.List<com.liferay.portlet.calendar.model.CalEvent> findByG_SD_T(
+	public java.util.List<com.liferay.calendar.model.CalEvent> findByG_SD_T(
 		long groupId, java.util.Date startDateGT, java.util.Date startDateLT,
 		boolean timeZoneSensitive, java.lang.String[] types);
 
-	public java.util.List<com.liferay.portlet.calendar.model.CalEvent> findByG_SD_T(
+	public java.util.List<com.liferay.calendar.model.CalEvent> findByG_SD_T(
 		long groupId, java.util.Date startDateGT, java.util.Date startDateLT,
 		boolean timeZoneSensitive, java.lang.String[] types, int start, int end);
 }

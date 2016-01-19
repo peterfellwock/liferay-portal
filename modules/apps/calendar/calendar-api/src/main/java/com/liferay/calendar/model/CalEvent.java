@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model;
+package com.liferay.calendar.model;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -25,8 +25,8 @@ import com.liferay.portal.model.PersistedModel;
  *
  * @author Brian Wing Shun Chan
  * @see CalEventModel
- * @see com.liferay.portlet.calendar.model.impl.CalEventImpl
- * @see com.liferay.portlet.calendar.model.impl.CalEventModelImpl
+ * @see com.liferay.calendar.model.impl.CalEventImpl
+ * @see com.liferay.calendar.model.impl.CalEventModelImpl
  * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
@@ -37,7 +37,7 @@ public interface CalEvent extends CalEventModel, PersistedModel {
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this interface directly. Add methods to {@link com.liferay.portlet.calendar.model.impl.CalEventImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
+	 * Never modify this interface directly. Add methods to {@link com.liferay.calendar.model.impl.CalEventImpl} and rerun ServiceBuilder to automatically copy the method declarations to this interface.
 	 */
 	public static final Accessor<CalEvent, Long> EVENT_ID_ACCESSOR = new Accessor<CalEvent, Long>() {
 			@Override
