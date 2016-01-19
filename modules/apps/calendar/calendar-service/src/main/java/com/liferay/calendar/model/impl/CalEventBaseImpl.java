@@ -12,12 +12,12 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model.impl;
+package com.liferay.calendar.model.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portlet.calendar.model.CalEvent;
-import com.liferay.portlet.calendar.service.CalEventLocalServiceUtil;
+import com.liferay.calendar.model.CalEvent;
+import com.liferay.calendar.service.CalEventLocalServiceUtil;
 
 /**
  * The extended model base implementation for the CalEvent service. Represents a row in the &quot;CalEvent&quot; database table, with each column mapped to a property of this class.

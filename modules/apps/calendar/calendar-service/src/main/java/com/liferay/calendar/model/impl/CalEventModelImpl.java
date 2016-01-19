@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model.impl;
+package com.liferay.calendar.model.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -30,8 +30,8 @@ import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
 
-import com.liferay.portlet.calendar.model.CalEvent;
-import com.liferay.portlet.calendar.model.CalEventModel;
+import com.liferay.calendar.model.CalEvent;
+import com.liferay.calendar.model.CalEventModel;
 import com.liferay.portlet.expando.model.ExpandoBridge;
 import com.liferay.portlet.expando.util.ExpandoBridgeFactoryUtil;
 import com.liferay.portlet.exportimport.lar.StagedModelType;
@@ -129,13 +129,13 @@ public class CalEventModelImpl extends BaseModelImpl<CalEvent>
 	public static final String SESSION_FACTORY = "liferaySessionFactory";
 	public static final String TX_MANAGER = "liferayTransactionManager";
 	public static final boolean ENTITY_CACHE_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
-				"value.object.entity.cache.enabled.com.liferay.portlet.calendar.model.CalEvent"),
+				"value.object.entity.cache.enabled.com.liferay.calendar.model.CalEvent"),
 			true);
 	public static final boolean FINDER_CACHE_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
-				"value.object.finder.cache.enabled.com.liferay.portlet.calendar.model.CalEvent"),
+				"value.object.finder.cache.enabled.com.liferay.calendar.model.CalEvent"),
 			true);
 	public static final boolean COLUMN_BITMASK_ENABLED = GetterUtil.getBoolean(com.liferay.portal.util.PropsUtil.get(
-				"value.object.column.bitmask.enabled.com.liferay.portlet.calendar.model.CalEvent"),
+				"value.object.column.bitmask.enabled.com.liferay.calendar.model.CalEvent"),
 			true);
 	public static final long COMPANYID_COLUMN_BITMASK = 1L;
 	public static final long GROUPID_COLUMN_BITMASK = 2L;
@@ -146,7 +146,7 @@ public class CalEventModelImpl extends BaseModelImpl<CalEvent>
 	public static final long STARTDATE_COLUMN_BITMASK = 64L;
 	public static final long TITLE_COLUMN_BITMASK = 128L;
 	public static final long LOCK_EXPIRATION_TIME = GetterUtil.getLong(com.liferay.portal.util.PropsUtil.get(
-				"lock.expiration.time.com.liferay.portlet.calendar.model.CalEvent"));
+				"lock.expiration.time.com.liferay.calendar.model.CalEvent"));
 
 	public CalEventModelImpl() {
 	}
@@ -1062,7 +1062,7 @@ public class CalEventModelImpl extends BaseModelImpl<CalEvent>
 		StringBundler sb = new StringBundler(73);
 
 		sb.append("<model><model-name>");
-		sb.append("com.liferay.portlet.calendar.model.CalEvent");
+		sb.append("com.liferay.calendar.model.CalEvent");
 		sb.append("</model-name>");
 
 		sb.append(

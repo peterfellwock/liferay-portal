@@ -12,13 +12,13 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.service.impl;
+package com.liferay.calendar.service.impl;
 
 import com.liferay.portal.kernel.cache.MultiVMPoolUtil;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portlet.calendar.model.CalEvent;
+import com.liferay.calendar.model.CalEvent;
 
 import java.io.Serializable;
 

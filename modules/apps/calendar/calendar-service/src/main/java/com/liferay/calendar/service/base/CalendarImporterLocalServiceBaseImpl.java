@@ -49,7 +49,7 @@ import com.liferay.portlet.asset.service.persistence.AssetCategoryPersistence;
 import com.liferay.portlet.asset.service.persistence.AssetEntryPersistence;
 import com.liferay.portlet.asset.service.persistence.AssetLinkPersistence;
 import com.liferay.portlet.asset.service.persistence.AssetVocabularyPersistence;
-import com.liferay.portlet.calendar.service.persistence.CalEventPersistence;
+import com.liferay.calendar.service.persistence.CalEventPersistence;
 import com.liferay.portlet.messageboards.service.persistence.MBDiscussionPersistence;
 import com.liferay.portlet.messageboards.service.persistence.MBMessagePersistence;
 import com.liferay.portlet.messageboards.service.persistence.MBThreadPersistence;
@@ -803,7 +803,7 @@ public abstract class CalendarImporterLocalServiceBaseImpl
 	 *
 	 * @return the cal event local service
 	 */
-	public com.liferay.portlet.calendar.service.CalEventLocalService getCalEventLocalService() {
+	public com.liferay.calendar.service.CalEventLocalService getCalEventLocalService() {
 		return calEventLocalService;
 	}
 
@@ -813,7 +813,7 @@ public abstract class CalendarImporterLocalServiceBaseImpl
 	 * @param calEventLocalService the cal event local service
 	 */
 	public void setCalEventLocalService(
-		com.liferay.portlet.calendar.service.CalEventLocalService calEventLocalService) {
+		com.liferay.calendar.service.CalEventLocalService calEventLocalService) {
 		this.calEventLocalService = calEventLocalService;
 	}
 
@@ -1178,8 +1178,8 @@ public abstract class CalendarImporterLocalServiceBaseImpl
 	protected com.liferay.portlet.asset.service.AssetVocabularyLocalService assetVocabularyLocalService;
 	@ServiceReference(type = AssetVocabularyPersistence.class)
 	protected AssetVocabularyPersistence assetVocabularyPersistence;
-	@ServiceReference(type = com.liferay.portlet.calendar.service.CalEventLocalService.class)
-	protected com.liferay.portlet.calendar.service.CalEventLocalService calEventLocalService;
+	@ServiceReference(type = com.liferay.calendar.service.CalEventLocalService.class)
+	protected com.liferay.calendar.service.CalEventLocalService calEventLocalService;
 	@ServiceReference(type = CalEventPersistence.class)
 	protected CalEventPersistence calEventPersistence;
 	@ServiceReference(type = com.liferay.portlet.messageboards.service.MBDiscussionLocalService.class)

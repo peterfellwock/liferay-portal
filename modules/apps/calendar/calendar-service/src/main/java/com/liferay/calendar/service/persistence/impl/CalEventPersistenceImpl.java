@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.service.persistence.impl;
+package com.liferay.calendar.service.persistence.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
@@ -50,11 +50,11 @@ import com.liferay.portal.service.persistence.CompanyProvider;
 import com.liferay.portal.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
-import com.liferay.portlet.calendar.exception.NoSuchEventException;
-import com.liferay.portlet.calendar.model.CalEvent;
-import com.liferay.portlet.calendar.model.impl.CalEventImpl;
-import com.liferay.portlet.calendar.model.impl.CalEventModelImpl;
-import com.liferay.portlet.calendar.service.persistence.CalEventPersistence;
+import com.liferay.calendar.NoSuchEventException;
+import com.liferay.calendar.model.CalEvent;
+import com.liferay.calendar.model.impl.CalEventImpl;
+import com.liferay.calendar.model.impl.CalEventModelImpl;
+import com.liferay.calendar.service.persistence.CalEventPersistence;
 
 import java.io.Serializable;
 
@@ -77,7 +77,7 @@ import java.util.Set;
  *
  * @author Brian Wing Shun Chan
  * @see CalEventPersistence
- * @see com.liferay.portlet.calendar.service.persistence.CalEventUtil
+ * @see com.liferay.calendar.service.persistence.CalEventUtil
  * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */
@@ -5684,13 +5684,13 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 			try {
 				calEvent.setTitle(SanitizerUtil.sanitize(companyId, groupId,
 						userId,
-						com.liferay.portlet.calendar.model.CalEvent.class.getName(),
+						com.liferay.calendar.model.CalEvent.class.getName(),
 						eventId, ContentTypes.TEXT_PLAIN, Sanitizer.MODE_ALL,
 						calEvent.getTitle(), null));
 
 				calEvent.setDescription(SanitizerUtil.sanitize(companyId,
 						groupId, userId,
-						com.liferay.portlet.calendar.model.CalEvent.class.getName(),
+						com.liferay.calendar.model.CalEvent.class.getName(),
 						eventId, ContentTypes.TEXT_HTML, Sanitizer.MODE_ALL,
 						calEvent.getDescription(), null));
 			}
@@ -5912,7 +5912,7 @@ public class CalEventPersistenceImpl extends BasePersistenceImpl<CalEvent>
 	}
 
 	/**
-	 * Returns the cal event with the primary key or throws a {@link com.liferay.portal.exception.NoSuchModelException} if it could not be found.
+	 * Returns the cal event with the primary key or throws a {@link com.liferay.portal.NoSuchModelException} if it could not be found.
 	 *
 	 * @param primaryKey the primary key of the cal event
 	 * @return the cal event

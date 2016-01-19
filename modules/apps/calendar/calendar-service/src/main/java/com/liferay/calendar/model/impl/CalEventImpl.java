@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.calendar.model.impl;
+package com.liferay.calendar.model.impl;
 
 import com.liferay.portal.kernel.cal.TZSRecurrence;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
