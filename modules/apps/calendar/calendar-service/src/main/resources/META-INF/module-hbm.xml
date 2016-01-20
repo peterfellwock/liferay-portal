@@ -7,7 +7,7 @@
 	<import class="com.liferay.calendar.model.CalendarImporter" />
 	<import class="com.liferay.calendar.model.CalendarNotificationTemplate" />
 	<import class="com.liferay.calendar.model.CalendarResource" />
-	<import class="com.liferay.portlet.calendar.model.CalEvent" />
+	<import class="com.liferay.calendar.model.CalEvent" />
 	<class name="com.liferay.calendar.model.impl.CalendarImpl" table="Calendar">
 		<id name="calendarId" type="long">
 			<generator class="assigned" />
@@ -103,7 +103,7 @@
 		<property name="active" type="com.liferay.portal.dao.orm.hibernate.BooleanType" column="active_" />
 		<property name="lastPublishDate" type="org.hibernate.type.TimestampType" />
 	</class>
-		<class name="com.liferay.portlet.calendar.model.impl.CalEventImpl" table="CalEvent">
+		<class name="com.liferay.calendar.model.impl.CalEventImpl" table="CalEvent">
 		<id name="eventId" type="long">
 			<generator class="assigned" />
 		</id>
