@@ -50,7 +50,7 @@ import com.liferay.portal.service.persistence.CompanyProvider;
 import com.liferay.portal.service.persistence.CompanyProviderWrapper;
 import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
-import com.liferay.calendar.NoSuchEventException;
+import com.liferay.calendar.exception.NoSuchEventException;
 import com.liferay.calendar.model.CalEvent;
 import com.liferay.calendar.model.impl.CalEventImpl;
 import com.liferay.calendar.model.impl.CalEventModelImpl;

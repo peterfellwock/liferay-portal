@@ -12,9 +12,9 @@
  * details.
  */
 
-package com.liferay.calendar;
+package com.liferay.calendar.exception;
 
-import com.liferay.portal.NoSuchModelException;
+import com.liferay.portal.exception.NoSuchModelException;
 
 /**
  * @author Brian Wing Shun Chan
