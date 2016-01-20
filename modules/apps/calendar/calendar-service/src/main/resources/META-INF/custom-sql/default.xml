@@ -142,7 +142,7 @@
 				[$ORDER_BY$]
 		]]>
 	</sql>
-	<sql id="com.liferay.portlet.calendar.service.persistence.CalEventFinder.countByG_SD_T">
+	<sql id="com.liferay.calendar.service.persistence.CalEventFinder.countByG_SD_T">
 		<![CDATA[
 			SELECT
 				COUNT(*) AS COUNT_VALUE
@@ -157,7 +157,7 @@
 				[$TYPE$]
 		]]>
 	</sql>
-	<sql id="com.liferay.portlet.calendar.service.persistence.CalEventFinder.findByFutureReminders">
+	<sql id="com.liferay.calendar.service.persistence.CalEventFinder.findByFutureReminders">
 		<![CDATA[
 			SELECT
 				{CalEvent.*}
@@ -185,7 +185,7 @@
 				)
 		]]>
 	</sql>
-	<sql id="com.liferay.portlet.calendar.service.persistence.CalEventFinder.findByNoAssets">
+	<sql id="com.liferay.calendar.service.persistence.CalEventFinder.findByNoAssets">
 		<![CDATA[
 			SELECT
 				{CalEvent.*}
@@ -198,7 +198,7 @@
 				(AssetEntry.classPK IS NULL)
 		]]>
 	</sql>
-	<sql id="com.liferay.portlet.calendar.service.persistence.CalEventFinder.findByG_SD_T">
+	<sql id="com.liferay.calendar.service.persistence.CalEventFinder.findByG_SD_T">
 		<![CDATA[
 			SELECT
 				{CalEvent.*}
