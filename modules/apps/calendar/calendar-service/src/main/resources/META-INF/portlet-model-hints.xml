@@ -106,7 +106,7 @@
 		<field name="active" type="boolean" />
 		<field name="lastPublishDate" type="Date" />
 	</model>
-	<model name="com.liferay.portlet.calendar.model.CalEvent">
+	<model name="com.liferay.calendar.model.CalEvent">
 		<field name="uuid" type="String" />
 		<field name="eventId" type="long" />
 		<field name="groupId" type="long" />
