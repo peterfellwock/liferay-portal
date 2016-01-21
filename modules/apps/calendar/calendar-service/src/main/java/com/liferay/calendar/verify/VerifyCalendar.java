@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portal.verify;
+package com.liferay.calendar.verify;
 
 import com.liferay.portal.kernel.cal.TZSRecurrence;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.verify.VerifyProcess;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -70,17 +71,17 @@ public class VerifyCalendar extends VerifyProcess {
 
 	@SuppressWarnings("deprecation")
 	protected void verifyNoAssets() throws Exception {
-		List<com.liferay.portlet.calendar.model.CalEvent> events =
-			com.liferay.portlet.calendar.service.CalEventLocalServiceUtil.
+		List<com.liferay.calendar.model.CalEvent> events =
+			com.liferay.calendar.service.CalEventLocalServiceUtil.
 				getNoAssetEvents();
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Processing " + events.size() + " events with no asset");
 		}
 
-		for (com.liferay.portlet.calendar.model.CalEvent event : events) {
+		for (com.liferay.calendar.model.CalEvent event : events) {
 			try {
-				com.liferay.portlet.calendar.service.CalEventLocalServiceUtil.
+				com.liferay.calendar.service.CalEventLocalServiceUtil.
 					updateAsset(event.getUserId(), event, null, null, null);
 			}
 			catch (Exception e) {

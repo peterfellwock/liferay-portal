@@ -12,10 +12,11 @@
  * details.
  */
 
-package com.liferay.portal.verify;
+package com.liferay.calendar.verify;
 
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.verify.VerifyProcess;
 import com.liferay.portal.verify.test.BaseVerifyProcessTestCase;
 
 import org.junit.ClassRule;
