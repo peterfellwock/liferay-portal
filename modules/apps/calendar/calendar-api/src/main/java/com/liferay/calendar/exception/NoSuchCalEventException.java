@@ -14,25 +14,28 @@
 
 package com.liferay.calendar.exception;
 
-import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.exception.NoSuchModelException;
+
+import aQute.bnd.annotation.ProviderType;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  */
-public class EventTitleException extends PortalException {
+@ProviderType
+public class NoSuchCalEventException extends NoSuchModelException {
 
-	public EventTitleException() {
+	public NoSuchCalEventException() {
 	}
 
-	public EventTitleException(String msg) {
+	public NoSuchCalEventException(String msg) {
 		super(msg);
 	}
 
-	public EventTitleException(String msg, Throwable cause) {
+	public NoSuchCalEventException(String msg, Throwable cause) {
 		super(msg, cause);
 	}
 
-	public EventTitleException(Throwable cause) {
+	public NoSuchCalEventException(Throwable cause) {
 		super(cause);
 	}
 

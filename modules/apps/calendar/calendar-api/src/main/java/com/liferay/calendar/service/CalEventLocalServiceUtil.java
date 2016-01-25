@@ -16,8 +16,9 @@ package com.liferay.calendar.service;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+import com.liferay.osgi.util.ServiceTrackerFactory;
+
+import org.osgi.util.tracker.ServiceTracker;
 
 /**
  * Provides the local service utility for CalEvent. This utility wraps
@@ -27,7 +28,7 @@ import com.liferay.portal.kernel.util.ReferenceRegistry;
  * based on the propagated JAAS credentials because this service can only be
  * accessed from within the same VM.
  *
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @see CalEventLocalService
  * @see com.liferay.calendar.service.base.CalEventLocalServiceBaseImpl
  * @see com.liferay.calendar.service.impl.CalEventLocalServiceImpl
@@ -54,8 +55,8 @@ public class CalEventLocalServiceUtil {
 		return getService().addCalEvent(calEvent);
 	}
 
-	public static com.liferay.calendar.model.CalEvent addEvent(
-		long userId, java.lang.String title, java.lang.String description,
+	public static com.liferay.calendar.model.CalEvent addEvent(long userId,
+		java.lang.String title, java.lang.String description,
 		java.lang.String location, int startDateMonth, int startDateDay,
 		int startDateYear, int startDateHour, int startDateMinute,
 		int durationHour, int durationMinute, boolean allDay,
@@ -79,8 +80,8 @@ public class CalEventLocalServiceUtil {
 	ServiceContext)}
 	*/
 	@Deprecated
-	public static com.liferay.calendar.model.CalEvent addEvent(
-		long userId, java.lang.String title, java.lang.String description,
+	public static com.liferay.calendar.model.CalEvent addEvent(long userId,
+		java.lang.String title, java.lang.String description,
 		java.lang.String location, int startDateMonth, int startDateDay,
 		int startDateYear, int startDateHour, int startDateMinute,
 		int endDateMonth, int endDateDay, int endDateYear, int durationHour,
@@ -100,8 +101,8 @@ public class CalEventLocalServiceUtil {
 	}
 
 	public static void addEventResources(
-		com.liferay.calendar.model.CalEvent event,
-		boolean addGroupPermissions, boolean addGuestPermissions)
+		com.liferay.calendar.model.CalEvent event, boolean addGroupPermissions,
+		boolean addGuestPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService()
 			.addEventResources(event, addGroupPermissions, addGuestPermissions);
@@ -172,8 +173,7 @@ public class CalEventLocalServiceUtil {
 		return getService().deleteEvent(event);
 	}
 
-	public static com.liferay.calendar.model.CalEvent deleteEvent(
-		long eventId)
+	public static com.liferay.calendar.model.CalEvent deleteEvent(long eventId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().deleteEvent(eventId);
 	}
@@ -316,8 +316,7 @@ public class CalEventLocalServiceUtil {
 	* @return the cal event
 	* @throws PortalException if a cal event with the primary key could not be found
 	*/
-	public static com.liferay.calendar.model.CalEvent getCalEvent(
-		long eventId)
+	public static com.liferay.calendar.model.CalEvent getCalEvent(long eventId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getCalEvent(eventId);
 	}
@@ -400,8 +399,7 @@ public class CalEventLocalServiceUtil {
 		return getService().getCompanyEventsCount(companyId);
 	}
 
-	public static com.liferay.calendar.model.CalEvent getEvent(
-		long eventId)
+	public static com.liferay.calendar.model.CalEvent getEvent(long eventId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getEvent(eventId);
 	}
@@ -498,9 +496,8 @@ public class CalEventLocalServiceUtil {
 	}
 
 	public static void updateAsset(long userId,
-		com.liferay.calendar.model.CalEvent event,
-		long[] assetCategoryIds, java.lang.String[] assetTagNames,
-		long[] assetLinkEntryIds)
+		com.liferay.calendar.model.CalEvent event, long[] assetCategoryIds,
+		java.lang.String[] assetTagNames, long[] assetLinkEntryIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		getService()
 			.updateAsset(userId, event, assetCategoryIds, assetTagNames,
@@ -518,13 +515,12 @@ public class CalEventLocalServiceUtil {
 		return getService().updateCalEvent(calEvent);
 	}
 
-	public static com.liferay.calendar.model.CalEvent updateEvent(
-		long userId, long eventId, java.lang.String title,
-		java.lang.String description, java.lang.String location,
-		int startDateMonth, int startDateDay, int startDateYear,
-		int startDateHour, int startDateMinute, int durationHour,
-		int durationMinute, boolean allDay, boolean timeZoneSensitive,
-		java.lang.String type, boolean repeating,
+	public static com.liferay.calendar.model.CalEvent updateEvent(long userId,
+		long eventId, java.lang.String title, java.lang.String description,
+		java.lang.String location, int startDateMonth, int startDateDay,
+		int startDateYear, int startDateHour, int startDateMinute,
+		int durationHour, int durationMinute, boolean allDay,
+		boolean timeZoneSensitive, java.lang.String type, boolean repeating,
 		com.liferay.portal.kernel.cal.TZSRecurrence recurrence, int remindBy,
 		int firstReminder, int secondReminder,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -544,14 +540,13 @@ public class CalEventLocalServiceUtil {
 	int, ServiceContext)}
 	*/
 	@Deprecated
-	public static com.liferay.calendar.model.CalEvent updateEvent(
-		long userId, long eventId, java.lang.String title,
-		java.lang.String description, java.lang.String location,
-		int startDateMonth, int startDateDay, int startDateYear,
-		int startDateHour, int startDateMinute, int endDateMonth,
-		int endDateDay, int endDateYear, int durationHour, int durationMinute,
-		boolean allDay, boolean timeZoneSensitive, java.lang.String type,
-		boolean repeating,
+	public static com.liferay.calendar.model.CalEvent updateEvent(long userId,
+		long eventId, java.lang.String title, java.lang.String description,
+		java.lang.String location, int startDateMonth, int startDateDay,
+		int startDateYear, int startDateHour, int startDateMinute,
+		int endDateMonth, int endDateDay, int endDateYear, int durationHour,
+		int durationMinute, boolean allDay, boolean timeZoneSensitive,
+		java.lang.String type, boolean repeating,
 		com.liferay.portal.kernel.cal.TZSRecurrence recurrence, int remindBy,
 		int firstReminder, int secondReminder,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -566,15 +561,9 @@ public class CalEventLocalServiceUtil {
 	}
 
 	public static CalEventLocalService getService() {
-		if (_service == null) {
-			_service = (CalEventLocalService)PortalBeanLocatorUtil.locate(CalEventLocalService.class.getName());
-
-			ReferenceRegistry.registerReference(CalEventLocalServiceUtil.class,
-				"_service");
-		}
-
-		return _service;
+		return _serviceTracker.getService();
 	}
 
-	private static CalEventLocalService _service;
+	private static ServiceTracker<CalEventLocalService, CalEventLocalService> _serviceTracker =
+		ServiceTrackerFactory.open(CalEventLocalService.class);
 }

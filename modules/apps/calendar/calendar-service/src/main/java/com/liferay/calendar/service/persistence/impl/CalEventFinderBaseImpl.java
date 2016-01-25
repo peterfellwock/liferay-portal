@@ -14,16 +14,16 @@
 
 package com.liferay.calendar.service.persistence.impl;
 
-import com.liferay.portal.kernel.bean.BeanReference;
-import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
-
 import com.liferay.calendar.model.CalEvent;
 import com.liferay.calendar.service.persistence.CalEventPersistence;
+
+import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.portal.service.persistence.impl.BasePersistenceImpl;
 
 import java.util.Set;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */

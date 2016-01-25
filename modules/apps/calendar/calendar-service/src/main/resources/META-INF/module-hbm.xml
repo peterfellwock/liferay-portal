@@ -103,7 +103,7 @@
 		<property name="active" type="com.liferay.portal.dao.orm.hibernate.BooleanType" column="active_" />
 		<property name="lastPublishDate" type="org.hibernate.type.TimestampType" />
 	</class>
-		<class name="com.liferay.calendar.model.impl.CalEventImpl" table="CalEvent">
+	<class name="com.liferay.calendar.model.impl.CalEventImpl" table="CalEvent">
 		<id name="eventId" type="long">
 			<generator class="assigned" />
 		</id>

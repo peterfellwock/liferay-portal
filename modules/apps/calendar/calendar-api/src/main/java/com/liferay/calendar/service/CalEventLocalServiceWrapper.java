@@ -21,7 +21,7 @@ import com.liferay.portal.service.ServiceWrapper;
 /**
  * Provides a wrapper for {@link CalEventLocalService}.
  *
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @see CalEventLocalService
  * @deprecated As of 7.0.0, with no direct replacement
  * @generated
@@ -93,8 +93,7 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 	}
 
 	@Override
-	public void addEventResources(
-		com.liferay.calendar.model.CalEvent event,
+	public void addEventResources(com.liferay.calendar.model.CalEvent event,
 		boolean addGroupPermissions, boolean addGuestPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_calEventLocalService.addEventResources(event, addGroupPermissions,
@@ -102,8 +101,7 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 	}
 
 	@Override
-	public void addEventResources(
-		com.liferay.calendar.model.CalEvent event,
+	public void addEventResources(com.liferay.calendar.model.CalEvent event,
 		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_calEventLocalService.addEventResources(event, modelPermissions);
@@ -136,8 +134,7 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 	* @return the new cal event
 	*/
 	@Override
-	public com.liferay.calendar.model.CalEvent createCalEvent(
-		long eventId) {
+	public com.liferay.calendar.model.CalEvent createCalEvent(long eventId) {
 		return _calEventLocalService.createCalEvent(eventId);
 	}
 
@@ -161,8 +158,7 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 	* @throws PortalException if a cal event with the primary key could not be found
 	*/
 	@Override
-	public com.liferay.calendar.model.CalEvent deleteCalEvent(
-		long eventId)
+	public com.liferay.calendar.model.CalEvent deleteCalEvent(long eventId)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		return _calEventLocalService.deleteCalEvent(eventId);
 	}
@@ -302,8 +298,7 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 	}
 
 	@Override
-	public com.liferay.calendar.model.CalEvent fetchCalEvent(
-		long eventId) {
+	public com.liferay.calendar.model.CalEvent fetchCalEvent(long eventId) {
 		return _calEventLocalService.fetchCalEvent(eventId);
 	}
 
@@ -540,9 +535,8 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 
 	@Override
 	public void updateAsset(long userId,
-		com.liferay.calendar.model.CalEvent event,
-		long[] assetCategoryIds, java.lang.String[] assetTagNames,
-		long[] assetLinkEntryIds)
+		com.liferay.calendar.model.CalEvent event, long[] assetCategoryIds,
+		java.lang.String[] assetTagNames, long[] assetLinkEntryIds)
 		throws com.liferay.portal.kernel.exception.PortalException {
 		_calEventLocalService.updateAsset(userId, event, assetCategoryIds,
 			assetTagNames, assetLinkEntryIds);
@@ -561,13 +555,12 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 	}
 
 	@Override
-	public com.liferay.calendar.model.CalEvent updateEvent(
-		long userId, long eventId, java.lang.String title,
-		java.lang.String description, java.lang.String location,
-		int startDateMonth, int startDateDay, int startDateYear,
-		int startDateHour, int startDateMinute, int durationHour,
-		int durationMinute, boolean allDay, boolean timeZoneSensitive,
-		java.lang.String type, boolean repeating,
+	public com.liferay.calendar.model.CalEvent updateEvent(long userId,
+		long eventId, java.lang.String title, java.lang.String description,
+		java.lang.String location, int startDateMonth, int startDateDay,
+		int startDateYear, int startDateHour, int startDateMinute,
+		int durationHour, int durationMinute, boolean allDay,
+		boolean timeZoneSensitive, java.lang.String type, boolean repeating,
 		com.liferay.portal.kernel.cal.TZSRecurrence recurrence, int remindBy,
 		int firstReminder, int secondReminder,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -587,14 +580,13 @@ public class CalEventLocalServiceWrapper implements CalEventLocalService,
 	*/
 	@Deprecated
 	@Override
-	public com.liferay.calendar.model.CalEvent updateEvent(
-		long userId, long eventId, java.lang.String title,
-		java.lang.String description, java.lang.String location,
-		int startDateMonth, int startDateDay, int startDateYear,
-		int startDateHour, int startDateMinute, int endDateMonth,
-		int endDateDay, int endDateYear, int durationHour, int durationMinute,
-		boolean allDay, boolean timeZoneSensitive, java.lang.String type,
-		boolean repeating,
+	public com.liferay.calendar.model.CalEvent updateEvent(long userId,
+		long eventId, java.lang.String title, java.lang.String description,
+		java.lang.String location, int startDateMonth, int startDateDay,
+		int startDateYear, int startDateHour, int startDateMinute,
+		int endDateMonth, int endDateDay, int endDateYear, int durationHour,
+		int durationMinute, boolean allDay, boolean timeZoneSensitive,
+		java.lang.String type, boolean repeating,
 		com.liferay.portal.kernel.cal.TZSRecurrence recurrence, int remindBy,
 		int firstReminder, int secondReminder,
 		com.liferay.portal.service.ServiceContext serviceContext)
