@@ -17,7 +17,7 @@ package com.liferay.calendar.service.persistence;
 import aQute.bnd.annotation.ProviderType;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @deprecated As of 7.0.0, with no direct replacement
  * @generated
  */

@@ -16,13 +16,15 @@ package com.liferay.calendar.service.persistence;
 
 import aQute.bnd.annotation.ProviderType;
 
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
+import com.liferay.calendar.model.CalEvent;
+
+import com.liferay.osgi.util.ServiceTrackerFactory;
+
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
 import com.liferay.portal.service.ServiceContext;
 
-import com.liferay.calendar.model.CalEvent;
+import org.osgi.util.tracker.ServiceTracker;
 
 import java.util.List;
 
@@ -33,7 +35,7 @@ import java.util.List;
  * Caching information and settings can be found in <code>portal.properties</code>
  * </p>
  *
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @see CalEventPersistence
  * @see com.liferay.calendar.service.persistence.impl.CalEventPersistenceImpl
  * @deprecated As of 7.0.0, with no direct replacement
@@ -183,11 +185,11 @@ public class CalEventUtil {
 	* @param uuid the uuid
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByUuid_First(java.lang.String uuid,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByUuid_First(uuid, orderByComparator);
 	}
 
@@ -209,11 +211,11 @@ public class CalEventUtil {
 	* @param uuid the uuid
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByUuid_Last(java.lang.String uuid,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByUuid_Last(uuid, orderByComparator);
 	}
 
@@ -236,11 +238,11 @@ public class CalEventUtil {
 	* @param uuid the uuid
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByUuid_PrevAndNext(long eventId,
 		java.lang.String uuid, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByUuid_PrevAndNext(eventId, uuid, orderByComparator);
 	}
@@ -265,15 +267,15 @@ public class CalEventUtil {
 	}
 
 	/**
-	* Returns the cal event where uuid = &#63; and groupId = &#63; or throws a {@link NoSuchEventException} if it could not be found.
+	* Returns the cal event where uuid = &#63; and groupId = &#63; or throws a {@link NoSuchCalEventException} if it could not be found.
 	*
 	* @param uuid the uuid
 	* @param groupId the group ID
 	* @return the matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByUUID_G(java.lang.String uuid, long groupId)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByUUID_G(uuid, groupId);
 	}
 
@@ -309,7 +311,7 @@ public class CalEventUtil {
 	* @return the cal event that was removed
 	*/
 	public static CalEvent removeByUUID_G(java.lang.String uuid, long groupId)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().removeByUUID_G(uuid, groupId);
 	}
 
@@ -405,11 +407,11 @@ public class CalEventUtil {
 	* @param companyId the company ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByUuid_C_First(java.lang.String uuid,
 		long companyId, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByUuid_C_First(uuid, companyId, orderByComparator);
 	}
@@ -435,11 +437,11 @@ public class CalEventUtil {
 	* @param companyId the company ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByUuid_C_Last(java.lang.String uuid,
 		long companyId, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByUuid_C_Last(uuid, companyId, orderByComparator);
 	}
@@ -466,12 +468,12 @@ public class CalEventUtil {
 	* @param companyId the company ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByUuid_C_PrevAndNext(long eventId,
 		java.lang.String uuid, long companyId,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByUuid_C_PrevAndNext(eventId, uuid, companyId,
 			orderByComparator);
@@ -571,11 +573,11 @@ public class CalEventUtil {
 	* @param groupId the group ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByGroupId_First(long groupId,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByGroupId_First(groupId, orderByComparator);
 	}
 
@@ -597,11 +599,11 @@ public class CalEventUtil {
 	* @param groupId the group ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByGroupId_Last(long groupId,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByGroupId_Last(groupId, orderByComparator);
 	}
 
@@ -624,11 +626,11 @@ public class CalEventUtil {
 	* @param groupId the group ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByGroupId_PrevAndNext(long eventId,
 		long groupId, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByGroupId_PrevAndNext(eventId, groupId,
 			orderByComparator);
@@ -727,11 +729,11 @@ public class CalEventUtil {
 	* @param companyId the company ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByCompanyId_First(long companyId,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByCompanyId_First(companyId, orderByComparator);
 	}
@@ -755,11 +757,11 @@ public class CalEventUtil {
 	* @param companyId the company ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByCompanyId_Last(long companyId,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByCompanyId_Last(companyId, orderByComparator);
 	}
@@ -784,11 +786,11 @@ public class CalEventUtil {
 	* @param companyId the company ID
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByCompanyId_PrevAndNext(long eventId,
 		long companyId, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByCompanyId_PrevAndNext(eventId, companyId,
 			orderByComparator);
@@ -887,11 +889,11 @@ public class CalEventUtil {
 	* @param remindBy the remind by
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByNotRemindBy_First(int remindBy,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByNotRemindBy_First(remindBy, orderByComparator);
 	}
@@ -915,11 +917,11 @@ public class CalEventUtil {
 	* @param remindBy the remind by
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByNotRemindBy_Last(int remindBy,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByNotRemindBy_Last(remindBy, orderByComparator);
 	}
@@ -944,11 +946,11 @@ public class CalEventUtil {
 	* @param remindBy the remind by
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByNotRemindBy_PrevAndNext(long eventId,
 		int remindBy, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByNotRemindBy_PrevAndNext(eventId, remindBy,
 			orderByComparator);
@@ -1052,11 +1054,11 @@ public class CalEventUtil {
 	* @param type the type
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByG_T_First(long groupId, java.lang.String type,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByG_T_First(groupId, type, orderByComparator);
 	}
 
@@ -1081,11 +1083,11 @@ public class CalEventUtil {
 	* @param type the type
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByG_T_Last(long groupId, java.lang.String type,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByG_T_Last(groupId, type, orderByComparator);
 	}
 
@@ -1110,11 +1112,11 @@ public class CalEventUtil {
 	* @param type the type
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByG_T_PrevAndNext(long eventId, long groupId,
 		java.lang.String type, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByG_T_PrevAndNext(eventId, groupId, type,
 			orderByComparator);
@@ -1309,11 +1311,11 @@ public class CalEventUtil {
 	* @param repeating the repeating
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByG_R_First(long groupId, boolean repeating,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByG_R_First(groupId, repeating, orderByComparator);
 	}
@@ -1339,11 +1341,11 @@ public class CalEventUtil {
 	* @param repeating the repeating
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByG_R_Last(long groupId, boolean repeating,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByG_R_Last(groupId, repeating, orderByComparator);
 	}
@@ -1370,11 +1372,11 @@ public class CalEventUtil {
 	* @param repeating the repeating
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByG_R_PrevAndNext(long eventId, long groupId,
 		boolean repeating, OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByG_R_PrevAndNext(eventId, groupId, repeating,
 			orderByComparator);
@@ -1488,12 +1490,12 @@ public class CalEventUtil {
 	* @param repeating the repeating
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the first matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByG_T_R_First(long groupId,
 		java.lang.String type, boolean repeating,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByG_T_R_First(groupId, type, repeating,
 			orderByComparator);
@@ -1524,12 +1526,12 @@ public class CalEventUtil {
 	* @param repeating the repeating
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the last matching cal event
-	* @throws NoSuchEventException if a matching cal event could not be found
+	* @throws NoSuchCalEventException if a matching cal event could not be found
 	*/
 	public static CalEvent findByG_T_R_Last(long groupId,
 		java.lang.String type, boolean repeating,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByG_T_R_Last(groupId, type, repeating, orderByComparator);
 	}
@@ -1560,12 +1562,12 @@ public class CalEventUtil {
 	* @param repeating the repeating
 	* @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	* @return the previous, current, and next cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent[] findByG_T_R_PrevAndNext(long eventId,
 		long groupId, java.lang.String type, boolean repeating,
 		OrderByComparator<CalEvent> orderByComparator)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence()
 				   .findByG_T_R_PrevAndNext(eventId, groupId, type, repeating,
 			orderByComparator);
@@ -1726,10 +1728,10 @@ public class CalEventUtil {
 	*
 	* @param eventId the primary key of the cal event
 	* @return the cal event that was removed
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent remove(long eventId)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().remove(eventId);
 	}
 
@@ -1738,14 +1740,14 @@ public class CalEventUtil {
 	}
 
 	/**
-	* Returns the cal event with the primary key or throws a {@link NoSuchEventException} if it could not be found.
+	* Returns the cal event with the primary key or throws a {@link NoSuchCalEventException} if it could not be found.
 	*
 	* @param eventId the primary key of the cal event
 	* @return the cal event
-	* @throws NoSuchEventException if a cal event with the primary key could not be found
+	* @throws NoSuchCalEventException if a cal event with the primary key could not be found
 	*/
 	public static CalEvent findByPrimaryKey(long eventId)
-		throws com.liferay.calendar.exception.NoSuchEventException {
+		throws com.liferay.calendar.exception.NoSuchCalEventException {
 		return getPersistence().findByPrimaryKey(eventId);
 	}
 
@@ -1845,15 +1847,9 @@ public class CalEventUtil {
 	}
 
 	public static CalEventPersistence getPersistence() {
-		if (_persistence == null) {
-			_persistence = (CalEventPersistence)PortalBeanLocatorUtil.locate(CalEventPersistence.class.getName());
-
-			ReferenceRegistry.registerReference(CalEventUtil.class,
-				"_persistence");
-		}
-
-		return _persistence;
+		return _serviceTracker.getService();
 	}
 
-	private static CalEventPersistence _persistence;
+	private static ServiceTracker<CalEventPersistence, CalEventPersistence> _serviceTracker =
+		ServiceTrackerFactory.open(CalEventPersistence.class);
 }

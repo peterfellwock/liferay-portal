@@ -16,12 +16,12 @@ package com.liferay.calendar.model.impl;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.calendar.model.CalEvent;
+
 import com.liferay.portal.kernel.util.HashUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.CacheModel;
-
-import com.liferay.calendar.model.CalEvent;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -33,7 +33,7 @@ import java.util.Date;
 /**
  * The cache model class for representing CalEvent in entity cache.
  *
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @see CalEvent
  * @deprecated As of 7.0.0, with no direct replacement
  * @generated

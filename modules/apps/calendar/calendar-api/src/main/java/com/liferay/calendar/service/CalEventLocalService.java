@@ -31,7 +31,7 @@ import com.liferay.portal.service.PersistedModelLocalService;
  * credentials because this service can only be accessed from within the same
  * VM.
  *
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @see CalEventLocalServiceUtil
  * @see com.liferay.calendar.service.base.CalEventLocalServiceBaseImpl
  * @see com.liferay.calendar.service.impl.CalEventLocalServiceImpl
@@ -92,13 +92,11 @@ public interface CalEventLocalService extends BaseLocalService,
 		com.liferay.portal.service.ServiceContext serviceContext)
 		throws PortalException;
 
-	public void addEventResources(
-		com.liferay.calendar.model.CalEvent event,
+	public void addEventResources(com.liferay.calendar.model.CalEvent event,
 		boolean addGroupPermissions, boolean addGuestPermissions)
 		throws PortalException;
 
-	public void addEventResources(
-		com.liferay.calendar.model.CalEvent event,
+	public void addEventResources(com.liferay.calendar.model.CalEvent event,
 		com.liferay.portal.service.permission.ModelPermissions modelPermissions)
 		throws PortalException;
 
@@ -117,8 +115,7 @@ public interface CalEventLocalService extends BaseLocalService,
 	* @param eventId the primary key for the new cal event
 	* @return the new cal event
 	*/
-	public com.liferay.calendar.model.CalEvent createCalEvent(
-		long eventId);
+	public com.liferay.calendar.model.CalEvent createCalEvent(long eventId);
 
 	/**
 	* Deletes the cal event from the database. Also notifies the appropriate model listeners.
@@ -138,13 +135,12 @@ public interface CalEventLocalService extends BaseLocalService,
 	* @throws PortalException if a cal event with the primary key could not be found
 	*/
 	@com.liferay.portal.kernel.search.Indexable(type = IndexableType.DELETE)
-	public com.liferay.calendar.model.CalEvent deleteCalEvent(
-		long eventId) throws PortalException;
+	public com.liferay.calendar.model.CalEvent deleteCalEvent(long eventId)
+		throws PortalException;
 
 	@com.liferay.portal.kernel.search.Indexable(type = IndexableType.DELETE)
 	public com.liferay.calendar.model.CalEvent deleteEvent(
-		com.liferay.calendar.model.CalEvent event)
-		throws PortalException;
+		com.liferay.calendar.model.CalEvent event) throws PortalException;
 
 	@com.liferay.portal.kernel.search.Indexable(type = IndexableType.DELETE)
 	public com.liferay.calendar.model.CalEvent deleteEvent(long eventId)
@@ -236,8 +232,7 @@ public interface CalEventLocalService extends BaseLocalService,
 		java.lang.String fileName) throws PortalException;
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
-	public com.liferay.calendar.model.CalEvent fetchCalEvent(
-		long eventId);
+	public com.liferay.calendar.model.CalEvent fetchCalEvent(long eventId);
 
 	/**
 	* Returns the cal event matching the UUID and group.
@@ -407,9 +402,9 @@ public interface CalEventLocalService extends BaseLocalService,
 		java.io.InputStream inputStream) throws PortalException;
 
 	public void updateAsset(long userId,
-		com.liferay.calendar.model.CalEvent event,
-		long[] assetCategoryIds, java.lang.String[] assetTagNames,
-		long[] assetLinkEntryIds) throws PortalException;
+		com.liferay.calendar.model.CalEvent event, long[] assetCategoryIds,
+		java.lang.String[] assetTagNames, long[] assetLinkEntryIds)
+		throws PortalException;
 
 	/**
 	* Updates the cal event in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
@@ -422,13 +417,12 @@ public interface CalEventLocalService extends BaseLocalService,
 		com.liferay.calendar.model.CalEvent calEvent);
 
 	@com.liferay.portal.kernel.search.Indexable(type = IndexableType.REINDEX)
-	public com.liferay.calendar.model.CalEvent updateEvent(
-		long userId, long eventId, java.lang.String title,
-		java.lang.String description, java.lang.String location,
-		int startDateMonth, int startDateDay, int startDateYear,
-		int startDateHour, int startDateMinute, int durationHour,
-		int durationMinute, boolean allDay, boolean timeZoneSensitive,
-		java.lang.String type, boolean repeating,
+	public com.liferay.calendar.model.CalEvent updateEvent(long userId,
+		long eventId, java.lang.String title, java.lang.String description,
+		java.lang.String location, int startDateMonth, int startDateDay,
+		int startDateYear, int startDateHour, int startDateMinute,
+		int durationHour, int durationMinute, boolean allDay,
+		boolean timeZoneSensitive, java.lang.String type, boolean repeating,
 		com.liferay.portal.kernel.cal.TZSRecurrence recurrence, int remindBy,
 		int firstReminder, int secondReminder,
 		com.liferay.portal.service.ServiceContext serviceContext)
@@ -442,14 +436,13 @@ public interface CalEventLocalService extends BaseLocalService,
 	*/
 	@java.lang.Deprecated
 	@com.liferay.portal.kernel.search.Indexable(type = IndexableType.REINDEX)
-	public com.liferay.calendar.model.CalEvent updateEvent(
-		long userId, long eventId, java.lang.String title,
-		java.lang.String description, java.lang.String location,
-		int startDateMonth, int startDateDay, int startDateYear,
-		int startDateHour, int startDateMinute, int endDateMonth,
-		int endDateDay, int endDateYear, int durationHour, int durationMinute,
-		boolean allDay, boolean timeZoneSensitive, java.lang.String type,
-		boolean repeating,
+	public com.liferay.calendar.model.CalEvent updateEvent(long userId,
+		long eventId, java.lang.String title, java.lang.String description,
+		java.lang.String location, int startDateMonth, int startDateDay,
+		int startDateYear, int startDateHour, int startDateMinute,
+		int endDateMonth, int endDateDay, int endDateYear, int durationHour,
+		int durationMinute, boolean allDay, boolean timeZoneSensitive,
+		java.lang.String type, boolean repeating,
 		com.liferay.portal.kernel.cal.TZSRecurrence recurrence, int remindBy,
 		int firstReminder, int secondReminder,
 		com.liferay.portal.service.ServiceContext serviceContext)

@@ -30,7 +30,7 @@ import java.util.Map;
  * This class is a wrapper for {@link CalEvent}.
  * </p>
  *
- * @author Brian Wing Shun Chan
+ * @author Eduardo Lundgren
  * @see CalEvent
  * @deprecated As of 7.0.0, with no direct replacement
  * @generated
