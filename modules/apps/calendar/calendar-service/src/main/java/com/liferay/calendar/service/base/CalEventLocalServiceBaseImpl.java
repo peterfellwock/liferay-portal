@@ -264,7 +264,7 @@ public abstract class CalEventLocalServiceBaseImpl extends BaseLocalServiceImpl
 	public ActionableDynamicQuery getActionableDynamicQuery() {
 		ActionableDynamicQuery actionableDynamicQuery = new DefaultActionableDynamicQuery();
 
-		actionableDynamicQuery.setBaseLocalService(com.liferay.calendar.service.CalEventLocalServiceUtil.getService());
+		actionableDynamicQuery.setBaseLocalService(getCalEventLocalService());
 		actionableDynamicQuery.setClassLoader(getClassLoader());
 		actionableDynamicQuery.setModelClass(CalEvent.class);
 

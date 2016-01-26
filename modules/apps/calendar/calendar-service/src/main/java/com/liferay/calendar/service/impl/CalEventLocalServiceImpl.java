@@ -1475,6 +1475,9 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 	}
 
 	protected VEvent toICalVEvent(CalEvent event, TimeZone timeZone) {
+		
+		
+
 		VEvent vEvent = new VEvent();
 
 		PropertyList eventProps = vEvent.getProperties();
@@ -1557,13 +1560,8 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			eventProps.add(rRule);
 		}
 
-		// Time zone sensitive
-
-		if (!event.getTimeZoneSensitive()) {
-			eventProps.add(new TimeZoneSensitive("FALSE"));
-		}
-
 		return vEvent;
+		
 	}
 
 	protected WeekDay toICalWeekDay(int dayOfWeek) {
