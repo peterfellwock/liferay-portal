@@ -19,6 +19,7 @@
 <%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
 
 <%@ taglib uri="http://liferay.com/tld/aui" prefix="aui" %><%@
+taglib uri="http://liferay.com/tld/flags" prefix="liferay-flags" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/portlet" prefix="liferay-portlet" %><%@
 taglib uri="http://liferay.com/tld/security" prefix="liferay-security" %><%@
@@ -41,7 +42,6 @@ page import="com.liferay.document.library.kernel.exception.FileExtensionExceptio
 page import="com.liferay.document.library.kernel.exception.FileNameException" %><%@
 page import="com.liferay.document.library.kernel.exception.FileSizeException" %><%@
 page import="com.liferay.document.library.kernel.model.DLFileEntry" %><%@
-page import="com.liferay.frontend.taglib.servlet.taglib.AddMenuItem" %><%@
 page import="com.liferay.message.boards.display.context.MBHomeDisplayContext" %><%@
 page import="com.liferay.message.boards.kernel.constants.MBConstants" %><%@
 page import="com.liferay.message.boards.kernel.exception.BannedUserException" %><%@
@@ -85,11 +85,9 @@ page import="com.liferay.message.boards.kernel.service.MBThreadLocalServiceUtil"
 page import="com.liferay.message.boards.kernel.service.MBThreadServiceUtil" %><%@
 page import="com.liferay.message.boards.kernel.util.comparator.MessageCreateDateComparator" %><%@
 page import="com.liferay.message.boards.web.constants.MBPortletKeys" %><%@
-page import="com.liferay.message.boards.web.constants.MBWebKeys" %><%@
 page import="com.liferay.message.boards.web.dao.search.MBResultRowSplitter" %><%@
 page import="com.liferay.message.boards.web.display.context.MBDisplayContextProvider" %><%@
 page import="com.liferay.message.boards.web.display.context.util.MBRequestHelper" %><%@
-page import="com.liferay.message.boards.web.portlet.toolbar.contributor.MBPortletToolbarContributor" %><%@
 page import="com.liferay.message.boards.web.search.EntriesChecker" %><%@
 page import="com.liferay.message.boards.web.util.MBBreadcrumbUtil" %><%@
 page import="com.liferay.message.boards.web.util.MBWebComponentProvider" %><%@
@@ -126,8 +124,6 @@ page import="com.liferay.portal.kernel.service.ServiceContext" %><%@
 page import="com.liferay.portal.kernel.service.SubscriptionLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.UserLocalServiceUtil" %><%@
 page import="com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalServiceUtil" %><%@
-page import="com.liferay.portal.kernel.servlet.taglib.ui.Menu" %><%@
-page import="com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem" %><%@
 page import="com.liferay.portal.kernel.theme.ThemeDisplay" %><%@
 page import="com.liferay.portal.kernel.upload.LiferayFileItemException" %><%@
 page import="com.liferay.portal.kernel.upload.UploadRequestSizeException" %><%@

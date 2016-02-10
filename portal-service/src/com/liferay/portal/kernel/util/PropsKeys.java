@@ -791,8 +791,6 @@ public interface PropsKeys {
 
 	public static final String FINALIZE_MANAGER_THREAD_ENABLED = "finalize.manager.thread.enabled";
 
-	public static final String FLAGS_GUEST_USERS_ENABLED = "flags.guest.users.enabled";
-
 	public static final String FULL_PAGE_DISPLAYABLE = "full.page.displayable";
 
 	public static final String GLOBAL_SHUTDOWN_EVENTS = "global.shutdown.events";
@@ -1294,8 +1292,6 @@ public interface PropsKeys {
 	public static final String MESSAGE_BOARDS_SUBSCRIBE_BY_DEFAULT = "message.boards.subscribe.by.default";
 
 	public static final String MESSAGE_BOARDS_THREAD_AS_QUESTION_BY_DEFAULT = "message.boards.thread.as.question.by.default";
-
-	public static final String MESSAGE_BOARDS_THREAD_PREVIOUS_AND_NEXT_NAVIGATION_ENABLED = "message.boards.thread.previous.and.next.navigation.enabled";
 
 	public static final String MESSAGE_BOARDS_THREAD_PRIORITIES = "message.boards.thread.priorities";
 

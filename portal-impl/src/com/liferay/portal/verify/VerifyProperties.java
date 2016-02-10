@@ -814,6 +814,10 @@ public class VerifyProperties extends VerifyProcess {
 		new String[] {
 			"flags.email.subject", "email.subject", "com.liferay.flags"
 		},
+		new String[] {
+			"flags.guest.users.enabled", "guest.users.enabled",
+			"com.liferay.flags"
+		},
 		new String[] {"flags.reasons", "reasons", "com.liferay.flags"},
 
 		// FreeMarker Engine
@@ -1809,8 +1813,9 @@ public class VerifyProperties extends VerifyProcess {
 		"memory.cluster.scheduler.lock.cache.enabled",
 		"message.boards.email.message.added.signature",
 		"message.boards.email.message.updated.signature",
-		"message.boards.thread.locking.enabled", "message.boards.thread.views",
-		"message.boards.thread.views.default",
+		"message.boards.thread.locking.enabled",
+		"message.boards.thread.previous.and.next.navigation.enabled",
+		"message.boards.thread.views", "message.boards.thread.views.default",
 		"mobile.device.styling.wap.enabled", "msn.login", "msn.password",
 		"multicast.group.address[\"hibernate\"]",
 		"multicast.group.port[\"hibernate\"]",
