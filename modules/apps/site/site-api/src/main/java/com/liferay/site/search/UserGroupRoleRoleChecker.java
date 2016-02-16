@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.sites.search;
+package com.liferay.site.search;
 
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.log.Log;
