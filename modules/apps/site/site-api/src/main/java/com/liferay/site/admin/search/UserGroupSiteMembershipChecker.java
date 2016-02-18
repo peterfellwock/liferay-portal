@@ -12,44 +12,37 @@
  * details.
  */
 
-package com.liferay.portlet.sitesadmin.search;
+package com.liferay.site.admin.search;
 
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Team;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 
 import javax.portlet.RenderResponse;
 
 /**
- * @author Edward Han
+ * @author Charles May
  */
-public class UserGroupTeamChecker extends EmptyOnClickRowChecker {
+public class UserGroupSiteMembershipChecker extends EmptyOnClickRowChecker {
 
-	public UserGroupTeamChecker(RenderResponse renderResponse, Team team) {
+	public UserGroupSiteMembershipChecker(
+		RenderResponse renderResponse, Group group) {
+
 		super(renderResponse);
 
-		_team = team;
+		_group = group;
 	}
 
 	@Override
 	public boolean isChecked(Object obj) {
-		return hasTeamUserGroup(obj);
-	}
-
-	@Override
-	public boolean isDisabled(Object obj) {
-		return hasTeamUserGroup(obj);
-	}
-
-	protected boolean hasTeamUserGroup(Object obj) {
 		UserGroup userGroup = (UserGroup)obj;
 
 		try {
-			return UserGroupLocalServiceUtil.hasTeamUserGroup(
-				_team.getTeamId(), userGroup.getUserGroupId());
+			return UserGroupLocalServiceUtil.hasGroupUserGroup(
+				_group.getGroupId(), userGroup.getUserGroupId());
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -58,9 +51,14 @@ public class UserGroupTeamChecker extends EmptyOnClickRowChecker {
 		}
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		UserGroupTeamChecker.class);
+	@Override
+	public boolean isDisabled(Object obj) {
+		return isChecked(obj);
+	}
 
-	private final Team _team;
+	private static final Log _log = LogFactoryUtil.getLog(
+		UserGroupSiteMembershipChecker.class);
+
+	private final Group _group;
 
 }

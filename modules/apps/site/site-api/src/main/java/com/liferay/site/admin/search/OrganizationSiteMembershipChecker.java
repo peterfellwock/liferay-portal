@@ -12,52 +12,64 @@
  * details.
  */
 
-package com.liferay.portlet.sites.search;
+package com.liferay.site.admin.search;
 
-import com.liferay.portal.kernel.dao.search.RowChecker;
+import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.UserGroup;
-import com.liferay.portal.kernel.service.UserGroupGroupRoleLocalServiceUtil;
+import com.liferay.portal.kernel.model.Organization;
+import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 
 import javax.portlet.RenderResponse;
 
 /**
- * @author Brett Swaim
+ * @author Charles May
  */
-public class UserGroupGroupRoleUserGroupChecker extends RowChecker {
+public class OrganizationSiteMembershipChecker extends EmptyOnClickRowChecker {
 
-	public UserGroupGroupRoleUserGroupChecker(
-		RenderResponse renderResponse, Group group, Role role) {
+	public OrganizationSiteMembershipChecker(
+		RenderResponse renderResponse, Group group) {
 
 		super(renderResponse);
 
 		_group = group;
-		_role = role;
 	}
 
 	@Override
 	public boolean isChecked(Object obj) {
-		UserGroup userGroup = (UserGroup)obj;
+		Organization organization = (Organization)obj;
 
 		try {
-			return UserGroupGroupRoleLocalServiceUtil.hasUserGroupGroupRole(
-				userGroup.getUserGroupId(), _group.getGroupId(),
-				_role.getRoleId());
+			if (OrganizationLocalServiceUtil.hasGroupOrganization(
+					_group.getGroupId(), organization.getOrganizationId()) ||
+				(_group.getOrganizationId() ==
+					organization.getOrganizationId())) {
+
+				return true;
+			}
 		}
 		catch (Exception e) {
 			_log.error(e, e);
-
-			return false;
 		}
+
+		return false;
+	}
+
+	@Override
+	public boolean isDisabled(Object obj) {
+		Organization organization = (Organization)obj;
+
+		if (_group.getOrganizationId() == organization.getOrganizationId()) {
+			return true;
+		}
+
+		return isChecked(obj);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		UserGroupGroupRoleUserGroupChecker.class);
+		OrganizationSiteMembershipChecker.class);
 
 	private final Group _group;
-	private final Role _role;
 
 }

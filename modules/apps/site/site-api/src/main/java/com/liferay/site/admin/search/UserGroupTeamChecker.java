@@ -12,23 +12,23 @@
  * details.
  */
 
-package com.liferay.portlet.sitesadmin.search;
+package com.liferay.site.admin.search;
 
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Team;
-import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.model.UserGroup;
+import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 
 import javax.portlet.RenderResponse;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Edward Han
  */
-public class UserTeamChecker extends EmptyOnClickRowChecker {
+public class UserGroupTeamChecker extends EmptyOnClickRowChecker {
 
-	public UserTeamChecker(RenderResponse renderResponse, Team team) {
+	public UserGroupTeamChecker(RenderResponse renderResponse, Team team) {
 		super(renderResponse);
 
 		_team = team;
@@ -36,20 +36,20 @@ public class UserTeamChecker extends EmptyOnClickRowChecker {
 
 	@Override
 	public boolean isChecked(Object obj) {
-		return hasTeamUser(obj);
+		return hasTeamUserGroup(obj);
 	}
 
 	@Override
 	public boolean isDisabled(Object obj) {
-		return hasTeamUser(obj);
+		return hasTeamUserGroup(obj);
 	}
 
-	protected boolean hasTeamUser(Object obj) {
-		User user = (User)obj;
+	protected boolean hasTeamUserGroup(Object obj) {
+		UserGroup userGroup = (UserGroup)obj;
 
 		try {
-			return UserLocalServiceUtil.hasTeamUser(
-				_team.getTeamId(), user.getUserId());
+			return UserGroupLocalServiceUtil.hasTeamUserGroup(
+				_team.getTeamId(), userGroup.getUserGroupId());
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -59,7 +59,7 @@ public class UserTeamChecker extends EmptyOnClickRowChecker {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		UserTeamChecker.class);
+		UserGroupTeamChecker.class);
 
 	private final Team _team;
 

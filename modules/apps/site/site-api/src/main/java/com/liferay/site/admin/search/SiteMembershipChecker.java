@@ -12,40 +12,48 @@
  * details.
  */
 
-package com.liferay.portlet.sites.search;
+package com.liferay.site.admin.search;
 
 import com.liferay.portal.kernel.dao.search.RowChecker;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
-import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 
 import javax.portlet.RenderResponse;
 
 /**
- * @author Jorge Ferrer
+ * @author Brian Wing Shun Chan
  */
-public class UserGroupRoleUserChecker extends RowChecker {
+public class SiteMembershipChecker extends RowChecker {
 
-	public UserGroupRoleUserChecker(
-		RenderResponse renderResponse, Group group, Role role) {
-
+	public SiteMembershipChecker(RenderResponse renderResponse, Group group) {
 		super(renderResponse);
 
 		_group = group;
-		_role = role;
 	}
 
 	@Override
 	public boolean isChecked(Object obj) {
-		User user = (User)obj;
+		User user = null;
+
+		if (obj instanceof User) {
+			user = (User)obj;
+		}
+		else if (obj instanceof Object[]) {
+			user = (User)((Object[])obj)[0];
+		}
+		else {
+			throw new IllegalArgumentException(obj + " is not a user");
+		}
 
 		try {
-			return UserGroupRoleLocalServiceUtil.hasUserGroupRole(
-				user.getUserId(), _group.getGroupId(), _role.getRoleId());
+			return UserLocalServiceUtil.hasGroupUser(
+				_group.getGroupId(), user.getUserId());
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -59,18 +67,22 @@ public class UserGroupRoleUserChecker extends RowChecker {
 		User user = (User)obj;
 
 		try {
+			PermissionChecker permissionChecker =
+				PermissionThreadLocal.getPermissionChecker();
+
 			if (isChecked(user)) {
-				if (SiteMembershipPolicyUtil.isRoleRequired(
-						user.getUserId(), _group.getGroupId(),
-						_role.getRoleId())) {
+				if (SiteMembershipPolicyUtil.isMembershipProtected(
+						permissionChecker, user.getUserId(),
+						_group.getGroupId()) ||
+					SiteMembershipPolicyUtil.isMembershipRequired(
+						user.getUserId(), _group.getGroupId())) {
 
 					return true;
 				}
 			}
 			else {
-				if (!SiteMembershipPolicyUtil.isRoleAllowed(
-						user.getUserId(), _group.getGroupId(),
-						_role.getRoleId())) {
+				if (!SiteMembershipPolicyUtil.isMembershipAllowed(
+						user.getUserId(), _group.getGroupId())) {
 
 					return true;
 				}
@@ -84,9 +96,8 @@ public class UserGroupRoleUserChecker extends RowChecker {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		UserGroupRoleUserChecker.class);
+		SiteMembershipChecker.class);
 
 	private final Group _group;
-	private final Role _role;
 
 }

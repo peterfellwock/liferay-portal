@@ -23,9 +23,9 @@ import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.portlet.sites.search.UserGroupRoleRoleChecker;
-import com.liferay.portlet.sites.search.UserGroupRoleUserChecker;
-import com.liferay.portlet.sitesadmin.search.SiteMembershipChecker;
+import com.liferay.site.search.UserGroupRoleRoleChecker;
+import com.liferay.site.search.UserGroupRoleUserChecker;
+import com.liferay.site.admin.search.SiteMembershipChecker;
 
 import javax.portlet.RenderResponse;
 

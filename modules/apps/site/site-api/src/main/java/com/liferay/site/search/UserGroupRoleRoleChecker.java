@@ -12,48 +12,42 @@
  * details.
  */
 
-package com.liferay.portlet.sitesadmin.search;
+package com.liferay.site.search;
 
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.membershippolicy.SiteMembershipPolicyUtil;
-import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.UserGroupRoleLocalServiceUtil;
 
 import javax.portlet.RenderResponse;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author Jorge Ferrer
  */
-public class UserSiteMembershipChecker extends EmptyOnClickRowChecker {
+public class UserGroupRoleRoleChecker extends EmptyOnClickRowChecker {
 
-	public UserSiteMembershipChecker(
-		RenderResponse renderResponse, Group group) {
+	public UserGroupRoleRoleChecker(
+		RenderResponse renderResponse, User user, Group group) {
 
 		super(renderResponse);
 
+		_user = user;
 		_group = group;
 	}
 
 	@Override
 	public boolean isChecked(Object obj) {
-		User user = null;
-
-		if (obj instanceof User) {
-			user = (User)obj;
-		}
-		else if (obj instanceof Object[]) {
-			user = (User)((Object[])obj)[0];
-		}
-		else {
-			throw new IllegalArgumentException(obj + " is not a user");
-		}
+		Role role = (Role)obj;
 
 		try {
-			return UserLocalServiceUtil.hasGroupUser(
-				_group.getGroupId(), user.getUserId());
+			return UserGroupRoleLocalServiceUtil.hasUserGroupRole(
+				_user.getUserId(), _group.getGroupId(), role.getRoleId());
 		}
 		catch (Exception e) {
 			_log.error(e, e);
@@ -64,17 +58,30 @@ public class UserSiteMembershipChecker extends EmptyOnClickRowChecker {
 
 	@Override
 	public boolean isDisabled(Object obj) {
-		User user = (User)obj;
+		Role role = (Role)obj;
 
 		try {
-			if (isChecked(user)) {
-				return true;
+			PermissionChecker permissionChecker =
+				PermissionThreadLocal.getPermissionChecker();
+
+			if (isChecked(role)) {
+				if (SiteMembershipPolicyUtil.isRoleProtected(
+						permissionChecker, _user.getUserId(),
+						_group.getGroupId(), role.getRoleId()) ||
+					SiteMembershipPolicyUtil.isRoleRequired(
+						_user.getUserId(), _group.getGroupId(),
+						role.getRoleId())) {
+
+					return true;
+				}
 			}
+			else {
+				if (!SiteMembershipPolicyUtil.isRoleAllowed(
+						_user.getUserId(), _group.getGroupId(),
+						role.getRoleId())) {
 
-			if (!SiteMembershipPolicyUtil.isMembershipAllowed(
-					user.getUserId(), _group.getGroupId())) {
-
-				return true;
+					return true;
+				}
 			}
 		}
 		catch (Exception e) {
@@ -85,8 +92,9 @@ public class UserSiteMembershipChecker extends EmptyOnClickRowChecker {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		UserSiteMembershipChecker.class);
+		UserGroupRoleRoleChecker.class);
 
 	private final Group _group;
+	private final User _user;
 
 }
