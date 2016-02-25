@@ -14,7 +14,7 @@
 
 package com.liferay.contacts.web.portlet.action;
 
-import com.liferay.contacts.constants.ContactsPortletKeys;
+import com.liferay.contacts.web.constants.ContactsPortletKeys;
 import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 

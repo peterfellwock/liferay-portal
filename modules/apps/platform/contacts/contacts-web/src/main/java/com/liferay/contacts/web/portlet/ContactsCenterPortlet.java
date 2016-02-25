@@ -19,7 +19,6 @@ package com.liferay.contacts.web.portlet;
 
 import com.liferay.announcements.kernel.model.AnnouncementsDelivery;
 import com.liferay.announcements.kernel.service.AnnouncementsDeliveryLocalServiceUtil;
-import com.liferay.contacts.constants.ContactsPortletKeys;
 import com.liferay.contacts.exception.DuplicateEntryEmailAddressException;
 import com.liferay.contacts.exception.EntryEmailAddressException;
 import com.liferay.contacts.model.Entry;
@@ -27,6 +26,7 @@ import com.liferay.contacts.service.EntryLocalServiceUtil;
 import com.liferay.contacts.util.ContactsConstants;
 import com.liferay.contacts.util.ContactsUtil;
 import com.liferay.contacts.util.SocialRelationConstants;
+import com.liferay.contacts.web.constants.ContactsPortletKeys;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.AddressCityException;

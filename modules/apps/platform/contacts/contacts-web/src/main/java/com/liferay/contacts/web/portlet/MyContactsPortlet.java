@@ -17,7 +17,7 @@
 
 package com.liferay.contacts.web.portlet;
 
-import com.liferay.contacts.constants.ContactsPortletKeys;
+import com.liferay.contacts.web.constants.ContactsPortletKeys;
 
 import javax.portlet.Portlet;
 
