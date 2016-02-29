@@ -16,8 +16,8 @@ package com.liferay.privatemessaging.notifications;
 
 import com.liferay.message.boards.kernel.model.MBMessage;
 import com.liferay.message.boards.kernel.model.MBThread;
-import com.liferay.message.boards.kernel.service.MBMessageLocalServiceUtil;
-import com.liferay.message.boards.kernel.service.MBThreadLocalServiceUtil;
+import com.liferay.message.boards.kernel.service.MBMessageLocalService;
+import com.liferay.message.boards.kernel.service.MBThreadLocalService;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
@@ -28,7 +28,7 @@ import com.liferay.portal.kernel.notifications.UserNotificationHandler;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.service.UserNotificationEventLocalServiceUtil;
+import com.liferay.portal.kernel.service.UserNotificationEventLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -36,7 +36,7 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.privatemessaging.model.UserThread;
-import com.liferay.privatemessaging.service.UserThreadLocalServiceUtil;
+import com.liferay.privatemessaging.service.UserThreadLocalService;
 import com.liferay.privatemessaging.util.PortletKeys;
 
 import javax.portlet.PortletRequest;
@@ -44,6 +44,7 @@ import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Jonathan Lee
@@ -75,15 +76,14 @@ public class PrivateMessagingUserNotificationHandler
 
 		long classPK = jsonObject.getLong("classPK");
 
-		MBMessage mbMessage = MBMessageLocalServiceUtil.fetchMBMessage(classPK);
+		MBMessage mbMessage = _mBMessageLocalService.fetchMBMessage(classPK);
 
 		if (mbMessage == null) {
 			body = jsonObject.getString("body");
 
 			if (Validator.isNull(body)) {
-				UserNotificationEventLocalServiceUtil.
-					deleteUserNotificationEvent(
-						userNotificationEvent.getUserNotificationEventId());
+				_userNotificationEventLocalService.deleteUserNotificationEvent(
+					userNotificationEvent.getUserNotificationEventId());
 
 				return null;
 			}
@@ -91,13 +91,12 @@ public class PrivateMessagingUserNotificationHandler
 			userId = jsonObject.getLong("userId");
 		}
 		else {
-			UserThread userThread = UserThreadLocalServiceUtil.fetchUserThread(
+			UserThread userThread = _userThreadLocalService.fetchUserThread(
 				serviceContext.getUserId(), mbMessage.getThreadId());
 
 			if ((userThread == null) || userThread.isDeleted()) {
-				UserNotificationEventLocalServiceUtil.
-					deleteUserNotificationEvent(
-						userNotificationEvent.getUserNotificationEventId());
+				_userNotificationEventLocalService.deleteUserNotificationEvent(
+					userNotificationEvent.getUserNotificationEventId());
 
 				return null;
 			}
@@ -130,15 +129,14 @@ public class PrivateMessagingUserNotificationHandler
 
 		long classPK = jsonObject.getLong("classPK");
 
-		MBMessage mbMessage = MBMessageLocalServiceUtil.fetchMBMessage(classPK);
+		MBMessage mbMessage = _mBMessageLocalService.fetchMBMessage(classPK);
 
 		if (mbMessage == null) {
-			MBThread mbThread = MBThreadLocalServiceUtil.fetchMBThread(classPK);
+			MBThread mbThread = _mBThreadLocalService.fetchMBThread(classPK);
 
 			if (mbThread == null) {
-				UserNotificationEventLocalServiceUtil.
-					deleteUserNotificationEvent(
-						userNotificationEvent.getUserNotificationEventId());
+				_userNotificationEventLocalService.deleteUserNotificationEvent(
+					userNotificationEvent.getUserNotificationEventId());
 
 				return null;
 			}
@@ -182,5 +180,18 @@ public class PrivateMessagingUserNotificationHandler
 
 		return portletURL.toString();
 	}
+
+	@Reference
+	private MBMessageLocalService _mBMessageLocalService;
+
+	@Reference
+	private MBThreadLocalService _mBThreadLocalService;
+
+	@Reference
+	private UserNotificationEventLocalService
+		_userNotificationEventLocalService;
+
+	@Reference
+	private UserThreadLocalService _userThreadLocalService;
 
 }
