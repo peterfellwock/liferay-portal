@@ -140,7 +140,7 @@
 <!--PAGE_VARIATION_MENULIST-->
 <tr>
 	<td>PAGE_VARIATION_MENULIST_NAME</td>
-	<td>xpath=(//ul//li//a[contains(.,'${key_pageVariationName}')])[2]</td>
+	<td>//ul//li//a[contains(.,'${key_pageVariationName}') and contains(@class,'disabled')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -223,7 +223,7 @@
 </tr>
 <tr>
 	<td>STAGING_MENU_REVISION_DETAILS_MESSAGE</td>
-	<td>//span[contains(@id,'layoutRevisionDetails')]/li/p</td>
+	<td>//li[contains(@id,'layoutRevisionDetails')]/ul/li/p</td>
 	<td></td>
 </tr>
 <tr>
