@@ -148,6 +148,14 @@ public class CustomSQLUtil {
 	}
 
 	private CustomSQLUtil() {
+		System.out.println(
+			"!----------------------CustomSQLUtil----------------------!");
+		System.out.println(
+			"!---------------------------------------------------------!");
+		System.out.println("Alive:" + System.currentTimeMillis());
+		System.out.println(
+			"!---------------------------------------------------------!");
+
 		CustomSQL customSQL = null;
 
 		try {
