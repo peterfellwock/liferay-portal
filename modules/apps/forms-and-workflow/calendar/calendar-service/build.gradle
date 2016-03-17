@@ -20,6 +20,7 @@ dependencies {
 	provided project(":apps:foundation:portal-search:portal-search")
 	provided project(":apps:foundation:portal:portal-dao-orm-custom-sql")
 	provided project(":apps:foundation:portal-search:portal-search")
+	provided project(":apps:foundation:portal:portal-dao-orm-custom-sql")
 	provided project(":apps:foundation:portal:portal-spring-extender")
 	provided project(":apps:foundation:portal:portal-upgrade")
 	provided project(":apps:foundation:rss:rss-util")
