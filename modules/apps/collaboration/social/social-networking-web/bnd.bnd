@@ -5,5 +5,4 @@ Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title: Social
 Web-ContextPath: /social-networking-web
 -liferay-includeresource:\
-	@com.liferay.util.java-*.jar!/com/liferay/util/RSSUtil.class,\
-	@com.liferay.util.java-*.jar!/com/liferay/util/portlet/PortletProps.class
+	@com.liferay.util.java-*.jar!/com/liferay/util/RSSUtil.class
