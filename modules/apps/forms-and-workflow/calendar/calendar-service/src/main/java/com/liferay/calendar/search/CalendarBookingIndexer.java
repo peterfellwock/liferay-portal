@@ -85,6 +85,12 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 
 		Document document = getBaseModelDocument(CLASS_NAME, calendarBooking);
 
+		document.addKeyword(
+			FieldNames.CLASS_NAME_ID,
+			_classNameLocalService.getClassNameId(Calendar.class));
+		document.addKeyword(
+			FieldNames.CLASS_PK, calendarBooking.getCalendarId());
+
 		Locale defaultLocale = LocaleUtil.getSiteDefault();
 
 		String defaultLanguageId = LocaleUtil.toLanguageId(defaultLocale);
@@ -110,6 +116,8 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 				description);
 		}
 
+		document.addKeyword(FieldNames.RELATED_ENTRY, true);
+
 		String titleDefaultLanguageId = LocalizationUtil.getDefaultLanguageId(
 			calendarBooking.getTitle());
 
@@ -129,12 +137,6 @@ public class CalendarBookingIndexer extends BaseIndexer<CalendarBooking> {
 				title);
 		}
 
-		document.addKeyword(FieldNames.RELATED_ENTRY, true);
-		document.addKeyword(
-			FieldNames.CLASS_NAME_ID,
-			_classNameLocalService.getClassNameId(Calendar.class));
-		document.addKeyword(
-			FieldNames.CLASS_PK, calendarBooking.getCalendarId());
 		document.addKeyword(
 			FieldNames.VIEW_ACTION_ID, CalendarActionKeys.VIEW_BOOKING_DETAILS);
 
