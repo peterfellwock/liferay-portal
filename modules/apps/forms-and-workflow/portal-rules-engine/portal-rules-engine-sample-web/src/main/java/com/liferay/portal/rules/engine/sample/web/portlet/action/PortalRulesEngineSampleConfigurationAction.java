@@ -12,10 +12,11 @@
  * details.
  */
 
-package com.liferay.sampledrools.action;
+package com.liferay.portal.rules.engine.sample.web.portlet.action;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.ConfigurationAction;
 import com.liferay.portal.kernel.portlet.DefaultConfigurationAction;
 import com.liferay.portal.kernel.resource.StringResourceRetriever;
 import com.liferay.portal.kernel.servlet.SessionErrors;
@@ -30,16 +31,28 @@ import com.liferay.portal.rules.engine.RulesEngineException;
 import com.liferay.portal.rules.engine.RulesEngineUtil;
 import com.liferay.portal.rules.engine.RulesLanguage;
 import com.liferay.portal.rules.engine.RulesResourceRetriever;
+import com.liferay.portal.rules.engine.sample.web.portlet.constants.PortalRulesEngineSamplePortletKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.PortletConfig;
 import javax.portlet.PortletPreferences;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Michael C. Han
+ * @author Peter Fellwock
  */
-public class ConfigurationActionImpl extends DefaultConfigurationAction {
+@Component(
+	immediate = true,
+	property = {
+		"javax.portlet.name=" + PortalRulesEngineSamplePortletKeys.PORTAL_RULES_ENGINE_SAMPLE
+	},
+	service = ConfigurationAction.class
+)
+public class PortalRulesEngineSampleConfigurationAction
+	extends DefaultConfigurationAction {
 
 	@Override
 	public void processAction(
@@ -114,6 +127,6 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		ConfigurationActionImpl.class);
+		PortalRulesEngineSampleConfigurationAction.class);
 
 }
