@@ -77,7 +77,7 @@ String domainName = portletPreferences.getValue("domain-name", "Personalized Con
 
 Class<?> clazz = getClass();
 
-String rules = portletPreferences.getValue("rules", StringUtil.read(clazz.getClassLoader(), PortletProps.get("sample.drools.rules.personalized.content")));
+String rules = portletPreferences.getValue("rules", StringUtil.read(clazz.getClassLoader(), "com/liferay/portal/rules/engine/web/sampledrools/rules_user_address_content.drl"));
 
 String userCustomAttributeNames = portletPreferences.getValue("user-custom-attribute-names", StringPool.BLANK);
 long[] classNameIds = GetterUtil.getLongValues(portletPreferences.getValues("class-name-ids", null), AssetRendererFactoryRegistryUtil.getClassNameIds(company.getCompanyId()));
