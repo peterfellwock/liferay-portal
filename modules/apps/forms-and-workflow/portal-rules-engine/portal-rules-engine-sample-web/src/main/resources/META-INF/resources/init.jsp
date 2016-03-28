@@ -28,6 +28,7 @@ taglib uri="http://liferay.com/tld/util" prefix="liferay-util" %>
 page import="com.liferay.asset.kernel.model.AssetEntry" %><%@
 page import="com.liferay.asset.kernel.model.AssetRenderer" %><%@
 page import="com.liferay.asset.kernel.model.AssetRendererFactory" %><%@
+page import="com.liferay.content.util.ContentUtil" %><%@
 page import="com.liferay.portal.kernel.model.Portlet" %><%@
 page import="com.liferay.portal.kernel.model.User" %><%@
 page import="com.liferay.portal.kernel.resource.StringResourceRetriever" %><%@
@@ -51,7 +52,8 @@ page import="com.liferay.portal.rules.engine.Fact" %><%@
 page import="com.liferay.portal.rules.engine.Query" %><%@
 page import="com.liferay.portal.rules.engine.RulesEngineUtil" %><%@
 page import="com.liferay.portal.rules.engine.RulesLanguage" %><%@
-page import="com.liferay.portal.rules.engine.RulesResourceRetriever" %>
+page import="com.liferay.portal.rules.engine.RulesResourceRetriever" %><%@
+page import="com.liferay.portal.rules.engine.sample.web.portlet.constants.PortalRulesEngineSamplePortletKeys" %>
 
 <%@ page import="java.util.ArrayList" %><%@
 page import="java.util.List" %><%@
@@ -74,9 +76,9 @@ if (Validator.isNotNull(portletResource)) {
 
 String domainName = portletPreferences.getValue("domain-name", "Personalized Content ".concat(instanceId));
 
-Class<?> clazz = getClass();
+String template = ContentUtil.get(PortalRulesEngineSamplePortletKeys.class.getClassLoader(), "com/liferay/portal/rules/engine/web/sampledrools/dependencies/rules_user_address_content.drl");
 
-String rules = portletPreferences.getValue("rules", StringUtil.read(clazz.getClassLoader(), "com/liferay/portal/rules/engine/web/sampledrools/rules_user_address_content.drl"));
+String rules = portletPreferences.getValue("rules", template);
 
 String userCustomAttributeNames = portletPreferences.getValue("user-custom-attribute-names", StringPool.BLANK);
 long[] classNameIds = GetterUtil.getLongValues(portletPreferences.getValues("class-name-ids", null), AssetRendererFactoryRegistryUtil.getClassNameIds(company.getCompanyId()));
