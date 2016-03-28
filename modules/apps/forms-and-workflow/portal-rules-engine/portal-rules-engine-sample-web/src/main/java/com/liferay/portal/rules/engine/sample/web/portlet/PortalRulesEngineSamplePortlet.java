@@ -41,6 +41,7 @@ import org.osgi.service.component.annotations.Component;
 		"javax.portlet.info.keywords=Sample Drools",
 		"javax.portlet.info.short-title=Sample Drools",
 		"javax.portlet.info.title=Sample Drools",
+		"javax.portlet.init-param.config-template=/configuration.jsp",
 		"javax.portlet.init-param.template-path=/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + PortalRulesEngineSamplePortletKeys.PORTAL_RULES_ENGINE_SAMPLE,
