@@ -35,6 +35,7 @@ import com.liferay.portal.kernel.exception.LocaleException;
 import com.liferay.portal.kernel.exception.NoSuchBackgroundTaskException;
 import com.liferay.portal.kernel.exception.NoSuchGroupException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
+import com.liferay.portal.kernel.exception.NoSuchLayoutSetException;
 import com.liferay.portal.kernel.exception.PendingBackgroundTaskException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RemoteOptionsException;
@@ -242,7 +243,9 @@ public class SiteAdminPortlet extends MVCPortlet {
 		actionRequest.setAttribute(
 			WebKeys.REDIRECT, siteAdministrationURL.toString());
 
-		sendRedirect(actionRequest, actionResponse);
+		long groupId = group.getGroupId();
+
+		throw new NoSuchLayoutSetException("This is a problem {groupId=" + groupId + "}");
 	}
 
 	public void editGroupAssignments(
@@ -338,6 +341,11 @@ public class SiteAdminPortlet extends MVCPortlet {
 				renderRequest, PrincipalException.getNestedClasses())) {
 
 			include("/error.jsp", renderRequest, renderResponse);
+		}
+		else if (SessionErrors.contains(
+			renderRequest, NoSuchLayoutSetException.class.getName())) {
+
+			include("/view.jsp", renderRequest, renderResponse);
 		}
 		else {
 			super.doDispatch(renderRequest, renderResponse);
@@ -454,6 +462,7 @@ public class SiteAdminPortlet extends MVCPortlet {
 			cause instanceof LayoutSetVirtualHostException ||
 			cause instanceof LocaleException ||
 			cause instanceof NoSuchBackgroundTaskException ||
+			cause instanceof NoSuchLayoutSetException ||
 			cause instanceof PendingBackgroundTaskException ||
 			cause instanceof RemoteAuthException ||
 			cause instanceof RemoteExportException ||
