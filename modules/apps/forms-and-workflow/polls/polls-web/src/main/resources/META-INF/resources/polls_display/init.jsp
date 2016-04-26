@@ -1,3 +1,4 @@
+<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -11,24 +12,10 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+--%>
 
-package com.liferay.polls.upgrade.v1_0_0;
+<%@ include file="/init.jsp" %>
 
-import com.liferay.polls.constants.PollsPortletKeys;
-
-/**
- * @author Miguel Pastor
- * @author Peter Fellwock
- */
-public class UpgradePortletId
-	extends com.liferay.portal.upgrade.util.UpgradePortletId {
-
-	@Override
-	protected String[][] getRenamePortletIdsArray() {
-		return new String[][] {
-			new String[] {"25", PollsPortletKeys.POLLS},
-			new String[] {"59", PollsPortletKeys.POLLS_DISPLAY}
-		};
-	}
-
-}
+<%
+long questionId = GetterUtil.getLong(portletPreferences.getValue("questionId", StringPool.BLANK));
+%>

@@ -12,23 +12,16 @@
  * details.
  */
 
-package com.liferay.polls.upgrade.v1_0_0;
+package com.liferay.polls.web.portlet.path;
 
-import com.liferay.polls.constants.PollsPortletKeys;
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Miguel Pastor
- * @author Peter Fellwock
  */
-public class UpgradePortletId
-	extends com.liferay.portal.upgrade.util.UpgradePortletId {
-
-	@Override
-	protected String[][] getRenamePortletIdsArray() {
-		return new String[][] {
-			new String[] {"25", PollsPortletKeys.POLLS},
-			new String[] {"59", PollsPortletKeys.POLLS_DISPLAY}
-		};
-	}
-
+@Component(
+	immediate = true, property = "auth.public.path=/polls/view_chart",
+	service = Object.class
+)
+public class AuthPublicPath {
 }
