@@ -1,3 +1,4 @@
+<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -11,23 +12,15 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+--%>
 
-package com.liferay.shopping.upgrade.v1_0_0;
+<%@ include file="/init.jsp" %>
 
-import com.liferay.shopping.constants.ShoppingPortletKeys;
+<liferay-ui:error-header />
 
-/**
- * @author Peter Fellwock
- */
-public class UpgradePortletId
-	extends com.liferay.portal.upgrade.util.UpgradePortletId {
+<liferay-ui:error exception="<%= NoSuchCategoryException.class %>" message="the-category-could-not-be-found" />
+<liferay-ui:error exception="<%= NoSuchCouponException.class %>" message="the-coupon-could-not-be-found" />
+<liferay-ui:error exception="<%= NoSuchItemException.class %>" message="the-item-could-not-be-found" />
+<liferay-ui:error exception="<%= NoSuchOrderException.class %>" message="the-order-could-not-be-found" />
 
-	@Override
-	protected String[][] getRenamePortletIdsArray() {
-		return new String[][] {
-			new String[] {"34", ShoppingPortletKeys.SHOPPING},
-			new String[] {"97", ShoppingPortletKeys.SHOPPING_ADMIN}
-		};
-	}
-
-}
+<liferay-ui:error-principal />

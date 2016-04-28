@@ -1,3 +1,4 @@
+<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -11,23 +12,22 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+--%>
 
-package com.liferay.shopping.upgrade.v1_0_0;
+<%@ include file="/init.jsp" %>
 
-import com.liferay.shopping.constants.ShoppingPortletKeys;
+<%
+ShoppingCoupon coupon = (ShoppingCoupon)request.getAttribute(WebKeys.SHOPPING_COUPON);
 
-/**
- * @author Peter Fellwock
- */
-public class UpgradePortletId
-	extends com.liferay.portal.upgrade.util.UpgradePortletId {
+coupon = coupon.toEscapedModel();
+%>
 
-	@Override
-	protected String[][] getRenamePortletIdsArray() {
-		return new String[][] {
-			new String[] {"34", ShoppingPortletKeys.SHOPPING},
-			new String[] {"97", ShoppingPortletKeys.SHOPPING_ADMIN}
-		};
-	}
+<strong><%= coupon.getCouponId() %></strong>
 
-}
+<br /><br />
+
+<%= coupon.getName() %>
+
+<br /><br />
+
+<%= coupon.getDescription() %>

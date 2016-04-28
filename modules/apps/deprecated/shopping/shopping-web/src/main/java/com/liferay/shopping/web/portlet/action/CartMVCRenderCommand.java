@@ -12,22 +12,35 @@
  * details.
  */
 
-package com.liferay.shopping.upgrade.v1_0_0;
+package com.liferay.shopping.web.portlet.action;
 
+import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
 import com.liferay.shopping.constants.ShoppingPortletKeys;
+
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
+
+import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Peter Fellwock
  */
-public class UpgradePortletId
-	extends com.liferay.portal.upgrade.util.UpgradePortletId {
+@Component(
+	immediate = true,
+	property = {
+		"javax.portlet.name=" + ShoppingPortletKeys.SHOPPING,
+		"javax.portlet.name=" + ShoppingPortletKeys.SHOPPING_ADMIN,
+		"mvc.command.name=/shopping/cart"
+	},
+	service = MVCRenderCommand.class
+)
+public class CartMVCRenderCommand implements MVCRenderCommand {
 
 	@Override
-	protected String[][] getRenamePortletIdsArray() {
-		return new String[][] {
-			new String[] {"34", ShoppingPortletKeys.SHOPPING},
-			new String[] {"97", ShoppingPortletKeys.SHOPPING_ADMIN}
-		};
+	public String render(
+		RenderRequest renderRequest, RenderResponse renderResponse) {
+
+		return "/cart.jsp";
 	}
 
 }

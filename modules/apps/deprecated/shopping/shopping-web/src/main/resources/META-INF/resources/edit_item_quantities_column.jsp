@@ -1,3 +1,4 @@
+<%--
 /**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  *
@@ -11,23 +12,15 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
+--%>
 
-package com.liferay.shopping.upgrade.v1_0_0;
+<%@ include file="/init.jsp" %>
 
-import com.liferay.shopping.constants.ShoppingPortletKeys;
+<%
+ResultRow row = (ResultRow)request.getAttribute(WebKeys.SEARCH_CONTAINER_RESULT_ROW);
+int start = GetterUtil.getInteger(request.getAttribute("start"));
 
-/**
- * @author Peter Fellwock
- */
-public class UpgradePortletId
-	extends com.liferay.portal.upgrade.util.UpgradePortletId {
+int rowNumber = start + row.getPos();
+%>
 
-	@Override
-	protected String[][] getRenamePortletIdsArray() {
-		return new String[][] {
-			new String[] {"34", ShoppingPortletKeys.SHOPPING},
-			new String[] {"97", ShoppingPortletKeys.SHOPPING_ADMIN}
-		};
-	}
-
-}
+<aui:input label="" name='<%= "fieldsQuantity" + rowNumber %>' size="4" title="quantity" type="text" value="0" />
