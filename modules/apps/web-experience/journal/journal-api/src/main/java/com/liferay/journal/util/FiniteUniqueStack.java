@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.util;
+package com.liferay.journal.util;
 
 /**
  * @author Brian Wing Shun Chan
