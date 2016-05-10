@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.util.axis;
+package com.liferay.petra.axis;
 
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedInputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncBufferedOutputStream;
