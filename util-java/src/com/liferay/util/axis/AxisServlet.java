@@ -43,6 +43,7 @@ import org.apache.axis.utils.cache.MethodCache;
 
 /**
  * @author Brian Wing Shun Chan
+ * @see com.liferay.petra.axis.AxisServlet
  */
 public class AxisServlet extends org.apache.axis.transport.http.AxisServlet {
 
