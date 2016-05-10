@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.util.axis;
+package com.liferay.petra.axis;
 
 import com.liferay.portal.kernel.exception.LoggedExceptionInInitializerError;
 import com.liferay.portal.kernel.log.Log;

@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.util.axis;
+package com.liferay.petra.axis;
 
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
