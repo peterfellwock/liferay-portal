@@ -15,13 +15,13 @@
 package com.liferay.portal.remote.axis.extender;
 
 import com.liferay.osgi.util.BundleUtil;
+import com.liferay.petra.axis.AxisServlet;
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.AggregateClassLoader;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.servlet.filters.authverifier.AuthVerifierFilter;
-import com.liferay.util.axis.AxisServlet;
 
 import java.net.URL;
 
