@@ -14,6 +14,6 @@ Export-Package:\
 	com.liferay.chat.util
 Liferay-Require-SchemaVersion: 1.0.0
 Liferay-Service: true
-liferay-includeresource:\
+-includeresource:\
 	@smack-3.2.1.jar,\
 	@smackx-3.2.1.jar
