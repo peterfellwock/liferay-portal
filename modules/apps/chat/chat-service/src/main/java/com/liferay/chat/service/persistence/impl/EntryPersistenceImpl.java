@@ -64,6 +64,11 @@ import java.util.Set;
 @ProviderType
 public class EntryPersistenceImpl extends BasePersistenceImpl<Entry>
 	implements EntryPersistence {
+	
+	static{
+		System.out.println("-----------STATIC---------------------1    \n\n\n");
+	}
+	
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *

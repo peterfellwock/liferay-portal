@@ -19,7 +19,12 @@ package com.liferay.chat.model.impl;
  */
 public class EntryImpl extends EntryBaseImpl {
 
+	
+	static{
+		System.out.println("-----------EntryImpl---------------------1    \n\n\n");
+	}
 	public EntryImpl() {
+		System.out.println("-----------EntryImpl---------------------2    \n\n\n");
 	}
 
 }
