@@ -30,6 +30,13 @@ public interface SAQImpressionPersistence {
 	public void createImpression(
 		long companyId, Map<String, String> metrics, long expiryIntervalMillis);
 
+	/* I find it unsettling to have a persistence class that returns an iterator.
+	*  Could this mean that the impressions are lazily retrieved. What would happen
+	*  if the backend is a DB? Could the user have problems if invoking the Iterator
+	*  when the connection has closed?
+	*
+	*  Couldn't we just return a materialized collection?
+	* */
 	public Iterator<SAQImpression> findAllImpressions(long companyId);
 
 	public Iterator<SAQImpression> findImpressions(
