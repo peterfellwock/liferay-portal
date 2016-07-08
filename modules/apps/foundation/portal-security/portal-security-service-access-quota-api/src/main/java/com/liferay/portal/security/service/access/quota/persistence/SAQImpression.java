@@ -30,6 +30,6 @@ public interface SAQImpression {
 
 	public int getWeight();
 
-	public void loadMetrics(Map<String, String> metrics);
+	public Map<String, String> getMetrics();
 
 }

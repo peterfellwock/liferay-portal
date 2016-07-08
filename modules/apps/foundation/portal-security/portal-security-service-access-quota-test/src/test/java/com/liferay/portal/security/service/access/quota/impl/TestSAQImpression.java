@@ -55,9 +55,8 @@ public class TestSAQImpression implements SAQImpression {
 	}
 
 	@Override
-	public void loadMetrics(Map<String, String> props) {
-		props.clear();
-		props.putAll(_metrics);
+	public Map<String, String> getMetrics() {
+		return _metrics;
 	}
 
 	@Override

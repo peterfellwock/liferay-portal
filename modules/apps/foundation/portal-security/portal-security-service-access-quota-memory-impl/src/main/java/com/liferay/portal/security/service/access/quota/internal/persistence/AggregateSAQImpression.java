@@ -67,14 +67,12 @@ public class AggregateSAQImpression implements SAQImpression, Serializable {
 		return _weight;
 	}
 
-	public void incrementWeight() {
-		_weight++;
+	public Map<String, String> getMetrics() {
+		return _metrics;
 	}
 
-	@Override
-	public void loadMetrics(Map<String, String> props) {
-		props.clear();
-		props.putAll(_metrics);
+	public void incrementWeight() {
+		_weight++;
 	}
 
 	@Override

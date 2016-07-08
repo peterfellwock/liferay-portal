@@ -135,7 +135,9 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 				continue;
 			}
 
-			impression.loadMetrics(_impressionMetrics);
+			_impressionMetrics.clear();
+
+			_impressionMetrics.putAll(impression.getMetrics());
 
 			boolean allMetricsMatch = true;
 
