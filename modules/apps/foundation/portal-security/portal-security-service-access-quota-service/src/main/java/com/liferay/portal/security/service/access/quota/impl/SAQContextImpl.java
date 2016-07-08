@@ -233,12 +233,8 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 			return;
 		}
 
-		Map<String, String> impressionMetrics = new HashMap<>();
-
 		while (impressions.hasNext()) {
 			SAQImpression impression = impressions.next();
-
-			impression.loadMetrics(impressionMetrics);
 
 			process(impression, listener);
 		}
