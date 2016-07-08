@@ -49,42 +49,47 @@ public class ServiceAccessQuotaImpl implements ServiceAccessQuota {
 	}
 
 	public List<ServiceAccessQuotaMetricConfig> getMetrics() {
-		if (_metrics != null) {
-			return _metrics;
-		}
+		if (_metrics == null) {
+			synchronized (this) {
+				if (_metrics == null) {
+					List<ServiceAccessQuotaMetricConfig> metrics =
+						new LinkedList<>();
 
-		List<ServiceAccessQuotaMetricConfig> metrics = new LinkedList<>();
+					for (String metricNotation : _configuration.metric()) {
+						if (Validator.isNull(metricNotation)) {
+							continue;
+						}
 
-		for (String metricNotation : _configuration.metric()) {
-			if (Validator.isNull(metricNotation)) {
-				continue;
+						String[] parts = metricNotation.split("=");
+
+						String metricName = StringUtil.toLowerCase(parts[0]);
+
+						String metricFilter;
+
+						if (parts.length > 1) {
+							metricFilter = parts[1];
+						}
+						else {
+							metricFilter = null;
+						}
+
+						metrics.add(
+							new ServiceAccessQuotaMetricConfigImpl(
+								metricName, metricFilter));
+					}
+
+					if (Validator.isNotNull(
+							_configuration.serviceSignature())) {
+
+						metrics.add(
+							new ServiceAccessQuotaMetricConfigImpl(
+								"service", _configuration.serviceSignature()));
+					}
+
+					_metrics = metrics;
+				}
 			}
-
-			String[] parts = metricNotation.split("=");
-
-			String metricName = StringUtil.toLowerCase(parts[0]);
-
-			String metricFilter;
-
-			if (parts.length > 1) {
-				metricFilter = parts[1];
-			}
-			else {
-				metricFilter = null;
-			}
-
-			metrics.add(
-				new ServiceAccessQuotaMetricConfigImpl(
-					metricName, metricFilter));
 		}
-
-		if (Validator.isNotNull(_configuration.serviceSignature())) {
-			metrics.add(
-				new ServiceAccessQuotaMetricConfigImpl(
-					"service", _configuration.serviceSignature()));
-		}
-
-		_metrics = metrics;
 
 		return _metrics;
 	}
@@ -99,6 +104,6 @@ public class ServiceAccessQuotaImpl implements ServiceAccessQuota {
 	}
 
 	private volatile SAQConfiguration _configuration;
-	private List<ServiceAccessQuotaMetricConfig> _metrics;
+	private volatile List<ServiceAccessQuotaMetricConfig> _metrics;
 
 }
