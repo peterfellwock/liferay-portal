@@ -51,12 +51,13 @@ public abstract class BaseIndexedSAQImpressionPersistence
 			long companyId, SAQContextMatcher contextMetricsMatcher) {
 
 			_companyId = companyId;
-			_impressionsMatchingMetricIterator = null;
-			_impressionKeys = new HashSet<>();
-			_next = null;
 			_contextMetricsMatcher = contextMetricsMatcher;
-			_metricsIterator = contextMetricsMatcher.getMetrics().iterator();
+
 			_currentMetric = null;
+			_impressionKeys = new HashSet<>();
+			_impressionsMatchingMetricIterator = null;
+			_metricsIterator = contextMetricsMatcher.getMetrics().iterator();
+			_next = null;
 		}
 
 		@Override
