@@ -146,6 +146,6 @@ public class TestIndexedSAQImpressionPersistenceImpl
 	private final Map<String, Map<String, List<SAQImpression>>> _index =
 		new HashMap<>();
 	private final List<SAQImpression> _indexed = new LinkedList<>();
-	private long _nextKey = 0;
+	private long _nextKey;
 
 }

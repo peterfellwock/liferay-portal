@@ -17,7 +17,6 @@ package com.liferay.portal.security.service.access.quota.internal.persistence;
 import com.liferay.portal.security.service.access.quota.metric.SAQMetricMatcher;
 import com.liferay.portal.security.service.access.quota.persistence.BaseIndexedSAQImpressionPersistence;
 import com.liferay.portal.security.service.access.quota.persistence.SAQImpression;
-import com.liferay.portal.security.service.access.quota.persistence.SAQImpressionPersistence;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -212,6 +211,6 @@ public class MemoryBasedSAQImpressionPersistence
 
 	private final Map<Long, LinkedList<SAQImpressionsBucket>> _buckets =
 		new HashMap<>();
-	private long _nextKey = 0;
+	private long _nextKey;
 
 }

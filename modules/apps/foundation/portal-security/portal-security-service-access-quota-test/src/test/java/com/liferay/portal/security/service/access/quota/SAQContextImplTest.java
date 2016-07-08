@@ -224,8 +224,7 @@ public class SAQContextImplTest
 			ListUtil.fromArray(
 				new ServiceAccessQuotaMetricConfig[] {
 					new TestServiceAccessQuotaMetricConfigImpl(
-						"service",
-						"*#getMethod2"),
+						"service", "*#getMethod2"),
 					new TestServiceAccessQuotaMetricConfigImpl("user", "123")
 				}));
 
