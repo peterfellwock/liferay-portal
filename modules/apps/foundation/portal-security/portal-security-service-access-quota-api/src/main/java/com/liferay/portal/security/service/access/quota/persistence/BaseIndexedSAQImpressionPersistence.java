@@ -19,6 +19,7 @@ import com.liferay.portal.security.service.access.quota.metric.SAQMetricMatcher;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -100,7 +101,7 @@ public abstract class BaseIndexedSAQImpressionPersistence
 				return next;
 			}
 			else {
-				return null;
+				throw new NoSuchElementException();
 			}
 		}
 
