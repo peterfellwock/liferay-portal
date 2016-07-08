@@ -95,7 +95,9 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 		// Remove metrics that are not relevant
 		// because of failed pattern matching
 
-		metrics.keySet().retainAll(requiredMetric);
+		Set<String> keySet = metrics.keySet();
+
+		keySet.retainAll(requiredMetric);
 
 		long nowMillis = System.currentTimeMillis();
 
@@ -149,6 +151,7 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 
 				if (impressionMetricValue == null) {
 					allMetricsMatch = false;
+
 					break;
 				}
 				else {
@@ -159,6 +162,7 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 									quotaMetric.getPattern())) {
 
 							allMetricsMatch = false;
+
 							break;
 						}
 					}
@@ -250,6 +254,7 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 
 			if (count < quota.getMax()) {
 				_quotasCount.put(quota, count);
+
 				continue;
 			}
 
@@ -268,6 +273,7 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 		_metrics = metricsMap;
 		_relevantQuotas = relevantQuotas;
 		_metricProviders = metricProviders;
+		_nowMillis = nowMillis;
 
 		_quotasCount = new HashMap<>(relevantQuotas.size());
 
@@ -277,7 +283,6 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 			_quotasCount.put(it.next(), 0);
 		}
 
-		_nowMillis = nowMillis;
 
 		_metricConfigs = new HashMap<>(metricsMap.size());
 
@@ -299,6 +304,7 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 
 					if (metricConfigs == null) {
 						metricConfigs = new LinkedList<>();
+
 						_metricConfigs.put(metric.getName(), metricConfigs);
 					}
 
