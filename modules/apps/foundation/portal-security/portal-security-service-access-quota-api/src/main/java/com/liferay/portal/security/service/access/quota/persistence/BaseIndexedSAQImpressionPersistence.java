@@ -97,7 +97,9 @@ public abstract class BaseIndexedSAQImpressionPersistence
 		public SAQImpression next() {
 			if (hasNext()) {
 				SAQImpression next = _next;
+
 				_next = null;
+
 				return next;
 			}
 			else {
@@ -122,6 +124,7 @@ public abstract class BaseIndexedSAQImpressionPersistence
 
 				if (_impressionKeys.add(next.getKey())) {
 					_next = next;
+
 					return true;
 				}
 			}
@@ -137,6 +140,7 @@ public abstract class BaseIndexedSAQImpressionPersistence
 			}
 			else {
 				_impressionsMatchingMetricIterator = null;
+
 				return false;
 			}
 		}
