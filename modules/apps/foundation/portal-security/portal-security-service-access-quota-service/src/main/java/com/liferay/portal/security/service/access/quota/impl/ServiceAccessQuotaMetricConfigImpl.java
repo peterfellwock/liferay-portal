@@ -29,6 +29,10 @@ public class ServiceAccessQuotaMetricConfigImpl
 
 	@Override
 	public boolean equals(Object obj) {
+		if (!(obj instanceof ServiceAccessQuotaMetricConfigImpl)) {
+			return false;
+		}
+
 		ServiceAccessQuotaMetricConfigImpl config2 =
 			(ServiceAccessQuotaMetricConfigImpl)obj;
 
