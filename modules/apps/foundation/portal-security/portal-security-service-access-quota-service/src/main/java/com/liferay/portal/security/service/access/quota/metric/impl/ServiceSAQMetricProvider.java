@@ -39,12 +39,15 @@ public class ServiceSAQMetricProvider implements SAQMetricProvider {
 	public String getMetricValue(
 		AccessControlContext accessControlContext, Method method) {
 
-		return method.getDeclaringClass().getName() + "#" + method.getName();
+		Class<?> declaringClass = method.getDeclaringClass();
+
+		return declaringClass.getName() + "#" + method.getName();
 	}
 
 	@Override
 	public boolean matches(String metricValue, String metricFilter) {
 		String[] parts = metricValue.split("#");
+
 		return matches(parts[0], parts[1], metricFilter);
 	}
 
