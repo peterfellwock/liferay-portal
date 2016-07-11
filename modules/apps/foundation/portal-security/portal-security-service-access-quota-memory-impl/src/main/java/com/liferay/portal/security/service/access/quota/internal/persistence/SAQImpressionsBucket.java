@@ -14,6 +14,8 @@
 
 package com.liferay.portal.security.service.access.quota.internal.persistence;
 
+import com.liferay.portal.kernel.util.StringBundler;
+
 import java.io.Serializable;
 
 import java.util.Date;
@@ -94,7 +96,7 @@ public class SAQImpressionsBucket implements Serializable {
 	public String toString() {
 		Date date = new Date();
 
-		StringBuffer sb = new StringBuffer();
+		StringBundler sb = new StringBundler(10);
 
 		sb.append('{');
 
