@@ -132,7 +132,7 @@ public class MemoryBasedSAQImpressionPersistence
 			}
 		}
 
-		if ((intersectSet != null) && (intersectSet.size() > 0)) {
+		if ((intersectSet != null) && (!intersectSet.isEmpty())) {
 			return intersectSet.iterator().next();
 		}
 		else {
