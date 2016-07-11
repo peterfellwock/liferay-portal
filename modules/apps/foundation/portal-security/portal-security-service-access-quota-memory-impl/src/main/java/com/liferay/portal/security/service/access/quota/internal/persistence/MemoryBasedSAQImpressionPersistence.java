@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.liferay.portal.security.service.access.quota.persistence.SAQImpressionPersistence;
 import org.osgi.service.component.annotations.Component;
@@ -43,9 +45,9 @@ public class MemoryBasedSAQImpressionPersistence
 
 		long bucketStartMillis = _getBucketStartMillis();
 
-		LinkedList<SAQImpressionsBucket> buckets = _getBuckets(companyId);
+		List<SAQImpressionsBucket> buckets = _getBuckets(companyId);
 
-		SAQImpressionsBucket currentBucket = buckets.peekLast();
+		SAQImpressionsBucket currentBucket = buckets.get(buckets.size());
 
 		if ((currentBucket == null) ||
 			(bucketStartMillis != currentBucket.getStartMillis())) {
@@ -93,6 +95,8 @@ public class MemoryBasedSAQImpressionPersistence
 			SAQImpressionsBucket bucket = i.next();
 
 			if (bucket.getExpiryMillis() < nowMillis) {
+
+				//Concurrent modification of the list
 				i.remove();
 			}
 			else if ((bucket.getStartMillis() + expiryIntervalMillis) >
@@ -188,18 +192,16 @@ public class MemoryBasedSAQImpressionPersistence
 		return union;
 	}
 
-	private LinkedList<SAQImpressionsBucket> _getBuckets(long companyId) {
+	private List<SAQImpressionsBucket> _getBuckets(long companyId) {
 		Long companyIdLong = Long.valueOf(companyId);
 
-		LinkedList<SAQImpressionsBucket> buckets = _buckets.get(companyIdLong);
+		/* If we can't use this yet we need to change this for the Java 7 idiom
+		   for safely creating keys in the ConcurrentMap concurrently
+		  */
+		_buckets.computeIfAbsent(
+			companyIdLong, c -> new CopyOnWriteArrayList<>());
 
-		if (buckets == null) {
-			buckets = new LinkedList<>();
-
-			_buckets.put(companyIdLong, buckets);
-		}
-
-		return buckets;
+		return _buckets.get(companyIdLong);
 	}
 
 	private long _getBucketStartMillis() {
@@ -215,8 +217,8 @@ public class MemoryBasedSAQImpressionPersistence
 
 	private static final long _BUCKET_INTERVAL = 1000;
 
-	private final Map<Long, LinkedList<SAQImpressionsBucket>> _buckets =
-		new HashMap<>();
+	private final Map<Long, List<SAQImpressionsBucket>> _buckets =
+		new ConcurrentHashMap<>();
 	private long _nextKey;
 
 }
