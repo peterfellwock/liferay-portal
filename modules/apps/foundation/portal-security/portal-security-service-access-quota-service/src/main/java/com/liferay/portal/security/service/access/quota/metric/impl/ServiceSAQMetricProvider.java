@@ -51,6 +51,9 @@ public class ServiceSAQMetricProvider implements SAQMetricProvider {
 		return matches(parts[0], parts[1], metricFilter);
 	}
 
+	/**
+	 * This method looks like it could be decomposed into a set of rules?
+	 */
 	protected boolean matches(
 		String className, String methodName, String serviceSignaturePattern) {
 
