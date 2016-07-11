@@ -48,6 +48,10 @@ public class ServiceSAQMetricProvider implements SAQMetricProvider {
 	public boolean matches(String metricValue, String metricFilter) {
 		String[] parts = metricValue.split("#");
 
+		if (parts.length < 2) {
+			return false;
+		}
+
 		return matches(parts[0], parts[1], metricFilter);
 	}
 
