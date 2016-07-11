@@ -76,7 +76,8 @@ public class SAQImpressionsBucket implements Serializable {
 
 	public void indexImpression(AggregateSAQImpression impression) {
 		Map<String, String> metrics = new HashMap<>();
-		impression.loadMetrics(metrics);
+
+		metrics.putAll(impression.getMetrics());
 
 		for (Map.Entry<String, String> entry : metrics.entrySet()) {
 			String metric = entry.getKey();
