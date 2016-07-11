@@ -28,10 +28,11 @@ import java.util.Set;
 public class SAQImpressionsBucket implements Serializable {
 
 	public SAQImpressionsBucket(long startMillis, long expiryMillis) {
-		_index = new HashMap<>();
-		_indexed = new HashSet<>();
 		_startMillis = startMillis;
 		_expiryMillis = expiryMillis;
+
+		_index = new HashMap<>();
+		_indexed = new HashSet<>();
 	}
 
 	public Set<AggregateSAQImpression> getAllImpressions() {
