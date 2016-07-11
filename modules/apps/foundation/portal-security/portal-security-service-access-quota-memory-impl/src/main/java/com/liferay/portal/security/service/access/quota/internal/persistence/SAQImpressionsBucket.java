@@ -112,12 +112,7 @@ public class SAQImpressionsBucket implements Serializable {
 
 		sb.append("impressions=");
 
-		if (_indexed != null) {
-			sb.append(_indexed.toString());
-		}
-		else {
-			sb.append("{}");
-		}
+		sb.append(_indexed.toString());
 
 		sb.append('}');
 
