@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.liferay.portal.security.service.access.quota.persistence.SAQImpressionPersistence;
 import org.osgi.service.component.annotations.Component;
 
 /**
@@ -43,6 +44,7 @@ public class MemoryBasedSAQImpressionPersistence
 		long bucketStartMillis = _getBucketStartMillis();
 
 		LinkedList<SAQImpressionsBucket> buckets = _getBuckets(companyId);
+
 		SAQImpressionsBucket currentBucket = buckets.peekLast();
 
 		if ((currentBucket == null) ||
@@ -50,6 +52,7 @@ public class MemoryBasedSAQImpressionPersistence
 
 			currentBucket = new SAQImpressionsBucket(
 				bucketStartMillis, bucketStartMillis + expiryIntervalMillis);
+
 			buckets.add(currentBucket);
 		}
 
@@ -64,6 +67,7 @@ public class MemoryBasedSAQImpressionPersistence
 				String.valueOf(_nextKey), metrics, bucketStartMillis);
 
 			currentBucket.indexImpression(impression);
+
 			_nextKey++;
 		}
 	}
@@ -82,6 +86,7 @@ public class MemoryBasedSAQImpressionPersistence
 		int totalWeight = 0;
 
 		List<SAQImpressionsBucket> buckets = _getBuckets(companyId);
+
 		Iterator<SAQImpressionsBucket> i = buckets.iterator();
 
 		while (i.hasNext()) {
@@ -92,10 +97,8 @@ public class MemoryBasedSAQImpressionPersistence
 			}
 			else if ((bucket.getStartMillis() + expiryIntervalMillis) >
 						nowMillis) {
-
 				for (AggregateSAQImpression impression :
 						bucket.getAllImpressions()) {
-
 					totalWeight += impression.getWeight();
 				}
 			}
@@ -187,10 +190,12 @@ public class MemoryBasedSAQImpressionPersistence
 
 	private LinkedList<SAQImpressionsBucket> _getBuckets(long companyId) {
 		Long companyIdLong = Long.valueOf(companyId);
+
 		LinkedList<SAQImpressionsBucket> buckets = _buckets.get(companyIdLong);
 
 		if (buckets == null) {
 			buckets = new LinkedList<>();
+
 			_buckets.put(companyIdLong, buckets);
 		}
 
@@ -203,6 +208,7 @@ public class MemoryBasedSAQImpressionPersistence
 		// So that the quota intervalMillis is honored (as minimum)
 
 		long bucketStart = System.currentTimeMillis();
+
 		return
 			bucketStart - (bucketStart % _BUCKET_INTERVAL) + _BUCKET_INTERVAL;
 	}
