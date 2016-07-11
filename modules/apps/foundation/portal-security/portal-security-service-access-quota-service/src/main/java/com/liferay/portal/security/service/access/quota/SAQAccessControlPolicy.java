@@ -55,6 +55,11 @@ public class SAQAccessControlPolicy
 	}
 
 	@Override
+	/**
+	 * This method is a listener method that always throws an exception.
+	 * So basically the caller of this method will always get a RuntimeException
+	 * so we are throwing an exception by proxy.
+	 */
 	public void onQuotaBreached(ServiceAccessQuota quota) {
 		StringBuffer sb = new StringBuffer();
 

@@ -225,6 +225,7 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 					companyId, quota.getIntervalMillis());
 
 				if (count >= quota.getMax()) {
+					//This throws exception
 					listener.onQuotaBreached(quota);
 				}
 			}
@@ -262,6 +263,7 @@ public class SAQContextImpl implements SAQContextMatcher, SAQContext {
 			// then adding the impression for the current request later
 			// will breach it, so fail fast now
 
+			//This throws exceptions
 			listener.onQuotaBreached(quota);
 		}
 	}
