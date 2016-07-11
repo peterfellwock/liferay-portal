@@ -96,18 +96,24 @@ public class SAQImpressionsBucket implements Serializable {
 	public String toString() {
 		Date date = new Date();
 
+		date.setTime(_startMillis);
+
 		StringBundler sb = new StringBundler(10);
 
 		sb.append('{');
 
-		date.setTime(_startMillis);
 		sb.append("_startMillis=");
+
 		sb.append(date.toString());
+
 		sb.append(',');
 
 		date.setTime(_expiryMillis);
+
 		sb.append("_expiryMillis=");
+
 		sb.append(date.toString());
+
 		sb.append(',');
 
 		sb.append("impressions=");
@@ -124,6 +130,7 @@ public class SAQImpressionsBucket implements Serializable {
 
 		if (valueMap == null) {
 			valueMap = new HashMap<>();
+
 			map.put(key, valueMap);
 		}
 
@@ -135,6 +142,7 @@ public class SAQImpressionsBucket implements Serializable {
 
 		if (valueList == null) {
 			valueList = new HashSet<>();
+
 			map.put(key, valueList);
 		}
 
