@@ -43,14 +43,10 @@ long[] classNameIdValues = StringUtil.split(ParamUtil.getString(request, "classN
 
 		// Left list
 
-		MethodKey methodKey = new MethodKey(ClassResolverUtil.resolveByPortalClassLoader("com.liferay.portal.kernel.security.permission.ResourceActionsUtil"), "getModelResource", HttpServletRequest.class, String.class);
-
 		List<KeyValuePair> leftList = new ArrayList<KeyValuePair>();
 
 		for (long classNameId : classNameIdValues) {
-			String value = (String)PortalClassInvoker.invoke(false, methodKey, pageContext, PortalUtil.getClassName(classNameId));
-
-			leftList.add(new KeyValuePair(String.valueOf(classNameId), value));
+			leftList.add(new KeyValuePair(String.valueOf(classNameId), PortalUtil.getClassName(classNameId)));
 		}
 
 		// Right list
@@ -59,9 +55,7 @@ long[] classNameIdValues = StringUtil.split(ParamUtil.getString(request, "classN
 
 		for (long classNameId : AssetRendererFactoryRegistryUtil.getClassNameIds(company.getCompanyId())) {
 			if (!ArrayUtil.contains(classNameIdValues, classNameId)) {
-				String value = (String)PortalClassInvoker.invoke(false, methodKey, pageContext, PortalUtil.getClassName(classNameId));
-
-				rightList.add(new KeyValuePair(String.valueOf(classNameId), value));
+				rightList.add(new KeyValuePair(String.valueOf(classNameId), PortalUtil.getClassName(classNameId)));
 			}
 		}
 		%>
@@ -76,7 +70,11 @@ long[] classNameIdValues = StringUtil.split(ParamUtil.getString(request, "classN
 			rightList="<%= ListUtil.sort(rightList, new KeyValuePairComparator(false, true)) %>"
 			rightTitle="available"
 		/>
-
+<br>
+<br>
+<br>
+<br>
+<br>
 		<aui:button-row>
 			<aui:button type="submit" />
 		</aui:button-row>
