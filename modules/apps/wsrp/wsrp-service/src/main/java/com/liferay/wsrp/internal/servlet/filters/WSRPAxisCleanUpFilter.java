@@ -14,7 +14,7 @@
 
 package com.liferay.wsrp.internal.servlet.filters;
 
-import com.liferay.util.axis.AxisCleanUpFilter;
+import com.liferay.petra.axis.AxisCleanUpFilter;
 
 import javax.servlet.Filter;
 
