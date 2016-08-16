@@ -14,7 +14,7 @@
 
 package com.liferay.wsrp.internal.servlet;
 
-import com.liferay.util.axis.AxisServlet;
+import com.liferay.petra.axis.AxisServlet;
 
 import javax.servlet.Servlet;
 

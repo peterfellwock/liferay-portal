@@ -14,8 +14,8 @@
 
 package com.liferay.wsrp.internal.bind;
 
+import com.liferay.petra.axis.ServletUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.util.axis.ServletUtil;
 import com.liferay.wsrp.model.WSRPProducer;
 import com.liferay.wsrp.service.WSRPProducerLocalServiceUtil;
 

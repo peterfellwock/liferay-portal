@@ -31,8 +31,6 @@ import org.apache.axis.utils.cache.MethodCache;
 /**
  * @author Shuyang Zhou
  * @author Brian Wing Shun Chan
- * @deprecated As of 7.0.0, replaced by {@link
- *             com.liferay.petra.util.AxisCleanUpFilter)}
  */
 public class AxisCleanUpFilter extends BaseFilter {
 
