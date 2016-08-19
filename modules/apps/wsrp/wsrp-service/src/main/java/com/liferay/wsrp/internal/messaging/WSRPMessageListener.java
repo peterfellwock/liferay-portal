@@ -52,7 +52,9 @@ public class WSRPMessageListener extends HotDeployMessageListener {
 	public void registerMBeanServer(MBeanServer mBeanServer) {
 		try {
 			mBeanServer.registerMBean(
-				new WSRPConsumerPortletManager(), _wsrpObjectName);
+				new WSRPConsumerPortletManager(), new ObjectName(
+					"com.liferay.wsrp:classification=wsrp," + 
+						"name=WSRPConsumerPortletManager"));
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -64,7 +66,10 @@ public class WSRPMessageListener extends HotDeployMessageListener {
 
 	public void unregisterMBeanServer(MBeanServer mBeanServer) {
 		try {
-			mBeanServer.unregisterMBean(_wsrpObjectName);
+			mBeanServer.unregisterMBean(
+				new ObjectName(
+					"com.liferay.wsrp:classification=wsrp," + 
+						"name=WSRPConsumerPortletManager"));
 		}
 		catch (Exception e) {
 			if (_log.isWarnEnabled()) {
@@ -102,7 +107,5 @@ public class WSRPMessageListener extends HotDeployMessageListener {
 
 	private static WSRPConsumerPortletLocalService
 		_wsrpConsumerPortletLocalService;
-	private static final ObjectName _wsrpObjectName = new ObjectName(
-		"com.liferay.wsrp:classification=wsrp,name=WSRPConsumerPortletManager");
 
 }
