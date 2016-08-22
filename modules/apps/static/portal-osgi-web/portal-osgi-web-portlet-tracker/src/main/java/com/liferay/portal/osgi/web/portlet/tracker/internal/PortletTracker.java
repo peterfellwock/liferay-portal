@@ -181,20 +181,20 @@ public class PortletTracker
 		portletModel.unsetReady();
 
 		System.out.println("------------------PETER DEBUG-----------------");
-		System.out.println(
-			"NULL _serviceRegistrations:" + _serviceRegistrations);
-		System.out.println("NULL serviceReference:" + serviceReference);
 
 		if (serviceReference != null) {
 			System.out.println(
 				"serviceReference.toString():" + serviceReference.toString());
-			System.out.println("keys:" + serviceReference.getPropertyKeys());
 			Bundle bundle = serviceReference.getBundle();
 
 			if (bundle != null) {
 				System.out.println("Bundle:" + bundle.toString());
 				System.out.println("Bundle Name:" + bundle.getSymbolicName());
 			}else {
+				System.out.println("XXXXXXXXXXXX Bundle is NULL");
+				System.out.println("XXXXXXXXXXXX Bundle is NULL");
+				System.out.println("XXXXXXXXXXXX Bundle is NULL");
+				System.out.println("XXXXXXXXXXXX Bundle is NULL");
 				System.out.println("XXXXXXXXXXXX Bundle is NULL");
 			}
 		}else {
@@ -206,10 +206,8 @@ public class PortletTracker
 		if (portletModel != null) {
 			System.out.println("portletModel:" + portletModel.toString());
 			Class clazz = portletModel.getClass();
-			System.out.println(
-				"portletModel class:" + clazz.toString());
-			System.out.println(
-				"portletModel displayName:" + portletModel.getDisplayName());
+
+			System.out.println("portletModel class:" + clazz.toString());
 		}else {
 			System.out.println("XXXXXXXXXXXX portletModel is NULL");
 		}
