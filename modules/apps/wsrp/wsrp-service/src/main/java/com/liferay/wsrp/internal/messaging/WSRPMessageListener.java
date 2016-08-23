@@ -32,7 +32,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
@@ -73,18 +72,6 @@ public class WSRPMessageListener extends HotDeployMessageListener {
 		}
 
 		_wSRPConsumerPortletLocalService.initWSRPConsumerPortlets();
-	}
-
-	@Deactivate
-	protected void deactivate(BundleContext bundleContext) {
-		try {
-			_wSRPConsumerPortletLocalService.destroyWSRPConsumerPortlets();
-		}
-		catch (PortalException pe) {
-			if (_log.isWarnEnabled()) {
-				_log.warn("Unable to destroy WSRP consumer portlets", pe);
-			}
-		}
 	}
 
 	@Reference(unbind = "-")
