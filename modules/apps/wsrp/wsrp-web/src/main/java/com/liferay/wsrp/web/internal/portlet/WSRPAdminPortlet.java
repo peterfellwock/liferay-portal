@@ -36,12 +36,17 @@ import com.liferay.wsrp.service.WSRPProducerLocalService;
 import com.liferay.wsrp.util.MarkupCharacterSetsUtil;
 import com.liferay.wsrp.util.WebKeys;
 
+import java.util.Map;
+
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 import javax.portlet.Portlet;
 import javax.portlet.PortletRequest;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -368,5 +373,26 @@ public class WSRPAdminPortlet extends MVCPortlet {
 	private static WSRPConsumerPortletLocalService
 		_wSRPConsumerPortletLocalService;
 	private static WSRPProducerLocalService _wSRPProducerLocalService;
+	
+	
+	@Deactivate
+	@Modified
+	protected void deactivate(Map<String, Object> properties) {
+		System.out.println("-----------------------------------------\n");
+		System.out.println("-----------------------------------------\n");
+		System.out.println("-----------WSRPADMIN PORTLET DEAD--------\n");
+		System.out.println("-----------------------------------------\n");
+		System.out.println("-----------------------------------------\n");
+	}
+	
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		System.out.println("-----------------------------------------\n");
+		System.out.println("-----------------------------------------\n");
+		System.out.println("---WSDD--------WSRPADMIN PORTLET ALIVE--------\n");
+		System.out.println("-----------------------------------------\n");
+		System.out.println("-----------------------------------------\n");
+	}
 
 }
