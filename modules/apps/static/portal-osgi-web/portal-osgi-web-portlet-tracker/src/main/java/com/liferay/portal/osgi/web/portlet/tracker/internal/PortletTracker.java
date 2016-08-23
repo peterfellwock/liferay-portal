@@ -188,7 +188,6 @@ public class PortletTracker
 			Bundle bundle = serviceReference.getBundle();
 
 			if (bundle != null) {
-				System.out.println("Bundle:" + bundle.toString());
 				System.out.println("Bundle Name:" + bundle.getSymbolicName());
 			}else {
 				System.out.println("XXXXXXXXXXXX Bundle is NULL");
