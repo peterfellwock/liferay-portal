@@ -16,8 +16,6 @@ package com.liferay.util.dao.orm;
 
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.sql.SQLException;
@@ -31,140 +29,126 @@ import java.sql.SQLException;
 public class CustomSQLUtil {
 
 	public static String appendCriteria(String sql, String criteria) {
-		return _instance._customSQL.appendCriteria(sql, criteria);
+		return _customSQL.appendCriteria(sql, criteria);
 	}
 
 	public static String get(String id) {
-		return _instance._customSQL.get(id);
+		return _customSQL.get(id);
 	}
 
 	public static String get(String id, QueryDefinition<?> queryDefinition) {
-		return _instance._customSQL.get(id, queryDefinition);
+		return _customSQL.get(id, queryDefinition);
 	}
 
 	public static String get(
 		String id, QueryDefinition<?> queryDefinition, String tableName) {
 
-		return _instance._customSQL.get(id, queryDefinition, tableName);
+		return _customSQL.get(id, queryDefinition, tableName);
 	}
 
 	public static boolean isVendorDB2() {
-		return _instance._customSQL.isVendorDB2();
+		return _customSQL.isVendorDB2();
 	}
 
 	public static boolean isVendorHSQL() {
-		return _instance._customSQL.isVendorHSQL();
+		return _customSQL.isVendorHSQL();
 	}
 
 	public static boolean isVendorInformix() {
-		return _instance._customSQL.isVendorInformix();
+		return _customSQL.isVendorInformix();
 	}
 
 	public static boolean isVendorMySQL() {
-		return _instance._customSQL.isVendorMySQL();
+		return _customSQL.isVendorMySQL();
 	}
 
 	public static boolean isVendorOracle() {
-		return _instance._customSQL.isVendorOracle();
+		return _customSQL.isVendorOracle();
 	}
 
 	public static boolean isVendorSybase() {
-		return _instance._customSQL.isVendorSybase();
+		return _customSQL.isVendorSybase();
 	}
 
 	public static String[] keywords(String keywords) {
-		return _instance._customSQL.keywords(keywords);
+		return _customSQL.keywords(keywords);
 	}
 
 	public static String[] keywords(String keywords, boolean lowerCase) {
-		return _instance._customSQL.keywords(keywords, lowerCase);
+		return _customSQL.keywords(keywords, lowerCase);
 	}
 
 	public static String[] keywords(
 		String keywords, boolean lowerCase, WildcardMode wildcardMode) {
 
-		return _instance._customSQL.keywords(keywords, lowerCase, wildcardMode);
+		return _customSQL.keywords(keywords, lowerCase, wildcardMode);
 	}
 
 	public static String[] keywords(
 		String keywords, WildcardMode wildcardMode) {
 
-		return _instance._customSQL.keywords(keywords, wildcardMode);
+		return _customSQL.keywords(keywords, wildcardMode);
 	}
 
 	public static String[] keywords(String[] keywordsArray) {
-		return _instance._customSQL.keywords(keywordsArray);
+		return _customSQL.keywords(keywordsArray);
 	}
 
 	public static String[] keywords(String[] keywordsArray, boolean lowerCase) {
-		return _instance._customSQL.keywords(keywordsArray, lowerCase);
+		return _customSQL.keywords(keywordsArray, lowerCase);
 	}
 
 	public static void reloadCustomSQL() throws SQLException {
-		_instance._customSQL.reloadCustomSQL();
+		_customSQL.reloadCustomSQL();
 	}
 
 	public static String removeGroupBy(String sql) {
-		return _instance._customSQL.removeGroupBy(sql);
+		return _customSQL.removeGroupBy(sql);
 	}
 
 	public static String removeOrderBy(String sql) {
-		return _instance._customSQL.removeOrderBy(sql);
+		return _customSQL.removeOrderBy(sql);
 	}
 
 	public static String replaceAndOperator(String sql, boolean andOperator) {
-		return _instance._customSQL.replaceAndOperator(sql, andOperator);
+		return _customSQL.replaceAndOperator(sql, andOperator);
 	}
 
 	public static String replaceGroupBy(String sql, String groupBy) {
-		return _instance._customSQL.replaceGroupBy(sql, groupBy);
+		return _customSQL.replaceGroupBy(sql, groupBy);
 	}
 
 	public static String replaceIsNull(String sql) {
-		return _instance._customSQL.replaceIsNull(sql);
+		return _customSQL.replaceIsNull(sql);
 	}
 
 	public static String replaceKeywords(
 		String sql, String field, boolean last, int[] values) {
 
-		return _instance._customSQL.replaceKeywords(sql, field, last, values);
+		return _customSQL.replaceKeywords(sql, field, last, values);
 	}
 
 	public static String replaceKeywords(
 		String sql, String field, boolean last, long[] values) {
 
-		return _instance._customSQL.replaceKeywords(sql, field, last, values);
+		return _customSQL.replaceKeywords(sql, field, last, values);
 	}
 
 	public static String replaceKeywords(
 		String sql, String field, String operator, boolean last,
 		String[] values) {
 
-		return _instance._customSQL.replaceKeywords(
-			sql, field, operator, last, values);
+		return _customSQL.replaceKeywords(sql, field, operator, last, values);
 	}
 
 	public static String replaceOrderBy(String sql, OrderByComparator<?> obc) {
-		return _instance._customSQL.replaceOrderBy(sql, obc);
+		return _customSQL.replaceOrderBy(sql, obc);
 	}
 
-	private CustomSQLUtil() {
-		CustomSQL customSQL = null;
-
-		try {
-			customSQL = new CustomSQL();
-		}
-		catch (Exception e) {
-			_log.error(e, e);
-		}
-
+	public void setCustomSQL(CustomSQL customSQL) {
 		_customSQL = customSQL;
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(CustomSQLUtil.class);
-
-	private static final CustomSQLUtil _instance = new CustomSQLUtil();
-
-	private final CustomSQL _customSQL;
+	private static CustomSQL _customSQL;
 
 }

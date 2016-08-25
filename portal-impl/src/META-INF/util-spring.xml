@@ -460,6 +460,12 @@
 			<bean class="com.liferay.portal.xuggler.XugglerImpl" />
 		</property>
 	</bean>
+
+	<bean class="com.liferay.util.dao.orm.CustomSQLUtil" id="com.liferay.util.dao.orm.CustomSQLUtil">
+		<property name="customSQL">
+			<bean class="com.liferay.util.dao.orm.CustomSQL" />
+		</property>
+	</bean>
 	<bean class="com.liferay.portal.zip.ZipReaderFactoryImpl" id="com.liferay.portal.kernel.zip.ZipReaderFactory" />
 	<bean class="com.liferay.portal.kernel.zip.ZipReaderFactoryUtil" id="com.liferay.portal.kernel.zip.ZipReaderFactoryUtil">
 		<property name="zipReaderFactory" ref="com.liferay.portal.kernel.zip.ZipReaderFactory" />
