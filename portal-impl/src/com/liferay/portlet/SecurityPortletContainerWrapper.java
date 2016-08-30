@@ -85,13 +85,26 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 			Portlet portlet)
 		throws PortletContainerException {
 
+		System.out.println(
+			":::SecurityPortletContainerWrapper.processAction#" + 1);
+
 		try {
 			HttpServletRequest ownerLayoutRequest =
 				getOwnerLayoutRequestWrapper(request, portlet);
+			System.out.println(
+				":::SecurityPortletContainerWrapper.processAction#" + 2);
 
 			checkAction(ownerLayoutRequest, portlet);
+			System.out.println(
+				":::SecurityPortletContainerWrapper.processAction#" + 3);
 
-			return _portletContainer.processAction(request, response, portlet);
+			ActionResult ar = _portletContainer.processAction(
+				request, response, portlet);
+
+			System.out.println(
+				":::SecurityPortletContainerWrapper.processAction#" + 4);
+
+			return ar;
 		}
 		catch (PrincipalException pe) {
 			return processActionException(request, response, portlet, pe);
@@ -164,14 +177,29 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 	protected void check(HttpServletRequest request, Portlet portlet)
 		throws Exception {
 
+		System.out.println(
+			":::SecurityPortletContainerWrapper.check#1");
+
 		if (portlet == null) {
 			return;
 		}
+
+		System.out.println(
+			":::SecurityPortletContainerWrapper.check#2");
+
+		boolean isValid = isValidPortletId(portlet.getPortletId());
+
+		System.out.println(
+			":::SecurityPortletContainerWrapper.check#isValidPortletId(portlet.getPortletId()::" +
+			isValid);
 
 		if (!isValidPortletId(portlet.getPortletId())) {
 			if (_log.isWarnEnabled()) {
 				_log.warn("Invalid portlet ID " + portlet.getPortletId());
 			}
+
+			System.out.println(
+				":::SecurityPortletContainerWrapper.check#NotisValidPortletId -> Invalid portlet ID");
 
 			throw new PrincipalException(
 				"Invalid portlet ID " + portlet.getPortletId());
@@ -181,41 +209,93 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 			return;
 		}
 
+		System.out.println(":::SecurityPortletContainerWrapper.check#3");
+
 		Layout layout = (Layout)request.getAttribute(WebKeys.LAYOUT);
 
+		System.out.println(":::SecurityPortletContainerWrapper.check#4");
+
 		LayoutType layoutType = layout.getLayoutType();
+
+		System.out.println(":::SecurityPortletContainerWrapper.check#5");
 
 		LayoutTypeAccessPolicy layoutTypeAccessPolicy =
 			layoutType.getLayoutTypeAccessPolicy();
 
+		System.out.println(":::SecurityPortletContainerWrapper.check#6");
+
 		layoutTypeAccessPolicy.checkAccessAllowedToPortlet(
 			request, layout, portlet);
+
+		System.out.println(":::SecurityPortletContainerWrapper.check#7");
+
 	}
 
 	protected void checkAction(HttpServletRequest request, Portlet portlet)
 		throws Exception {
 
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkAction#" + 1);
+
 		checkCSRFProtection(request, portlet);
 
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkAction#" + 2);
+
 		check(request, portlet);
+
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkAction#" + 3);
 	}
 
 	protected void checkCSRFProtection(
 			HttpServletRequest request, Portlet portlet)
 		throws PortalException {
 
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkCSRFProtection#" + 1);
+
 		Map<String, String> initParams = portlet.getInitParams();
+
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkCSRFProtection#" + 2);
 
 		boolean checkAuthToken = GetterUtil.getBoolean(
 			initParams.get("check-auth-token"), true);
 
-		if (AuthTokenWhitelistUtil.isPortletCSRFWhitelisted(request, portlet)) {
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkCSRFProtection#checkAuthToken" +
+				checkAuthToken);
+
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkCSRFProtection#" + 3);
+
+		boolean isP = AuthTokenWhitelistUtil.isPortletCSRFWhitelisted(
+			request, portlet);
+
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkCSRFProtection#isPortletCSRFWhitelisted" +
+				isP);
+
+		if (isP) {
 			checkAuthToken = false;
 		}
 
+		System.out.println(
+			":::SecurityPortletContainerWrapper.checkCSRFProtection#checkAuthToken2" +
+				checkAuthToken);
+
 		if (checkAuthToken) {
+			System.out.println(
+				":::SecurityPortletContainerWrapper.checkCSRFProtection#inner#" +
+					1);
+
 			AuthTokenUtil.checkCSRFToken(
 				request, SecurityPortletContainerWrapper.class.getName());
+
+			System.out.println(
+				":::SecurityPortletContainerWrapper.checkCSRFProtection#inner#" +
+					1);
 		}
 	}
 
@@ -330,6 +410,11 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 	protected ActionResult processActionException(
 		HttpServletRequest request, HttpServletResponse response,
 		Portlet portlet, PrincipalException pe) {
+
+		System.out.println("----------------------------------------------");
+		System.out.println(pe.getMessage());
+		pe.printStackTrace(System.out);
+		System.out.println("----------------------------------------------");
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(pe);
