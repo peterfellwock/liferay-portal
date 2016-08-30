@@ -330,6 +330,11 @@ public class SecurityPortletContainerWrapper implements PortletContainer {
 	protected ActionResult processActionException(
 		HttpServletRequest request, HttpServletResponse response,
 		Portlet portlet, PrincipalException pe) {
+		
+		System.out.println("----------------------------------------------");
+		System.out.println(pe.getMessage());
+		pe.printStackTrace(System.out);	
+		System.out.println("----------------------------------------------");
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(pe);
