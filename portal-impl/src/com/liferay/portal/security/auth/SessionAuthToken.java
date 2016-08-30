@@ -136,45 +136,83 @@ public class SessionAuthToken implements AuthToken {
 	public void checkCSRFToken(HttpServletRequest request, String origin)
 		throws PrincipalException {
 
+		System.out.println(":::SessionAuthToken.checkCSRFToken#1");
+
 		if (!PropsValues.AUTH_TOKEN_CHECK_ENABLED) {
 			return;
 		}
 
+		System.out.println(":::SessionAuthToken.checkCSRFToken#2");
+
 		String sharedSecret = ParamUtil.getString(request, "p_auth_secret");
 
+		System.out.println(
+			":::SessionAuthToken.checkCSRFToken#sharedSecret::" + sharedSecret);
+
+		System.out.println(":::SessionAuthToken.checkCSRFToken#3");
+
 		if (AuthTokenWhitelistUtil.isValidSharedSecret(sharedSecret)) {
+			System.out.println(
+				":::SessionAuthToken.checkCSRFToken#isValidSharedSecret!");
 			return;
 		}
 
 		long companyId = PortalUtil.getCompanyId(request);
 
 		if (AuthTokenWhitelistUtil.isOriginCSRFWhitelisted(companyId, origin)) {
+			System.out.println(
+				":::SessionAuthToken.checkCSRFToken#isOriginCSRFWhitelisted!");
 			return;
 		}
 
 		if (origin.equals(SecurityPortletContainerWrapper.class.getName())) {
+			System.out.println(":::SessionAuthToken.checkCSRFToken#ifOrigin#1");
 			String ppid = ParamUtil.getString(request, "p_p_id");
-
+			System.out.println(
+				":::SessionAuthToken.checkCSRFToken#ifOrigin#ppid::" + ppid);
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				companyId, ppid);
 
+			System.out.println(":::SessionAuthToken.checkCSRFToken#ifOrigin#getPortletName::" +
+				portlet.getPortletName());
+
 			if (AuthTokenWhitelistUtil.isPortletCSRFWhitelisted(
 					request, portlet)) {
+				System.out.println(
+					":::SessionAuthToken.checkCSRFToken#ifOrigin#getPortletName#isPortletCSRFWhitelist");
 
 				return;
 			}
 		}
 
+		System.out.println(":::SessionAuthToken.checkCSRFToken#3");
+
 		String csrfToken = ParamUtil.getString(request, "p_auth");
 
+		System.out.println(
+			":::SessionAuthToken.checkCSRFToken#p_auth::" + csrfToken);
+
 		if (Validator.isNull(csrfToken)) {
+			System.out.println(
+				":::SessionAuthToken.checkCSRFToken#csrfTokenNULL");
 			csrfToken = GetterUtil.getString(request.getHeader("X-CSRF-Token"));
+			System.out.println(
+				":::SessionAuthToken.checkCSRFToken#csrfToken::" + csrfToken);
 		}
+
+		System.out.println(":::SessionAuthToken.checkCSRFToken#4");
 
 		String sessionToken = getSessionAuthenticationToken(
 			request, _CSRF, false);
 
+		System.out.println(
+			":::SessionAuthToken.checkCSRFToken#sessionToken::" + sessionToken);
+		System.out.println(
+			":::SessionAuthToken.checkCSRFToken#csrfToken::" + csrfToken);
+
 		if (!csrfToken.equals(sessionToken)) {
+			System.out.println(
+				":::SessionAuthToken.checkCSRFToken#csrfToken.equals(sessionToken) EXCEPTION");
 			throw new PrincipalException.MustBeAuthenticated(
 				PortalUtil.getUserId(request));
 		}

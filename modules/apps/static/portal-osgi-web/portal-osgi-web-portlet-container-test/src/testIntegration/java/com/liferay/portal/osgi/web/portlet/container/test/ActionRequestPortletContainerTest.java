@@ -72,6 +72,9 @@ public class ActionRequestPortletContainerTest
 	public void testAuthTokenCheckEnabled() throws Exception {
 		Boolean authTokenCheckEnabled = ReflectionTestUtil.getAndSetFieldValue(
 			PropsValues.class, "AUTH_TOKEN_CHECK_ENABLED", Boolean.FALSE);
+		
+		System.out.println("------testAuthTokenCheckEnabled-------------");
+		System.out.println("------start-------------");
 
 		try {
 			setUpPortlet(
@@ -96,11 +99,17 @@ public class ActionRequestPortletContainerTest
 				PropsValues.class, "AUTH_TOKEN_CHECK_ENABLED",
 				authTokenCheckEnabled);
 		}
+		
+		System.out.println("------testAuthTokenCheckEnabled-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testAuthTokenIgnoreOrigins() throws Exception {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
+		
+		System.out.println("------testAuthTokenIgnoreOrigins-------------");
+		System.out.println("------start-------------");
 
 		properties.put(
 			PropsKeys.AUTH_TOKEN_IGNORE_ORIGINS,
@@ -124,12 +133,18 @@ public class ActionRequestPortletContainerTest
 
 		Assert.assertEquals(200, response.getCode());
 		Assert.assertTrue(testPortlet.isCalledAction());
+		
+		System.out.println("------testAuthTokenIgnoreOrigins-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testAuthTokenIgnorePortlets() throws Exception {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
+		System.out.println("------testAuthTokenIgnorePortlets-------------");
+		System.out.println("------start-------------");
+		
 		properties.put(PropsKeys.AUTH_TOKEN_IGNORE_PORTLETS, TEST_PORTLET_ID);
 
 		registerService(Object.class, new Object(), properties);
@@ -150,11 +165,17 @@ public class ActionRequestPortletContainerTest
 
 		Assert.assertEquals(200, response.getCode());
 		Assert.assertTrue(testPortlet.isCalledAction());
+		
+		System.out.println("------testAuthTokenIgnorePortlets-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testInitParam() throws Exception {
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
+		
+		System.out.println("------testInitParam-------------");
+		System.out.println("------start-------------");
 
 		properties.put(
 			"javax.portlet.init-param.check-auth-token",
@@ -174,10 +195,17 @@ public class ActionRequestPortletContainerTest
 
 		Assert.assertEquals(200, response.getCode());
 		Assert.assertTrue(testPortlet.isCalledAction());
+		
+		System.out.println("------testInitParam-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testNoPortalAuthenticationTokens() throws Exception {
+		
+		System.out.println("------testNoPortalAuthenticationTokens-------------");
+		System.out.println("------start-------------");
+		
 		setUpPortlet(
 			testPortlet, new HashMapDictionary<String, Object>(),
 			TEST_PORTLET_ID);
@@ -213,11 +241,17 @@ public class ActionRequestPortletContainerTest
 			Assert.assertEquals(200, response.getCode());
 			Assert.assertFalse(testPortlet.isCalledAction());
 		}
+		
+		System.out.println("------testNoPortalAuthenticationTokens-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testPortalAuthenticationToken() throws Exception {
 		testPortlet = new ActionRequestTestPortlet();
+		
+		System.out.println("------testPortalAuthenticationToken-------------");
+		System.out.println("------start-------------");
 
 		setUpPortlet(
 			testPortlet, new HashMapDictionary<String, Object>(),
@@ -228,6 +262,8 @@ public class ActionRequestPortletContainerTest
 
 		Response response = PortletContainerTestUtil.getPortalAuthentication(
 			httpServletRequest, layout, TEST_PORTLET_ID);
+		
+		check(response, "testPortalAuthenticationToken");
 
 		testPortlet.reset();
 
@@ -246,10 +282,17 @@ public class ActionRequestPortletContainerTest
 
 		Assert.assertEquals(200, response.getCode());
 		Assert.assertTrue(testPortlet.isCalledAction());
+		
+		System.out.println("------testPortalAuthenticationToken-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testPortalAuthenticationTokenSecret() throws Exception {
+		
+		System.out.println("------testPortalAuthenticationTokenSecret-------------");
+		System.out.println("------start-------------");
+		
 		String authTokenSharedSecret = ReflectionTestUtil.getAndSetFieldValue(
 			PropsValues.class, "AUTH_TOKEN_SHARED_SECRET", "test");
 
@@ -278,10 +321,17 @@ public class ActionRequestPortletContainerTest
 				PropsValues.class, "AUTH_TOKEN_SHARED_SECRET",
 				authTokenSharedSecret);
 		}
+		
+		System.out.println("------testPortalAuthenticationTokenSecret-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testStrutsAction() throws Exception {
+		
+		System.out.println("------testStrutsAction-------------");
+		System.out.println("------start-------------");
+		
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
 		properties.put(PropsKeys.AUTH_TOKEN_IGNORE_ACTIONS, "/test/portlet/1");
@@ -303,10 +353,17 @@ public class ActionRequestPortletContainerTest
 
 		Assert.assertEquals(200, response.getCode());
 		Assert.assertTrue(testPortlet.isCalledAction());
+		
+		System.out.println("------testStrutsAction-------------");
+		System.out.println("------stop-------------");
 	}
 
 	@Test
 	public void testXCSRFToken() throws Exception {
+		
+		System.out.println("------testXCSRFToken-------------");
+		System.out.println("------start-------------");
+		
 		testPortlet = new ActionRequestTestPortlet();
 
 		setUpPortlet(
@@ -318,6 +375,7 @@ public class ActionRequestPortletContainerTest
 
 		Response response = PortletContainerTestUtil.getPortalAuthentication(
 			httpServletRequest, layout, TEST_PORTLET_ID);
+		check(response, "testXCSRFToken");
 
 		testPortlet.reset();
 
@@ -341,7 +399,55 @@ public class ActionRequestPortletContainerTest
 
 		Assert.assertEquals(200, response.getCode());
 		Assert.assertTrue(testPortlet.isCalledAction());
+		
+		System.out.println("------testXCSRFToken-------------");
+		System.out.println("------stop-------------");
 	}
+	
+	public void check(Response response, String test){
+		System.out.println("------->CHECKING TEST:" + test);
+		System.out.println("-----------------------------");
+		System.out.println("cookie:" + response.getCookies());
+		System.out.println("X-CSRF-Token:" + Collections.singletonList(response.getBody()));
+		
+		List<String> cookies = response.getCookies();
+		
+		if(cookies == null){
+			System.out.println("COOKIES ARE NULL, test will fail");
+			return;
+		}
+		
+		if(cookies.size() < 1){
+			System.out.println("COOKIES ARE Size 0, test will fail");
+			return;
+		}
+		
+		System.out.println("------------- cookies -------------------");
+		for(String temp : cookies){
+			System.out.println(temp);
+		}
+		System.out.println("-----------------------------------------");
+		
+		List<String> csrfs = Collections.singletonList(response.getBody());
+		
+		if(csrfs == null){
+			System.out.println("csrfs ARE NULL, test will fail");
+			return;
+		}
+		
+		if(csrfs.size() < 1){
+			System.out.println("csrfs ARE Size 0, test will fail");
+			return;
+		}
+		
+		System.out.println("------------- csrfs -------------------");
+		for(String temp : csrfs){
+			System.out.println(temp);
+		}
+		System.out.println("-----------------------------------------");	
+		
+	}
+	
 
 	private static class ActionRequestTestPortlet extends TestPortlet {
 
