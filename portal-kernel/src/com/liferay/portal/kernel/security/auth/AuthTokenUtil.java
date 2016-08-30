@@ -69,10 +69,20 @@ public class AuthTokenUtil {
 	public static void checkCSRFToken(HttpServletRequest request, String origin)
 		throws PrincipalException {
 
+		System.out.println(":::AuthTokenUtil.checkCSRFToken#1");
+		System.out.println(":::AuthTokenUtil.checkCSRFToken#origin::" + origin);
+
 		AuthToken authToken = _serviceTracker.getService();
 
+		System.out.println(":::AuthTokenUtil.checkCSRFToken#2");
+
+		System.out.println(
+			":::AuthTokenUtil.checkCSRFToken#authToken::" + authToken.getClass().toString());
+
 		if (authToken != null) {
+			System.out.println(":::AuthTokenUtil.checkCSRFToken#IFauthToken#1");
 			authToken.checkCSRFToken(request, origin);
+			System.out.println(":::AuthTokenUtil.checkCSRFToken#IFauthToken#2");
 		}
 	}
 
