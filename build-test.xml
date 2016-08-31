@@ -2389,7 +2389,7 @@ ${tomcat-gc-log}
 						sb.setLength(sb.length() - 1);
 					}
 
-					project.setProperty("test.class.file.names.properties.content", sb.toString());
+				project.setProperty("test.class.file.names.properties.content", "TEST_CLASS_GROUP_0=com/liferay/portal/osgi/web/portlet/container/test/ActionRequestPortletContainerTest.class\n\nTEST_CLASS_GROUP_1=com/liferay/portal/osgi/web/portlet/container/test/ActionRequestPortletContainerTest.class\n\nTEST_CLASS_GROUP_2=com/liferay/portal/osgi/web/portlet/container/test/ActionRequestPortletContainerTest.class\n\nTEST_CLASS_GROUP_3=com/liferay/portal/osgi/web/portlet/container/test/ActionRequestPortletContainerTest.class\n\nTEST_CLASS_GROUP_4=com/liferay/portal/osgi/web/portlet/container/test/ActionRequestPortletContainerTest.class\n\nTEST_CLASS_GROUP_5=com/liferay/portal/osgi/web/portlet/container/test/ActionRequestPortletContainerTest.class\n\nTEST_CLASS_GROUP_6=com/liferay/portal/osgi/web/portlet/container/test/ActionRequestPortletContainerTest.class\n\nTEST_CLASS_GROUPS=0 1 2 3 4 5 6");
 				]]>
 			</beanshell>
 
