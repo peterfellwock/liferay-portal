@@ -44,7 +44,7 @@ import com.liferay.portal.model.impl.LayoutSetImpl;
 import com.liferay.portal.model.impl.LayoutSetModelImpl;
 
 import java.io.Serializable;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
+import org.apache.poi.util.SystemOutLogger;
 
 /**
  * The persistence implementation for the layout set service.
@@ -1624,6 +1626,8 @@ public class LayoutSetPersistenceImpl extends BasePersistenceImpl<LayoutSet>
 		return layoutSet;
 	}
 
+	private final HashMap<String, List<ExCatch>> raceFails = new HashMap<String, List<ExCatch>>(); 
+	
 	@Override
 	public LayoutSet updateImpl(LayoutSet layoutSet) {
 		layoutSet = toUnwrappedModel(layoutSet);
@@ -1665,6 +1669,44 @@ public class LayoutSetPersistenceImpl extends BasePersistenceImpl<LayoutSet>
 				layoutSet.setNew(false);
 			}
 			else {
+				long mvcc = layoutSet.getMvccVersion();
+				
+				
+				String key = mvcc + "-" + layoutSetModelImpl.getLayoutSetId();
+				
+				if(raceFails.containsKey(key)){
+					List<ExCatch> previousList = raceFails.get(key);
+					previousList.add(
+							new ExCatch(
+								Thread.currentThread(),
+								Thread.currentThread().getId() + "",
+								new Exception()));
+					
+					int count = 0;
+					for(ExCatch temp : previousList){
+						count++;
+						System.out.println("----------------------------------------------");
+						System.out.println("-----------------" + count + "---------------------");
+						System.out.println("Thread Name:" + temp._thread.currentThread().getName());
+						System.out.println("---------------------------------------------");
+						temp._stack.printStackTrace(System.out);
+						
+					}
+					
+					
+				}
+				else{
+					List<ExCatch> currentList = new ArrayList<ExCatch>();
+					currentList.add(new ExCatch(
+								Thread.currentThread(),
+								Thread.currentThread().getId() + "",
+								new Exception()));
+					raceFails.put(key, currentList);
+				}
+				
+				
+				System.out.println(
+					"-------------->MVCCV::" + mvcc + " Layout Set ID " + layoutSetModelImpl.getLayoutSetId());
 				layoutSet = (LayoutSet)session.merge(layoutSet);
 			}
 		}
@@ -2181,4 +2223,19 @@ public class LayoutSetPersistenceImpl extends BasePersistenceImpl<LayoutSet>
 	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
 				"settings"
 			});
+	
+	public static class ExCatch{
+		
+		public Thread _thread;
+		public String _threadId;
+		public Exception _stack;
+		
+		public ExCatch(Thread thread, String threadId, Exception stack){
+			_thread = thread;
+			_threadId = threadId;
+			_stack = stack;
+			
+		}
+		
+	}
 }
