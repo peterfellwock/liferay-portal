@@ -40,6 +40,17 @@ public class MVCCSynchronizerPostUpdateEventListener
 			EntityCacheUtil.putResult(
 				baseModel.isEntityCacheEnabled(), entity.getClass(),
 				baseModel.getPrimaryKeyObj(), baseModel, false);
+			
+			String className = entity.getClass().getCanonicalName();
+			
+			if(className.toString().contains("layout")){
+				System.out.println("--------------MVCCSynchronizerPostUpdateEventListener--------------------");
+				System.out.println("Update Entity:" + className);
+				System.out.println("basemodel" + baseModel.toString());
+				System.out.println("ENABLED:" + baseModel.isEntityCacheEnabled());
+				System.out.println("----------------------------------");
+				
+			}
 		}
 	}
 
