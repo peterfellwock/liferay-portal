@@ -42,6 +42,8 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.LayoutSetImpl;
 import com.liferay.portal.model.impl.LayoutSetModelImpl;
+import com.liferay.portal.model.impl.LayoutSetPrototypeImpl;
+import com.liferay.portal.model.impl.LayoutSetPrototypeModelImpl;
 
 import java.io.Serializable;
 
@@ -1665,6 +1667,8 @@ public class LayoutSetPersistenceImpl extends BasePersistenceImpl<LayoutSet>
 				layoutSet.setNew(false);
 			}
 			else {
+				System.out.println("=======================START====================");
+				System.out.println("PRE-layoutSetID:" + layoutSet.getLayoutSetId());
 				layoutSet = (LayoutSet)session.merge(layoutSet);
 			}
 		}
@@ -1720,6 +1724,13 @@ public class LayoutSetPersistenceImpl extends BasePersistenceImpl<LayoutSet>
 					args);
 			}
 		}
+		
+		System.out.println("======================MID==========================");
+		System.out.println("Class:" + LayoutSetImpl.class.toString());
+		System.out.println("Primary Key:" + layoutSet.getPrimaryKey());
+		System.out.println("layoutSetID" + layoutSet.getLayoutSetId());
+		System.out.println("ENABLED:" + LayoutSetModelImpl.ENTITY_CACHE_ENABLED);
+		System.out.println("=======================END==========================");
 
 		entityCache.putResult(LayoutSetModelImpl.ENTITY_CACHE_ENABLED,
 			LayoutSetImpl.class, layoutSet.getPrimaryKey(), layoutSet, false);
