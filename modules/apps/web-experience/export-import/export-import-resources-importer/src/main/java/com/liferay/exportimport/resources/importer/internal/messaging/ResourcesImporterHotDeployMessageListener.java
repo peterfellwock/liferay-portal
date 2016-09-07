@@ -160,7 +160,6 @@ public class ResourcesImporterHotDeployMessageListener
 
 	@Override
 	protected void onDeploy(Message message) throws Exception {
-		System.out.println("               ResourcesImporterHotDeployMessageListener--------->THREAD ID::" + Thread.currentThread().getId());
 		initialize(message);
 	}
 
