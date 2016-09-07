@@ -4105,8 +4105,6 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 				layoutSetPrototype.setNew(false);
 			}
 			else {
-				System.out.println("==================START=============================");
-				System.out.println("PRE-layoutSetPrototypeId:" + layoutSetPrototype.getLayoutSetPrototypeId());
 				layoutSetPrototype = (LayoutSetPrototype)session.merge(layoutSetPrototype);
 			}
 		}
@@ -4200,13 +4198,6 @@ public class LayoutSetPrototypePersistenceImpl extends BasePersistenceImpl<Layou
 					args);
 			}
 		}
-
-		System.out.println("*********************MID**********************");
-		System.out.println("Class:" + LayoutSetPrototypeImpl.class.toString());
-		System.out.println("Primary Key:" + layoutSetPrototype.getPrimaryKey());
-		System.out.println("layoutSetPrototypeID" + layoutSetPrototype.getLayoutSetPrototypeId());
-		System.out.println("ENABLED:" + LayoutSetPrototypeModelImpl.ENTITY_CACHE_ENABLED);
-		System.out.println("********************END*************************");
 		
 		entityCache.putResult(LayoutSetPrototypeModelImpl.ENTITY_CACHE_ENABLED,
 			LayoutSetPrototypeImpl.class, layoutSetPrototype.getPrimaryKey(),
