@@ -30,10 +30,10 @@ public class ExCatchUtil {
 		}else{
 			IdExCatch newIdEx = new IdExCatch(exCatch);
 			getInstance().catches.put(exCatch.getKey(), newIdEx);
-			System.out.println("SAVING:");
+			//System.out.println("SAVING:");
 		}
 		
-		exCatch.print();
+		//exCatch.print();
 	}
 	
 	public static boolean contains(ExCatch exCatch){
