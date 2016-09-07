@@ -115,6 +115,8 @@ public class PortletTracker
 		String portletName = (String)serviceReference.getProperty(
 			"javax.portlet.name");
 
+		System.out.println(":::PortletTracker.addingService::" + portletName);
+
 		if (Validator.isNull(portletName)) {
 			Class<?> clazz = portlet.getClass();
 
@@ -186,6 +188,9 @@ public class PortletTracker
 		if (serviceRegistrations == null) {
 			return;
 		}
+
+		System.out.println(
+			":::PortletTracker.removedService::" + portletModel.getPortletName());
 
 		BundlePortletApp bundlePortletApp =
 			serviceRegistrations.getBundlePortletApp();
