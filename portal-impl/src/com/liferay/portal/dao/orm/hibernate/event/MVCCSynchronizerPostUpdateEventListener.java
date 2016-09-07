@@ -39,23 +39,24 @@ public class MVCCSynchronizerPostUpdateEventListener
 		if (entity instanceof MVCCModel) {
 			BaseModel<?> baseModel = (BaseModel<?>)entity;
 
-			MVCCModel mvccModel = (MVCCModel) entity;
-			
-			EntityCacheUtil.putResult(
-				baseModel.isEntityCacheEnabled(), entity.getClass(),
-				baseModel.getPrimaryKeyObj(), baseModel, false);
-			
 			String className = entity.getClass().getCanonicalName();
 			
-			if(className.toString().toLowerCase().contains("layoutsetprototype")){
-				System.out.println("--------------MVCCSynchronizerPostUpdateEventListener--------------------");
-				
+			if(className.toString().toLowerCase().contains("layoutsetprototype")){					
+				MVCCModel mvccModel = (MVCCModel) entity;
 				ExCatch exCatch = new ExCatch(
 					new Exception(), baseModel.getPrimaryKeyObj().toString(), mvccModel.getMvccVersion(),
 					"MVCCSynchronizerPostUpdateEventListener", Thread.currentThread().getId());
 				ExCatchUtil.add(exCatch);
 				
 			}
+			
+			EntityCacheUtil.putResult(
+				baseModel.isEntityCacheEnabled(), entity.getClass(),
+				baseModel.getPrimaryKeyObj(), baseModel, false);
+			
+
+			
+
 		}
 	}
 
