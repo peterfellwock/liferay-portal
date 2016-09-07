@@ -4,7 +4,6 @@ import java.util.HashMap;
 
 public class IdExCatch {
 	
-	private ExCatch ex;
 	private HashMap<String, ExCatch> catches;
 	private long highest = 0;
 	
