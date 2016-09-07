@@ -17,6 +17,8 @@ package com.liferay.portal.dao.orm.hibernate.event;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.MVCCModel;
+import com.liferay.portal.util.ExCatch;
+import com.liferay.portal.util.ExCatchUtil;
 
 import org.hibernate.event.PostUpdateEvent;
 import org.hibernate.event.PostUpdateEventListener;
@@ -37,18 +39,21 @@ public class MVCCSynchronizerPostUpdateEventListener
 		if (entity instanceof MVCCModel) {
 			BaseModel<?> baseModel = (BaseModel<?>)entity;
 
+			MVCCModel mvccModel = (MVCCModel) entity;
+			
 			EntityCacheUtil.putResult(
 				baseModel.isEntityCacheEnabled(), entity.getClass(),
 				baseModel.getPrimaryKeyObj(), baseModel, false);
 			
 			String className = entity.getClass().getCanonicalName();
 			
-			if(className.toString().contains("layout")){
+			if(className.toString().toLowerCase().contains("layoutsetprototype")){
 				System.out.println("--------------MVCCSynchronizerPostUpdateEventListener--------------------");
-				System.out.println("Update Entity:" + className);
-				System.out.println("basemodel" + baseModel.toString());
-				System.out.println("ENABLED:" + baseModel.isEntityCacheEnabled());
-				System.out.println("----------------------------------");
+				
+				ExCatch exCatch = new ExCatch(
+					new Exception(), baseModel.getPrimaryKeyObj().toString(), mvccModel.getMvccVersion(),
+					"MVCCSynchronizerPostUpdateEventListener", Thread.currentThread().getId());
+				ExCatchUtil.add(exCatch);
 				
 			}
 		}
