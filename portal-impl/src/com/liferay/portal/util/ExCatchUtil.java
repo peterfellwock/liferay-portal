@@ -1,47 +1,55 @@
 package com.liferay.portal.util;
 
 import java.util.HashMap;
-
 public class ExCatchUtil {
-	
-	private static ExCatchUtil instance;
-	private static HashMap<String, IdExCatch> catches;
-	
-	private ExCatchUtil(){
-		
-		catches = new HashMap<String, IdExCatch>();
-		
-	}
-	
-	public static ExCatchUtil getInstance(){
-		
-		if(instance == null){
-			instance = new ExCatchUtil();
-		}
-		
-		return instance;
-	}
-	
-	public static void add(ExCatch exCatch){
-		
-		if(contains(exCatch)){
+
+	public static void add(ExCatch exCatch) {
+		if (contains(exCatch)) {
 			IdExCatch existing = get(exCatch.getKey());
+
 			existing.put(exCatch);
-		}else{
+		}else {
 			IdExCatch newIdEx = new IdExCatch(exCatch);
 			getInstance().catches.put(exCatch.getKey(), newIdEx);
 			//System.out.println("SAVING:");
 		}
-		
-		//exCatch.print();
+
+		exCatch.print();
 	}
-	
-	public static boolean contains(ExCatch exCatch){
+
+	public static boolean contains(ExCatch exCatch) {
 		return getInstance().catches.containsKey(exCatch.getKey());
 	}
-	
-	public static IdExCatch get(String key){
+
+	public static void discover(Exception e) {
+		StackTraceElement[] stacks = e.getStackTrace();
+
+		for (StackTraceElement stack : stacks) {
+			String className = stack.getClassName();
+
+			if (className.equals("LayoutSetLocalServiceImpl")) {
+				//stack
+			}
+		}
+	}
+
+	public static IdExCatch get(String key) {
 		return getInstance().catches.get(key);
 	}
-	
+
+	public static ExCatchUtil getInstance() {
+		if (instance == null) {
+			instance = new ExCatchUtil();
+		}
+
+		return instance;
+	}
+
+	private ExCatchUtil() {
+		catches = new HashMap<>();
+	}
+
+	protected static HashMap<String, IdExCatch> catches;
+	private static ExCatchUtil instance;
+
 }
