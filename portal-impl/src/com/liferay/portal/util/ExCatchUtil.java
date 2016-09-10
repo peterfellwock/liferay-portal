@@ -14,7 +14,7 @@ public class ExCatchUtil {
 			//System.out.println("SAVING:");
 		}
 
-		exCatch.print();
+		//exCatch.print();
 	}
 
 	public static boolean contains(ExCatch exCatch) {
