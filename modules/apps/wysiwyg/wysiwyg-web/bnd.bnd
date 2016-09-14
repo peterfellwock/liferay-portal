@@ -1,6 +1,9 @@
 Bundle-Name: Liferay Wysiwyg Web
 Bundle-SymbolicName: com.liferay.wysiwyg.web
 Bundle-Version: 1.0.0
+Import-Package:\
+	com.liferay.journal.model,\
+	*
 Liferay-Releng-Module-Group-Description:
 Liferay-Releng-Module-Group-Title:
 Web-ContextPath: /wysiwyg-web
