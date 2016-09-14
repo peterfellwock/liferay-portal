@@ -55,5 +55,5 @@ public class WysiwygPortlet extends MVCPortlet {
 	)
 	protected void setRelease(Release release) {
 	}
-	
+
 }

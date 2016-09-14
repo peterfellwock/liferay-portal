@@ -14,13 +14,13 @@
 
 package com.liferay.wysiwyg.web.internal.upgrade;
 
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
 import com.liferay.portal.upgrade.release.BaseUpgradeWebModuleRelease;
-import com.liferay.wysiwyg.web.internal.upgrade.v1_0_0.UpgradePortletId;
-import com.liferay.wysiwyg.web.internal.upgrade.v1_0_0.WysiwygContentHelperUtil;
+import com.liferay.wysiwyg.web.internal.upgrade.v1_0_0.UpgradeContentPortlet;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -61,14 +61,12 @@ public class WysiwygWebUpgrade implements UpgradeStepRegistrator {
 
 		registry.register(
 			"com.liferay.wysiwyg.web", "0.0.1", "1.0.0",
-			new UpgradePortletId());
-		
-		
-		
-		
-		System.out.println("hello world I hate !!!!!!!!!");
-		WysiwygContentHelperUtil.contentUpdate();
-		
+			new UpgradeContentPortlet());
+	}
+
+	@Reference(unbind = "-")
+	protected void setDDMStructureLocalService(
+		DDMStructureLocalService ddmStructureLocalService) {
 	}
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
