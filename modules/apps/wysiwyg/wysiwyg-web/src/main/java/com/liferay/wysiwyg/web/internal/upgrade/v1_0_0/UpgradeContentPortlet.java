@@ -25,7 +25,6 @@ import com.liferay.journal.model.JournalArticleConstants;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -40,6 +39,7 @@ import com.liferay.portal.kernel.upgrade.util.UpgradeProcessUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -49,7 +49,6 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.util.PortalInstances;
 import com.liferay.wysiwyg.web.internal.constants.WysiwygConstants;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -67,23 +66,26 @@ public class UpgradeContentPortlet extends UpgradeProcess {
 	@Override
 	protected void doUpgrade() throws Exception {
 		try {
-			long userId = _getUserIdFromDDM();
+			long companyId = PortalInstances.getDefaultCompanyId();
 
-			if (userId == 0) {
-				if (_log.isInfoEnabled()) {
-					_log.info(
-						"Upgrade of WYSIWYG data and portlets not executed " +
-							"DDMStructure/Template not in place");
-				}
-			}
-			else {
-				_migrate(userId);
-			}
+			DDMStructure ddmStructure =
+				DDMStructureLocalServiceUtil.getStructure(
+					companyId, PortalUtil.getClassNameId(JournalArticle.class),
+					WysiwygConstants.STRUCTURE_KEY);
+
+			
+			_migrate(ddmStructure.getUserId());
 		}
 		catch (SQLException sqle) {
 			_log.error(
 				"Unable to get PortletPreferences for WYSIWYG Portlet ", sqle);
 		}
+		catch(PortalException pe){
+			_log.error(
+				"Upgrade of WYSIWYG data and portlets not executed " +
+					"DDMStructure/Template not in place", pe);
+		}
+		
 	}
 
 	private JournalArticle _convertWysiwygContent(
@@ -91,9 +93,10 @@ public class UpgradeContentPortlet extends UpgradeProcess {
 		throws Exception {
 
 		ServiceContext serviceContext = new ServiceContext();
-
+		
 		serviceContext.setAddGroupPermissions(true);
 		serviceContext.setAddGuestPermissions(true);
+		
 		serviceContext.setScopeGroupId(groupId);
 
 		long journalFolderId = _getFolderId(userId, groupId, serviceContext);
@@ -117,17 +120,6 @@ public class UpgradeContentPortlet extends UpgradeProcess {
 				WysiwygConstants.TEMPLATE_KEY, serviceContext);
 
 		return journalArticle;
-	}
-
-	private long _getClassPK(JournalArticle article) {
-		if ((article.isDraft() || article.isPending()) &&
-			(article.getVersion() != JournalArticleConstants.VERSION_DEFAULT)) {
-
-			return article.getPrimaryKey();
-		}
-		else {
-			return article.getResourcePrimKey();
-		}
 	}
 
 	private String _getContentAsXml(String content, long companyId)
@@ -187,15 +179,11 @@ public class UpgradeContentPortlet extends UpgradeProcess {
 		return existingJournalFolder.getFolderId();
 	}
 
-	private String _getJournalPortletPreferences(
-		JournalArticle journalArticle) {
-
-		long classPK = _getClassPK(journalArticle);
-
+	private String _getJournalPortletPreferences(JournalArticle article) {
 		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
-			JournalArticle.class.getName(), classPK);
+			JournalArticle.class.getName(), article.getPrimaryKey());
 
-		StringBuilder sb = new StringBuilder();
+		StringBundler sb = new StringBundler(13);
 
 		sb.append("<portlet-preferences><preference>");
 		sb.append("<name>ddmTemplateKey</name>");
@@ -210,32 +198,16 @@ public class UpgradeContentPortlet extends UpgradeProcess {
 		sb.append("<name>enableViewCountIncrement</name><value>true</value>");
 		sb.append("</preference><preference>");
 		sb.append("<name>groupId</name><value>");
-		sb.append(journalArticle.getGroupId());
+		sb.append(article.getGroupId());
 		sb.append("</value>");
 		sb.append("</preference><preference>");
 		sb.append("<name>articleId</name><value>");
-		sb.append(journalArticle.getArticleId());
+		sb.append(article.getArticleId());
 		sb.append("</value>");
 		sb.append("</preference><preference>");
 		sb.append("<name>contentMetadataAssetAddonEntryKeys</name>");
 		sb.append("<value></value>");
 		sb.append("</preference></portlet-preferences>");
-
-		return sb.toString();
-	}
-
-	private String _getQuery() {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("select PortletPreferences.portletPreferencesId, ");
-		sb.append("PortletPreferences.companyId, PortletPreferences.plid, ");
-		sb.append("Layout.groupId, PortletPreferences.portletId, ");
-		sb.append("PortletPreferences.preferences from PortletPreferences ");
-		sb.append("inner join Layout on Layout.plid = ");
-		sb.append("PortletPreferences.plid where ");
-		sb.append("PortletPreferences.portletId like '");
-		sb.append(WysiwygConstants.WYSIWYG_PORTLET_KEY);
-		sb.append("%'");
 
 		return sb.toString();
 	}
@@ -263,49 +235,20 @@ public class UpgradeContentPortlet extends UpgradeProcess {
 		return HtmlUtil.extractText(sb.toString());
 	}
 
-	private long _getUserIdFromDDM() {
-		long companyId = PortalInstances.getDefaultCompanyId();
-
-		try {
-			DDMStructure ddmStructure =
-				DDMStructureLocalServiceUtil.getStructure(
-					companyId, PortalUtil.getClassNameId(JournalArticle.class),
-					WysiwygConstants.STRUCTURE_KEY);
-
-			return ddmStructure.getUserId();
-		}
-		catch (PortalException pe) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Unable to get User ID from DDMStructure when migrating" +
-						"WYSIWYG Data and Portlet");
-			}
-		}
-
-		try {
-			DDMTemplate ddmTemplate = DDMTemplateLocalServiceUtil.getTemplate(
-				companyId, PortalUtil.getClassNameId(DDMStructure.class),
-				WysiwygConstants.TEMPLATE_KEY);
-
-			return ddmTemplate.getUserId();
-		}
-		catch (PortalException pe) {
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					"Unable to get User ID from DDMTemplate when migrating" +
-						"WYSIWYG Data and Portlet");
-			}
-		}
-
-		return 0;
-	}
-
 	private void _migrate(long userId) throws SQLException {
-		String query = _getQuery();
+		StringBundler sb = new StringBundler(9);
+		
+		sb.append("select PortletPreferences.portletPreferencesId, ");
+		sb.append("PortletPreferences.companyId, PortletPreferences.plid, ");
+		sb.append("Layout.groupId, PortletPreferences.portletId, ");
+		sb.append("PortletPreferences.preferences from PortletPreferences ");
+		sb.append("inner join Layout on Layout.plid = ");
+		sb.append("PortletPreferences.plid where ");
+		sb.append("PortletPreferences.portletId like '");
+		sb.append(WysiwygConstants.WYSIWYG_PORTLET_KEY);
+		sb.append("%'");
 
-		try (Connection con = DataAccess.getUpgradeOptimizedConnection();
-
-			PreparedStatement ps = con.prepareStatement(query);
+		try (PreparedStatement ps = connection.prepareStatement(sb.toString());
 			ResultSet rs = ps.executeQuery()) {
 
 			while (rs.next()) {
