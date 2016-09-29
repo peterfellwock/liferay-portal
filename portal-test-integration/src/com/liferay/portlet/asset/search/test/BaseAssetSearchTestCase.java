@@ -1546,6 +1546,8 @@ public abstract class BaseAssetSearchTestCase {
 			SearchContextTestUtil.getSearchContext();
 
 		searchContext.setGroupIds(assetEntryQuery.getGroupIds());
+		
+		System.out.println("\n\n==========================START====================================");
 
 		for (final Locale locale : locales) {
 			searchContext.setLocale(locale);
@@ -1556,20 +1558,35 @@ public abstract class BaseAssetSearchTestCase {
 
 					@Override
 					public Void call() throws Exception {
+						
+						
+						System.out.println("-----------------START-----------------------------");
+						System.out.println("orderByType:" + orderByType);
+						System.out.println("searchContext.getLanguageId:" + searchContext.getLanguageId());
+						System.out.println("locale.toString:" + locale.toString());
+						
+						
 						List<AssetEntry> assetEntries = search(
 							assetEntryQuery, searchContext);
+						
 
+						System.out.println("-------------------COMPARE---------------------------");
+						System.out.println("ASSERTING:" + ArrayUtils.toString(getOrderedTitles(orderedTitleMaps, locale)) + "]-VS-[" + ArrayUtils.toString(getTitles(assetEntries, locale)) + "]");
+						System.out.println("--------------------COMPARE--------------------------");
 						Assert.assertEquals(
 							ArrayUtils.toString(
 								getOrderedTitles(orderedTitleMaps, locale)),
 							ArrayUtils.toString(
 								getTitles(assetEntries, locale)));
+						
+						System.out.println("-------------------END----------------------------");
 
 						return null;
 					}
 
 				});
 		}
+		System.out.println("========================END=====================================\n\n");
 	}
 
 	protected void testPaginationType(AssetEntryQuery assetEntryQuery, int size)

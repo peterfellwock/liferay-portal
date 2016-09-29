@@ -361,6 +361,8 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		Set<String> sortFieldNames = new HashSet<>(sorts.length);
 
+		System.out.println("---------------SORT-START-------------------------");
+		
 		for (Sort sort : sorts) {
 			if (sort == null) {
 				continue;
@@ -423,7 +425,12 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			sortBuilder.order(sortOrder);
 
 			searchRequestBuilder.addSort(sortBuilder);
+			
+			/*=----*/
+			System.out.println(sortBuilder.toString());
+			
 		}
+		System.out.println("----------------SORT-END--------------------------");
 	}
 
 	protected void addStats(
@@ -460,7 +467,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 			addPagination(searchRequestBuilder, start, end);
 			addSelectedFields(searchRequestBuilder, queryConfig);
 			addSort(searchRequestBuilder, searchContext.getSorts());
-
+			
 			searchRequestBuilder.setTrackScores(queryConfig.isScoreEnabled());
 		}
 		else {
@@ -491,7 +498,7 @@ public class ElasticsearchIndexSearcher extends BaseIndexSearcher {
 
 		searchRequestBuilder.setQuery(queryBuilder);
 
-		SearchResponse searchResponse = searchRequestBuilder.get();
+		SearchResponse searchResponse = searchRequestBuilder.get();	
 
 		if (_log.isInfoEnabled()) {
 			_log.info(
