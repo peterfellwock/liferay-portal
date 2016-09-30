@@ -2433,7 +2433,7 @@ ${tomcat-gc-log}
 						sb.setLength(sb.length() - 1);
 					}
 
-					project.setProperty("test.class.file.names.properties.content", sb.toString());
+					project.setProperty("test.class.file.names.properties.content", "TEST_CLASS_GROUP_0=com/liferay/asset/publisher/upgrade/v1_0_0/test/UpgradePortletPreferencesTest.class,com/liferay/blogs/service/impl/test/BlogsEntryLocalServiceImplTest.class,com/liferay/bookmarks/lar/test/BookmarksFolderStagedModelDataHandlerTest.class,com/liferay/bookmarks/service/test/BookmarksFolderLocalServiceTest.class,com/liferay/calendar/search/test/CalendarSearcherTest.class,com/liferay/comment/subscriptions/test/CommentsSubscriptionTest.class,com/liferay/document/library/notifications/test/DocumentLibraryUserNotificationTest.class,com/liferay/dynamic/data/lists/asset/DDLRecordDDMFormValuesReaderTest.class,com/liferay/dynamic/data/lists/web/internal/exportimport/data/handler/test/DDLPortletDataHandlerTest.class,com/liferay/dynamic/data/mapping/form/evaluator/functions/IsURLFunctionTest.class,com/liferay/dynamic/data/mapping/form/renderer/internal/DDMFormTemplateContextFactoryTest.class,com/liferay/dynamic/data/mapping/service/persistence/test/DDMContentPersistenceTest.class,com/liferay/dynamic/data/mapping/service/test/DDMTemplateServiceTest.class,com/liferay/dynamic/data/mapping/type/date/internal/DateDDMFormFieldTypeSettingsTest.class,com/liferay/dynamic/data/mapping/util/DDMFormFactoryTest.class,com/liferay/exportimport/lifecycle/test/ExportImportLifecycleEventTest.class,com/liferay/item/selector/taglib/internal/util/ItemSelectorRepositoryEntryBrowserUtilTest.class,com/liferay/journal/asset/test/JournalArticleAssetSearchTest.class\n\nTEST_CLASS_GROUPS=0");
 				]]>
 			</beanshell>
 
