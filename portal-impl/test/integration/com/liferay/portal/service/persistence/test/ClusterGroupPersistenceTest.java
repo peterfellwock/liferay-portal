@@ -26,7 +26,7 @@ import com.liferay.portal.kernel.service.ClusterGroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.persistence.ClusterGroupPersistence;
 import com.liferay.portal.kernel.service.persistence.ClusterGroupUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.TransactionalTestRule;
+import com.liferay.portal.test.rule.TransactionalTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.util.IntegerWrapper;
