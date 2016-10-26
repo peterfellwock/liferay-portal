@@ -180,6 +180,12 @@ public class PortletTracker
 
 		portletModel.unsetReady();
 
+		Bundle bundle = serviceReference.getBundle();
+
+		if (bundle == null) {
+			return;
+		}
+
 		ServiceRegistrations serviceRegistrations = _serviceRegistrations.get(
 			serviceReference.getBundle());
 
