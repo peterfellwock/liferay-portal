@@ -17,7 +17,7 @@ package com.liferay.journal.wysiwyg.upgrade.constants;
 /**
  * @author Peter Fellwock
  */
-public class JournalWysiwygConstants {
+public class JournalWYSIWYGConstants {
 
 	public static final String FOLDER_DESCRIPTION = "WYSIWYG";
 

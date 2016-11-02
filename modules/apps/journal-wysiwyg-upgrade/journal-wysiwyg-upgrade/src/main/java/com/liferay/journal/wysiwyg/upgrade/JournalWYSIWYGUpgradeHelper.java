@@ -22,7 +22,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
-import com.liferay.journal.wysiwyg.upgrade.constants.JournalWysiwygConstants;
+import com.liferay.journal.wysiwyg.upgrade.constants.JournalWYSIWYGConstants;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
@@ -59,9 +59,9 @@ import java.util.Map;
 /**
  * @author Peter Fellwock
  */
-public class JournalWysiwygUpgradeHelper {
+public class JournalWYSIWYGUpgradeHelper {
 
-	public JournalWysiwygUpgradeHelper(
+	public JournalWYSIWYGUpgradeHelper(
 		AssetEntryLocalService assetEntryLocalService,
 		DefaultDDMStructureHelper defaultDDMStructureHelper,
 		GroupLocalService groupLocalService,
@@ -91,7 +91,7 @@ public class JournalWysiwygUpgradeHelper {
 		sb.append("PortletPreferences inner join Layout on Layout.plid = ");
 		sb.append("PortletPreferences.plid where ");
 		sb.append("PortletPreferences.portletId like '");
-		sb.append(JournalWysiwygConstants.WYSIWYG_PORTLET_KEY);
+		sb.append(JournalWYSIWYGConstants.WYSIWYG_PORTLET_KEY);
 		sb.append("%'");
 
 		try (Connection con = DataAccess.getUpgradeOptimizedConnection();
@@ -131,7 +131,7 @@ public class JournalWysiwygUpgradeHelper {
 		}
 	}
 
-	private JournalArticle _convertWysiwygContent(
+	private JournalArticle _convertWYSIWYGContent(
 			long userId, long companyId, long groupId, String content,
 			ServiceContext serviceContext)
 		throws Exception {
@@ -152,8 +152,8 @@ public class JournalWysiwygUpgradeHelper {
 
 		JournalArticle journalArticle = _journalArticleLocalService.addArticle(
 			userId, groupId, journalFolderId, titleMap, titleMap, xmlContent,
-			JournalWysiwygConstants.WYSIWYG_STRUCTURE_KEY,
-			JournalWysiwygConstants.WYSIWYG_TEMPLATE_KEY, serviceContext);
+			JournalWYSIWYGConstants.WYSIWYG_STRUCTURE_KEY,
+			JournalWYSIWYGConstants.WYSIWYG_TEMPLATE_KEY, serviceContext);
 
 		return journalArticle;
 	}
@@ -226,12 +226,12 @@ public class JournalWysiwygUpgradeHelper {
 		throws PortalException {
 
 		JournalFolder journalFolder = _journalFolderLocalService.fetchFolder(
-			groupId, 0, JournalWysiwygConstants.FOLDER_NAME);
+			groupId, 0, JournalWYSIWYGConstants.FOLDER_NAME);
 
 		if (journalFolder == null) {
 			journalFolder = _journalFolderLocalService.addFolder(
-				userId, groupId, 0, JournalWysiwygConstants.FOLDER_NAME,
-				JournalWysiwygConstants.FOLDER_DESCRIPTION, serviceContext);
+				userId, groupId, 0, JournalWYSIWYGConstants.FOLDER_NAME,
+				JournalWYSIWYGConstants.FOLDER_DESCRIPTION, serviceContext);
 		}
 
 		return journalFolder.getFolderId();
@@ -312,7 +312,7 @@ public class JournalWysiwygUpgradeHelper {
 
 			serviceContext.setScopeGroupId(groupId);
 
-			JournalArticle journalArticle = _convertWysiwygContent(
+			JournalArticle journalArticle = _convertWYSIWYGContent(
 				userId, companyId, groupId, content, serviceContext);
 
 			if (journalArticle != null) {
@@ -332,7 +332,7 @@ public class JournalWysiwygUpgradeHelper {
 		throws PortalException {
 
 		String journalPortletId = StringUtil.replace(
-			portletId, JournalWysiwygConstants.WYSIWYG_PORTLET_KEY,
+			portletId, JournalWYSIWYGConstants.WYSIWYG_PORTLET_KEY,
 			JournalContentPortletKeys.JOURNAL_CONTENT);
 
 		String journalPreference = _getJournalPortletPreferences(
@@ -357,7 +357,7 @@ public class JournalWysiwygUpgradeHelper {
 		String typedSettings = layout.getTypeSettings();
 
 		String updatedTypedSettings = StringUtil.replace(
-			typedSettings, JournalWysiwygConstants.WYSIWYG_PORTLET_KEY,
+			typedSettings, JournalWYSIWYGConstants.WYSIWYG_PORTLET_KEY,
 			JournalContentPortletKeys.JOURNAL_CONTENT);
 
 		layout.setTypeSettings(updatedTypedSettings);
@@ -366,7 +366,7 @@ public class JournalWysiwygUpgradeHelper {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		JournalWysiwygUpgradeHelper.class);
+		JournalWYSIWYGUpgradeHelper.class);
 
 	private final AssetEntryLocalService _assetEntryLocalService;
 	private final DefaultDDMStructureHelper _defaultDDMStructureHelper;
