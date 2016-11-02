@@ -20,8 +20,8 @@ import com.liferay.dynamic.data.mapping.util.DefaultDDMStructureHelper;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalService;
-import com.liferay.journal.wysiwyg.upgrade.JournalWysiwygUpgradeHelper;
-import com.liferay.journal.wysiwyg.upgrade.constants.JournalWysiwygConstants;
+import com.liferay.journal.wysiwyg.upgrade.JournalWYSIWYGUpgradeHelper;
+import com.liferay.journal.wysiwyg.upgrade.constants.JournalWYSIWYGConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
  * @author Eduardo Garcia
  */
 @RunWith(Arquillian.class)
-public class JournalWysiwygUpgradeHelperTest {
+public class JournalWYSIWYGUpgradeHelperTest {
 
 	@ClassRule
 	@Rule
@@ -66,16 +66,16 @@ public class JournalWysiwygUpgradeHelperTest {
 
 		_layout = LayoutTestUtil.addLayout(_group);
 
-		addWysiwygPortlet();
-		setUpJournalWysiwygUpgradeHelper();
+		addWYSIWYGPortlet();
+		setUpJournalWYSIWYGUpgradeHelper();
 	}
 
 	@Test
-	public void testUpgradeWysiwyg() {
+	public void testUpgradeWYSIWYG() {
 		int initialWysiwygArticleCount =
 			JournalArticleLocalServiceUtil.getStructureArticlesCount(
 				_group.getGroupId(),
-				JournalWysiwygConstants.WYSIWYG_STRUCTURE_KEY);
+				JournalWYSIWYGConstants.WYSIWYG_STRUCTURE_KEY);
 
 		Assert.assertEquals(0, initialWysiwygArticleCount);
 
@@ -84,23 +84,23 @@ public class JournalWysiwygUpgradeHelperTest {
 		int wysiwygArticleCount =
 			JournalArticleLocalServiceUtil.getStructureArticlesCount(
 				_group.getGroupId(),
-				JournalWysiwygConstants.WYSIWYG_STRUCTURE_KEY);
+				JournalWYSIWYGConstants.WYSIWYG_STRUCTURE_KEY);
 
 		Assert.assertEquals(
 			initialWysiwygArticleCount + 1, wysiwygArticleCount);
 	}
 
-	protected void addWysiwygPortlet() throws Exception {
+	protected void addWYSIWYGPortlet() throws Exception {
 		Map<String, String> portletPreferencesMap = new HashMap<>();
 
 		portletPreferencesMap.put("message", _WYSIWYG_MESSAGE);
 
 		LayoutTestUtil.updateLayoutPortletPreferences(
-			_layout, JournalWysiwygConstants.WYSIWYG_PORTLET_KEY,
+			_layout, JournalWYSIWYGConstants.WYSIWYG_PORTLET_KEY,
 			portletPreferencesMap);
 	}
 
-	protected void setUpJournalWysiwygUpgradeHelper() {
+	protected void setUpJournalWYSIWYGUpgradeHelper() {
 		Registry registry = RegistryUtil.getRegistry();
 
 		AssetEntryLocalService assetEntryLocalService = registry.getService(
@@ -127,7 +127,7 @@ public class JournalWysiwygUpgradeHelperTest {
 		UserLocalService userLocalService = registry.getService(
 			UserLocalService.class);
 
-		_wysiwygUpgradeHelper = new JournalWysiwygUpgradeHelper(
+		_wysiwygUpgradeHelper = new JournalWYSIWYGUpgradeHelper(
 			assetEntryLocalService, defaultDDMStructureHelper,
 			groupLocalService, journalArticleLocalService,
 			journalFolderLocalService, layoutLocalService,
@@ -145,6 +145,6 @@ public class JournalWysiwygUpgradeHelperTest {
 	@DeleteAfterTestRun
 	private User _user;
 
-	private JournalWysiwygUpgradeHelper _wysiwygUpgradeHelper;
+	private JournalWYSIWYGUpgradeHelper _wysiwygUpgradeHelper;
 
 }
