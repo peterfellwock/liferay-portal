@@ -23,7 +23,6 @@ import com.liferay.journal.model.JournalFolder;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalFolderLocalService;
 import com.liferay.journal.wysiwyg.upgrade.constants.JournalWYSIWYGConstants;
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -48,7 +47,6 @@ import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReaderUtil;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -94,40 +92,36 @@ public class JournalWYSIWYGUpgradeHelper {
 		sb.append(JournalWYSIWYGConstants.WYSIWYG_PORTLET_KEY);
 		sb.append("%'");
 
-		try (Connection con = DataAccess.getUpgradeOptimizedConnection();
-			PreparedStatement ps = con.prepareStatement(sb.toString());
-			ResultSet rs = ps.executeQuery()) {
+		PreparedStatement ps = connection.prepareStatement(sb.toString());
 
-			while (rs.next()) {
-				long portletPreferencesId = rs.getLong("portletPreferencesId");
-				long companyId = rs.getLong("companyId");
-				long groupId = rs.getLong("groupId");
-				long plid = rs.getLong("plid");
-				long userId = rs.getLong("userId");
+		ResultSet rs = ps.executeQuery();
 
-				if (userId == 0) {
-					userId = _userLocalService.getDefaultUserId(companyId);
-				}
+		while (rs.next()) {
+			long portletPreferencesId = rs.getLong("portletPreferencesId");
+			long companyId = rs.getLong("companyId");
+			long groupId = rs.getLong("groupId");
+			long plid = rs.getLong("plid");
+			long userId = rs.getLong("userId");
 
-				String portletId = rs.getString("portletId");
-				String preferences = rs.getString("preferences");
-
-				javax.portlet.PortletPreferences preferenceMap =
-					PortletPreferencesFactoryUtil.fromXML(
-						companyId, 0, 0, plid, portletId, preferences);
-
-				String content = preferenceMap.getValue(
-					"message", StringPool.BLANK);
-
-				if (Validator.isNotNull(content)) {
-					_migrateDataAndPortlet(
-						portletPreferencesId, companyId, groupId, userId, plid,
-						portletId, content);
-				}
+			if (userId == 0) {
+				userId = _userLocalService.getDefaultUserId(companyId);
 			}
-		}
-		catch (Exception e) {
-			_log.error("Unable to process conversion for WYSIWYG Portlet ", e);
+
+			String portletId = rs.getString("portletId");
+			String preferences = rs.getString("preferences");
+
+			javax.portlet.PortletPreferences preferenceMap =
+				PortletPreferencesFactoryUtil.fromXML(
+					companyId, 0, 0, plid, portletId, preferences);
+
+			String content = preferenceMap.getValue(
+				"message", StringPool.BLANK);
+
+			if (Validator.isNotNull(content)) {
+				_migrateDataAndPortlet(
+					portletPreferencesId, companyId, groupId, userId, plid,
+					portletId, content);
+			}
 		}
 	}
 
