@@ -14,9 +14,9 @@ Liferay-Releng-Module-Group-Title:
 Liferay-Service: true
 Web-ContextPath: /wsrp-service
 -includeresource:\
+	META-INF/=@oasis.names.tc.wsrp-[0-9]*.jar!/wsdl/*,\
 	@bcprov-jdk16-[0-9]*.jar,\
 	@com.liferay.util.java-*.jar!/com/liferay/util/axis/*.class,\
 	@com.liferay.util.java-*.jar!/com/liferay/util/portlet/PortletProps.class,\
 	@opensaml-[0-9]*.jar,\
-	@wss4j-[0-9]*.jar,\
-	META-INF/=@oasis.names.tc.wsrp-[0-9]*.jar!/wsdl/*
+	@wss4j-[0-9]*.jar
