@@ -290,6 +290,8 @@ public class CustomJspBagRegistryUtil {
 				customJsps = customJspBag.getCustomJsps();
 
 				if (customJsps.isEmpty()) {
+					registry.ungetService(serviceReference);
+					
 					return null;
 				}
 			}
