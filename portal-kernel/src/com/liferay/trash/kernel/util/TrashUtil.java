@@ -14,14 +14,11 @@
 
 package com.liferay.trash.kernel.util;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.TrashedModel;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.search.Hits;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.trash.kernel.model.TrashEntry;
@@ -36,88 +33,89 @@ import javax.portlet.PortletURL;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Judson (7.1.x)
  */
-@ProviderType
+@Deprecated
 public class TrashUtil {
 
 	public static void addBaseModelBreadcrumbEntries(
-			HttpServletRequest request,
+			HttpServletRequest httpServletRequest,
 			LiferayPortletResponse liferayPortletResponse, String className,
 			long classPK, PortletURL containerModelURL)
 		throws PortalException, PortletException {
 
-		getTrash().addBaseModelBreadcrumbEntries(
-			request, liferayPortletResponse, className, classPK,
+		_trash.addBaseModelBreadcrumbEntries(
+			httpServletRequest, liferayPortletResponse, className, classPK,
 			containerModelURL);
 	}
 
 	public static void addContainerModelBreadcrumbEntries(
-			HttpServletRequest request,
+			HttpServletRequest httpServletRequest,
 			LiferayPortletResponse liferayPortletResponse, String className,
 			long classPK, PortletURL containerModelURL)
 		throws PortalException, PortletException {
 
-		getTrash().addContainerModelBreadcrumbEntries(
-			request, liferayPortletResponse, className, classPK,
+		_trash.addContainerModelBreadcrumbEntries(
+			httpServletRequest, liferayPortletResponse, className, classPK,
 			containerModelURL);
 	}
 
 	public static void addTrashSessionMessages(
 		ActionRequest actionRequest, List<TrashedModel> trashedModels) {
 
-		getTrash().addTrashSessionMessages(actionRequest, trashedModels);
+		_trash.addTrashSessionMessages(actionRequest, trashedModels);
 	}
 
 	public static void addTrashSessionMessages(
 		ActionRequest actionRequest, List<TrashedModel> trashedModels,
 		String cmd) {
 
-		getTrash().addTrashSessionMessages(actionRequest, trashedModels, cmd);
+		_trash.addTrashSessionMessages(actionRequest, trashedModels, cmd);
 	}
 
 	public static void addTrashSessionMessages(
 		ActionRequest actionRequest, TrashedModel trashedModel) {
 
-		getTrash().addTrashSessionMessages(actionRequest, trashedModel);
+		_trash.addTrashSessionMessages(actionRequest, trashedModel);
 	}
 
 	public static void addTrashSessionMessages(
 		ActionRequest actionRequest, TrashedModel trashedModel, String cmd) {
 
-		getTrash().addTrashSessionMessages(actionRequest, trashedModel, cmd);
+		_trash.addTrashSessionMessages(actionRequest, trashedModel, cmd);
 	}
 
 	public static void deleteEntriesAttachments(
 		long companyId, long repositoryId, Date date,
 		String[] attachmentFileNames) {
 
-		getTrash().deleteEntriesAttachments(
+		_trash.deleteEntriesAttachments(
 			companyId, repositoryId, date, attachmentFileNames);
 	}
 
 	public static Group disableTrash(Group group) {
-		return getTrash().disableTrash(group);
+		return _trash.disableTrash(group);
 	}
 
 	public static List<TrashEntry> getEntries(Hits hits)
 		throws PortalException {
 
-		return getTrash().getEntries(hits);
+		return _trash.getEntries(hits);
 	}
 
 	public static OrderByComparator<TrashEntry> getEntryOrderByComparator(
 		String orderByCol, String orderByType) {
 
-		return getTrash().getEntryOrderByComparator(orderByCol, orderByType);
+		return _trash.getEntryOrderByComparator(orderByCol, orderByType);
 	}
 
 	public static int getMaxAge(Group group) throws PortalException {
-		return getTrash().getMaxAge(group);
+		return _trash.getMaxAge(group);
 	}
 
 	public static String getNewName(String oldName, String token) {
-		return getTrash().getNewName(oldName, token);
+		return _trash.getNewName(oldName, token);
 	}
 
 	public static String getNewName(
@@ -125,72 +123,69 @@ public class TrashUtil {
 			String oldName)
 		throws PortalException {
 
-		return getTrash().getNewName(themeDisplay, className, classPK, oldName);
+		return _trash.getNewName(themeDisplay, className, classPK, oldName);
 	}
 
 	public static String getOriginalTitle(String title) {
-		return getTrash().getOriginalTitle(title);
+		return _trash.getOriginalTitle(title);
 	}
 
 	public static String getOriginalTitle(String title, String paramName) {
-		return getTrash().getOriginalTitle(title, paramName);
+		return _trash.getOriginalTitle(title, paramName);
 	}
 
 	public static Trash getTrash() {
-		PortalRuntimePermission.checkGetBeanProperty(TrashUtil.class);
-
 		return _trash;
 	}
 
 	public static String getTrashTime(String title, String separator) {
-		return getTrash().getTrashTime(title, separator);
+		return _trash.getTrashTime(title, separator);
 	}
 
 	public static String getTrashTitle(long trashEntryId) {
-		return getTrash().getTrashTitle(trashEntryId);
+		return _trash.getTrashTitle(trashEntryId);
 	}
 
 	public static PortletURL getViewContentURL(
-			HttpServletRequest request, long trashEntryId)
+			HttpServletRequest httpServletRequest, long trashEntryId)
 		throws PortalException {
 
-		return getTrash().getViewContentURL(request, trashEntryId);
+		return _trash.getViewContentURL(httpServletRequest, trashEntryId);
 	}
 
 	public static PortletURL getViewContentURL(
-			HttpServletRequest request, String className, long classPK)
+			HttpServletRequest httpServletRequest, String className,
+			long classPK)
 		throws PortalException {
 
-		return getTrash().getViewContentURL(request, className, classPK);
+		return _trash.getViewContentURL(httpServletRequest, className, classPK);
 	}
 
-	public static PortletURL getViewURL(HttpServletRequest request)
+	public static PortletURL getViewURL(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getTrash().getViewURL(request);
+		return _trash.getViewURL(httpServletRequest);
 	}
 
 	public static boolean isInTrash(String className, long classPK)
 		throws PortalException {
 
-		return getTrash().isInTrash(className, classPK);
+		return _trash.isInTrash(className, classPK);
 	}
 
 	public static boolean isTrashEnabled(Group group) {
-		return getTrash().isTrashEnabled(group);
+		return _trash.isTrashEnabled(group);
 	}
 
 	public static boolean isTrashEnabled(long groupId) throws PortalException {
-		return getTrash().isTrashEnabled(groupId);
+		return _trash.isTrashEnabled(groupId);
 	}
 
 	public static boolean isValidTrashTitle(String title) {
-		return getTrash().isValidTrashTitle(title);
+		return _trash.isValidTrashTitle(title);
 	}
 
 	public void setTrash(Trash trash) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_trash = trash;
 	}
 

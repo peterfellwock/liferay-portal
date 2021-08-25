@@ -20,6 +20,7 @@
 String cssClass = GetterUtil.getString(request.getAttribute("liferay-ui:search-container-column-user:cssClass"));
 Date date = GetterUtil.getDate(request.getAttribute("liferay-ui:search-container-column-user:date"), DateFormatFactoryUtil.getDate(locale), null);
 boolean showDetails = GetterUtil.getBoolean(request.getAttribute("liferay-ui:search-container-column-user:showDetails"));
+
 long userId = GetterUtil.getLong(request.getAttribute("liferay-ui:search-container-column-user:userId"));
 
 User user2 = UserLocalServiceUtil.fetchUser(userId);
@@ -28,20 +29,18 @@ User user2 = UserLocalServiceUtil.fetchUser(userId);
 <div class="user-info">
 	<liferay-ui:user-portrait
 		cssClass="<%= cssClass %>"
-		userId="<%= (user2 != null) ? user2.getUserId() : 0 %>"
+		user="<%= user2 %>"
 	/>
 
 	<c:if test="<%= showDetails %>">
 		<div class="user-details">
-			<div class="row <%= (date == null) ? "line" : StringPool.BLANK %>">
-				<span class="col-md-12 user-name"><%= HtmlUtil.escape((user2 != null) ? user2.getFullName() : LanguageUtil.get(resourceBundle, "anonymous")) %></span>
+			<div class="user-name">
+				<%= HtmlUtil.escape((user2 != null) ? user2.getFullName() : LanguageUtil.get(resourceBundle, "anonymous")) %>
 			</div>
 
 			<c:if test="<%= date != null %>">
-				<div class="row">
-					<span class="col-md-12 date-info">
-						<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - date.getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
-					</span>
+				<div class="date-info">
+					<liferay-ui:message arguments="<%= LanguageUtil.getTimeDescription(request, System.currentTimeMillis() - date.getTime(), true) %>" key="x-ago" translateArguments="<%= false %>" />
 				</div>
 			</c:if>
 		</div>

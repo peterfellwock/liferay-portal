@@ -14,6 +14,9 @@
 
 package com.liferay.registry.internal.test;
 
+import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -26,6 +29,7 @@ import com.liferay.registry.internal.InterfaceOne;
 import com.liferay.registry.internal.InterfaceTwo;
 import com.liferay.registry.internal.TrackedOne;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,18 +37,16 @@ import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
+import org.osgi.framework.FrameworkUtil;
 
 /**
  * @author Raymond Augé
@@ -53,16 +55,58 @@ import org.osgi.framework.BundleException;
 @RunWith(Arquillian.class)
 public class RegistryTest {
 
+	@ClassRule
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new LiferayIntegrationTestRule();
+
 	@Before
-	public void setUp() throws BundleException {
-		_bundle.start();
+	public void setUp() {
+		Bundle bundle = FrameworkUtil.getBundle(RegistryTest.class);
+
+		_bundleContext = bundle.getBundleContext();
 
 		_registry = RegistryUtil.getRegistry();
 	}
 
-	@After
-	public void tearDown() throws BundleException {
-		_bundle.stop();
+	@Test
+	public void testCallServiceByClass() {
+		InterfaceOne interfaceOne = getInstance();
+
+		ServiceRegistration<InterfaceOne> serviceRegistration =
+			_registry.registerService(InterfaceOne.class, interfaceOne);
+
+		Assert.assertNotNull(serviceRegistration);
+
+		_registry.callService(
+			InterfaceOne.class,
+			registeredInterfaceOne -> {
+				Assert.assertEquals(interfaceOne, registeredInterfaceOne);
+
+				return null;
+			});
+
+		serviceRegistration.unregister();
+	}
+
+	@Test
+	public void testCallServiceByClassName() {
+		InterfaceOne interfaceOne = getInstance();
+
+		ServiceRegistration<InterfaceOne> serviceRegistration =
+			_registry.registerService(InterfaceOne.class, interfaceOne);
+
+		Assert.assertNotNull(serviceRegistration);
+
+		_registry.callService(
+			InterfaceOne.class.getName(),
+			registeredInterfaceOne -> {
+				Assert.assertEquals(interfaceOne, registeredInterfaceOne);
+
+				return null;
+			});
+
+		serviceRegistration.unregister();
 	}
 
 	@Test
@@ -76,24 +120,6 @@ public class RegistryTest {
 	}
 
 	@Test
-	public void testGetRegistryService() {
-		org.osgi.framework.ServiceReference<Registry> serviceReference =
-			_bundleContext.getServiceReference(Registry.class);
-
-		Registry registry = _bundleContext.getService(serviceReference);
-
-		Assert.assertNotNull(registry);
-	}
-
-	@Test
-	public void testGetRegistryServiceReference() {
-		org.osgi.framework.ServiceReference<Registry> serviceReference =
-			_bundleContext.getServiceReference(Registry.class);
-
-		Assert.assertNotNull(serviceReference);
-	}
-
-	@Test
 	public void testGetServiceByClass() {
 		InterfaceOne interfaceOne = getInstance();
 
@@ -103,7 +129,7 @@ public class RegistryTest {
 		Assert.assertNotNull(serviceRegistration);
 
 		InterfaceOne registeredInterfaceOne = _registry.getService(
-			InterfaceOne.class);
+			_registry.getServiceReference(InterfaceOne.class));
 
 		Assert.assertEquals(interfaceOne, registeredInterfaceOne);
 
@@ -120,7 +146,7 @@ public class RegistryTest {
 		Assert.assertNotNull(serviceRegistration);
 
 		InterfaceOne registeredInterfaceOne = _registry.getService(
-			InterfaceOne.class.getName());
+			_registry.getServiceReference(InterfaceOne.class.getName()));
 
 		Assert.assertEquals(interfaceOne, registeredInterfaceOne);
 
@@ -153,14 +179,16 @@ public class RegistryTest {
 		InterfaceOne[] interfaceOnes = _registry.getServices(
 			InterfaceOne.class.getName(), filterString);
 
-		Assert.assertEquals(1, interfaceOnes.length);
+		Assert.assertEquals(
+			Arrays.toString(interfaceOnes), 1, interfaceOnes.length);
 
 		serviceRegistrationA.unregister();
 
 		interfaceOnes = _registry.getServices(
 			InterfaceOne.class.getName(), filterString);
 
-		Assert.assertEquals(1, interfaceOnes.length);
+		Assert.assertEquals(
+			Arrays.toString(interfaceOnes), 1, interfaceOnes.length);
 
 		serviceRegistrationB.unregister();
 
@@ -233,21 +261,24 @@ public class RegistryTest {
 		Collection<ServiceReference<InterfaceOne>> serviceReferences =
 			_registry.getServiceReferences(InterfaceOne.class, null);
 
-		Assert.assertEquals(2, serviceReferences.size());
+		Assert.assertEquals(
+			serviceReferences.toString(), 2, serviceReferences.size());
 
 		serviceRegistrationA.unregister();
 
 		serviceReferences = _registry.getServiceReferences(
 			InterfaceOne.class, null);
 
-		Assert.assertEquals(1, serviceReferences.size());
+		Assert.assertEquals(
+			serviceReferences.toString(), 1, serviceReferences.size());
 
 		serviceRegistrationB.unregister();
 
 		serviceReferences = _registry.getServiceReferences(
 			InterfaceOne.class, null);
 
-		Assert.assertEquals(0, serviceReferences.size());
+		Assert.assertEquals(
+			serviceReferences.toString(), 0, serviceReferences.size());
 	}
 
 	@Test
@@ -278,21 +309,24 @@ public class RegistryTest {
 		Collection<ServiceReference<InterfaceOne>> serviceReferences =
 			_registry.getServiceReferences(InterfaceOne.class, filterString);
 
-		Assert.assertEquals(1, serviceReferences.size());
+		Assert.assertEquals(
+			serviceReferences.toString(), 1, serviceReferences.size());
 
 		serviceRegistrationA.unregister();
 
 		serviceReferences = _registry.getServiceReferences(
 			InterfaceOne.class, filterString);
 
-		Assert.assertEquals(1, serviceReferences.size());
+		Assert.assertEquals(
+			serviceReferences.toString(), 1, serviceReferences.size());
 
 		serviceRegistrationB.unregister();
 
 		serviceReferences = _registry.getServiceReferences(
 			InterfaceOne.class, filterString);
 
-		Assert.assertEquals(0, serviceReferences.size());
+		Assert.assertEquals(
+			serviceReferences.toString(), 0, serviceReferences.size());
 	}
 
 	@Test
@@ -315,14 +349,16 @@ public class RegistryTest {
 			_registry.getServiceReferences(InterfaceOne.class.getName(), null);
 
 		Assert.assertNotNull(serviceReferences);
-		Assert.assertEquals(2, serviceReferences.length);
+		Assert.assertEquals(
+			Arrays.toString(serviceReferences), 2, serviceReferences.length);
 
 		serviceRegistrationA.unregister();
 
 		serviceReferences = _registry.getServiceReferences(
 			InterfaceOne.class.getName(), null);
 
-		Assert.assertEquals(1, serviceReferences.length);
+		Assert.assertEquals(
+			Arrays.toString(serviceReferences), 1, serviceReferences.length);
 
 		serviceRegistrationB.unregister();
 
@@ -362,14 +398,16 @@ public class RegistryTest {
 				InterfaceOne.class.getName(), filterString);
 
 		Assert.assertNotNull(serviceReferences);
-		Assert.assertEquals(1, serviceReferences.length);
+		Assert.assertEquals(
+			Arrays.toString(serviceReferences), 1, serviceReferences.length);
 
 		serviceRegistrationA.unregister();
 
 		serviceReferences = _registry.getServiceReferences(
 			InterfaceOne.class.getName(), filterString);
 
-		Assert.assertEquals(1, serviceReferences.length);
+		Assert.assertEquals(
+			Arrays.toString(serviceReferences), 1, serviceReferences.length);
 
 		serviceRegistrationB.unregister();
 
@@ -405,19 +443,19 @@ public class RegistryTest {
 		Collection<InterfaceOne> interfaceOnes = _registry.getServices(
 			InterfaceOne.class, filterString);
 
-		Assert.assertEquals(1, interfaceOnes.size());
+		Assert.assertEquals(interfaceOnes.toString(), 1, interfaceOnes.size());
 
 		serviceRegistrationA.unregister();
 
 		interfaceOnes = _registry.getServices(InterfaceOne.class, filterString);
 
-		Assert.assertEquals(1, interfaceOnes.size());
+		Assert.assertEquals(interfaceOnes.toString(), 1, interfaceOnes.size());
 
 		serviceRegistrationB.unregister();
 
 		interfaceOnes = _registry.getServices(InterfaceOne.class, filterString);
 
-		Assert.assertEquals(0, interfaceOnes.size());
+		Assert.assertEquals(interfaceOnes.toString(), 0, interfaceOnes.size());
 	}
 
 	@Test
@@ -479,7 +517,8 @@ public class RegistryTest {
 
 	@Test
 	public void testRegisterServiceByClassNames() {
-		InterfaceBoth interfaceOne = new InterfaceBoth() {};
+		InterfaceBoth interfaceOne = new InterfaceBoth() {
+		};
 
 		ServiceRegistration<?> serviceRegistration = _registry.registerService(
 			new String[] {
@@ -518,7 +557,9 @@ public class RegistryTest {
 			new String[] {
 				InterfaceOne.class.getName(), InterfaceTwo.class.getName()
 			},
-			new InterfaceBoth() {}, properties);
+			new InterfaceBoth() {
+			},
+			properties);
 
 		Assert.assertNotNull(serviceRegistration);
 
@@ -678,9 +719,8 @@ public class RegistryTest {
 			public ServiceTracker<InterfaceOne, InterfaceOne>
 				getServiceTracker() {
 
-				Filter filter = _registry.getFilter("(a.property=G)");
-
-				return _registry.trackServices(filter);
+				return _registry.trackServices(
+					_registry.getFilter("(a.property=G)"));
 			}
 
 		};
@@ -714,15 +754,11 @@ public class RegistryTest {
 	}
 
 	protected InterfaceOne getInstance() {
-		return new InterfaceOne() {};
+		return new InterfaceOne() {
+		};
 	}
 
-	@ArquillianResource
-	private Bundle _bundle;
-
-	@ArquillianResource
 	private BundleContext _bundleContext;
-
 	private Registry _registry;
 
 	private class MockServiceTrackerCustomizer
@@ -846,11 +882,14 @@ public class RegistryTest {
 				serviceTracker.getServiceReferences();
 
 			Assert.assertEquals(
-				expectedServicesCount, serviceReferences.length);
+				Arrays.toString(serviceReferences), expectedServicesCount,
+				serviceReferences.length);
 
 			Object[] services = serviceTracker.getServices();
 
-			Assert.assertEquals(expectedServicesCount, services.length);
+			Assert.assertEquals(
+				Arrays.toString(services), expectedServicesCount,
+				services.length);
 
 			SortedMap<ServiceReference<InterfaceOne>, InterfaceOne>
 				trackedServiceReferences =
@@ -858,7 +897,8 @@ public class RegistryTest {
 
 			Assert.assertNotNull(trackedServiceReferences);
 			Assert.assertEquals(
-				expectedServicesCount, trackedServiceReferences.size());
+				trackedServiceReferences.toString(), expectedServicesCount,
+				trackedServiceReferences.size());
 			Assert.assertEquals(
 				(expectedServicesCount == 2) ? interfaceOneA : interfaceOneB,
 				trackedServiceReferences.get(
@@ -880,7 +920,9 @@ public class RegistryTest {
 				serviceTracker.getTrackedServiceReferences();
 
 			Assert.assertNotNull(trackedServiceReferences);
-			Assert.assertEquals(0, trackedServiceReferences.size());
+			Assert.assertEquals(
+				trackedServiceReferences.toString(), 0,
+				trackedServiceReferences.size());
 
 			serviceTracker.close();
 		}
@@ -932,9 +974,16 @@ public class RegistryTest {
 			Assert.assertNotNull(serviceRegistrationB);
 
 			Assert.assertFalse(serviceTracker.isEmpty());
-			Assert.assertEquals(
-				(expectedServicesCount == 2) ? referenceA.get() :
+
+			if (expectedServicesCount == 2) {
+				Assert.assertEquals(
+					referenceA.get(), serviceTracker.getService());
+			}
+			else {
+				Assert.assertEquals(
 					referenceB.get(), serviceTracker.getService());
+			}
+
 			Assert.assertEquals(
 				referenceB.get(),
 				serviceTracker.getService(
@@ -944,11 +993,14 @@ public class RegistryTest {
 				serviceTracker.getServiceReferences();
 
 			Assert.assertEquals(
-				expectedServicesCount, serviceReferences.length);
+				Arrays.toString(serviceReferences), expectedServicesCount,
+				serviceReferences.length);
 
 			Object[] services = serviceTracker.getServices();
 
-			Assert.assertEquals(expectedServicesCount, services.length);
+			Assert.assertEquals(
+				Arrays.toString(services), expectedServicesCount,
+				services.length);
 
 			SortedMap<ServiceReference<InterfaceOne>, TrackedOne>
 				trackedServiceReferences =
@@ -956,12 +1008,22 @@ public class RegistryTest {
 
 			Assert.assertNotNull(trackedServiceReferences);
 			Assert.assertEquals(
-				expectedServicesCount, trackedServiceReferences.size());
-			Assert.assertEquals(
-				(expectedServicesCount == 2) ?
-					referenceA.get() : referenceB.get(),
-				trackedServiceReferences.get(
-					trackedServiceReferences.firstKey()));
+				trackedServiceReferences.toString(), expectedServicesCount,
+				trackedServiceReferences.size());
+
+			if (expectedServicesCount == 2) {
+				Assert.assertEquals(
+					referenceA.get(),
+					trackedServiceReferences.get(
+						trackedServiceReferences.firstKey()));
+			}
+			else {
+				Assert.assertEquals(
+					referenceB.get(),
+					trackedServiceReferences.get(
+						trackedServiceReferences.firstKey()));
+			}
+
 			Assert.assertEquals(
 				referenceB.get(),
 				trackedServiceReferences.get(
@@ -979,7 +1041,9 @@ public class RegistryTest {
 				serviceTracker.getTrackedServiceReferences();
 
 			Assert.assertNotNull(trackedServiceReferences);
-			Assert.assertEquals(0, trackedServiceReferences.size());
+			Assert.assertEquals(
+				trackedServiceReferences.toString(), 0,
+				trackedServiceReferences.size());
 
 			assertInvocationCounts(
 				mockServiceTrackerCustomizer, expectedAddingInvocationCount,

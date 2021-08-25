@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -30,7 +29,7 @@ public class LayoutPermissionUtil {
 			boolean checkViewableGroup, String actionId)
 		throws PortalException {
 
-		getLayoutPermission().check(
+		_layoutPermission.check(
 			permissionChecker, layout, checkViewableGroup, actionId);
 	}
 
@@ -38,7 +37,7 @@ public class LayoutPermissionUtil {
 			PermissionChecker permissionChecker, Layout layout, String actionId)
 		throws PortalException {
 
-		getLayoutPermission().check(permissionChecker, layout, actionId);
+		_layoutPermission.check(permissionChecker, layout, actionId);
 	}
 
 	public static void check(
@@ -46,7 +45,7 @@ public class LayoutPermissionUtil {
 			boolean privateLayout, long layoutId, String actionId)
 		throws PortalException {
 
-		getLayoutPermission().check(
+		_layoutPermission.check(
 			permissionChecker, groupId, privateLayout, layoutId, actionId);
 	}
 
@@ -54,7 +53,7 @@ public class LayoutPermissionUtil {
 			PermissionChecker permissionChecker, long plid, String actionId)
 		throws PortalException {
 
-		getLayoutPermission().check(permissionChecker, plid, actionId);
+		_layoutPermission.check(permissionChecker, plid, actionId);
 	}
 
 	public static boolean contains(
@@ -62,7 +61,7 @@ public class LayoutPermissionUtil {
 			boolean checkViewableGroup, String actionId)
 		throws PortalException {
 
-		return getLayoutPermission().contains(
+		return _layoutPermission.contains(
 			permissionChecker, layout, checkViewableGroup, actionId);
 	}
 
@@ -70,8 +69,7 @@ public class LayoutPermissionUtil {
 			PermissionChecker permissionChecker, Layout layout, String actionId)
 		throws PortalException {
 
-		return getLayoutPermission().contains(
-			permissionChecker, layout, actionId);
+		return _layoutPermission.contains(permissionChecker, layout, actionId);
 	}
 
 	public static boolean contains(
@@ -79,7 +77,7 @@ public class LayoutPermissionUtil {
 			boolean privateLayout, long layoutId, String actionId)
 		throws PortalException {
 
-		return getLayoutPermission().contains(
+		return _layoutPermission.contains(
 			permissionChecker, groupId, privateLayout, layoutId, actionId);
 	}
 
@@ -87,8 +85,7 @@ public class LayoutPermissionUtil {
 			PermissionChecker permissionChecker, long plid, String actionId)
 		throws PortalException {
 
-		return getLayoutPermission().contains(
-			permissionChecker, plid, actionId);
+		return _layoutPermission.contains(permissionChecker, plid, actionId);
 	}
 
 	public static boolean containsWithoutViewableGroup(
@@ -96,7 +93,7 @@ public class LayoutPermissionUtil {
 			boolean checkLayoutUpdateable, String actionId)
 		throws PortalException {
 
-		return getLayoutPermission().containsWithoutViewableGroup(
+		return _layoutPermission.containsWithoutViewableGroup(
 			permissionChecker, layout, checkLayoutUpdateable, actionId);
 	}
 
@@ -104,20 +101,15 @@ public class LayoutPermissionUtil {
 			PermissionChecker permissionChecker, Layout layout, String actionId)
 		throws PortalException {
 
-		return getLayoutPermission().containsWithoutViewableGroup(
+		return _layoutPermission.containsWithoutViewableGroup(
 			permissionChecker, layout, true, actionId);
 	}
 
 	public static LayoutPermission getLayoutPermission() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			LayoutPermissionUtil.class);
-
 		return _layoutPermission;
 	}
 
 	public void setLayoutPermission(LayoutPermission layoutPermission) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_layoutPermission = layoutPermission;
 	}
 

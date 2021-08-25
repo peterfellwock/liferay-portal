@@ -42,16 +42,16 @@ public class FileVersionWrapper
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof FileVersionWrapper)) {
+		if (!(object instanceof FileVersionWrapper)) {
 			return false;
 		}
 
-		FileVersionWrapper fileVersionWrapper = (FileVersionWrapper)obj;
+		FileVersionWrapper fileVersionWrapper = (FileVersionWrapper)object;
 
 		if (Objects.equals(_fileVersion, fileVersionWrapper._fileVersion)) {
 			return true;
@@ -102,6 +102,11 @@ public class FileVersionWrapper
 	@Override
 	public ExpandoBridge getExpandoBridge() {
 		return _fileVersion.getExpandoBridge();
+	}
+
+	@Override
+	public Date getExpirationDate() {
+		return _fileVersion.getExpirationDate();
 	}
 
 	@Override
@@ -187,6 +192,11 @@ public class FileVersionWrapper
 	@Override
 	public long getRepositoryId() {
 		return _fileVersion.getRepositoryId();
+	}
+
+	@Override
+	public Date getReviewDate() {
+		return _fileVersion.getReviewDate();
 	}
 
 	@Override

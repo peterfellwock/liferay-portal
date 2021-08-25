@@ -14,80 +14,76 @@
 
 package com.liferay.document.library.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
+import com.liferay.document.library.kernel.model.DLFileVersion;
+import com.liferay.portal.kernel.exception.PortalException;
 
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+import java.util.List;
 
 /**
  * Provides the remote service utility for DLFileVersion. This utility wraps
- * {@link com.liferay.portlet.documentlibrary.service.impl.DLFileVersionServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portlet.documentlibrary.service.impl.DLFileVersionServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see DLFileVersionService
- * @see com.liferay.portlet.documentlibrary.service.base.DLFileVersionServiceBaseImpl
- * @see com.liferay.portlet.documentlibrary.service.impl.DLFileVersionServiceImpl
  * @generated
  */
-@ProviderType
 public class DLFileVersionServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portlet.documentlibrary.service.impl.DLFileVersionServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.documentlibrary.service.impl.DLFileVersionServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.document.library.kernel.model.DLFileVersion getFileVersion(
-		long fileVersionId)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static DLFileVersion getFileVersion(long fileVersionId)
+		throws PortalException {
+
 		return getService().getFileVersion(fileVersionId);
 	}
 
-	public static com.liferay.document.library.kernel.model.DLFileVersion getLatestFileVersion(
-		long fileEntryId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().getLatestFileVersion(fileEntryId);
-	}
+	public static List<DLFileVersion> getFileVersions(
+			long fileEntryId, int status)
+		throws PortalException {
 
-	public static com.liferay.document.library.kernel.model.DLFileVersion getLatestFileVersion(
-		long fileEntryId, boolean excludeWorkingCopy)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().getLatestFileVersion(fileEntryId, excludeWorkingCopy);
-	}
-
-	public static int getFileVersionsCount(long fileEntryId, int status)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService().getFileVersionsCount(fileEntryId, status);
-	}
-
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
-		return getService().getOSGiServiceIdentifier();
-	}
-
-	public static java.util.List<com.liferay.document.library.kernel.model.DLFileVersion> getFileVersions(
-		long fileEntryId, int status)
-		throws com.liferay.portal.kernel.exception.PortalException {
 		return getService().getFileVersions(fileEntryId, status);
 	}
 
+	public static int getFileVersionsCount(long fileEntryId, int status)
+		throws PortalException {
+
+		return getService().getFileVersionsCount(fileEntryId, status);
+	}
+
+	public static DLFileVersion getLatestFileVersion(long fileEntryId)
+		throws PortalException {
+
+		return getService().getLatestFileVersion(fileEntryId);
+	}
+
+	public static DLFileVersion getLatestFileVersion(
+			long fileEntryId, boolean excludeWorkingCopy)
+		throws PortalException {
+
+		return getService().getLatestFileVersion(
+			fileEntryId, excludeWorkingCopy);
+	}
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
+		return getService().getOSGiServiceIdentifier();
+	}
+
 	public static DLFileVersionService getService() {
-		if (_service == null) {
-			_service = (DLFileVersionService)PortalBeanLocatorUtil.locate(DLFileVersionService.class.getName());
-
-			ReferenceRegistry.registerReference(DLFileVersionServiceUtil.class,
-				"_service");
-		}
-
 		return _service;
 	}
 
-	private static DLFileVersionService _service;
+	private static volatile DLFileVersionService _service;
+
 }

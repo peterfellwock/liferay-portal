@@ -1,0 +1,34 @@
+@component-name = "portal-upgrades"
+definition {
+
+	property database.types = "mariadb,mysql,postgresql";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "SEO";
+	property testray.main.component.name = "Upgrades Collaboration";
+
+	setUp {
+		SignIn.signIn();
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		AssertLocation.assertPartialLocation(value1 = "${portalURL}/web/guest");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+	}
+
+	@priority = "5"
+	@refactorneeded
+	test ViewCustomMetaTags730 {
+		property data.archive.type = "data-archive-custom-meta-tag";
+		property portal.version = "7.3.0";
+
+		Upgrade.viewAndEditCustomMetaTag();
+	}
+
+}

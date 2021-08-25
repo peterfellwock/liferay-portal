@@ -6,6 +6,7 @@ task runGradleTest
 gradle.liferayWorkspace {
 	bundleDistRootDirName = "foo/bar"
 	environment = "production"
+	modules.jspPrecompileEnabled = true
 }
 
 runGradleTest {
@@ -81,9 +82,11 @@ runGradleTest {
 
 			// Projects
 
-			String zipEntryName = "${zipEntryRootName}osgi/war/foo.war"
+			for (String fileName : ["osgi/modules/com.liferay.foo.web-1.0.0.jar", "osgi/modules/qux-layouttpl-7.0.0.1.war", "osgi/war/baz-theme.war", "osgi/war/foo.war"]) {
+				String zipEntryName = zipEntryRootName + fileName
 
-			assert zipFile.getEntry(zipEntryName) != null : zipEntryName
+				assert zipFile.getEntry(zipEntryName) != null : zipEntryName
+			}
 		}
 	}
 }

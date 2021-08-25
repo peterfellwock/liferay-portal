@@ -18,8 +18,11 @@ import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.exportimport.kernel.lar.StagedModelType;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.capabilities.Capability;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
@@ -28,7 +31,6 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.repository.model.RepositoryModelOperation;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -46,7 +48,6 @@ public class TestFileEntry implements FileEntry {
 	public TestFileEntry(
 		String fileName, long folderId, long groupId, InputStream inputStream) {
 
-		_date = new Date();
 		_fileName = fileName;
 		_folderId = folderId;
 		_groupId = groupId;
@@ -105,6 +106,11 @@ public class TestFileEntry implements FileEntry {
 	}
 
 	@Override
+	public Date getExpirationDate() {
+		return null;
+	}
+
+	@Override
 	public String getExtension() {
 		return RandomTestUtil.randomString(3);
 	}
@@ -149,7 +155,11 @@ public class TestFileEntry implements FileEntry {
 		try {
 			return DLAppLocalServiceUtil.getFolder(_folderId);
 		}
-		catch (PortalException pe) {
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException, portalException);
+			}
+
 			return null;
 		}
 	}
@@ -215,7 +225,7 @@ public class TestFileEntry implements FileEntry {
 
 	@Override
 	public Class<?> getModelClass() {
-		return this.getClass();
+		return getClass();
 	}
 
 	@Override
@@ -239,7 +249,7 @@ public class TestFileEntry implements FileEntry {
 	}
 
 	@Override
-	public int getReadCount() {
+	public long getReadCount() {
 		return 0;
 	}
 
@@ -253,6 +263,11 @@ public class TestFileEntry implements FileEntry {
 	@Override
 	public long getRepositoryId() {
 		return DLFolderConstants.DEFAULT_PARENT_FOLDER_ID;
+	}
+
+	@Override
+	public Date getReviewDate() {
+		return null;
 	}
 
 	@Override
@@ -292,21 +307,6 @@ public class TestFileEntry implements FileEntry {
 
 	@Override
 	public String getVersion() {
-		return RandomTestUtil.randomString();
-	}
-
-	@Override
-	public long getVersionUserId() {
-		return 0;
-	}
-
-	@Override
-	public String getVersionUserName() {
-		return RandomTestUtil.randomString();
-	}
-
-	@Override
-	public String getVersionUserUuid() {
 		return RandomTestUtil.randomString();
 	}
 
@@ -431,7 +431,9 @@ public class TestFileEntry implements FileEntry {
 		return this;
 	}
 
-	private final Date _date;
+	private static final Log _log = LogFactoryUtil.getLog(TestFileEntry.class);
+
+	private final Date _date = new Date();
 	private final String _fileName;
 	private final long _folderId;
 	private long _groupId;

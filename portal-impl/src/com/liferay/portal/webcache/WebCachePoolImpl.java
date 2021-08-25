@@ -15,10 +15,10 @@
 package com.liferay.portal.webcache;
 
 import com.liferay.portal.kernel.cache.PortalCache;
-import com.liferay.portal.kernel.cache.SingleVMPoolUtil;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.DoPrivileged;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.webcache.WebCacheException;
 import com.liferay.portal.kernel.webcache.WebCacheItem;
@@ -27,11 +27,11 @@ import com.liferay.portal.kernel.webcache.WebCachePool;
 /**
  * @author Brian Wing Shun Chan
  */
-@DoPrivileged
 public class WebCachePoolImpl implements WebCachePool {
 
 	public void afterPropertiesSet() {
-		_portalCache = SingleVMPoolUtil.getPortalCache(_CACHE_NAME);
+		_portalCache = PortalCacheHelperUtil.getPortalCache(
+			PortalCacheManagerNames.SINGLE_VM, _CACHE_NAME);
 	}
 
 	@Override
@@ -40,38 +40,40 @@ public class WebCachePoolImpl implements WebCachePool {
 	}
 
 	@Override
-	public Object get(String key, WebCacheItem wci) {
-		Object obj = _portalCache.get(key);
+	public Object get(String key, WebCacheItem webCacheItem) {
+		Object object = _portalCache.get(key);
 
-		if (obj != null) {
-			return obj;
+		if (object != null) {
+			return object;
 		}
 
 		try {
-			obj = wci.convert(key);
+			object = webCacheItem.convert(key);
 
-			if (obj == null) {
+			if (object == null) {
 				return null;
 			}
 
-			int timeToLive = (int)(wci.getRefreshTime() / Time.SECOND);
+			int timeToLive = (int)(webCacheItem.getRefreshTime() / Time.SECOND);
 
-			_portalCache.put(key, obj, timeToLive);
+			if (timeToLive > 0) {
+				_portalCache.put(key, object, timeToLive);
+			}
 		}
-		catch (WebCacheException wce) {
+		catch (WebCacheException webCacheException) {
 			if (_log.isWarnEnabled()) {
-				Throwable cause = wce.getCause();
+				Throwable throwable = webCacheException.getCause();
 
-				if (cause != null) {
-					_log.warn(cause, cause);
+				if (throwable != null) {
+					_log.warn(throwable, throwable);
 				}
 				else {
-					_log.warn(wce, wce);
+					_log.warn(webCacheException, webCacheException);
 				}
 			}
 		}
 
-		return obj;
+		return object;
 	}
 
 	@Override

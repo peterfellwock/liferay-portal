@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.audit;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
@@ -24,17 +23,15 @@ import com.liferay.portal.kernel.util.ServiceProxyFactory;
 public class AuditRouterUtil {
 
 	public static AuditRouter getAuditRouter() {
-		PortalRuntimePermission.checkGetBeanProperty(AuditRouterUtil.class);
-
 		return _auditRouter;
 	}
 
 	public static boolean isDeployed() {
-		return getAuditRouter().isDeployed();
+		return _auditRouter.isDeployed();
 	}
 
 	public static void route(AuditMessage auditMessage) throws AuditException {
-		getAuditRouter().route(auditMessage);
+		_auditRouter.route(auditMessage);
 	}
 
 	private static volatile AuditRouter _auditRouter =

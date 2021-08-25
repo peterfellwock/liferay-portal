@@ -14,14 +14,11 @@
 
 package com.liferay.knowledge.base.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.knowledge.base.model.KBArticle;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.model.MVCCModel;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -34,25 +31,26 @@ import java.util.Date;
  * The cache model class for representing KBArticle in entity cache.
  *
  * @author Brian Wing Shun Chan
- * @see KBArticle
  * @generated
  */
-@ProviderType
-public class KBArticleCacheModel implements CacheModel<KBArticle>,
-	Externalizable {
+public class KBArticleCacheModel
+	implements CacheModel<KBArticle>, Externalizable, MVCCModel {
+
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof KBArticleCacheModel)) {
+		if (!(object instanceof KBArticleCacheModel)) {
 			return false;
 		}
 
-		KBArticleCacheModel kbArticleCacheModel = (KBArticleCacheModel)obj;
+		KBArticleCacheModel kbArticleCacheModel = (KBArticleCacheModel)object;
 
-		if (kbArticleId == kbArticleCacheModel.kbArticleId) {
+		if ((kbArticleId == kbArticleCacheModel.kbArticleId) &&
+			(mvccVersion == kbArticleCacheModel.mvccVersion)) {
+
 			return true;
 		}
 
@@ -61,14 +59,28 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 
 	@Override
 	public int hashCode() {
-		return HashUtil.hash(0, kbArticleId);
+		int hashCode = HashUtil.hash(0, kbArticleId);
+
+		return HashUtil.hash(hashCode, mvccVersion);
+	}
+
+	@Override
+	public long getMvccVersion() {
+		return mvccVersion;
+	}
+
+	@Override
+	public void setMvccVersion(long mvccVersion) {
+		this.mvccVersion = mvccVersion;
 	}
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(59);
+		StringBundler sb = new StringBundler(61);
 
-		sb.append("{uuid=");
+		sb.append("{mvccVersion=");
+		sb.append(mvccVersion);
+		sb.append(", uuid=");
 		sb.append(uuid);
 		sb.append(", kbArticleId=");
 		sb.append(kbArticleId);
@@ -86,6 +98,8 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
+		sb.append(", externalReferenceCode=");
+		sb.append(externalReferenceCode);
 		sb.append(", rootResourcePrimKey=");
 		sb.append(rootResourcePrimKey);
 		sb.append(", parentResourceClassNameId=");
@@ -108,8 +122,6 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		sb.append(priority);
 		sb.append(", sections=");
 		sb.append(sections);
-		sb.append(", viewCount=");
-		sb.append(viewCount);
 		sb.append(", latest=");
 		sb.append(latest);
 		sb.append(", main=");
@@ -135,8 +147,10 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 	public KBArticle toEntityModel() {
 		KBArticleImpl kbArticleImpl = new KBArticleImpl();
 
+		kbArticleImpl.setMvccVersion(mvccVersion);
+
 		if (uuid == null) {
-			kbArticleImpl.setUuid(StringPool.BLANK);
+			kbArticleImpl.setUuid("");
 		}
 		else {
 			kbArticleImpl.setUuid(uuid);
@@ -149,7 +163,7 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		kbArticleImpl.setUserId(userId);
 
 		if (userName == null) {
-			kbArticleImpl.setUserName(StringPool.BLANK);
+			kbArticleImpl.setUserName("");
 		}
 		else {
 			kbArticleImpl.setUserName(userName);
@@ -169,6 +183,13 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 			kbArticleImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
+		if (externalReferenceCode == null) {
+			kbArticleImpl.setExternalReferenceCode("");
+		}
+		else {
+			kbArticleImpl.setExternalReferenceCode(externalReferenceCode);
+		}
+
 		kbArticleImpl.setRootResourcePrimKey(rootResourcePrimKey);
 		kbArticleImpl.setParentResourceClassNameId(parentResourceClassNameId);
 		kbArticleImpl.setParentResourcePrimKey(parentResourcePrimKey);
@@ -176,28 +197,28 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		kbArticleImpl.setVersion(version);
 
 		if (title == null) {
-			kbArticleImpl.setTitle(StringPool.BLANK);
+			kbArticleImpl.setTitle("");
 		}
 		else {
 			kbArticleImpl.setTitle(title);
 		}
 
 		if (urlTitle == null) {
-			kbArticleImpl.setUrlTitle(StringPool.BLANK);
+			kbArticleImpl.setUrlTitle("");
 		}
 		else {
 			kbArticleImpl.setUrlTitle(urlTitle);
 		}
 
 		if (content == null) {
-			kbArticleImpl.setContent(StringPool.BLANK);
+			kbArticleImpl.setContent("");
 		}
 		else {
 			kbArticleImpl.setContent(content);
 		}
 
 		if (description == null) {
-			kbArticleImpl.setDescription(StringPool.BLANK);
+			kbArticleImpl.setDescription("");
 		}
 		else {
 			kbArticleImpl.setDescription(description);
@@ -206,18 +227,17 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		kbArticleImpl.setPriority(priority);
 
 		if (sections == null) {
-			kbArticleImpl.setSections(StringPool.BLANK);
+			kbArticleImpl.setSections("");
 		}
 		else {
 			kbArticleImpl.setSections(sections);
 		}
 
-		kbArticleImpl.setViewCount(viewCount);
 		kbArticleImpl.setLatest(latest);
 		kbArticleImpl.setMain(main);
 
 		if (sourceURL == null) {
-			kbArticleImpl.setSourceURL(StringPool.BLANK);
+			kbArticleImpl.setSourceURL("");
 		}
 		else {
 			kbArticleImpl.setSourceURL(sourceURL);
@@ -234,7 +254,7 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		kbArticleImpl.setStatusByUserId(statusByUserId);
 
 		if (statusByUserName == null) {
-			kbArticleImpl.setStatusByUserName(StringPool.BLANK);
+			kbArticleImpl.setStatusByUserName("");
 		}
 		else {
 			kbArticleImpl.setStatusByUserName(statusByUserName);
@@ -253,7 +273,10 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 	}
 
 	@Override
-	public void readExternal(ObjectInput objectInput) throws IOException {
+	public void readExternal(ObjectInput objectInput)
+		throws ClassNotFoundException, IOException {
+
+		mvccVersion = objectInput.readLong();
 		uuid = objectInput.readUTF();
 
 		kbArticleId = objectInput.readLong();
@@ -268,6 +291,7 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		userName = objectInput.readUTF();
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
+		externalReferenceCode = objectInput.readUTF();
 
 		rootResourcePrimKey = objectInput.readLong();
 
@@ -280,13 +304,11 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		version = objectInput.readInt();
 		title = objectInput.readUTF();
 		urlTitle = objectInput.readUTF();
-		content = objectInput.readUTF();
+		content = (String)objectInput.readObject();
 		description = objectInput.readUTF();
 
 		priority = objectInput.readDouble();
 		sections = objectInput.readUTF();
-
-		viewCount = objectInput.readInt();
 
 		latest = objectInput.readBoolean();
 
@@ -302,10 +324,11 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
+		objectOutput.writeLong(mvccVersion);
+
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -322,7 +345,7 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		objectOutput.writeLong(userId);
 
 		if (userName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(userName);
@@ -330,6 +353,13 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
+
+		if (externalReferenceCode == null) {
+			objectOutput.writeUTF("");
+		}
+		else {
+			objectOutput.writeUTF(externalReferenceCode);
+		}
 
 		objectOutput.writeLong(rootResourcePrimKey);
 
@@ -342,28 +372,28 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		objectOutput.writeInt(version);
 
 		if (title == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(title);
 		}
 
 		if (urlTitle == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(urlTitle);
 		}
 
 		if (content == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeObject("");
 		}
 		else {
-			objectOutput.writeUTF(content);
+			objectOutput.writeObject(content);
 		}
 
 		if (description == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(description);
@@ -372,20 +402,18 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		objectOutput.writeDouble(priority);
 
 		if (sections == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(sections);
 		}
-
-		objectOutput.writeInt(viewCount);
 
 		objectOutput.writeBoolean(latest);
 
 		objectOutput.writeBoolean(main);
 
 		if (sourceURL == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(sourceURL);
@@ -398,7 +426,7 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		objectOutput.writeLong(statusByUserId);
 
 		if (statusByUserName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(statusByUserName);
@@ -407,6 +435,7 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 		objectOutput.writeLong(statusDate);
 	}
 
+	public long mvccVersion;
 	public String uuid;
 	public long kbArticleId;
 	public long resourcePrimKey;
@@ -416,6 +445,7 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
+	public String externalReferenceCode;
 	public long rootResourcePrimKey;
 	public long parentResourceClassNameId;
 	public long parentResourcePrimKey;
@@ -427,7 +457,6 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 	public String description;
 	public double priority;
 	public String sections;
-	public int viewCount;
 	public boolean latest;
 	public boolean main;
 	public String sourceURL;
@@ -436,4 +465,5 @@ public class KBArticleCacheModel implements CacheModel<KBArticle>,
 	public long statusByUserId;
 	public String statusByUserName;
 	public long statusDate;
+
 }

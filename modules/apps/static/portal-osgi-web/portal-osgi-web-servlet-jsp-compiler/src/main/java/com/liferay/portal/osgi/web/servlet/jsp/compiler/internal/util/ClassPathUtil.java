@@ -14,7 +14,7 @@
 
 package com.liferay.portal.osgi.web.servlet.jsp.compiler.internal.util;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.URLCodec;
 
 import java.io.File;
@@ -92,7 +92,6 @@ public class ClassPathUtil {
 
 			fileName = url.getFile();
 		}
-
 		else {
 
 			// Ignore files that we do not know how to handle

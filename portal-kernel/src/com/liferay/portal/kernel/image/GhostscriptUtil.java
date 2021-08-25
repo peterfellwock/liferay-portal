@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.image;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -25,26 +23,22 @@ import java.util.concurrent.Future;
 public class GhostscriptUtil {
 
 	public static Future<?> execute(List<String> arguments) throws Exception {
-		return getGhostscript().execute(arguments);
+		return _ghostscript.execute(arguments);
 	}
 
 	public static Ghostscript getGhostscript() {
-		PortalRuntimePermission.checkGetBeanProperty(GhostscriptUtil.class);
-
 		return _ghostscript;
 	}
 
 	public static boolean isEnabled() {
-		return getGhostscript().isEnabled();
+		return _ghostscript.isEnabled();
 	}
 
 	public static void reset() {
-		getGhostscript().reset();
+		_ghostscript.reset();
 	}
 
 	public void setGhostscript(Ghostscript ghostscript) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_ghostscript = ghostscript;
 	}
 

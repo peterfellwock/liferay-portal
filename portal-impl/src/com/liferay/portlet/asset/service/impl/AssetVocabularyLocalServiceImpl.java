@@ -18,7 +18,11 @@ import com.liferay.asset.kernel.exception.DuplicateVocabularyException;
 import com.liferay.asset.kernel.exception.VocabularyNameException;
 import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.model.AssetVocabularyConstants;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -39,19 +43,21 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.asset.service.base.AssetVocabularyLocalServiceBaseImpl;
-import com.liferay.portlet.asset.util.AssetUtil;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Provides the local service for accessing, adding, deleting, and updating
@@ -76,11 +82,15 @@ public class AssetVocabularyLocalServiceImpl
 
 		Map<Locale, String> titleMap = new HashMap<>();
 
-		titleMap.put(
-			LocaleUtil.getSiteDefault(), PropsValues.ASSET_VOCABULARY_DEFAULT);
+		for (Locale locale : LanguageUtil.getAvailableLocales(groupId)) {
+			titleMap.put(
+				locale,
+				LanguageUtil.get(locale, PropsValues.ASSET_VOCABULARY_DEFAULT));
+		}
 
 		ServiceContext serviceContext = new ServiceContext();
 
+		serviceContext.setAddGuestPermissions(true);
 		serviceContext.setScopeGroupId(groupId);
 
 		return assetVocabularyLocalService.addVocabulary(
@@ -88,7 +98,18 @@ public class AssetVocabularyLocalServiceImpl
 			StringPool.BLANK, serviceContext);
 	}
 
-	@Indexable(type = IndexableType.REINDEX)
+	@Override
+	public AssetVocabulary addVocabulary(
+			long userId, long groupId, String title,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			String settings, int visibilityType, ServiceContext serviceContext)
+		throws PortalException {
+
+		return assetVocabularyLocalService.addVocabulary(
+			userId, groupId, titleMap.get(LocaleUtil.getSiteDefault()), title,
+			titleMap, descriptionMap, settings, visibilityType, serviceContext);
+	}
+
 	@Override
 	public AssetVocabulary addVocabulary(
 			long userId, long groupId, String title,
@@ -96,10 +117,48 @@ public class AssetVocabularyLocalServiceImpl
 			String settings, ServiceContext serviceContext)
 		throws PortalException {
 
+		return assetVocabularyLocalService.addVocabulary(
+			userId, groupId, titleMap.get(LocaleUtil.getSiteDefault()), title,
+			titleMap, descriptionMap, settings, serviceContext);
+	}
+
+	@Override
+	public AssetVocabulary addVocabulary(
+			long userId, long groupId, String title,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		Locale locale = LocaleUtil.getSiteDefault();
+
+		return assetVocabularyLocalService.addVocabulary(
+			userId, groupId, title,
+			HashMapBuilder.put(
+				locale, title
+			).build(),
+			HashMapBuilder.put(
+				locale, StringPool.BLANK
+			).build(),
+			null, serviceContext);
+	}
+
+	@Indexable(type = IndexableType.REINDEX)
+	@Override
+	public AssetVocabulary addVocabulary(
+			long userId, long groupId, String name, String title,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			String settings, int visibilityType, ServiceContext serviceContext)
+		throws PortalException {
+
 		// Vocabulary
 
-		User user = userPersistence.findByPrimaryKey(userId);
-		String name = titleMap.get(LocaleUtil.getSiteDefault());
+		User user = userLocalService.getUser(userId);
+
+		if (Validator.isNull(name)) {
+			name = _generateVocabularyName(
+				groupId, titleMap.get(LocaleUtil.getSiteDefault()));
+		}
+
+		name = _getVocabularyName(name);
 
 		validate(groupId, name);
 
@@ -124,8 +183,9 @@ public class AssetVocabularyLocalServiceImpl
 
 		vocabulary.setDescriptionMap(descriptionMap);
 		vocabulary.setSettings(settings);
+		vocabulary.setVisibilityType(visibilityType);
 
-		assetVocabularyPersistence.update(vocabulary);
+		vocabulary = assetVocabularyPersistence.update(vocabulary);
 
 		// Resources
 
@@ -146,23 +206,14 @@ public class AssetVocabularyLocalServiceImpl
 
 	@Override
 	public AssetVocabulary addVocabulary(
-			long userId, long groupId, String title,
-			ServiceContext serviceContext)
+			long userId, long groupId, String name, String title,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			String settings, ServiceContext serviceContext)
 		throws PortalException {
 
-		Map<Locale, String> titleMap = new HashMap<>();
-
-		Locale locale = LocaleUtil.getSiteDefault();
-
-		titleMap.put(locale, title);
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(locale, StringPool.BLANK);
-
-		return assetVocabularyLocalService.addVocabulary(
-			userId, groupId, title, titleMap, descriptionMap, null,
-			serviceContext);
+		return addVocabulary(
+			userId, groupId, name, title, titleMap, descriptionMap, settings,
+			AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC, serviceContext);
 	}
 
 	@Override
@@ -235,9 +286,7 @@ public class AssetVocabularyLocalServiceImpl
 	}
 
 	@Override
-	public AssetVocabulary fetchGroupVocabulary(long groupId, String name)
-		throws PortalException {
-
+	public AssetVocabulary fetchGroupVocabulary(long groupId, String name) {
 		return assetVocabularyPersistence.fetchByG_N(groupId, name);
 	}
 
@@ -270,15 +319,20 @@ public class AssetVocabularyLocalServiceImpl
 			return vocabularies;
 		}
 
-		return AssetUtil.filterVocabularies(
-			vocabularies, className, classTypePK);
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		return ListUtil.filter(
+			vocabularies,
+			assetVocabulary ->
+				assetVocabulary.isAssociatedToClassNameIdAndClassTypePK(
+					classNameId, classTypePK));
 	}
 
 	@Override
 	public List<AssetVocabulary> getGroupVocabularies(long groupId)
 		throws PortalException {
 
-		return getGroupVocabularies(groupId, true);
+		return getGroupVocabularies(groupId, false);
 	}
 
 	@Override
@@ -295,24 +349,35 @@ public class AssetVocabularyLocalServiceImpl
 
 		AssetVocabulary vocabulary = addDefaultVocabulary(groupId);
 
-		vocabularies = new ArrayList<>();
+		return ListUtil.fromArray(vocabulary);
+	}
 
-		vocabularies.add(vocabulary);
+	@Override
+	public List<AssetVocabulary> getGroupVocabularies(
+		long groupId, int visibilityType) {
 
-		return vocabularies;
+		return assetVocabularyPersistence.findByG_V(groupId, visibilityType);
 	}
 
 	@Override
 	public List<AssetVocabulary> getGroupVocabularies(
 		long groupId, String name, int start, int end,
-		OrderByComparator<AssetVocabulary> obc) {
+		OrderByComparator<AssetVocabulary> orderByComparator) {
 
-		return assetVocabularyFinder.findByG_N(groupId, name, start, end, obc);
+		return assetVocabularyFinder.findByG_N(
+			groupId, name, start, end, orderByComparator);
 	}
 
 	@Override
 	public List<AssetVocabulary> getGroupVocabularies(long[] groupIds) {
 		return assetVocabularyPersistence.findByGroupId(groupIds);
+	}
+
+	@Override
+	public List<AssetVocabulary> getGroupVocabularies(
+		long[] groupIds, int[] visibilityTypes) {
+
+		return assetVocabularyPersistence.findByG_V(groupIds, visibilityTypes);
 	}
 
 	@Override
@@ -367,9 +432,7 @@ public class AssetVocabularyLocalServiceImpl
 		List<AssetVocabulary> vocabularies = new ArrayList<>();
 
 		for (long vocabularyId : vocabularyIds) {
-			AssetVocabulary vocabulary = getVocabulary(vocabularyId);
-
-			vocabularies.add(vocabulary);
+			vocabularies.add(getVocabulary(vocabularyId));
 		}
 
 		return vocabularies;
@@ -402,7 +465,36 @@ public class AssetVocabularyLocalServiceImpl
 		return searchVocabularies(searchContext);
 	}
 
+	@Override
+	public AssetVocabulary updateVocabulary(
+			long vocabularyId, Map<Locale, String> titleMap,
+			Map<Locale, String> descriptionMap, String settings)
+		throws PortalException {
+
+		return assetVocabularyLocalService.updateVocabulary(
+			vocabularyId, titleMap, descriptionMap, settings,
+			AssetVocabularyConstants.VISIBILITY_TYPE_PUBLIC);
+	}
+
 	@Indexable(type = IndexableType.REINDEX)
+	@Override
+	public AssetVocabulary updateVocabulary(
+			long vocabularyId, Map<Locale, String> titleMap,
+			Map<Locale, String> descriptionMap, String settings,
+			int visibilityType)
+		throws PortalException {
+
+		AssetVocabulary vocabulary =
+			assetVocabularyPersistence.findByPrimaryKey(vocabularyId);
+
+		vocabulary.setTitleMap(titleMap);
+		vocabulary.setDescriptionMap(descriptionMap);
+		vocabulary.setSettings(settings);
+		vocabulary.setVisibilityType(visibilityType);
+
+		return assetVocabularyPersistence.update(vocabulary);
+	}
+
 	@Override
 	public AssetVocabulary updateVocabulary(
 			long vocabularyId, String title, Map<Locale, String> titleMap,
@@ -410,12 +502,25 @@ public class AssetVocabularyLocalServiceImpl
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		String name = titleMap.get(LocaleUtil.getSiteDefault());
+		return assetVocabularyLocalService.updateVocabulary(
+			vocabularyId, titleMap.get(LocaleUtil.getSiteDefault()), title,
+			titleMap, descriptionMap, settings, serviceContext);
+	}
+
+	@Indexable(type = IndexableType.REINDEX)
+	@Override
+	public AssetVocabulary updateVocabulary(
+			long vocabularyId, String name, String title,
+			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
+			String settings, ServiceContext serviceContext)
+		throws PortalException {
 
 		AssetVocabulary vocabulary =
 			assetVocabularyPersistence.findByPrimaryKey(vocabularyId);
 
-		if (!vocabulary.getName().equals(name)) {
+		name = _getVocabularyName(name);
+
+		if (!Objects.equals(vocabulary.getName(), name)) {
 			validate(vocabulary.getGroupId(), name);
 		}
 
@@ -429,9 +534,7 @@ public class AssetVocabularyLocalServiceImpl
 		vocabulary.setDescriptionMap(descriptionMap);
 		vocabulary.setSettings(settings);
 
-		assetVocabularyPersistence.update(vocabulary);
-
-		return vocabulary;
+		return assetVocabularyPersistence.update(vocabulary);
 	}
 
 	protected SearchContext buildSearchContext(
@@ -460,9 +563,8 @@ public class AssetVocabularyLocalServiceImpl
 		if (assetVocabularyPersistence.countByG_N(groupId, name) == 0) {
 			return false;
 		}
-		else {
-			return true;
-		}
+
+		return true;
 	}
 
 	protected BaseModelSearchResult<AssetVocabulary> searchVocabularies(
@@ -498,6 +600,38 @@ public class AssetVocabularyLocalServiceImpl
 				"A category vocabulary with the name " + name +
 					" already exists");
 		}
+	}
+
+	private String _generateVocabularyName(long groupId, String name) {
+		String vocabularyName = _getVocabularyName(name);
+
+		vocabularyName = StringUtil.replace(
+			vocabularyName, CharPool.SPACE, CharPool.DASH);
+
+		String curVocabularyName = vocabularyName;
+
+		int count = 0;
+
+		while (true) {
+			AssetVocabulary vocabulary = assetVocabularyPersistence.fetchByG_N(
+				groupId, curVocabularyName);
+
+			if (vocabulary == null) {
+				return curVocabularyName;
+			}
+
+			curVocabularyName = curVocabularyName + CharPool.DASH + count++;
+		}
+	}
+
+	private String _getVocabularyName(String vocabularyName) {
+		if (vocabularyName != null) {
+			vocabularyName = vocabularyName.trim();
+
+			return StringUtil.toLowerCase(vocabularyName);
+		}
+
+		return StringPool.BLANK;
 	}
 
 }

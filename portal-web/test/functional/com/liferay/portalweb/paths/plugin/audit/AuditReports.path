@@ -2,36 +2,23 @@
 <head>
 <title>AuditReports</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">AuditReports</td></tr>
 </thead>
+
 <tbody>
 <!--REPORTS_TABLE -->
-<tr>
-	<td>REPORTS_TABLE_USER_ID</td>
-	<td>//tbody[@class='table-data']/tr[contains(.,'${key_resourceAction}') and contains(.,'${key_resourceName}')]/td[1]</td>
-	<td></td>
-</tr>
 <tr>
 	<td>REPORTS_TABLE_USER_ID_1</td>
 	<td>xpath=(//tr/td[1])[1]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>REPORTS_TABLE_USER_NAME</td>
-	<td>//tbody[@class='table-data']/tr[contains(.,'${key_resourceAction}') and contains(.,'${key_resourceName}')]/td[2]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>REPORTS_TABLE_USER_NAME_1</td>
 	<td>xpath=(//tr/td[2])[1]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>REPORTS_TABLE_RESOURCE_ID</td>
-	<td>//tbody[@class='table-data']/tr[contains(.,'${key_resourceAction}') and contains(.,'${key_resourceName}')]/td[3]</td>
 	<td></td>
 </tr>
 <tr>
@@ -57,6 +44,37 @@
 <tr>
 	<td>REPORTS_TABLE_RESOURCE_ACTION_1</td>
 	<td>xpath=(//tr/td[5])[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td></td>
+	<td></td>
+	<td></td>
+</tr>
+<!--REPORTS_DETAIL -->
+<tr>
+	<td>REPORTS_DETAIL_RESOURCE_NAME</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Resource Name')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_RESOURCE_ACTION</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Resource Action')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_USER_NAME</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'User Name')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_CLIENT_IP</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Client IP')]/parent::div[contains(@class,'ddm-field-group')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>REPORTS_DETAIL_ADDITIONAL_INFORMATION</td>
+	<td>//span[contains(@class,'control-label') and contains (.,'Additional Information')]/parent::div[contains(@class,'ddm-field-group')]</td>
 	<td></td>
 </tr>
 <tr>

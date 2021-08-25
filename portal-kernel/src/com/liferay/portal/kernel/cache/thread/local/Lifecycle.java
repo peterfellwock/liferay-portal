@@ -19,6 +19,6 @@ package com.liferay.portal.kernel.cache.thread.local;
  */
 public enum Lifecycle {
 
-	ETERNAL, REQUEST, SESSION
+	ETERNAL, REQUEST
 
 }

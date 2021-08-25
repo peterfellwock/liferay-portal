@@ -14,6 +14,9 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
+
 import java.text.NumberFormat;
 
 import java.util.Locale;
@@ -47,23 +50,23 @@ public class TextFormatter {
 
 	public static final int F = 5;
 
-	// formatId --> FormatId
+	// formatId --> FormatId, FriendlyURLMapper --> FriendlyURLMapper
 
 	public static final int G = 6;
 
-	// formatId --> format id
+	// formatId --> format id, FriendlyURLMapper --> friendly url mapper
 
 	public static final int H = 7;
 
-	// FormatId --> formatId
+	// FormatId --> formatId, FriendlyURLMapper --> friendlyURLMapper
 
 	public static final int I = 8;
 
-	// format-id --> Format Id
+	// format-id --> Format Id, friendly-url-mapper --> Friendly Url Mapper
 
 	public static final int J = 9;
 
-	// formatId --> format-id, formatID --> format-i-d
+	// formatId --> format-id, FriendlyURLMapper --> friendly-url-mapper
 
 	public static final int K = 10;
 
@@ -71,21 +74,17 @@ public class TextFormatter {
 
 	public static final int L = 11;
 
-	// format-id --> formatId
+	// format-id --> formatId, friendly-url-mapper --> friendlyUrlMapper
 
 	public static final int M = 12;
 
-	// format-id --> format_id
+	// format-id --> format_id, friendly-url-mapper --> friendly_url_mapper
 
 	public static final int N = 13;
 
-	// format_id --> format-id
+	// format_id --> format-id, friendly_url_mapper --> friendly-url-mapper
 
 	public static final int O = 14;
-
-	// FormatID --> format-id
-
-	public static final int P = 15;
 
 	// FORMATId --> format-id
 
@@ -143,15 +142,11 @@ public class TextFormatter {
 		else if (style == O) {
 			return _formatO(s);
 		}
-		else if (style == P) {
-			return _formatP(s);
-		}
 		else if (style == Q) {
 			return _formatQ(s);
 		}
-		else {
-			return s;
-		}
+
+		return s;
 	}
 
 	public static String formatName(String name) {
@@ -181,23 +176,35 @@ public class TextFormatter {
 			return s;
 		}
 
-		if (s.endsWith("s")) {
-			s = s.substring(0, s.length() - 1) + "ses";
-		}
-		else if (s.endsWith("y")) {
-			s = s.substring(0, s.length() - 1) + "ies";
-		}
-		else {
-			s = s + "s";
+		if (s.endsWith("ch") || s.endsWith("s") || s.endsWith("sh") ||
+			s.endsWith("x") || s.endsWith("z")) {
+
+			return s + "es";
 		}
 
-		return s;
+		if (s.endsWith("y") && !s.endsWith("ay") && !s.endsWith("ey") &&
+			!s.endsWith("oy") && !s.endsWith("uy")) {
+
+			return s.substring(0, s.length() - 1) + "ies";
+		}
+
+		return s + "s";
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             com.liferay.portal.kernel.language.LanguageUtil#formatStorageSize(
+	 *             double, Locale) }
+	 */
+	@Deprecated
 	public static String formatStorageSize(double size, Locale locale) {
-		String suffix = _STORAGE_SIZE_SUFFIX_KB;
+		String suffix = _STORAGE_SIZE_SUFFIX_B;
 
-		size = size / _STORAGE_SIZE_DENOMINATOR;
+		if (size >= _STORAGE_SIZE_DENOMINATOR) {
+			suffix = _STORAGE_SIZE_SUFFIX_KB;
+
+			size = size / _STORAGE_SIZE_DENOMINATOR;
+		}
 
 		if (size >= _STORAGE_SIZE_DENOMINATOR) {
 			suffix = _STORAGE_SIZE_SUFFIX_MB;
@@ -213,7 +220,9 @@ public class TextFormatter {
 
 		NumberFormat numberFormat = NumberFormat.getInstance(locale);
 
-		if (suffix.equals(_STORAGE_SIZE_SUFFIX_KB)) {
+		if (suffix.equals(_STORAGE_SIZE_SUFFIX_B) ||
+			suffix.equals(_STORAGE_SIZE_SUFFIX_KB)) {
+
 			numberFormat.setMaximumFractionDigits(0);
 		}
 		else {
@@ -222,7 +231,7 @@ public class TextFormatter {
 
 		numberFormat.setMinimumFractionDigits(0);
 
-		return numberFormat.format(size) + suffix;
+		return numberFormat.format(size) + StringPool.SPACE + suffix;
 	}
 
 	public static String formatStorageSize(int size, Locale locale) {
@@ -235,7 +244,7 @@ public class TextFormatter {
 	}
 
 	private static String _formatB(String s) {
-		return StringUtil.strip(StringUtil.toLowerCase(s), CharPool.SPACE);
+		return StringUtil.removeChar(StringUtil.toLowerCase(s), CharPool.SPACE);
 	}
 
 	private static String _formatC(String s) {
@@ -244,7 +253,7 @@ public class TextFormatter {
 	}
 
 	private static String _formatD(String s) {
-		return StringUtil.strip(s, CharPool.SPACE);
+		return StringUtil.removeChar(s, CharPool.SPACE);
 	}
 
 	private static String _formatE(String s) {
@@ -252,11 +261,13 @@ public class TextFormatter {
 	}
 
 	private static String _formatF(String s) {
-		s = StringUtil.strip(s, CharPool.SPACE);
+		s = StringUtil.removeChar(s, CharPool.SPACE);
 
 		if (Character.isUpperCase(s.charAt(0))) {
-			s = StringUtil.toLowerCase(s.substring(0, 1)).concat(
-				s.substring(1));
+			String lowerCaseFirstChar = StringUtil.toLowerCase(
+				s.substring(0, 1));
+
+			s = lowerCaseFirstChar.concat(s.substring(1));
 		}
 
 		return s;
@@ -264,29 +275,39 @@ public class TextFormatter {
 
 	private static String _formatG(String s) {
 		if (Character.isLowerCase(s.charAt(0))) {
-			s = StringUtil.toUpperCase(s.substring(0, 1)).concat(
-				s.substring(1));
+			String upperCaseFirstChar = StringUtil.toUpperCase(
+				s.substring(0, 1));
+
+			s = upperCaseFirstChar.concat(s.substring(1));
 		}
 
 		return s;
 	}
 
 	private static String _formatH(String s) {
-		StringBuilder sb = new StringBuilder(s.length() * 2);
+		StringBundler sb = new StringBundler(s.length() * 2);
 
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 
-			if (Character.isUpperCase(c)) {
-				sb.append(CharPool.SPACE);
-				sb.append(Character.toLowerCase(c));
-			}
-			else {
+			if (!Character.isUpperCase(c)) {
 				sb.append(c);
+
+				continue;
 			}
+
+			if ((i > 0) &&
+				(Character.isLowerCase(s.charAt(i - 1)) ||
+				 ((i < (s.length() - 1)) &&
+				  Character.isLowerCase(s.charAt(i + 1))))) {
+
+				sb.append(CharPool.SPACE);
+			}
+
+			sb.append(Character.toLowerCase(c));
 		}
 
-		return sb.toString().trim();
+		return sb.toString();
 	}
 
 	private static String _formatI(String s) {
@@ -301,8 +322,10 @@ public class TextFormatter {
 		if (Character.isUpperCase(s.charAt(0)) &&
 			Character.isLowerCase(s.charAt(1))) {
 
-			return s = StringUtil.toLowerCase(s.substring(0, 1)).concat(
-				s.substring(1));
+			String lowerCaseFirstChar = StringUtil.toLowerCase(
+				s.substring(0, 1));
+
+			return s = lowerCaseFirstChar.concat(s.substring(1));
 		}
 
 		StringBuilder sb = new StringBuilder(s);
@@ -313,11 +336,10 @@ public class TextFormatter {
 
 				break;
 			}
-			else {
-				char c = Character.toLowerCase(s.charAt(i));
 
-				sb.setCharAt(i, c);
-			}
+			char c = Character.toLowerCase(s.charAt(i));
+
+			sb.setCharAt(i, c);
 		}
 
 		return sb.toString();
@@ -355,14 +377,14 @@ public class TextFormatter {
 
 			return s;
 		}
-		else {
-			return s = StringUtil.toLowerCase(s.substring(0, 1)).concat(
-				s.substring(1));
-		}
+
+		String lowerCaseFirstChar = StringUtil.toLowerCase(s.substring(0, 1));
+
+		return s = lowerCaseFirstChar.concat(s.substring(1));
 	}
 
 	private static String _formatM(String s) {
-		StringBuilder sb = new StringBuilder(s.length());
+		StringBundler sb = new StringBundler(s.length());
 
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
@@ -388,29 +410,6 @@ public class TextFormatter {
 		return StringUtil.replace(s, CharPool.UNDERLINE, CharPool.DASH);
 	}
 
-	private static String _formatP(String s) {
-		StringBuilder sb = new StringBuilder(s.length() + s.length() / 2);
-
-		for (int i = 0; i < s.length() - 1; i++) {
-			char c = s.charAt(i);
-
-			if (Character.isUpperCase(c)) {
-				sb.append(Character.toLowerCase(c));
-			}
-			else {
-				sb.append(c);
-
-				if (Character.isUpperCase(s.charAt(i + 1))) {
-					sb.append(CharPool.DASH);
-				}
-			}
-		}
-
-		sb.append(Character.toLowerCase(s.charAt(s.length() - 1)));
-
-		return sb.toString();
-	}
-
 	private static String _formatQ(String s) {
 		StringBuilder sb = new StringBuilder(StringUtil.toLowerCase(s));
 
@@ -433,6 +432,8 @@ public class TextFormatter {
 	}
 
 	private static final double _STORAGE_SIZE_DENOMINATOR = 1024.0;
+
+	private static final String _STORAGE_SIZE_SUFFIX_B = "B";
 
 	private static final String _STORAGE_SIZE_SUFFIX_GB = "GB";
 

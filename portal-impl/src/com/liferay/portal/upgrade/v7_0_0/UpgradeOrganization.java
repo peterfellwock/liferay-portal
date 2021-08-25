@@ -17,14 +17,55 @@ package com.liferay.portal.upgrade.v7_0_0;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.upgrade.v7_0_0.util.OrganizationTable;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  * @author Brian Wing Shun Chan
+ * @author Christopher Kian
  */
 public class UpgradeOrganization extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
 		alter(OrganizationTable.class, new AlterColumnType("statusId", "LONG"));
+
+		upgradeOrganizationLogoId();
+	}
+
+	protected void upgradeOrganizationLogoId() throws SQLException {
+		try (PreparedStatement preparedStatement1 = connection.prepareStatement(
+				"select groupId, logoId from LayoutSet where logoId > 0 and " +
+					"privateLayout = ?");
+			PreparedStatement preparedStatement2 = connection.prepareStatement(
+				"select classPK from Group_ where groupId = ?");
+			PreparedStatement preparedStatement3 = connection.prepareStatement(
+				"update Organization_ set logoId = ? where organizationId = " +
+					"?")) {
+
+			preparedStatement1.setBoolean(1, false);
+
+			ResultSet resultSet1 = preparedStatement1.executeQuery();
+
+			while (resultSet1.next()) {
+				long groupId = resultSet1.getLong("groupId");
+				long logoId = resultSet1.getLong("logoId");
+
+				preparedStatement2.setLong(1, groupId);
+
+				ResultSet resultSet2 = preparedStatement2.executeQuery();
+
+				while (resultSet2.next()) {
+					long classPK = resultSet2.getLong("classPK");
+
+					preparedStatement3.setLong(1, logoId);
+					preparedStatement3.setLong(2, classPK);
+
+					preparedStatement3.executeUpdate();
+				}
+			}
+		}
 	}
 
 }

@@ -1,0 +1,553 @@
+@component-name = "portal-analytics-cloud"
+definition {
+
+	property analytics.cloud.enabled = "true";
+	property minimum.slave.ram = "32";
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Analytics Cloud";
+
+	setUp {
+		task ("Copy the token from AC") {
+			ACUtils.launchAC();
+
+			ACSettings.takeTokenFromAnalyticsCloud();
+		}
+
+		task ("Set up instance and sign in DXP") {
+			TestCase.setUpPortalInstance();
+
+			ACUtils.launchDXP();
+		}
+
+		task ("Add a new site with a public widget page") {
+			ACUtils.addSiteAndPage();
+		}
+
+		task ("Create a Document And Media") {
+			ACUtils.createDMAndAddToPage();
+		}
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		ACUtils.tearDownDXP();
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		}
+
+		ACUtils.tearDownAC();
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8419 | Test Summary: Document asset appears on list shows pages that the document exists on"
+	@ignore = "true"
+	@priority = "5"
+	test AssertAppearsOnListShowsPagesDocumentsExists {
+
+		// TODO LRAC-8419 AssertAppearsOnListShowsPagesDocumentsExists
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8394 | Test Summary: Assert 180 day time filter in Documents and Media"
+	@ignore = "true"
+	@priority = "3"
+	test AssertDocumentsAndMediaPageTImeFilter180Days {
+
+		// TODO LRAC-8394 AssertDocumentsAndMediaPageTImeFilter180Days
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8402 | Test Summary: Documents audience card shows expected amount of know and anonymous individuals"
+	@priority = "5"
+	test AudienceCardShowsExpectedAmountKnowAndAnonymousIndividualsInDM {
+		task ("Connect the DXP to AC") {
+			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+		}
+
+		task ("Add 2 more new users") {
+			for (var name : list "ac,liferay") {
+				JSONUser.addUser(
+					userEmailAddress = "${name}@liferay.com",
+					userFirstName = "${name}",
+					userLastName = "${name}",
+					userScreenName = "${name}");
+			}
+		}
+
+		task ("Sync the Contact Data") {
+			ACDXPSettings.syncNewContactData();
+		}
+
+		task ("Log in and download the document") {
+			for (var name : list "ac,liferay") {
+				User.logoutAndLoginPG(
+					userLoginEmailAddress = "${name}@liferay.com",
+					userLoginFullName = "${name} ${name}");
+
+				Navigator.gotoSitePage(
+					pageName = "AC Page",
+					siteName = "Site Name");
+
+				DMDocument.downloadPG(dmDocumentTitle = "DM AC Title");
+
+				Pause(locator1 = "5000");
+			}
+		}
+
+		task ("Download the document with anonymous user") {
+			User.logoutPG();
+
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMDocument.downloadPG(dmDocumentTitle = "DM AC Title");
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessions();
+
+			Pause(locator1 = "30000");
+		}
+
+		task ("Switch to new property in AC and go to Documents and Media tab") {
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = "${propertyName}");
+
+			ACNavigation.goToAssets();
+
+			ACNavigation.switchTab(tabName = "Documents and Media");
+		}
+
+		task ("Go to the Documents And Media overview") {
+			ACTimeFilter.clickTimeFilterButton();
+
+			ACTimeFilter.setLast24Hours();
+		}
+
+		task ("Open document by name") {
+			ACNavigation.openItem(itemName = "Document_1.jpg");
+		}
+
+		task ("Assert views by download number of know and anoymous users") {
+			ACUtils.assertAudienceCard(
+				index = "1",
+				percentageList = "66.67%,33.33%");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8403 | Test Summary: Documents audience card shows expected amount of segmented and unsegmented individuals"
+	@ignore = "true"
+	@priority = "5"
+	test AudienceCardShowsExpectedAmountSegmentedAndUnsegmentedInDM {
+
+		// TODO LRAC-8403 AudienceCardShowsExpectedAmountSegmentedAndUnsegmentedInDM
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8395 | Test Summary: Custom Range time filter in Documents and Media assets page"
+	@ignore = "true"
+	@priority = "4"
+	test CanAssertDocumentsAndMediaTimeFIlterCustom {
+
+		// TODO LRAC-8395 CanAssertDocumentsAndMediaTimeFIlterCustom
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8396 | Test Summary: Documents list is searchable"
+	@priority = "4"
+	test CanDocumentsAndMediaListSearchable {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		task ("Add another document") {
+			ACUtils.createDMAndAddToPage(
+				dmDocumentFile = "Document_2.jpg",
+				dmDocumentTitle = "New Document");
+		}
+
+		task ("Visit the two documents") {
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMNavigator.gotoDocumentPG(dmDocumentTitle = "DM AC Title");
+
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMNavigator.gotoDocumentPG(dmDocumentTitle = "New Document");
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessions();
+
+			Pause(locator1 = "30000");
+		}
+
+		task ("Switch to new property in AC and go to DM tab") {
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = "${propertyName}");
+
+			ACNavigation.goToAssets();
+
+			ACNavigation.switchTab(tabName = "Documents and Media");
+		}
+
+		task ("Search document by name") {
+			ACTimeFilter.clickTimeFilterButton();
+
+			ACTimeFilter.setLast24Hours();
+
+			ACUtils.searchBar(searchItem = "DM AC Title");
+
+			ACAssets.viewAssets(assetName = "DM AC Title");
+
+			ACUtils.searchBar(searchItem = "New Document");
+
+			ACAssets.viewAssets(assetName = "New Document");
+
+			ACUtils.searchBar(searchItem = "Should not be here");
+
+			AssertTextEquals(
+				key_noResultMessage = "There are no Documents and Media found.",
+				locator1 = "ACAssets#NO_RESULTS_CONTENT_MESSAGE",
+				value1 = "There are no Documents and Media found.");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8116 | Test Summary: Assert clicking a document in the documents and media list navigates to the documents overview page"
+	@priority = "5"
+	test CanNavigatesToDocumentsOverviewPage {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		JSONUser.addUser(
+			userEmailAddress = "ac@liferay.com",
+			userFirstName = "ac",
+			userLastName = "ac",
+			userScreenName = "ac");
+
+		ACDXPSettings.syncNewContactData();
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "ac@liferay.com",
+			userLoginFullName = "ac ac");
+
+		for (var n : list "1,2,3") {
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMDocument.downloadPG(dmDocumentTitle = "DM AC Title");
+		}
+
+		ACUtils.closeAllSessions();
+
+		Pause(locator1 = "30000");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToAssets();
+
+		ACNavigation.switchTab(tabName = "Documents and Media");
+
+		ACTimeFilter.clickTimeFilterButton();
+
+		ACTimeFilter.setLast24Hours();
+
+		ACNavigation.openItem(itemName = "Document_1.jpg");
+
+		ACIndividualsDashboard.goToOverviewTab();
+
+		ACNavigation.viewActiveSwitchTab(tabName = "Overview");
+
+		for (var cardTitle : list "Visitors Behavior,Audience,Downloads by Location,Downloads by Technology,Asset Appears On") {
+			ACCards.viewCards(cardTitle = "${cardTitle}");
+		}
+
+		for (var metric : list "Previews,Downloads") {
+			ACAssets.viewVisitorsBehaviorMetric(
+				metricTitle = "${metric}",
+				metricValue = "3");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8412 | Test Summary: Documents location card shows downloads by the expected location"
+	@ignore = "true"
+	@priority = "5"
+	test DocumentsLocationCardShowsViewsByExpectedLocation {
+
+		// TODO LRAC-8412 DocumentsLocationCardShowsViewsByExpectedLocation
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8415 | Test Summary: Documents downloads by technology card shows downloads by the expected browser"
+	@priority = "5"
+	test DocumentsTechnologyCardShowsViewsByExpectedBrowser {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		task ("Download the document") {
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMDocument.downloadPG(dmDocumentTitle = "DM AC Title");
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessions();
+
+			Pause(locator1 = "30000");
+		}
+
+		task ("Switch to new property in AC and go to DM tab") {
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = "${propertyName}");
+
+			ACNavigation.goToAssets();
+
+			ACNavigation.switchTab(tabName = "Documents and Media");
+		}
+
+		task ("Go to the docuemnt overview") {
+			ACTimeFilter.clickTimeFilterButton();
+
+			ACTimeFilter.setLast24Hours();
+
+			ACNavigation.openItem(itemName = "Document_1.jpg");
+		}
+
+		task ("Assert downloads by browsers metric") {
+			ACNavigation.switchTabInCard(tabName = "Browsers");
+
+			ACAssets.viewViewsByTechnologyTabActive(
+				cardTitle = "Downloads by Technology",
+				tabName = "Browsers");
+
+			ACAssets.viewTechnologyBrowsersMetric(
+				browserMetricValue = "Chrome",
+				cardTitle = "Downloads by Technology",
+				cssValue = "rgb(75, 155, 255)",
+				percentageMetricValue = "100%");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8414 | Test Summary: Documents downloads by technology card shows downloads by the expected device"
+	@priority = "5"
+	test DocumentsTechnologyCardShowsViewsByExpectedDevice {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		task ("Download the document") {
+			for (var n : list "1,2") {
+				Navigator.gotoSitePage(
+					pageName = "AC Page",
+					siteName = "Site Name");
+
+				DMDocument.downloadPG(dmDocumentTitle = "DM AC Title");
+			}
+		}
+
+		task ("Close sessions") {
+			ACUtils.closeAllSessions();
+
+			Pause(locator1 = "30000");
+		}
+
+		task ("Switch to new property in AC and go to DM tab") {
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = "${propertyName}");
+
+			ACNavigation.goToAssets();
+
+			ACNavigation.switchTab(tabName = "Documents and Media");
+		}
+
+		task ("Go to the docuemnt overview") {
+			ACTimeFilter.clickTimeFilterButton();
+
+			ACTimeFilter.setLast24Hours();
+
+			ACNavigation.openItem(itemName = "DM AC Title");
+		}
+
+		task ("Assert downloads by devices metric") {
+			ACAssets.viewTechnologyDeviceViewsAndPercentage(
+				actionValue = "2 Downloads",
+				cardTitle = "Downloads by Technology",
+				deviceName = "Desktop",
+				percentageValue = "100%");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8118 | Test Summary: Document known individuals list shows the individuals who have viewed the documents"
+	@priority = "5"
+	test KnownIndividualsListShowsIndividualsWhoHaveViewedDocuments {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		for (var name : list "ac,liferay,dxp") {
+			JSONUser.addUser(
+				userEmailAddress = "${name}@liferay.com",
+				userFirstName = "${name}",
+				userLastName = "${name}",
+				userScreenName = "${name}");
+		}
+
+		ACDXPSettings.syncNewContactData();
+
+		for (var name : list "ac,liferay,dxp") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "${name}@liferay.com",
+				userLoginFullName = "${name} ${name}");
+
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMDocument.downloadPG(dmDocumentTitle = "DM AC Title");
+
+			Pause(locator1 = "5000");
+		}
+
+		JSONUser.addUser(
+			userEmailAddress = "userac@liferay.com",
+			userFirstName = "userac",
+			userLastName = "userac",
+			userScreenName = "userac");
+
+		User.logoutAndLoginPG(
+			userEmailAddress = "userac@liferay.com",
+			userFirstName = "userac",
+			userLastName = "userac",
+			userScreenName = "userac");
+
+		Navigator.gotoSitePage(
+			pageName = "AC Page",
+			siteName = "Site Name");
+
+		DMDocument.downloadPG(dmDocumentTitle = "DM AC Title");
+
+		ACUtils.closeAllSessions();
+
+		Pause(locator1 = "30000");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToAssets();
+
+		ACNavigation.switchTab(tabName = "Documents and Media");
+
+		ACTimeFilter.clickTimeFilterButton();
+
+		ACTimeFilter.setLast24Hours();
+
+		ACNavigation.openItem(itemName = "Document_1.jpg");
+
+		ACIndividualsDashboard.goToKnownIndividualsTab();
+
+		ACNavigation.viewActiveSwitchTab(tabName = "Known Individuals");
+
+		ACTimeFilter.clickTimeFilterButton();
+
+		ACTimeFilter.setLast24Hours();
+
+		for (var name : list "ac,liferay,dxp") {
+			AssertElementPresent(
+				key_userName = "${name} ${name}",
+				locator1 = "ACSegments#SEGMENT_MEMBERS");
+		}
+
+		AssertElementNotPresent(
+			key_userName = "userac userac",
+			locator1 = "ACSegments#SEGMENT_MEMBERS");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8115 | Test Summary: Assert document list shows all of the documents and media assets in a list"
+	@priority = "5"
+	test ViewAllDocumentsAndMediaShownInAssetList {
+		for (var n : list "2,3,4") {
+			ACUtils.createDMAndAddToPage(
+				dmDocumentFile = "Document_${n}.jpg",
+				dmDocumentTitle = "DM AC Title ${n}");
+		}
+
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		for (var documentTitle : list "DM AC Title,DM AC Title 2,DM AC Title 3,DM AC Title 4") {
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMNavigator.gotoDocumentCP(dmDocumentTitle = "${documentTitle}");
+		}
+
+		ACUtils.closeAllSessions();
+
+		Pause(locator1 = "30000");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToAssets();
+
+		ACNavigation.switchTab(tabName = "Documents and Media");
+
+		ACTimeFilter.clickTimeFilterButton();
+
+		ACTimeFilter.setLast24Hours();
+
+		for (var assetName : list "DM AC Title,DM AC Title 2,DM AC Title 3,DM AC Title 4") {
+			ACAssets.viewAssets(assetName = "${assetName}");
+		}
+	}
+
+	@description = "Documents visitor behavior card shows expected amount of views"
+	@priority = "5"
+	test VisitorBehaviorCardShowsExpectedAmountOfPreviewsInDM {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		for (var n : list "1,2,3,4") {
+			Navigator.gotoSitePage(
+				pageName = "AC Page",
+				siteName = "Site Name");
+
+			DMNavigator.gotoDocumentCP(dmDocumentTitle = "DM AC Title");
+		}
+
+		ACUtils.closeAllSessions();
+
+		Pause(locator1 = "30000");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToAssets();
+
+		ACNavigation.switchTab(tabName = "Documents and Media");
+
+		ACTimeFilter.clickTimeFilterButton();
+
+		ACTimeFilter.setLast24Hours();
+
+		ACNavigation.openItem(itemName = "DM AC Title");
+
+		ACAssets.viewVisitorsBehaviorMetric(
+			metricTitle = "Previews",
+			metricValue = "4");
+	}
+
+}

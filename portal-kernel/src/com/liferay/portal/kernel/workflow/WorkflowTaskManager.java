@@ -16,13 +16,17 @@ package com.liferay.portal.kernel.workflow;
 
 import com.liferay.portal.kernel.messaging.proxy.MessagingProxy;
 import com.liferay.portal.kernel.messaging.proxy.ProxyMode;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.workflow.search.WorkflowModelSearchResult;
 
 import java.io.Serializable;
 
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Micha Kiener
@@ -31,6 +35,7 @@ import java.util.Map;
  * @author Marcellus Tavares
  */
 @MessagingProxy(mode = ProxyMode.SYNC)
+@ProviderType
 public interface WorkflowTaskManager {
 
 	public WorkflowTask assignWorkflowTaskToRole(
@@ -51,14 +56,53 @@ public interface WorkflowTaskManager {
 			Map<String, Serializable> workflowContext)
 		throws WorkflowException;
 
-	public WorkflowTask fetchWorkflowTask(
-			long companyId, long workflowTaskInstanceId)
+	public default WorkflowTask completeWorkflowTask(
+			long companyId, long userId, long workflowTaskId,
+			String transitionName, String comment,
+			Map<String, Serializable> workflowContext,
+			boolean waitForCompletion)
+		throws WorkflowException {
+
+		if (waitForCompletion) {
+			throw new UnsupportedOperationException();
+		}
+
+		return completeWorkflowTask(
+			companyId, userId, workflowTaskId, transitionName, comment,
+			workflowContext);
+	}
+
+	public WorkflowTask fetchWorkflowTask(long companyId, long workflowTaskId)
 		throws WorkflowException;
+
+	public default List<User> getAssignableUsers(
+			long companyId, long workflowTaskId)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
 
 	public List<String> getNextTransitionNames(
 			long companyId, long userId, long workflowTaskId)
 		throws WorkflowException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getAssignableUsers(long, long)}
+	 */
+	@Deprecated
+	public default List<User> getPooledActors(
+			long companyId, long workflowTaskId)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getAssignableUsers(long, long)}
+	 */
+	@Deprecated
 	public long[] getPooledActorsIds(long companyId, long workflowTaskId)
 		throws WorkflowException;
 
@@ -82,6 +126,11 @@ public interface WorkflowTaskManager {
 
 	public int getWorkflowTaskCountByUserRoles(
 			long companyId, long userId, Boolean completed)
+		throws WorkflowException;
+
+	public int getWorkflowTaskCountByUserRoles(
+			long companyId, long userId, long workflowInstanceId,
+			Boolean completed)
 		throws WorkflowException;
 
 	public int getWorkflowTaskCountByWorkflowInstance(
@@ -120,41 +169,204 @@ public interface WorkflowTaskManager {
 			OrderByComparator<WorkflowTask> orderByComparator)
 		throws WorkflowException;
 
+	public boolean hasAssignableUsers(long companyId, long workflowTaskId)
+		throws WorkflowException;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #hasAssignableUsers(long, long)}
+	 */
+	@Deprecated
+	public boolean hasOtherAssignees(long workflowTaskId, long userId)
+		throws WorkflowException;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #search(long,
+	 *             long, String, String[], String[], Long[], String, Long[],
+	 *             Date, Date, Boolean, Boolean, Long, Long[], Boolean, int,
+	 *             int, OrderByComparator)}
+	 */
+	@Deprecated
 	public List<WorkflowTask> search(
 			long companyId, long userId, String keywords, Boolean completed,
 			Boolean searchByUserRoles, int start, int end,
 			OrderByComparator<WorkflowTask> orderByComparator)
 		throws WorkflowException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #search(long,
+	 *             long, String, String[], String[], Long[], String, Long[],
+	 *             Date, Date, Boolean, Boolean, Long, Long[], Boolean, int,
+	 *             int, OrderByComparator)}
+	 */
+	@Deprecated
 	public List<WorkflowTask> search(
 			long companyId, long userId, String taskName, String assetType,
-			Long[] assetPrimaryKey, Date dueDateGT, Date dueDateLT,
+			Long[] assetPrimaryKeys, Date dueDateGT, Date dueDateLT,
 			Boolean completed, Boolean searchByUserRoles, boolean andOperator,
 			int start, int end,
 			OrderByComparator<WorkflowTask> orderByComparator)
 		throws WorkflowException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #search(long,
+	 *             long, String, String[], String[], Long[], String, Long[],
+	 *             Date, Date, Boolean, Boolean, Long, Long[], Boolean, int,
+	 *             int, OrderByComparator)}
+	 */
+	@Deprecated
+	public default List<WorkflowTask> search(
+			long companyId, long userId, String assetTitle, String taskName,
+			String[] assetTypes, Long[] assetPrimaryKeys, Date dueDateGT,
+			Date dueDateLT, Boolean completed, Boolean searchByUserRoles,
+			Boolean andOperator, int start, int end,
+			OrderByComparator<WorkflowTask> orderByComparator)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #search(long,
+	 *             long, String, String[], String[], Long[], String, Long[],
+	 *             Date, Date, Boolean, Boolean, Long, Long[], Boolean, int,
+	 *             int, OrderByComparator)}
+	 */
+	@Deprecated
 	public List<WorkflowTask> search(
 			long companyId, long userId, String keywords, String[] assetTypes,
 			Boolean completed, Boolean searchByUserRoles, int start, int end,
 			OrderByComparator<WorkflowTask> orderByComparator)
 		throws WorkflowException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #search(long,
+	 *             long, String, String[], String[], Long[], String, Long[],
+	 *             Date, Date, Boolean, Boolean, Long, Long[], Boolean, int,
+	 *             int, OrderByComparator)}
+	 */
+	@Deprecated
+	public default List<WorkflowTask> search(
+			long companyId, long userId, String assetTitle, String[] taskNames,
+			String[] assetTypes, Long[] assetPrimaryKeys, Long[] assigneeIds,
+			Date dueDateGT, Date dueDateLT, Boolean completed,
+			Boolean searchByUserRoles, Long[] workflowInstanceIds,
+			Boolean andOperator, int start, int end,
+			OrderByComparator<WorkflowTask> orderByComparator)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	public default List<WorkflowTask> search(
+			long companyId, long userId, String assetTitle, String[] taskNames,
+			String[] assetTypes, Long[] assetPrimaryKeys,
+			String assigneeClassName, Long[] assigneeIds, Date dueDateGT,
+			Date dueDateLT, Boolean completed, Boolean searchByUserRoles,
+			Long workflowDefinitionId, Long[] workflowInstanceIds,
+			Boolean andOperator, int start, int end,
+			OrderByComparator<WorkflowTask> orderByComparator)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #searchCount(long, long, String, String[], String[], Long[],
+	 *             String, Long[], Date, Date, Boolean, Boolean, Long, Long[],
+	 *             Boolean)}
+	 */
+	@Deprecated
 	public int searchCount(
 			long companyId, long userId, String keywords, Boolean completed,
 			Boolean searchByUserRoles)
 		throws WorkflowException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #searchCount(long, long, String, String[], String[], Long[],
+	 *             String, Long[], Date, Date, Boolean, Boolean, Long, Long[],
+	 *             Boolean)}
+	 */
+	@Deprecated
 	public int searchCount(
 			long companyId, long userId, String taskName, String assetType,
-			Long[] assetPrimaryKey, Date dueDateGT, Date dueDateLT,
+			Long[] assetPrimaryKeys, Date dueDateGT, Date dueDateLT,
 			Boolean completed, Boolean searchByUserRoles, boolean andOperator)
 		throws WorkflowException;
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #searchCount(long, long, String, String[], String[], Long[],
+	 *             String, Long[], Date, Date, Boolean, Boolean, Long, Long[],
+	 *             Boolean)}
+	 */
+	@Deprecated
+	public default int searchCount(
+			long companyId, long userId, String assetTitle, String taskName,
+			String[] assetTypes, Long[] assetPrimaryKeys, Date dueDateGT,
+			Date dueDateLT, Boolean completed, Boolean searchByUserRoles,
+			Boolean andOperator)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #searchCount(long, long, String, String[], String[], Long[],
+	 *             String, Long[], Date, Date, Boolean, Boolean, Long, Long[],
+	 *             Boolean)}
+	 */
+	@Deprecated
 	public int searchCount(
 			long companyId, long userId, String keywords, String[] assetTypes,
 			Boolean completed, Boolean searchByUserRoles)
 		throws WorkflowException;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #searchCount(long, long, String, String[], String[], Long[],
+	 *             String, Long[], Date, Date, Boolean, Boolean, Long, Long[],
+	 *             Boolean)}
+	 */
+	@Deprecated
+	public default int searchCount(
+			long companyId, long userId, String assetTitle, String[] taskNames,
+			String[] assetTypes, Long[] assetPrimaryKeys, Long[] assigneeIds,
+			Date dueDateGT, Date dueDateLT, Boolean completed,
+			Boolean searchByUserRoles, Long[] workflowInstanceIds,
+			Boolean andOperator)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	public default int searchCount(
+			long companyId, long userId, String assetTitle, String[] taskNames,
+			String[] assetTypes, Long[] assetPrimaryKeys,
+			String assigneeClassName, Long[] assigneeIds, Date dueDateGT,
+			Date dueDateLT, Boolean completed, Boolean searchByUserRoles,
+			Long workflowDefinitionId, Long[] workflowInstanceIds,
+			Boolean andOperator)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
+
+	public default WorkflowModelSearchResult<WorkflowTask> searchWorkflowTasks(
+			long companyId, long userId, String assetTitle, String[] taskNames,
+			String[] assetTypes, Long[] assetPrimaryKeys,
+			String assigneeClassName, Long[] assigneeIds, Date dueDateGT,
+			Date dueDateLT, Boolean completed, Boolean searchByUserRoles,
+			Long workflowDefinitionId, Long[] workflowInstanceIds,
+			Boolean andOperator, int start, int end,
+			OrderByComparator<WorkflowTask> orderByComparator)
+		throws WorkflowException {
+
+		throw new UnsupportedOperationException();
+	}
 
 	public WorkflowTask updateDueDate(
 			long companyId, long userId, long workflowTaskId, String comment,

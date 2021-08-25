@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.portlet;
 
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.StringUtil;
 
 /**
@@ -26,7 +26,11 @@ public class PortletParameterUtil {
 	public static String addNamespace(String portletId, String queryString) {
 		String[] parameters = StringUtil.split(queryString, CharPool.AMPERSAND);
 
-		StringBundler sb = new StringBundler(2 + parameters.length * 4);
+		if (parameters.length == 0) {
+			return "p_p_id=".concat(portletId);
+		}
+
+		StringBundler sb = new StringBundler(2 + (parameters.length * 4));
 
 		sb.append("p_p_id=");
 		sb.append(portletId);

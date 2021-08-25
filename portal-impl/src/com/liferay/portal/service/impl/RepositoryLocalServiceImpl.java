@@ -28,9 +28,9 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.InvalidRepositoryIdException;
 import com.liferay.portal.kernel.repository.LocalRepository;
+import com.liferay.portal.kernel.repository.RepositoryException;
 import com.liferay.portal.kernel.repository.RepositoryFactoryUtil;
 import com.liferay.portal.kernel.repository.RepositoryProvider;
-import com.liferay.portal.kernel.repository.UndeployedExternalRepositoryException;
 import com.liferay.portal.kernel.repository.capabilities.RepositoryEventTriggerCapability;
 import com.liferay.portal.kernel.repository.event.RepositoryEventType;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -50,7 +50,7 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 	public Repository addRepository(
 			long userId, long groupId, long classNameId, long parentFolderId,
 			String name, String description, String portletId,
-			UnicodeProperties typeSettingsProperties, boolean hidden,
+			UnicodeProperties typeSettingsUnicodeProperties, boolean hidden,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -69,23 +69,23 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 		repository.setName(name);
 		repository.setDescription(description);
 		repository.setPortletId(portletId);
-		repository.setTypeSettingsProperties(typeSettingsProperties);
+		repository.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 		repository.setDlFolderId(
 			getDLFolderId(
 				user, groupId, repositoryId, parentFolderId, name, description,
 				hidden, serviceContext));
 
-		repositoryPersistence.update(repository);
+		repository = repositoryPersistence.update(repository);
 
 		try {
 			RepositoryFactoryUtil.createRepository(repositoryId);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
-				_log.warn(e, e);
+				_log.warn(exception, exception);
 			}
 
-			throw new InvalidRepositoryException(e);
+			throw new InvalidRepositoryException(exception);
 		}
 
 		return repository;
@@ -102,8 +102,9 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 		try {
 			repositoryPersistence.findByPrimaryKey(repositoryId);
 		}
-		catch (NoSuchRepositoryException nsre) {
-			throw new InvalidRepositoryIdException(nsre.getMessage());
+		catch (NoSuchRepositoryException noSuchRepositoryException) {
+			throw new InvalidRepositoryIdException(
+				noSuchRepositoryException.getMessage());
 		}
 	}
 
@@ -145,12 +146,12 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 					localRepository);
 			}
 		}
-		catch (UndeployedExternalRepositoryException uere) {
+		catch (RepositoryException repositoryException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
 					"Repository deletion events for this repository will not " +
 						"be triggered",
-					uere);
+					repositoryException);
 			}
 		}
 
@@ -233,7 +234,7 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 		repository.setName(name);
 		repository.setDescription(description);
 
-		repositoryPersistence.update(repository);
+		repository = repositoryPersistence.update(repository);
 
 		DLFolder dlFolder = dlFolderPersistence.findByPrimaryKey(
 			repository.getDlFolderId());
@@ -246,13 +247,13 @@ public class RepositoryLocalServiceImpl extends RepositoryLocalServiceBaseImpl {
 
 	@Override
 	public void updateRepository(
-			long repositoryId, UnicodeProperties typeSettingsProperties)
+			long repositoryId, UnicodeProperties typeSettingsUnicodeProperties)
 		throws PortalException {
 
 		Repository repository = repositoryPersistence.findByPrimaryKey(
 			repositoryId);
 
-		repository.setTypeSettingsProperties(typeSettingsProperties);
+		repository.setTypeSettingsProperties(typeSettingsUnicodeProperties);
 
 		repositoryPersistence.update(repository);
 	}

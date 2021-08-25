@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<!DOCTYPE resource-action-mapping PUBLIC "-//Liferay//DTD Resource Action Mapping 7.0.0//EN" "http://www.liferay.com/dtd/liferay-resource-action-mapping_7_0_0.dtd">
+<!DOCTYPE resource-action-mapping PUBLIC "-//Liferay//DTD Resource Action Mapping 7.4.0//EN" "http://www.liferay.com/dtd/liferay-resource-action-mapping_7_4_0.dtd">
 
 <resource-action-mapping>
 	<model-resource>
@@ -17,8 +17,8 @@
 				<action-key>ADD_DOCUMENT_TYPE</action-key>
 				<action-key>ADD_FOLDER</action-key>
 				<action-key>ADD_REPOSITORY</action-key>
-				<action-key>ADD_STRUCTURE</action-key>
 				<action-key>ADD_SHORTCUT</action-key>
+				<action-key>ADD_STRUCTURE</action-key>
 				<action-key>PERMISSIONS</action-key>
 				<action-key>SUBSCRIBE</action-key>
 				<action-key>UPDATE</action-key>
@@ -39,8 +39,8 @@
 				<action-key>ADD_DOCUMENT_TYPE</action-key>
 				<action-key>ADD_FOLDER</action-key>
 				<action-key>ADD_REPOSITORY</action-key>
-				<action-key>ADD_STRUCTURE</action-key>
 				<action-key>ADD_SHORTCUT</action-key>
+				<action-key>ADD_STRUCTURE</action-key>
 				<action-key>PERMISSIONS</action-key>
 				<action-key>SUBSCRIBE</action-key>
 				<action-key>UPDATE</action-key>

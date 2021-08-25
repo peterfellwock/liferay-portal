@@ -1,8 +1,4 @@
 dependencies {
-	provided group: "com.liferay", name: "com.liferay.registry.api", version: "1.0.0"
-	provided group: "javax.xml.ws", name: "jaxws-api", version: "2.2.11"
-}
-
-liferay {
-	deployDir = file("${liferayHome}/osgi/core")
+	compileOnly group: "javax.xml.ws", name: "jaxws-api", version: "2.3.1"
+	compileOnly project(":core:registry-api")
 }

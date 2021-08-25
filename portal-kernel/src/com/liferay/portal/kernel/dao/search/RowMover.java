@@ -14,11 +14,12 @@
 
 package com.liferay.portal.kernel.dao.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.json.JSONUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,9 +28,6 @@ import java.util.List;
  * @author Chema Balsas
  */
 public class RowMover {
-
-	public RowMover() {
-	}
 
 	public void addRowMoverDropTarget(RowMoverDropTarget rowMoverDropTarget) {
 		_rowMoverDropTargets.add(rowMoverDropTarget);
@@ -54,8 +52,6 @@ public class RowMover {
 	}
 
 	public String toJSON() throws PortalException {
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
 		JSONArray rowMoverDropTargetsJSONArray =
 			JSONFactoryUtil.createJSONArray();
 
@@ -69,9 +65,11 @@ public class RowMover {
 			rowMoverDropTargetsJSONArray.put(rowMoverDropTargetJSONObject);
 		}
 
-		jsonObject.put("dropTargets", rowMoverDropTargetsJSONArray);
-
-		jsonObject.put("rowSelector", _rowSelector);
+		JSONObject jsonObject = JSONUtil.put(
+			"dropTargets", rowMoverDropTargetsJSONArray
+		).put(
+			"rowSelector", _rowSelector
+		);
 
 		return jsonObject.toString();
 	}

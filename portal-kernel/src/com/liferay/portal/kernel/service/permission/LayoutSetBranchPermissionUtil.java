@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.LayoutSetBranch;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -29,7 +28,7 @@ public class LayoutSetBranchPermissionUtil {
 			LayoutSetBranch layoutSetBranch, String actionId)
 		throws PortalException {
 
-		getLayoutSetBranchPermission().check(
+		_layoutSetBranchPermission.check(
 			permissionChecker, layoutSetBranch, actionId);
 	}
 
@@ -38,7 +37,7 @@ public class LayoutSetBranchPermissionUtil {
 			String actionId)
 		throws PortalException {
 
-		getLayoutSetBranchPermission().check(
+		_layoutSetBranchPermission.check(
 			permissionChecker, layoutSetBranchId, actionId);
 	}
 
@@ -46,7 +45,7 @@ public class LayoutSetBranchPermissionUtil {
 		PermissionChecker permissionChecker, LayoutSetBranch layoutSetBranch,
 		String actionId) {
 
-		return getLayoutSetBranchPermission().contains(
+		return _layoutSetBranchPermission.contains(
 			permissionChecker, layoutSetBranch, actionId);
 	}
 
@@ -55,21 +54,16 @@ public class LayoutSetBranchPermissionUtil {
 			String actionId)
 		throws PortalException {
 
-		return getLayoutSetBranchPermission().contains(
+		return _layoutSetBranchPermission.contains(
 			permissionChecker, layoutSetBranchId, actionId);
 	}
 
 	public static LayoutSetBranchPermission getLayoutSetBranchPermission() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			LayoutSetBranchPermissionUtil.class);
-
 		return _layoutSetBranchPermission;
 	}
 
 	public void setLayoutSetBranchPermission(
 		LayoutSetBranchPermission layoutSetBranchPermission) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_layoutSetBranchPermission = layoutSetBranchPermission;
 	}

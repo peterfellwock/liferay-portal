@@ -15,14 +15,15 @@
 package com.liferay.knowledge.base.internal.upgrade.v1_3_4;
 
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
-import com.liferay.portal.kernel.upgrade.BaseUpgradePortletPreferences;
+import com.liferay.portal.kernel.upgrade.BasePortletPreferencesUpgradeProcess;
 
 import javax.portlet.PortletPreferences;
 
 /**
  * @author Adolfo Pérez
  */
-public class UpgradePortletPreferences extends BaseUpgradePortletPreferences {
+public class UpgradePortletPreferences
+	extends BasePortletPreferencesUpgradeProcess {
 
 	@Override
 	protected String[] getPortletIds() {
@@ -39,9 +40,9 @@ public class UpgradePortletPreferences extends BaseUpgradePortletPreferences {
 			PortletPreferencesFactoryUtil.fromXML(
 				companyId, ownerId, ownerType, plid, portletId, xml);
 
-		for (int i = 0; i < _PREFERENCE_NAMES.length; i++) {
-			String sourcePreferenceName = _PREFERENCE_NAMES[i][0];
-			String targetPreferenceName = _PREFERENCE_NAMES[i][1];
+		for (String[] preferenceName : _PREFERENCE_NAMES) {
+			String sourcePreferenceName = preferenceName[0];
+			String targetPreferenceName = preferenceName[1];
 
 			String value = portletPreferences.getValue(
 				sourcePreferenceName, null);

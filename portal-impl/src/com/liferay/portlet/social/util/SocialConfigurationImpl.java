@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.social.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -128,8 +129,7 @@ public class SocialConfigurationImpl implements SocialConfiguration {
 	public String[] getActivityModelNames() {
 		Set<String> activityModelNames = _activityDefinitions.keySet();
 
-		return activityModelNames.toArray(
-			new String[activityModelNames.size()]);
+		return activityModelNames.toArray(new String[0]);
 	}
 
 	@Override
@@ -175,7 +175,11 @@ public class SocialConfigurationImpl implements SocialConfiguration {
 
 		if (!publicId.equals("-//Liferay//DTD Social 6.1.0//EN") &&
 			!publicId.equals("-//Liferay//DTD Social 6.2.0//EN") &&
-			!publicId.equals("-//Liferay//DTD Social 7.0.0//EN")) {
+			!publicId.equals("-//Liferay//DTD Social 7.0.0//EN") &&
+			!publicId.equals("-//Liferay//DTD Social 7.1.0//EN") &&
+			!publicId.equals("-//Liferay//DTD Social 7.2.0//EN") &&
+			!publicId.equals("-//Liferay//DTD Social 7.3.0//EN") &&
+			!publicId.equals("-//Liferay//DTD Social 7.4.0//EN")) {
 
 			throw new DocumentException(
 				"Unsupported document type " + publicId);
@@ -480,9 +484,8 @@ public class SocialConfigurationImpl implements SocialConfiguration {
 
 		activityCounterDefinition.setEnabled(enabled);
 
-		String name = GetterUtil.getString(counterElement.elementText("name"));
-
-		activityCounterDefinition.setName(name);
+		activityCounterDefinition.setName(
+			GetterUtil.getString(counterElement.elementText("name")));
 
 		String ownerType = GetterUtil.getString(
 			counterElement.elementText("owner-type"));
@@ -492,8 +495,9 @@ public class SocialConfigurationImpl implements SocialConfiguration {
 		if (activityCounterDefinition.getOwnerType() == 0) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(
-					"Invalid owner type " + ownerType + " for model " +
-						activityDefinition.getModelName());
+					StringBundler.concat(
+						"Invalid owner type ", ownerType, " for model ",
+						activityDefinition.getModelName()));
 			}
 
 			return;

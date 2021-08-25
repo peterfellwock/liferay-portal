@@ -1,125 +1,401 @@
-<definition>
-	<var name="dmDocumentTypeName" value="Basic Document" />
+definition {
 
-	<command name="gotoAddDocumentType">
-		<execute function="Click" locator1="Button#PLUS" />
+	var dmDocumentTypeName = "File Upload";
 
-		<var name="key_dmDocumentTypeName" value="${dmDocumentTypeName}" />
+	macro gotoAddCategoriesPG {
+		for (var key_dmDocumentTitle : list "${dmDocumentTitleList}") {
+			Check(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_CHECKBOX");
+		}
 
-		<execute function="AssertClick" locator1="MenuItem#DOCUMENT_TYPE" value1="${dmDocumentTypeName}" />
-	</command>
+		AssertElementPresent.assertVisible(locator1 = "Icon#EDIT_CATEGORIES");
 
-	<command name="gotoAddRepositoryCP">
-		<execute function="AssertVisible" locator1="Button#PLUS" />
+		Click(locator1 = "Icon#EDIT_CATEGORIES");
+	}
 
-		<execute function="Click" locator1="Button#PLUS" />
+	macro gotoAddDocumentTypeCP {
+		LexiconEntry.gotoAdd();
 
-		<execute function="AssertClick" locator1="MenuItem#REPOSITORY" value1="Repository" />
-	</command>
+		var key_dmDocumentTypeName = "${dmDocumentTypeName}";
 
-	<command name="gotoAddRepositoryPG">
-		<execute function="Click#makeVisibleClickAt" locator1="Portlet#ICON_PLUS_SIGN" />
+		if ("${dmDocumentTypeName}" == "External Video Shortcut") {
+			AssertVisible(
+				key_text = "video",
+				locator1 = "Icon#ANY");
+		}
 
-		<execute function="AssertClick" locator1="MenuItem#REPOSITORY" value1="Repository" />
-	</command>
+		if ("${dmDocumentTypeName}" == "Google Drive Shortcut") {
+			AssertVisible(
+				key_text = "google-drive",
+				locator1 = "Icon#ANY");
+		}
 
-	<command name="gotoCheckedOutDocument">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+		MenuItem.click(menuItem = "${dmDocumentTypeName}");
+	}
 
-		<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE" value1="${dmCheckedOutDocumentTitle}" />
-	</command>
+	macro gotoAddDocumentTypePG {
+		if (isSet(contentPage)) {
+			LexiconEntry.gotoAdd();
+		}
+		else {
+			Portlet.clickPortletPlusIconPG(portletName = "Documents and Media");
+		}
 
-	<command name="gotoDocumentCP">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+		var key_dmDocumentTypeName = "${dmDocumentTypeName}";
 
-		<if>
-			<condition function="IsElementPresent" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE_ACTIVE" />
-			<then>
-				<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE" value1="${dmDocumentTitle}" />
-			</then>
-			<else>
-				<execute function="AssertClick" locator1="DocumentsAndMedia#ICON_DOCUMENT_TITLE_LINK" value1="${dmDocumentTitle}" />
-			</else>
-		</if>
-	</command>
+		MenuItem.click(menuItem = "${dmDocumentTypeName}");
+	}
 
-	<command name="gotoDocumentDetails">
-		<execute function="Click" locator1="Button#INFO" />
+	macro gotoAddRepositoryCP {
+		AssertVisible(locator1 = "Button#PLUS");
 
-		<execute function="AssertClick" locator1="NavBar#DETAILS" value1="Details" />
-	</command>
+		LexiconEntry.gotoAdd();
 
-	<command name="gotoDocumentPG">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+		MenuItem.click(menuItem = "Repository");
+	}
 
-		<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE" value1="${dmDocumentTitle}" />
-	</command>
+	macro gotoAddRepositoryPG {
+		Portlet.clickPortletPlusIconPG(portletName = "Documents and Media");
 
-	<command name="gotoDocumentType">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+		MenuItem.click(menuItem = "Repository");
+	}
 
-		<execute function="AssertClick" locator1="MenuItem#DOCUMENT_TYPES" value1="Document Types" />
-	</command>
+	macro gotoCheckedOutDocument {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
 
-	<command name="gotoDocumentVersion">
-		<execute macro="DMNavigator#gotoDocumentDetails" />
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
+			value1 = "${dmCheckedOutDocumentTitle}");
+	}
 
-		<execute function="AssertClick" locator1="MenuItem#VERSIONS" value1="Versions" />
-	</command>
+	macro gotoDocumentCP {
+		LexiconEntry.gotoEntry(rowEntry = "${dmDocumentTitle}");
+	}
 
-	<command name="gotoEditDocument">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+	macro gotoDocumentDetails {
+		DMDocument.expandInfo();
 
-		<execute function="Click" locator1="DocumentsAndMedia#ICON_DOCUMENT_ACTIONS" />
+		AssertClick(
+			locator1 = "NavBar#DETAILS",
+			value1 = "Details");
+	}
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-	</command>
+	macro gotoDocumentPermissionsCP {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Permissions",
+			rowEntry = "${dmDocumentTitle}");
 
-	<command name="gotoFolder">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
 
-		<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName}" />
+	macro gotoDocumentPG {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
 
-		<execute function="AssertVisible" locator1="DocumentsAndMedia#BREADCRUMB_FOLDER_NAME" />
-	</command>
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
+			value1 = "${dmDocumentTitle}");
+	}
 
-	<command name="gotoHomeCP">
-		<execute function="AssertClick#assertTextClickAt" locator1="DocumentsAndMedia#BREADCRUMB_HOME" value1="HOME" />
-	</command>
+	macro gotoDocumentsAndMedia {
+		Navigator.gotoNavItem(navItem = "Documents and Media");
+	}
 
-	<command name="gotoMetadataSets">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+	macro gotoDocumentType {
+		Navigator.gotoNavItem(navItem = "Document Types");
+	}
 
-		<execute function="AssertElementPresent" locator1="MenuItem#METADATA_SETS" value1="Metadata Sets" />
+	macro gotoDocumentVersion {
+		DMDocument.expandInfo();
 
-		<execute function="AssertClick" locator1="MenuItem#METADATA_SETS" value1="Metadata Sets" />
-	</command>
+		var key_tab = "Versions";
 
-	<command name="gotoRelatedAssetPG">
-		<var name="key_dmDocumentTitle" value="${dmDocumentTitle}" />
+		AssertClick(
+			locator1 = "NavTab#TAB_LINK",
+			value1 = "Versions");
+	}
 
-		<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE" value1="${dmDocumentTitle}" />
+	macro gotoEditDocumentPG {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
 
-		<var name="key_assetTitle" value="${key_assetTitle}" />
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
+			value1 = "${dmDocumentTitle}");
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMediaDocument#DOCUMENT_INFO_TITLE" value1="${dmDocumentTitle}" />
-		<execute function="AssertTextEquals" locator1="DocumentsAndMediaDocument#DOCUMENT_INFO_RELATED_ASSETS_HEADER" value1="Related Assets:" />
-		<execute function="AssertTextEquals" locator1="DocumentsAndMediaDocument#DOCUMENT_INFO_RELATED_ASSETS_TITLE" value1="${assetTitle}" />
+		Click(locator1 = "Button#EDIT");
+	}
 
-		<execute function="AssertClick" locator1="DocumentsAndMediaDocument#DOCUMENT_INFO_RELATED_ASSETS_TITLE" value1="${assetTitle}" />
-	</command>
+	macro gotoEditDocumentType {
+		DMDocumentType.selectDocumentTypeFrame();
 
-	<command name="gotoRepository">
-		<var name="key_dmFolderName" value="${dmRepositoryName}" />
+		var key_dmDocumentTypeName = "${dmDocumentTypeName}";
 
-		<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE"  value1="${dmRepositoryName}" />
+		LexiconEntry.openEntryMenu(rowEntry = "${dmDocumentTypeName}");
 
-		<execute function="AssertVisible" locator1="DocumentsAndMedia#BREADCRUMB_FOLDER_NAME" />
-	</command>
+		MenuItem.click(menuItem = "Edit");
+	}
 
-	<command name="gotoURLDetail">
-		<execute function="Click" locator1="Icon#INFO" />
+	macro gotoEditImage {
+		LexiconEntry.openEntryMenu(rowEntry = "${dmDocumentTitle}");
 
-		<execute function="Click" locator1="DocumentsAndMediaDocument#DETAILS_URL" />
-	</command>
-</definition>
+		MenuItem.click(menuItem = "Edit Image");
+	}
+
+	macro gotoFolder {
+		var key_dmFolderName = "${dmFolderName}";
+
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
+			value1 = "${dmFolderName}");
+
+		AssertVisible(locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME");
+	}
+
+	macro gotoFolderPermissions {
+		var key_dmFolderName = "${dmFolderName}";
+
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Permissions");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
+
+	macro gotoFolderViaBreadcrumb {
+		var key_dmFolderName = "${dmFolderName}";
+
+		AssertClick.assertTextClickAt(locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME");
+	}
+
+	macro gotoHomeCP {
+		AssertClick.assertTextClickAt(
+			locator1 = "DocumentsAndMedia#BREADCRUMB_HOME",
+			value1 = "Home");
+	}
+
+	macro gotoMetadataSets {
+		Navigator.gotoNavItem(navItem = "Metadata Sets");
+	}
+
+	macro gotoRelatedAssetPG {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
+
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
+			value1 = "${dmDocumentTitle}");
+
+		var key_assetTitle = "${key_assetTitle}";
+
+		AssertTextEquals(
+			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_TITLE",
+			value1 = "${dmDocumentTitle}");
+
+		DMDocument.expandInfo();
+
+		AssertTextEquals(
+			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_RELATED_ASSETS_HEADER",
+			value1 = "Related Assets");
+
+		AssertTextEquals(
+			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_RELATED_ASSETS_TITLE",
+			value1 = "${assetTitle}");
+
+		AssertClick(
+			locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_RELATED_ASSETS_TITLE",
+			value1 = "${assetTitle}");
+	}
+
+	macro gotoRepository {
+		var key_dmFolderName = "${dmRepositoryName}";
+
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
+			value1 = "${dmRepositoryName}");
+
+		if (isSet(guest)) {
+			AssertElementPresent(locator1 = "MicrosoftLogin#LOGIN_EMAIL_FIELD");
+		}
+		else {
+			AssertVisible(locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME");
+		}
+	}
+
+	macro gotoShare {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
+
+		AssertElementPresent(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE");
+
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
+			value1 = "${dmDocumentTitle}");
+
+		DMDocument.viewDocumentTitleCmdPG(dmDocumentTitle = "${dmDocumentTitle}");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		var key_text = "Share";
+
+		AssertClick(
+			locator1 = "Button#SHARE_SIDENAV",
+			value1 = "Share");
+	}
+
+	macro gotoShareInfoPanel {
+		var key_dmDocumentTitle = "${dmDocumentTitle}";
+
+		AssertClick(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_TITLE",
+			value1 = "${dmDocumentTitle}");
+
+		DMDocument.viewDocumentTitleCmdPG(dmDocumentTitle = "${dmDocumentTitle}");
+
+		Click.clickAt(locator1 = "Icon#INFO");
+
+		AssertElementPresent(locator1 = "Button#SHARE_SIDEBAR");
+
+		Click(locator1 = "Button#SHARE_SIDEBAR");
+	}
+
+	macro gotoShareViaSharedContent {
+		var key_contentTitle = "${dmDocumentTitle}";
+
+		Click(
+			locator1 = "Sharing#SHARED_CONTENT_CONTENT_OPTIONS",
+			value1 = "${contentTitle}");
+
+		MenuItem.click(menuItem = "Share");
+	}
+
+	macro gotoURLDetail {
+		DMDocument.expandInfo();
+
+		Click(locator1 = "DocumentsAndMediaDocument#DETAILS_URL");
+	}
+
+	macro openDocumentsAndMediaAdmin {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet");
+	}
+
+	macro openDocumentTypesAdmin {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_navigation=file_entry_types");
+	}
+
+	macro openMetadataSetsAdmin {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_navigation=file_entry_metadata_sets");
+	}
+
+	// Usually used (openTo) navigations for refactoring or adding new tests with SACRED model
+
+	macro openToAddDocumentType {
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_mvcRenderCommandName=%2Fdocument_library%2Fedit_file_entry_type&_com_liferay_document_library_web_portlet_DLAdminPortlet_redirect=%2Fgroup%2Fguest%2F%7E%2Fcontrol_panel%2Fmanage%3Fp_p_id%3Dcom_liferay_document_library_web_portlet_DLAdminPortlet%26p_p_lifecycle%3D0%26p_p_state%3Dmaximized%26p_p_mode%3Dview%26_com_liferay_document_library_web_portlet_DLAdminPortlet_navigation%3Dfile_entry_types");
+	}
+
+	macro openToAddEntry {
+		var groupId = JSONGroupAPI._getGroupIdByName(groupName = "${groupName}", site = "true");
+
+		if (isSet(documentTypeName)) {
+			if ("${documentTypeName}" == "External Video Shortcut" || "${documentTypeName}" == "Google Drive Shortcut") {
+				var typeId = JSONDocumentAPI._getTypeIdByTypeName(
+					documentTypeName = "${documentTypeName}",
+					groupName = "Global");
+			}
+			else {
+				var typeId = JSONDocumentAPI._getTypeIdByTypeName(
+					documentTypeName = "${documentTypeName}",
+					groupName = "${groupName}");
+			}
+		}
+		else {
+			var typeId = "0";
+		}
+
+		if (isSet(folderName)) {
+			var folderId = JSONDocumentAPI._getFolderIdByFolderName(
+				name = "${folderName}",
+				groupName = "${groupName}");
+		}
+		else {
+			var folderId = "0";
+		}
+
+		// Entries accessed in site pages will be redirected back to the page after publishing. Those accessed in admin will stay in admin after publishing.
+
+		if (isSet(mediaGallery)) {
+			Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_mvcRenderCommandName=%2Fdocument_library%2Fedit_file_entry&_com_liferay_document_library_web_portlet_DLAdminPortlet_cmd=add&_com_liferay_document_library_web_portlet_DLAdminPortlet_redirect=%2Fweb%2F${siteURLKey}%2F${layoutName}&_com_liferay_document_library_web_portlet_DLAdminPortlet_portletResource=com_liferay_document_library_web_portlet_IGDisplayPortlet_INSTANCE_Nxd1lYxcrZQ7&_com_liferay_document_library_web_portlet_DLAdminPortlet_fileEntryTypeId=${typeId}&_com_liferay_document_library_web_portlet_DLAdminPortlet_folderId=${folderId}&_com_liferay_document_library_web_portlet_DLAdminPortlet_repositoryId=${groupId}");
+		}
+		else {
+			Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_mvcRenderCommandName=%2Fdocument_library%2Fedit_file_entry&_com_liferay_document_library_web_portlet_DLAdminPortlet_cmd=add&_com_liferay_document_library_web_portlet_DLAdminPortlet_redirect=%2Fgroup%2F${siteURLKey}%2F%7E%2Fcontrol_panel%2Fmanage%3Fp_p_id%3Dcom_liferay_document_library_web_portlet_DLAdminPortlet%26p_p_lifecycle%3D0%26p_p_state%3Dmaximized%26p_v_l_s_g_id%3D${groupId}&_com_liferay_document_library_web_portlet_DLAdminPortlet_fileEntryTypeId=${typeId}&_com_liferay_document_library_web_portlet_DLAdminPortlet_folderId=${folderId}&_com_liferay_document_library_web_portlet_DLAdminPortlet_portletResource=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_repositoryId=${groupId}");
+		}
+	}
+
+	macro openToConfigInSystemSettings {
+		var baseURL = "${baseURL}";
+
+		if (contains("${baseURL}", "{baseURL}")) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		if ("${portlet}" == "FFMPEG Audio Converter") {
+			var portletId = "com.liferay.document.library.preview.audio.internal.configuration.DLAudioFFMPEGAudioConverterConfiguration";
+		}
+
+		if ("${portlet}" == "FFMPEG Video Converter") {
+			var portletId = "com.liferay.document.library.video.internal.configuration.DLVideoFFMPEGVideoConverterConfiguration";
+		}
+
+		if ("${portlet}" == "Google Cloud Translator") {
+			var portletId = "com.liferay.translation.google.cloud.translator.internal.configuration.GoogleCloudTranslatorConfiguration";
+		}
+
+		if ("${portlet}" == "Service") {
+			var portletId = "com.liferay.document.library.configuration.DLConfiguration";
+		}
+
+		Open(locator1 = "${baseURL}/group/control_panel/manage?p_p_id=com_liferay_configuration_admin_web_portlet_SystemSettingsPortlet&_com_liferay_configuration_admin_web_portlet_SystemSettingsPortlet_factoryPid=${portletId}&_com_liferay_configuration_admin_web_portlet_SystemSettingsPortlet_mvcRenderCommandName=%2Fconfiguration_admin%2Fedit_configuration");
+	}
+
+	macro openToEditEntryInSite {
+		if (isSet(folderName)) {
+			Variables.assertDefined(parameterList = "${folderName},${groupName}");
+
+			var folderId = JSONDocumentAPI._getFolderIdByFolderName(
+				name = "${folderName}",
+				groupName = "${groupName}");
+		}
+
+		var fileEntryId = JSONDocument.getFileEntryId(
+			dmDocumentTitle = "${dmDocumentTitle}",
+			folderId = "${folderId}",
+			groupName = "${groupName}");
+
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_mvcRenderCommandName=%2Fdocument_library%2Fedit_file_entry&_com_liferay_document_library_web_portlet_DLAdminPortlet_fileEntryId=${fileEntryId}");
+	}
+
+	macro openToEntryInAdmin {
+		var fileEntryId = JSONDocument.getFileEntryId(
+			site = "${site}",
+			dmDocumentTitle = "${dmDocumentTitle}",
+			folderId = "${folderId}",
+			groupName = "${groupName}",
+			portalURL = "${baseURL}");
+
+		Navigator.openWithAppendToBaseURL(
+			baseURL = "${baseURL}",
+			urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_mvcRenderCommandName=%2Fdocument_library%2Fview_file_entry&_com_liferay_document_library_web_portlet_DLAdminPortlet_fileEntryId=${fileEntryId}");
+	}
+
+	macro openToFolderInAdmin {
+		var folderId = JSONDocumentAPI._getFolderIdByFolderName(
+			name = "${dmFolderName}",
+			groupName = "${groupName}");
+
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_document_library_web_portlet_DLAdminPortlet&_com_liferay_document_library_web_portlet_DLAdminPortlet_mvcRenderCommandName=%2Fdocument_library%2Fview_folder&_com_liferay_document_library_web_portlet_DLAdminPortlet_folderId=${folderId}");
+	}
+
+}

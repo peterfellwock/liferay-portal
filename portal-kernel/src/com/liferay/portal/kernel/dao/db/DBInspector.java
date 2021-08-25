@@ -14,7 +14,8 @@
 
 package com.liferay.portal.kernel.dao.db;
 
-import com.liferay.portal.kernel.dao.jdbc.DataAccess;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
@@ -27,8 +28,9 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,55 +43,78 @@ public class DBInspector {
 		_connection = connection;
 	}
 
+	public String getCatalog() throws SQLException {
+		return _connection.getCatalog();
+	}
+
+	public String getSchema() {
+		try {
+			return _connection.getSchema();
+		}
+		catch (Throwable throwable) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(throwable, throwable);
+			}
+
+			return null;
+		}
+	}
+
 	public boolean hasColumn(String tableName, String columnName)
 		throws Exception {
 
-		try (PreparedStatement ps = _connection.prepareStatement(
-				"select * from " + tableName);
-			ResultSet rs = ps.executeQuery()) {
+		DatabaseMetaData databaseMetaData = _connection.getMetaData();
 
-			ResultSetMetaData rsmd = rs.getMetaData();
+		try (ResultSet resultSet = databaseMetaData.getColumns(
+				getCatalog(), getSchema(), normalizeName(tableName),
+				normalizeName(columnName))) {
 
-			for (int i = 0; i < rsmd.getColumnCount(); i++) {
-				String curColumnName = rsmd.getColumnName(i + 1);
-
-				if (StringUtil.equalsIgnoreCase(curColumnName, columnName)) {
-					return true;
-				}
+			if (!resultSet.next()) {
+				return false;
 			}
+
+			return true;
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #hasColumnType(String, String, String)}
+	 */
+	@Deprecated
 	public boolean hasColumnType(
 			Class<?> tableClass, String columnName, String columnType)
 		throws Exception {
 
 		Field tableNameField = tableClass.getField("TABLE_NAME");
 
-		String tableName = (String)tableNameField.get(null);
+		return hasColumnType(
+			(String)tableNameField.get(null), columnName, columnType);
+	}
+
+	public boolean hasColumnType(
+			String tableName, String columnName, String columnType)
+		throws Exception {
 
 		DatabaseMetaData databaseMetaData = _connection.getMetaData();
 
-		try (ResultSet rs = databaseMetaData.getColumns(
-				null, null, tableName, columnName)) {
+		try (ResultSet resultSet = databaseMetaData.getColumns(
+				getCatalog(), getSchema(),
+				normalizeName(tableName, databaseMetaData),
+				normalizeName(columnName, databaseMetaData))) {
 
-			if (!rs.next()) {
+			if (!resultSet.next()) {
 				return false;
 			}
 
-			int expectedColumnDataType = _getColumnDataType(
-				tableClass, columnName);
 			int expectedColumnSize = _getColumnSize(columnType);
-			boolean expectedColumnNullable = _isColumnNullable(columnType);
 
-			int actualColumnDataType = rs.getInt("DATA_TYPE");
-			int actualColumnSize = rs.getInt("COLUMN_SIZE");
-			int actualColumnNullable = rs.getInt("NULLABLE");
+			int actualColumnSize = resultSet.getInt("COLUMN_SIZE");
 
 			if ((expectedColumnSize != -1) &&
 				(expectedColumnSize != actualColumnSize)) {
@@ -97,9 +122,19 @@ public class DBInspector {
 				return false;
 			}
 
-			if (actualColumnDataType != expectedColumnDataType) {
+			Integer expectedColumnDataType = _getColumnDataType(columnType);
+
+			int actualColumnDataType = resultSet.getInt("DATA_TYPE");
+
+			if ((expectedColumnDataType == null) ||
+				(expectedColumnDataType != actualColumnDataType)) {
+
 				return false;
 			}
+
+			boolean expectedColumnNullable = _isColumnNullable(columnType);
+
+			int actualColumnNullable = resultSet.getInt("NULLABLE");
 
 			if ((expectedColumnNullable &&
 				 (actualColumnNullable != DatabaseMetaData.columnNullable)) ||
@@ -113,21 +148,46 @@ public class DBInspector {
 		}
 	}
 
-	public boolean hasRows(String tableName) {
-		try (PreparedStatement ps = _connection.prepareStatement(
-				"select count(*) from " + tableName);
-			ResultSet rs = ps.executeQuery()) {
+	public boolean hasIndex(String tableName, String indexName)
+		throws Exception {
 
-			while (rs.next()) {
-				int count = rs.getInt(1);
+		DatabaseMetaData databaseMetaData = _connection.getMetaData();
+
+		try (ResultSet resultSet = databaseMetaData.getIndexInfo(
+				_connection.getCatalog(), _connection.getSchema(),
+				normalizeName(tableName, databaseMetaData), false, false)) {
+
+			while (resultSet.next()) {
+				if (Objects.equals(
+						normalizeName(indexName, databaseMetaData),
+						resultSet.getString("index_name"))) {
+
+					return true;
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error(exception, exception);
+		}
+
+		return false;
+	}
+
+	public boolean hasRows(String tableName) {
+		try (PreparedStatement preparedStatement = _connection.prepareStatement(
+				"select count(*) from " + tableName);
+			ResultSet resultSet = preparedStatement.executeQuery()) {
+
+			while (resultSet.next()) {
+				int count = resultSet.getInt(1);
 
 				if (count > 0) {
 					return true;
 				}
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -148,32 +208,70 @@ public class DBInspector {
 			return false;
 		}
 
-		if (_hasTable(StringUtil.toLowerCase(tableName)) ||
-			_hasTable(StringUtil.toUpperCase(tableName)) ||
-			_hasTable(tableName)) {
+		DatabaseMetaData databaseMetaData = _connection.getMetaData();
 
+		if (_hasTable(normalizeName(tableName, databaseMetaData))) {
 			return true;
 		}
 
 		return false;
 	}
 
-	private int _getColumnDataType(Class<?> tableClass, String columnName)
-		throws Exception {
+	public boolean isNullable(String tableName, String columnName)
+		throws SQLException {
 
-		Field tableColumnsField = tableClass.getField("TABLE_COLUMNS");
+		DatabaseMetaData databaseMetaData = _connection.getMetaData();
 
-		Object[][] tableColumns = (Object[][])tableColumnsField.get(null);
+		try (ResultSet resultSet = databaseMetaData.getColumns(
+				getCatalog(), getSchema(),
+				normalizeName(tableName, databaseMetaData),
+				normalizeName(columnName, databaseMetaData))) {
 
-		for (Object[] tableColumn : tableColumns) {
-			if (tableColumn[0].equals(columnName)) {
-				return (int)tableColumn[1];
+			if (!resultSet.next()) {
+				throw new SQLException(
+					StringBundler.concat(
+						"Column ", tableName, StringPool.PERIOD, columnName,
+						" does not exist"));
 			}
+
+			if (resultSet.getInt("NULLABLE") ==
+					DatabaseMetaData.columnNullable) {
+
+				return true;
+			}
+
+			return false;
+		}
+	}
+
+	public String normalizeName(String name) throws SQLException {
+		return normalizeName(name, _connection.getMetaData());
+	}
+
+	public String normalizeName(String name, DatabaseMetaData databaseMetaData)
+		throws SQLException {
+
+		if (databaseMetaData.storesLowerCaseIdentifiers()) {
+			return StringUtil.toLowerCase(name);
 		}
 
-		throw new UpgradeException(
-			"Table class " + tableClass + " does not have column " +
-				columnName);
+		if (databaseMetaData.storesUpperCaseIdentifiers()) {
+			return StringUtil.toUpperCase(name);
+		}
+
+		return name;
+	}
+
+	private Integer _getColumnDataType(String columnType) {
+		Matcher matcher = _columnTypePattern.matcher(columnType);
+
+		if (!matcher.lookingAt()) {
+			return null;
+		}
+
+		DB db = DBManagerUtil.getDB();
+
+		return db.getSQLType(matcher.group(1));
 	}
 
 	private int _getColumnSize(String columnType) throws UpgradeException {
@@ -189,11 +287,12 @@ public class DBInspector {
 			try {
 				return Integer.parseInt(columnSize);
 			}
-			catch (NumberFormatException nfe) {
+			catch (NumberFormatException numberFormatException) {
 				throw new UpgradeException(
-					"Column type " + columnType +
-						" has an invalid column size " + columnSize,
-					nfe);
+					StringBundler.concat(
+						"Column type ", columnType,
+						" has an invalid column size ", columnSize),
+					numberFormatException);
 			}
 		}
 
@@ -201,20 +300,14 @@ public class DBInspector {
 	}
 
 	private boolean _hasTable(String tableName) throws Exception {
-		PreparedStatement ps = null;
-		ResultSet rs = null;
+		DatabaseMetaData metadata = _connection.getMetaData();
 
-		try {
-			DatabaseMetaData metadata = _connection.getMetaData();
+		try (ResultSet resultSet = metadata.getTables(
+				getCatalog(), getSchema(), tableName, null)) {
 
-			rs = metadata.getTables(null, null, tableName, null);
-
-			while (rs.next()) {
+			while (resultSet.next()) {
 				return true;
 			}
-		}
-		finally {
-			DataAccess.cleanUp(ps, rs);
 		}
 
 		return false;
@@ -223,17 +316,9 @@ public class DBInspector {
 	private boolean _isColumnNullable(String typeName) {
 		typeName = typeName.trim();
 
-		int i = typeName.indexOf("null");
+		typeName = StringUtil.toLowerCase(typeName);
 
-		if (i == -1) {
-			return false;
-		}
-
-		if ((i > 0) && !Character.isSpaceChar(typeName.charAt(i - 1))) {
-			return false;
-		}
-
-		if ((i + 4) < typeName.length()) {
+		if (typeName.endsWith("not null")) {
 			return false;
 		}
 
@@ -244,6 +329,8 @@ public class DBInspector {
 
 	private static final Pattern _columnSizePattern = Pattern.compile(
 		"^\\w+(?:\\((\\d+)\\))?.*", Pattern.CASE_INSENSITIVE);
+	private static final Pattern _columnTypePattern = Pattern.compile(
+		"(^\\w+)", Pattern.CASE_INSENSITIVE);
 
 	private final Connection _connection;
 

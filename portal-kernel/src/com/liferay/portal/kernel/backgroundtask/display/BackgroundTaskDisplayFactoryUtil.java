@@ -14,50 +14,26 @@
 
 package com.liferay.portal.kernel.backgroundtask.display;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.backgroundtask.BackgroundTask;
-import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusRegistryUtil;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Andrew Betts
  */
-@ProviderType
 public class BackgroundTaskDisplayFactoryUtil {
 
 	public static BackgroundTaskDisplay getBackgroundTaskDisplay(
 		BackgroundTask backgroundTask) {
 
-		return _getBackgroundTaskDisplayFactory().getBackgroundTaskDisplay(
+		return _backgroundTaskDisplayFactory.getBackgroundTaskDisplay(
 			backgroundTask);
 	}
 
 	public static BackgroundTaskDisplay getBackgroundTaskDisplay(
 		long backgroundTaskId) {
 
-		return _getBackgroundTaskDisplayFactory().getBackgroundTaskDisplay(
+		return _backgroundTaskDisplayFactory.getBackgroundTaskDisplay(
 			backgroundTaskId);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getBackgroundTaskDisplayFactory()}
-	 */
-	@Deprecated
-	public static BackgroundTaskDisplayFactory
-		getBackgroundTaskDisplayFactory() {
-
-		return _getBackgroundTaskDisplayFactory();
-	}
-
-	private static BackgroundTaskDisplayFactory
-		_getBackgroundTaskDisplayFactory() {
-
-		PortalRuntimePermission.checkGetBeanProperty(
-			BackgroundTaskStatusRegistryUtil.class);
-
-		return _backgroundTaskDisplayFactory;
 	}
 
 	private static volatile BackgroundTaskDisplayFactory

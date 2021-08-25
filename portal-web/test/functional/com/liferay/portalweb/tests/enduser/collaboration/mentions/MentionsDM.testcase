@@ -1,206 +1,133 @@
-<definition component-name="portal-collaboration">
-	<property name="portal.release" value="true" />
-	<property name="custom.properties" value="default.layout.template.id=1_column" />
-	<property name="testray.main.component.name" value="Mentions" />
+@component-name = "portal-collaboration"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property custom.properties = "default.layout.template.id=1_column${line.separator}jsonws.web.service.paths.excludes=";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Mentions";
+	property testray.main.component.name = "Mentions";
 
-		<execute macro="User#firstLoginPG" />
+	setUp {
+		TestCase.setUpPortalInstance();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		User.firstLoginPG();
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		JSONRole.assignRoleToUser(
+			roleTitle = "Administrator",
+			userEmailAddress = "userea@liferay.com");
 
-		<execute macro="User#editPasswordCP">
-			<var name="password" value="password" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+	}
 
-		<execute macro="User#assignRegularRoleCP">
-			<var name="roleTitle" value="Administrator" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-	</set-up>
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			DMDocument.tearDownCP();
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="DMDocument#tearDownCP" />
+			Page.tearDownCP();
 
-				<execute macro="DMFolder#tearDownCP" />
+			JSONUser.tearDownNonAdminUsers();
+		}
+	}
 
-				<execute macro="Page#tearDownPG" />
+	@priority = "5"
+	@refactordone
+	test CanViewMentionViaDMComment {
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Documents and Media Page");
 
-				<execute macro="User#tearDownCP" />
-			</else>
-		</if>
-	</tear-down>
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
 
-	<command name="ViewMentionViaDMComment" priority="5">
-		<execute macro="Page#add">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Documents and Media" />
-		</execute>
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			siteURLKey = "guest");
 
-		<execute macro="Navigator#openURL" />
+		Mentions.addMentionViaComments(
+			entryComment = "Comment mentioning",
+			mentionsUserFullName = "Test Test",
+			mentionsUserScreenName = "test");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Documents and Media" />
-		</execute>
+		Mentions.viewCommentMentionTagLink(
+			mentionsUserFullName = "Test Test",
+			mentionsUserScreenName = "test");
+	}
 
-		<execute macro="DMDocument#addCP">
-			<var name="dmDocumentDescription" value="DM Document Description" />
-			<var name="dmDocumentFile" value="Document_1.txt" />
-			<var name="dmDocumentSize" value="0KB" />
-			<var name="dmDocumentTitle" value="DM Document Title" />
-		</execute>
+	@priority = "5"
+	@refactordone
+	test CanViewReplyMentionViaDMComment {
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Documents and Media Page");
 
-		<execute macro="User#logoutPG" />
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Documents and Media Page",
+			widgetName = "Documents and Media");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentDescription = "DM Document Description",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			mimeType = "text/plain",
+			sourceFileName = "Document_1.txt");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
+		JSONDocument.addComment(
+			commentBody = "Comment mentioning",
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest");
 
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE" />
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
 
-		<execute macro="DMDocument#viewPG">
-			<var name="dmDocumentDescription" value="DM Document Description" />
-			<var name="dmDocumentTitle" value="DM Document Title" />
-		</execute>
+		DMNavigator.openToEntryInAdmin(
+			dmDocumentTitle = "DM Document Title",
+			groupName = "Guest",
+			siteURLKey = "guest");
 
-		<execute macro="Mentions#addMentionViaComments">
-			<var name="entryComment" value="Comment mentioning" />
-			<var name="mentionsUserFullName" value="Test Test" />
-			<var name="mentionsUserScreenName" value="test" />
-		</execute>
+		Mentions.addMentionViaComments(
+			entryComment = "Comment reply mentioning",
+			mentionsUserFullName = "Test Test",
+			mentionsUserScreenName = "test",
+			parentComment = "Comment mentioning");
 
-		<execute macro="Mentions#viewCommentMentionTagLink">
-			<var name="mentionsUserFullName" value="Test Test" />
-			<var name="mentionsUserScreenName" value="test" />
-		</execute>
-	</command>
+		Mentions.viewCommentMentionTagLink(
+			mentionsUserFullName = "Test Test",
+			mentionsUserScreenName = "test");
+	}
 
-	<command name="ViewReplyMentionViaDMComment" priority="5">
-		<execute macro="Page#add">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Documents and Media" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Documents and Media" />
-		</execute>
-
-		<execute macro="DMDocument#addCP">
-			<var name="dmDocumentDescription" value="DM Document Description" />
-			<var name="dmDocumentFile" value="Document_1.txt" />
-			<var name="dmDocumentSize" value="0KB" />
-			<var name="dmDocumentTitle" value="DM Document Title" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE" />
-
-		<execute macro="DMDocument#viewPG">
-			<var name="dmDocumentDescription" value="DM Document Description" />
-			<var name="dmDocumentTitle" value="DM Document Title" />
-		</execute>
-
-		<execute macro="Mentions#addMentionViaComments">
-			<var name="entryComment" value="Comment mentioning" />
-			<var name="mentionsUserFullName" value="Test Test" />
-			<var name="mentionsUserScreenName" value="test" />
-		</execute>
-
-		<execute macro="Mentions#viewCommentMentionTagLink">
-			<var name="mentionsUserFullName" value="Test Test" />
-			<var name="mentionsUserScreenName" value="test" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Documents and Media Page" />
-		</execute>
-
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE" />
-
-		<execute macro="DMDocument#viewPG">
-			<var name="dmDocumentDescription" value="DM Document Description" />
-			<var name="dmDocumentTitle" value="DM Document Title" />
-		</execute>
-
-		<var name="key_entryComment" value="Comment mentioning" />
-
-		<execute function="AssertClick" locator1="Comments#REPLY_TO_COMMENT" value1="Reply" />
-
-		<execute macro="Mentions#addMentionViaComments">
-			<var name="entryComment" value="Comment reply mentioning" />
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="Mentions#viewCommentMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
-</definition>
+}

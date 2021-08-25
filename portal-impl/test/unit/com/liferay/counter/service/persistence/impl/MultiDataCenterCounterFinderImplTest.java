@@ -14,7 +14,11 @@
 
 package com.liferay.counter.service.persistence.impl;
 
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
+
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -22,6 +26,11 @@ import org.junit.Test;
  * @author Shuyang Zhou
  */
 public class MultiDataCenterCounterFinderImplTest {
+
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@Test
 	public void testIncrement2DataCenters() {
@@ -124,10 +133,10 @@ public class MultiDataCenterCounterFinderImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Invalid data center count 2 or data center deployment ID 2",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 
 		try {
@@ -135,9 +144,10 @@ public class MultiDataCenterCounterFinderImplTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
-				"Unable to shift more than 8 bits", iae.getMessage());
+				"Unable to shift more than 8 bits",
+				illegalArgumentException.getMessage());
 		}
 	}
 

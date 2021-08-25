@@ -1,0 +1,409 @@
+@component-name = "portal-publications"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Publications";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONPublications.enablePublications();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			ApplicationsMenu.gotoPortlet(
+				category = "Publications",
+				panel = "Applications",
+				portlet = "Settings");
+
+			Publications.disablePublications();
+		}
+	}
+
+	@priority = "4"
+	test ConflictingPublicationsNeedManualResolution {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Content Page Name",
+			type = "content");
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content",
+			groupName = "Site Name",
+			title = "WC WebContent Title");
+
+		JSONPublications.addPublication(publicationName = "Publication Name");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Site Name");
+
+		PageEditor.addWidget(portletName = "Web Content Display");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		Refresh();
+
+		PageEditor.clickPublish();
+
+		JSONPublications.addPublication(publicationName = "Publication Name 2");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name 2");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Site Name");
+
+		PageEditor.addWidget(portletName = "Asset Publisher");
+
+		AssetPublisherPortlet.configureManualAssetSelectionPG(
+			assetTitle = "WC WebContent Title",
+			assetType = "Basic Web Content");
+
+		Refresh();
+
+		PageEditor.clickPublish();
+
+		Publications.gotoReviewChanges();
+
+		PublicationsChanges.viewChangesViaChangesStyle(
+			changeCategory = "Widget",
+			changeSite = "Site Name",
+			changeTitle = "Asset Publisher",
+			changeType = "Added",
+			changeUser = "Test Test",
+			showAllItems = "true");
+
+		JSONPublications.publishPublication(publicationName = "Publication Name 2");
+
+		Publications.viewPublicationPublished(publicationName = "Publication Name 2");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
+
+		Publications.gotoReviewChanges(
+			gotoManagePublications = "true",
+			publicationName = "Publication Name");
+
+		Publications.workOnProduction();
+
+		ContentPagesNavigator.openViewContentPage(
+			pageName = "Content Page Name",
+			siteName = "Site Name");
+
+		AssertElementNotPresent(
+			key_portletName = "WC WebContent Content",
+			locator1 = "Portlet#BODY");
+
+		AssertTextEquals(
+			key_assetTitle = "WC WebContent Title",
+			locator1 = "AP#ASSET_ABSTRACT_TITLE",
+			value1 = "WC WebContent Title");
+
+		AssertTextEquals.assertPartialText(
+			key_assetTitle = "WC WebContent Title",
+			locator1 = "AP#ASSET_ABSTRACT_DESCRIPTION",
+			value1 = "Web Content Content");
+	}
+
+	@priority = "4"
+	test DiscardConflictingChangesOnContentPage {
+		property test.assert.warning.exceptions = "true";
+
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "Content Page Name",
+			type = "content");
+
+		JSONWebcontent.addWebContent(
+			content = "Web Content Content",
+			groupName = "Site Name",
+			title = "WC WebContent Title");
+
+		JSONPublications.addPublication(publicationName = "Publication Name 1");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name 1");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Basic Components",
+			fragmentName = "Separator");
+
+		PageEditor.addWidget(
+			portletName = "Web Content Display",
+			targetFragmentName = "Separator");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "WC WebContent Title");
+
+		Refresh();
+
+		PageEditor.clickPublish();
+
+		JSONPublications.addPublication(publicationName = "Publication Name 2");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name 2");
+
+		ContentPagesNavigator.openEditContentPage(
+			pageName = "Content Page Name",
+			siteName = "Site Name");
+
+		PageEditor.addFragment(
+			collectionName = "Basic Components",
+			fragmentName = "Paragraph");
+
+		PageEditor.gotoStyle(fragmentName = "Paragraph");
+
+		PageEditor.configureFragment(
+			alignment = "Right",
+			textColor = "Warning");
+
+		PageEditor.addWidget(
+			portletName = "Asset Publisher",
+			targetFragmentName = "Paragraph");
+
+		AssetPublisherPortlet.configureManualAssetSelectionPG(
+			assetTitle = "WC WebContent Title",
+			assetType = "Basic Web Content");
+
+		Refresh();
+
+		PageEditor.clickPublish();
+
+		JSONPublications.publishPublication(publicationName = "Publication Name 2");
+
+		Navigator.openURL();
+
+		Publications.viewPublicationPublished(publicationName = "Publication Name 2");
+
+		Publications.gotoPublish(
+			gotoManagePublications = "true",
+			publicationName = "Publication Name 1");
+
+		Publications.discardChanges(
+			changeCategory = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure",
+			changeTitle = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure",
+			conflictingChanges = "true",
+			entryTitle = "com.liferay.layout.page.template.model.LayoutPageTemplateStructure");
+
+		Publications.discardChanges(
+			changeCategory = "com.liferay.portal.kernel.model.PortletPreferenceValue",
+			changeTitle = "com.liferay.portal.kernel.model.PortletPreferenceValue",
+			conflictingChanges = "true",
+			entryTitle = "com.liferay.portal.kernel.model.PortletPreferenceValue");
+
+		// Workaround LPS-124618
+
+		//AssertElementNotPresent(locator1 = "Publications#NEEDS_MANUAL_RESOLUTION_TABLE");
+
+	}
+
+	@priority = "4"
+	test PublishDeletedPageWithTag {
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Test Page");
+
+		JSONPublications.addPublication(publicationName = "Publication Name");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page");
+
+		AssetCategorization.addTag(tagName = "tag name");
+
+		PortletEntry.save();
+
+		Publications.gotoReviewChanges();
+
+		PublicationsChanges.viewChangesViaChangesStyle(
+			changeCategory = "Tag",
+			changeSite = "Guest",
+			changeTitle = "tag name",
+			changeType = "Added",
+			changeUser = "Test Test");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		SitePages.deletePage(pageName = "Test Page");
+
+		Navigator.openURL();
+
+		Page.viewNoPG(pageName = "Test Page");
+
+		Publications.gotoReviewChanges();
+
+		PublicationsChanges.viewChangesViaChangesStyle(
+			changeCategory = "Page",
+			changeSite = "Guest",
+			changeTitle = "Test Page",
+			changeType = "Deleted",
+			changeUser = "Test Test");
+
+		PublicationsChanges.viewChangesViaContextStyle(
+			changeCategory = "Page",
+			changeDescription = "Test Test deleted a Page in Guest",
+			changeTitle = "Test Page");
+
+		JSONPublications.publishPublication(publicationName = "Publication Name");
+
+		Publications.viewPublicationPublished(publicationName = "Publication Name");
+
+		Navigator.openURL();
+
+		Page.viewNoPG(pageName = "Test Page");
+	}
+
+	@priority = "4"
+	test PublishPrivateContentPageWithFragment {
+		property test.assert.warning.exceptions = "true";
+
+		JSONPublications.addPublication(publicationName = "Publication Name");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
+
+		JSONFragment.addFragmentCollection(
+			groupName = "Guest",
+			name = "Collection Name");
+
+		FragmentsAdminNavigator.openFragmentsAdmin(siteURLKey = "Guest");
+
+		FragmentsAdminNavigator.gotoCollection(collectionName = "Collection Name");
+
+		FragmentsAdmin.addFragment(fragmentName = "Fragment Name");
+
+		var fragmentHTML = '''<lfr-widget-asset-list>''';
+		var htmlSnippet = '''<lfr-''';
+
+		FragmentsEditor.autocompleteFragmentHTML(
+			autocompleteField = "lfr-widget-asset-list",
+			fragmentHTML = "${fragmentHTML}",
+			htmlSnippet = "${htmlSnippet}");
+
+		PortletEntry.publish();
+
+		JSONWebcontent.addWebContent(
+			content = "WC WebContent Content",
+			groupName = "Guest",
+			title = "WC WebContent Title");
+
+		Navigator.openURL();
+
+		ProductMenu.gotoPortlet(
+			category = "Site Builder",
+			portlet = "Pages");
+
+		ContentPages.addPrivatePage(pageName = "Test Page");
+
+		PageEditor.addFragment(
+			collectionName = "Collection Name",
+			fragmentName = "Fragment Name");
+
+		PageEditor.clickPublish();
+
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/guest/test-page");
+
+		WebContent.viewPGViaAP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+
+		JSONPublications.publishPublication(publicationName = "Publication Name");
+
+		Publications.viewPublicationPublished(publicationName = "Publication Name");
+
+		Navigator.gotoPrivateSitePage(
+			pageName = "Test Page",
+			siteName = "Guest");
+
+		WebContent.viewPGViaAP(
+			webContentContent = "WC WebContent Content",
+			webContentTitle = "WC WebContent Title");
+	}
+
+	@priority = "5"
+	test ViewPageFriendlyURLAfterRevertingPublication {
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Test Page");
+
+		JSONPublications.addPublication(publicationName = "Publication Name");
+
+		JSONPublications.selectPublication(publicationName = "Publication Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page");
+
+		Page.editFriendlyURL(friendlyURLEdit = "/test-page-edited");
+
+		AssertVisible(
+			key_friendlyURL = "/test-page-edited",
+			locator1 = "SitePages#FRIENDLY_URL");
+
+		Publications.workOnProduction();
+
+		AssertVisible(
+			key_friendlyURL = "/test-page",
+			locator1 = "SitePages#FRIENDLY_URL");
+
+		JSONPublications.publishPublication(publicationName = "Publication Name");
+
+		Publications.viewPublicationPublished(publicationName = "Publication Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page");
+
+		AssertVisible(
+			key_friendlyURL = "/test-page-edited",
+			locator1 = "SitePages#FRIENDLY_URL");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Publications",
+			panel = "Applications",
+			portlet = "Publications");
+
+		Navigator.gotoNavTab(navTab = "History");
+
+		Publications.revertPublication(publicationName = "Publication Name");
+
+		SitePages.openPagesAdmin(siteURLKey = "guest");
+
+		SitePages.gotoPageMenuItem(
+			menuItem = "Configure",
+			pageName = "Test Page");
+
+		AssertVisible(
+			key_friendlyURL = "/test-page",
+			locator1 = "SitePages#FRIENDLY_URL");
+	}
+
+}

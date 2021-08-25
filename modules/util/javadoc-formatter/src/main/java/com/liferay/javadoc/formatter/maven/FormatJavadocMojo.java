@@ -21,7 +21,6 @@ import com.liferay.javadoc.formatter.JavadocFormatterInvoker;
 import java.io.File;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -30,7 +29,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * Runs Liferay Javadoc Formatter to format files.
  *
  * @author Andrea Di Giorgi
- * @goal format-javadoc
+ * @goal format
  */
 public class FormatJavadocMojo extends AbstractMojo {
 
@@ -43,15 +42,12 @@ public class FormatJavadocMojo extends AbstractMojo {
 			JavadocFormatter javadocFormatter = JavadocFormatterInvoker.invoke(
 				baseDir, _javadocFormatterArgs);
 
-			Set<String> modifiedFileNames =
-				javadocFormatter.getModifiedFileNames();
-
 			pluginContext.put(
 				JavadocFormatterArgs.OUTPUT_KEY_MODIFIED_FILES,
-				modifiedFileNames);
+				javadocFormatter.getModifiedFileNames());
 		}
-		catch (Exception e) {
-			throw new MojoExecutionException(e.getMessage(), e);
+		catch (Exception exception) {
+			throw new MojoExecutionException(exception.getMessage(), exception);
 		}
 	}
 

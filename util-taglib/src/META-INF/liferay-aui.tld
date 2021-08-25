@@ -1,6 +1,11 @@
 <?xml version="1.0"?>
 
-<taglib xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd">
+<taglib
+	version="2.1"
+	xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+>
 	<description><![CDATA[Provides the AUI component tags, prefixed with <code>aui:</code>.]]></description>
 	<tlib-version>1.0</tlib-version>
 	<short-name>aui</short-name>
@@ -246,7 +251,7 @@
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
-		<description><![CDATA[Creates a column to display content in an <code>&lt;aui:row&gt;</code> component.]]></description>
+		<description><![CDATA[Creates a column to display content in an <code>&lt;aui:row&gt;</code> component. Deprecated as of Athanasius (7.3.x), replaced by <code>clay:col</code>.]]></description>
 		<name>col</name>
 		<tag-class>com.liferay.taglib.aui.ColTag</tag-class>
 		<body-content>JSP</body-content>
@@ -299,68 +304,7 @@
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
-		<description><![CDATA[Deprecated as of 7.0.0, with no direct replacement.]]></description>
-		<name>component</name>
-		<tag-class>com.liferay.taglib.aui.ComponentTag</tag-class>
-		<body-content>JSP</body-content>
-		<attribute>
-			<name>defineVar</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-		<attribute>
-			<name>excludeAttributes</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>javaScriptAttributes</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>module</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>name</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>options</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>java.util.Map</type>
-		</attribute>
-		<attribute>
-			<name>scriptPosition</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>tagPageContext</name>
-			<required>true</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>javax.servlet.jsp.JspContext</type>
-		</attribute>
-		<attribute>
-			<name>useJavaScript</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>java.io.Serializable</type>
-		</attribute>
-		<attribute>
-			<name>var</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<dynamic-attributes>true</dynamic-attributes>
-	</tag>
-	<tag>
-		<description><![CDATA[Creates a container <code>&lt;div&gt;</code> tag to wrap <code>&lt;aui:row&gt;</code> components and offer additional styling.]]></description>
+		<description><![CDATA[Creates a container <code>&lt;div&gt;</code> tag to wrap <code>&lt;aui:row&gt;</code> components and offer additional styling. Deprecated as of Athanasius (7.3.x), replaced by <code>clay:container</code>.]]></description>
 		<name>container</name>
 		<tag-class>com.liferay.taglib.aui.ContainerTag</tag-class>
 		<body-content>JSP</body-content>
@@ -402,6 +346,13 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.Object</type>
+		</attribute>
+		<attribute>
+			<description><![CDATA[Whether the component is disabled. The default value is <code>false</code>.]]></description>
+			<name>disabled</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
 		</attribute>
 		<attribute>
 			<description><![CDATA[Whether the wrapper should be the first element of the form. The default value is <code>false</code>.]]></description>
@@ -523,6 +474,12 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
+		<attribute>
+			<description><![CDATA[A CSS class for styling the panel-header-link.]]></description>
+			<name>panelHeaderLinkCssClass</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
@@ -595,6 +552,13 @@
 		<attribute>
 			<description><![CDATA[Whether to use the default portlet namespace, to avoid name conflicts. The default value is <code>true</code>.]]></description>
 			<name>useNamespace</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>boolean</type>
+		</attribute>
+		<attribute>
+			<description><![CDATA[Whether to validate fields when they lose focus. The default value is <code>true</code>.]]></description>
+			<name>validateOnBlur</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>boolean</type>
@@ -686,6 +650,18 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>java.lang.Object</type>
+		</attribute>
+		<attribute>
+			<description><![CDATA[The SVG icon markup to use in toggle-switch.]]></description>
+			<name>buttonIconOff</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description><![CDATA[The SVG icon markup to use in toggle-switch.]]></description>
+			<name>buttonIconOn</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
 			<description><![CDATA[Whether to reload the page when the value of the input changes. The default value is <code>false</code>.]]></description>
@@ -783,6 +759,18 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
+			<description><![CDATA[The SVG icon markup to use in toggle-switch.]]></description>
+			<name>iconOff</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description><![CDATA[The SVG icon markup to use in toggle-switch.]]></description>
+			<name>iconOn</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
 			<description><![CDATA[An ID for the component instance.]]></description>
 			<name>id</name>
 			<required>false</required>
@@ -811,6 +799,12 @@
 		<attribute>
 			<description><![CDATA[A label for the input component. If not assigned a value, the label is automatically taken from the <code>name</code> attribute's value.]]></description>
 			<name>label</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description><![CDATA[A CSS class for styling the label.]]></description>
+			<name>labelCssClass</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
@@ -868,7 +862,7 @@
 			<type>boolean</type>
 		</attribute>
 		<attribute>
-			<description><![CDATA[A name for the component.]]></description>
+			<description><![CDATA[A name for the component. If the name contains <code>--</code>, the generated name will be the substring following the <code>--</code>, excluding the last two characters and any prefixes. For example, the pattern <code>prefix--customName--</code> would result in the name <code>customName</code>. If the <code>id</code> is not provided and the <code>type</code> is given, the name is used as the <code>id</code>.]]></description>
 			<name>name</name>
 			<required>true</required>
 			<rtexprvalue>true</rtexprvalue>
@@ -910,6 +904,12 @@
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 			<type>boolean</type>
+		</attribute>
+		<attribute>
+			<description><![CDATA[Selected language ID, for the case when input is localized.]]></description>
+			<name>selectedLanguageId</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
 			<description><![CDATA[Whether to show the input's required label, if an input value is required.]]></description>
@@ -1321,41 +1321,7 @@
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
-		<description><![CDATA[Deprecated as of 7.0.0, with no direct replacement.]]></description>
-		<name>panel</name>
-		<tag-class>com.liferay.taglib.aui.PanelTag</tag-class>
-		<body-content>JSP</body-content>
-		<attribute>
-			<name>collapsed</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-		<attribute>
-			<name>collapsible</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-		<attribute>
-			<name>id</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>label</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-		</attribute>
-		<attribute>
-			<name>localizeLabel</name>
-			<required>false</required>
-			<rtexprvalue>true</rtexprvalue>
-			<type>boolean</type>
-		</attribute>
-	</tag>
-	<tag>
-		<description><![CDATA[Creates a row to hold <code>&lt;aui:col&gt;</code> components.]]></description>
+		<description><![CDATA[Creates a row to hold <code>&lt;aui:col&gt;</code> components. Deprecated as of Athanasius (7.3.x), replaced by <code>clay:row</code>.]]></description>
 		<name>row</name>
 		<tag-class>com.liferay.taglib.aui.RowTag</tag-class>
 		<body-content>JSP</body-content>
@@ -1378,6 +1344,11 @@
 		<name>script</name>
 		<tag-class>com.liferay.taglib.aui.ScriptTag</tag-class>
 		<body-content>JSP</body-content>
+		<attribute>
+			<name>load</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
 		<attribute>
 			<description><![CDATA[A position for the script.]]></description>
 			<name>position</name>
@@ -1608,12 +1579,6 @@
 		<dynamic-attributes>true</dynamic-attributes>
 	</tag>
 	<tag>
-		<description><![CDATA[Deprecated as of 7.0.0, with no direct replacement. Creates a spacer component that enables JSP 2.1 server-side trimming of white spaces.]]></description>
-		<name>spacer</name>
-		<tag-class>com.liferay.taglib.aui.SpacerTag</tag-class>
-		<body-content>JSP</body-content>
-	</tag>
-	<tag>
 		<description><![CDATA[Creates a UI component for managing translation of associated content.]]></description>
 		<name>translation-manager</name>
 		<tag-class>com.liferay.taglib.aui.TranslationManagerTag</tag-class>
@@ -1642,6 +1607,13 @@
 			<name>editingLanguageId</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<description><![CDATA[The group ID of the site.]]></description>
+			<name>groupId</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>long</type>
 		</attribute>
 		<attribute>
 			<description><![CDATA[An ID for the component instance.]]></description>
@@ -1719,6 +1691,7 @@
 			<type>java.lang.Class</type>
 		</attribute>
 		<attribute>
+			<description><![CDATA[Whether to show the workflow status help message. The default value is <code>true</code>.]]></description>
 			<name>showHelpMessage</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>

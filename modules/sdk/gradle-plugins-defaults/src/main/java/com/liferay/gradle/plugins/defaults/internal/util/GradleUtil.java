@@ -20,13 +20,9 @@ import java.io.File;
 
 import java.lang.reflect.Method;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.gradle.StartParameter;
@@ -36,34 +32,71 @@ import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.Task;
 import org.gradle.api.artifacts.ArtifactRepositoryContainer;
+import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ConfigurationContainer;
+import org.gradle.api.artifacts.DependencySet;
+import org.gradle.api.artifacts.DependencySubstitutions;
+import org.gradle.api.artifacts.ModuleDependency;
+import org.gradle.api.artifacts.ModuleVersionSelector;
+import org.gradle.api.artifacts.ResolutionStrategy;
+import org.gradle.api.artifacts.component.ComponentSelector;
 import org.gradle.api.artifacts.dsl.RepositoryHandler;
 import org.gradle.api.artifacts.repositories.ArtifactRepository;
 import org.gradle.api.artifacts.repositories.MavenArtifactRepository;
+import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.SourceDirectorySet;
 import org.gradle.api.invocation.Gradle;
 import org.gradle.api.plugins.BasePluginConvention;
 import org.gradle.api.plugins.PluginContainer;
+import org.gradle.api.tasks.TaskOutputs;
 
 /**
  * @author Andrea Di Giorgi
  */
 public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 
-	public static final String PORTAL_TOOL_GROUP = "com.liferay";
+	public static MavenArtifactRepository addMavenArtifactRepository(
+		RepositoryHandler repositoryHandler, final Object url) {
 
-	public static final String SNAPSHOT_PROPERTY_NAME = "snapshot";
+		return repositoryHandler.maven(
+			new Action<MavenArtifactRepository>() {
 
-	public static final String SNAPSHOT_VERSION_SUFFIX = "-SNAPSHOT";
+				@Override
+				public void execute(
+					MavenArtifactRepository mavenArtifactRepository) {
 
-	public static <T extends Task> T addTask(
-		Project project, String name, Class<T> clazz, boolean overwrite) {
+					mavenArtifactRepository.setUrl(url);
+				}
 
-		Map<String, Object> args = new HashMap<>();
+			});
+	}
 
-		args.put(Task.TASK_OVERWRITE, overwrite);
-		args.put(Task.TASK_TYPE, clazz);
+	public static void excludeTasksWithProperty(
+		Project project, String propertyName, boolean defaultValue,
+		String... taskNames) {
 
-		return (T)project.task(args, name);
+		if (!project.hasProperty(propertyName) ||
+			!getProperty(project, propertyName, defaultValue)) {
+
+			return;
+		}
+
+		for (String taskName : taskNames) {
+			Task task = getTask(project, taskName);
+
+			task.setDependsOn(Collections.emptySet());
+			task.setEnabled(false);
+			task.setFinalizedBy(Collections.emptySet());
+		}
+	}
+
+	public static Configuration fetchConfiguration(
+		Project project, String name) {
+
+		ConfigurationContainer configurationContainer =
+			project.getConfigurations();
+
+		return configurationContainer.findByName(name);
 	}
 
 	public static String getArchivesBaseName(Project project) {
@@ -73,14 +106,80 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 		return basePluginConvention.getArchivesBaseName();
 	}
 
+	public static File getMavenLocalDir(Project project) {
+		RepositoryHandler repositoryHandler = project.getRepositories();
+
+		ArtifactRepository artifactRepository = repositoryHandler.findByName(
+			ArtifactRepositoryContainer.DEFAULT_MAVEN_LOCAL_REPO_NAME);
+
+		if (!(artifactRepository instanceof MavenArtifactRepository)) {
+			return null;
+		}
+
+		MavenArtifactRepository mavenArtifactRepository =
+			(MavenArtifactRepository)artifactRepository;
+
+		return new File(mavenArtifactRepository.getUrl());
+	}
+
+	public static File getMavenLocalFile(
+		Project project, String group, String name, String version) {
+
+		File dir = getMavenLocalDir(project);
+
+		if (dir == null) {
+			return null;
+		}
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(group.replace('.', File.separatorChar));
+		sb.append(File.separatorChar);
+		sb.append(name);
+		sb.append(File.separatorChar);
+		sb.append(version);
+		sb.append(File.separatorChar);
+		sb.append(name);
+		sb.append('-');
+		sb.append(version);
+		sb.append(".jar");
+
+		return new File(dir, sb.toString());
+	}
+
+	public static File getOutputFile(Task task) {
+		TaskOutputs taskOutputs = task.getOutputs();
+
+		FileCollection fileCollection = taskOutputs.getFiles();
+
+		return fileCollection.getSingleFile();
+	}
+
 	public static Project getProject(Project rootProject, String name) {
 		for (Project project : rootProject.getAllprojects()) {
 			if (name.equals(project.getName())) {
-				return project;
+				Set<Project> subprojects = project.getSubprojects();
+
+				if (subprojects.isEmpty()) {
+					return project;
+				}
 			}
 		}
 
 		return null;
+	}
+
+	public static String getProjectGroup(Project project, String defaultValue) {
+		String projectPath = project.getPath();
+
+		if (projectPath.startsWith(":apps:commerce:") ||
+			projectPath.startsWith(":dxp:apps:commerce:") ||
+			projectPath.startsWith(":private:apps:commerce:")) {
+
+			return "com.liferay.commerce";
+		}
+
+		return getGradlePropertiesValue(project, "project.group", defaultValue);
 	}
 
 	public static Object getProperty(Object object, String name) {
@@ -108,9 +207,30 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 
 			return value;
 		}
-		catch (ReflectiveOperationException roe) {
-			throw new GradleException("Unable to get property", roe);
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new GradleException(
+				"Unable to get property", reflectiveOperationException);
 		}
+	}
+
+	public static boolean getProperty(
+		Object object, String name, boolean defaultValue) {
+
+		Object value = getProperty(object, name);
+
+		if (value == null) {
+			return defaultValue;
+		}
+
+		if (value instanceof Boolean) {
+			return (Boolean)value;
+		}
+
+		if (value instanceof String) {
+			return Boolean.parseBoolean((String)value);
+		}
+
+		return defaultValue;
 	}
 
 	public static String getProperty(
@@ -125,32 +245,28 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 		return toString(value);
 	}
 
-	public static File getRootDir(File dir, String markerFileName) {
-		while (true) {
-			File markerFile = new File(dir, markerFileName);
-
-			if (markerFile.exists()) {
-				return dir;
-			}
-
-			dir = dir.getParentFile();
-
-			if (dir == null) {
-				return null;
-			}
-		}
-	}
-
-	public static File getRootDir(Project project, String markerFileName) {
-		return getRootDir(project.getProjectDir(), markerFileName);
-	}
-
 	public static File getSrcDir(SourceDirectorySet sourceDirectorySet) {
 		Set<File> srcDirs = sourceDirectorySet.getSrcDirs();
 
 		Iterator<File> iterator = srcDirs.iterator();
 
 		return iterator.next();
+	}
+
+	public static boolean hasDependency(
+		DependencySet dependencySet, String group, String name) {
+
+		for (ModuleDependency moduleDependency :
+				dependencySet.withType(ModuleDependency.class)) {
+
+			if (group.equals(moduleDependency.getGroup()) &&
+				name.equals(moduleDependency.getName())) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static boolean hasPlugin(
@@ -170,7 +286,9 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 
 		List<String> taskNames = startParameter.getTaskNames();
 
-		if (taskNames.contains(taskName)) {
+		if (taskNames.contains(taskName) ||
+			taskNames.contains(project.getPath() + ":" + taskName)) {
+
 			return true;
 		}
 
@@ -178,73 +296,36 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 	}
 
 	public static boolean isFromMavenLocal(Project project, File file) {
-		RepositoryHandler repositoryHandler = project.getRepositories();
+		File mavenLocalDir = getMavenLocalDir(project);
 
-		ArtifactRepository artifactRepository = repositoryHandler.findByName(
-			ArtifactRepositoryContainer.DEFAULT_MAVEN_LOCAL_REPO_NAME);
-
-		if (!(artifactRepository instanceof MavenArtifactRepository)) {
-			return false;
-		}
-
-		MavenArtifactRepository mavenArtifactRepository =
-			(MavenArtifactRepository)artifactRepository;
-
-		Path repositoryPath = Paths.get(mavenArtifactRepository.getUrl());
-
-		if (FileUtil.isChild(file, repositoryPath.toFile())) {
+		if ((mavenLocalDir != null) && FileUtil.isChild(file, mavenLocalDir)) {
 			return true;
 		}
 
 		return false;
 	}
 
-	public static boolean isSnapshot(Project project) {
-		String version = String.valueOf(project.getVersion());
+	public static void substituteModuleDependencyWithProject(
+		Configuration configuration,
+		ModuleVersionSelector moduleVersionSelector, Project project) {
 
-		if (version.endsWith(SNAPSHOT_VERSION_SUFFIX)) {
-			return true;
-		}
+		ResolutionStrategy resolutionStrategy =
+			configuration.getResolutionStrategy();
 
-		return false;
-	}
+		DependencySubstitutions dependencySubstitutions =
+			resolutionStrategy.getDependencySubstitution();
 
-	public static boolean isTestProject(Project project) {
-		String projectName = project.getName();
+		ComponentSelector moduleComponentSelector =
+			dependencySubstitutions.module(
+				_getDependencyNotation(moduleVersionSelector));
 
-		if (projectName.endsWith("-test")) {
-			return true;
-		}
+		DependencySubstitutions.Substitution substitution =
+			dependencySubstitutions.substitute(moduleComponentSelector);
 
-		return false;
-	}
+		ComponentSelector projectComponentSelector =
+			dependencySubstitutions.project(project.getPath());
 
-	public static void setProjectSnapshotVersion(
-		Project project, String... propertyNames) {
-
-		boolean snapshot = false;
-
-		if (project.hasProperty(SNAPSHOT_PROPERTY_NAME)) {
-			snapshot = getProperty(project, SNAPSHOT_PROPERTY_NAME, true);
-		}
-
-		if (!snapshot) {
-			for (String propertyName : propertyNames) {
-				if (project.hasProperty(propertyName) &&
-					getProperty(project, propertyName, true)) {
-
-					snapshot = true;
-
-					break;
-				}
-			}
-		}
-
-		String version = String.valueOf(project.getVersion());
-
-		if (snapshot && !version.endsWith(SNAPSHOT_VERSION_SUFFIX)) {
-			project.setVersion(version + SNAPSHOT_VERSION_SUFFIX);
-		}
+		substitution.with(projectComponentSelector);
 	}
 
 	public static <P extends Plugin<? extends Project>> void withPlugin(
@@ -253,6 +334,20 @@ public class GradleUtil extends com.liferay.gradle.util.GradleUtil {
 		PluginContainer pluginContainer = project.getPlugins();
 
 		pluginContainer.withType(pluginClass, action);
+	}
+
+	private static String _getDependencyNotation(
+		ModuleVersionSelector moduleVersionSelector) {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(moduleVersionSelector.getGroup());
+		sb.append(':');
+		sb.append(moduleVersionSelector.getName());
+		sb.append(':');
+		sb.append(moduleVersionSelector.getVersion());
+
+		return sb.toString();
 	}
 
 }

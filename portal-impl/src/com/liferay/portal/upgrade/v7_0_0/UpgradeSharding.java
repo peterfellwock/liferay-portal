@@ -14,6 +14,8 @@
 
 package com.liferay.portal.upgrade.v7_0_0;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.dao.jdbc.spring.DataSourceFactoryBean;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -23,7 +25,6 @@ import com.liferay.portal.kernel.upgrade.util.UpgradeTableFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.upgrade.v7_0_0.util.ClassNameTable;
 import com.liferay.portal.upgrade.v7_0_0.util.ClusterGroupTable;
 import com.liferay.portal.upgrade.v7_0_0.util.CompanyTable;
@@ -63,10 +64,8 @@ public class UpgradeSharding extends UpgradeProcess {
 			sourceConnection, targetConnection, CompanyTable.TABLE_NAME,
 			CompanyTable.TABLE_COLUMNS, CompanyTable.TABLE_SQL_CREATE);
 
-		List<Long> companyIds = getCompanyIds(shardName);
-
 		String companyIdsString = ListUtil.toString(
-			companyIds, StringPool.NULL, StringPool.COMMA);
+			getCompanyIds(shardName), StringPool.NULL, StringPool.COMMA);
 
 		runSQL(
 			sourceConnection,
@@ -88,18 +87,20 @@ public class UpgradeSharding extends UpgradeProcess {
 			if (hasRows(targetConnection, tableName)) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Control table " + tableName + " should not contain " +
-							"data in a nondefault shard");
+						StringBundler.concat(
+							"Control table ", tableName, " should not contain ",
+							"data in a nondefault shard"));
 				}
 			}
 
 			dropTable(targetConnection, tableName);
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					"Unable to drop control table " + tableName +
-						" because it  does not exist in the target shard");
+						" because it  does not exist in the target shard",
+					sqlException);
 			}
 		}
 
@@ -182,8 +183,8 @@ public class UpgradeSharding extends UpgradeProcess {
 				VirtualHostTable.TABLE_COLUMNS,
 				VirtualHostTable.TABLE_SQL_CREATE);
 		}
-		catch (Exception e) {
-			_log.error("Unable to copy control tables", e);
+		catch (Exception exception) {
+			_log.error("Unable to copy control tables", exception);
 		}
 	}
 
@@ -210,16 +211,16 @@ public class UpgradeSharding extends UpgradeProcess {
 
 	protected List<Long> getCompanyIds(String shardName) throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			PreparedStatement ps = connection.prepareStatement(
+			PreparedStatement preparedStatement = connection.prepareStatement(
 				"select classPK from Shard where name = ?")) {
 
-			ps.setString(1, shardName);
+			preparedStatement.setString(1, shardName);
 
 			List<Long> companyIds = new ArrayList<>();
 
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					companyIds.add(rs.getLong("classPK"));
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					companyIds.add(resultSet.getLong("classPK"));
 				}
 			}
 
@@ -229,14 +230,14 @@ public class UpgradeSharding extends UpgradeProcess {
 
 	protected List<String> getShardNames() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer();
-			PreparedStatement ps = connection.prepareStatement(
+			PreparedStatement preparedStatement = connection.prepareStatement(
 				"select name from Shard");
-			ResultSet rs = ps.executeQuery()) {
+			ResultSet resultSet = preparedStatement.executeQuery()) {
 
 			List<String> shardNames = new ArrayList<>();
 
-			while (rs.next()) {
-				shardNames.add(rs.getString("name"));
+			while (resultSet.next()) {
+				shardNames.add(resultSet.getString("name"));
 			}
 
 			return shardNames;

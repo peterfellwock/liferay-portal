@@ -19,18 +19,20 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBArticleServiceUtil;
 import com.liferay.knowledge.base.service.KBFolderServiceUtil;
-import com.liferay.knowledge.base.service.permission.KBArticlePermission;
-import com.liferay.knowledge.base.service.permission.KBFolderPermission;
+import com.liferay.knowledge.base.web.internal.security.permission.resource.KBArticlePermission;
+import com.liferay.knowledge.base.web.internal.security.permission.resource.KBFolderPermission;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.RowChecker;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -62,14 +64,14 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 	}
 
 	@Override
-	public String getAllRowsCheckBox(HttpServletRequest request) {
+	public String getAllRowsCheckBox(HttpServletRequest httpServletRequest) {
 		return null;
 	}
 
 	@Override
 	public String getRowCheckBox(
-		HttpServletRequest request, boolean checked, boolean disabled,
-		String primaryKey) {
+		HttpServletRequest httpServletRequest, boolean checked,
+		boolean disabled, String primaryKey) {
 
 		KBArticle kbArticle = null;
 		KBFolder kbFolder = null;
@@ -80,12 +82,12 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 			kbArticle = KBArticleServiceUtil.getLatestKBArticle(
 				entryId, WorkflowConstants.STATUS_ANY);
 		}
-		catch (Exception e) {
-			if (e instanceof NoSuchArticleException) {
+		catch (Exception exception1) {
+			if (exception1 instanceof NoSuchArticleException) {
 				try {
 					kbFolder = KBFolderServiceUtil.getKBFolder(entryId);
 				}
-				catch (Exception e1) {
+				catch (Exception exception2) {
 					return StringPool.BLANK;
 				}
 			}
@@ -108,7 +110,10 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 					showInput = true;
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 		else {
@@ -121,7 +126,10 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 					showInput = true;
 				}
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 
@@ -135,7 +143,7 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 			_liferayPortletResponse.getNamespace() + "toggleActionsButton();";
 
 		return getRowCheckBox(
-			request, checked, disabled,
+			httpServletRequest, checked, disabled,
 			_liferayPortletResponse.getNamespace() + RowChecker.ROW_IDS + name,
 			primaryKey, checkBoxRowIds, checkBoxAllRowIds, checkBoxPostOnClick);
 	}
@@ -155,6 +163,8 @@ public class EntriesChecker extends EmptyOnClickRowChecker {
 
 		return sb.toString();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(EntriesChecker.class);
 
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final PermissionChecker _permissionChecker;

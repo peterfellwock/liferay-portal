@@ -14,11 +14,11 @@
 
 package com.liferay.taglib;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.servlet.taglib.BodyContentWrapper;
 import com.liferay.portal.kernel.util.ServerDetector;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -37,17 +37,14 @@ import javax.servlet.jsp.tagext.BodyTag;
  */
 public class BaseBodyTagSupport extends TagSupport {
 
-	@SuppressWarnings("unused")
 	public int doAfterBody() throws JspException {
 		return SKIP_BODY;
 	}
 
-	@SuppressWarnings("unused")
 	public void doInitBody() throws JspException {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public int doStartTag() throws JspException {
 		return BodyTag.EVAL_BODY_BUFFERED;
 	}

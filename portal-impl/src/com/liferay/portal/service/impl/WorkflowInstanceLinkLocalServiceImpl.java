@@ -14,13 +14,13 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.NoSuchWorkflowInstanceLinkException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
 import com.liferay.portal.kernel.model.WorkflowInstanceLink;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.workflow.WorkflowHandlerRegistryUtil;
@@ -31,6 +31,7 @@ import com.liferay.portal.service.base.WorkflowInstanceLinkLocalServiceBaseImpl;
 
 import java.io.Serializable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,17 +58,15 @@ public class WorkflowInstanceLinkLocalServiceImpl
 		WorkflowInstanceLink workflowInstanceLink =
 			workflowInstanceLinkPersistence.create(workflowInstanceLinkId);
 
-		workflowInstanceLink.setUserId(userId);
-		workflowInstanceLink.setUserName(user.getFullName());
 		workflowInstanceLink.setGroupId(groupId);
 		workflowInstanceLink.setCompanyId(companyId);
+		workflowInstanceLink.setUserId(userId);
+		workflowInstanceLink.setUserName(user.getFullName());
 		workflowInstanceLink.setClassNameId(classNameId);
 		workflowInstanceLink.setClassPK(classPK);
 		workflowInstanceLink.setWorkflowInstanceId(workflowInstanceId);
 
-		workflowInstanceLinkPersistence.update(workflowInstanceLink);
-
-		return workflowInstanceLink;
+		return workflowInstanceLinkPersistence.update(workflowInstanceLink);
 	}
 
 	@Override
@@ -103,11 +102,6 @@ public class WorkflowInstanceLinkLocalServiceImpl
 
 		super.deleteWorkflowInstanceLink(workflowInstanceLink);
 
-		subscriptionLocalService.deleteSubscriptions(
-			workflowInstanceLink.getCompanyId(),
-			WorkflowInstance.class.getName(),
-			workflowInstanceLink.getWorkflowInstanceId());
-
 		WorkflowInstanceManagerUtil.deleteWorkflowInstance(
 			workflowInstanceLink.getCompanyId(),
 			workflowInstanceLink.getWorkflowInstanceId());
@@ -140,9 +134,8 @@ public class WorkflowInstanceLinkLocalServiceImpl
 		if (!workflowInstanceLinks.isEmpty()) {
 			return workflowInstanceLinks.get(0);
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -169,23 +162,13 @@ public class WorkflowInstanceLinkLocalServiceImpl
 			getWorkflowInstanceLinks(companyId, groupId, className, classPK);
 
 		if (workflowInstanceLinks.isEmpty()) {
-			StringBundler sb = new StringBundler(9);
-
-			sb.append("{companyId=");
-			sb.append(companyId);
-			sb.append(", groupId=");
-			sb.append(groupId);
-			sb.append(", className=");
-			sb.append(className);
-			sb.append(", classPK=");
-			sb.append(classPK);
-			sb.append("}");
-
-			throw new NoSuchWorkflowInstanceLinkException(sb.toString());
+			throw new NoSuchWorkflowInstanceLinkException(
+				StringBundler.concat(
+					"{companyId=", companyId, ", groupId=", groupId,
+					", className=", className, ", classPK=", classPK, "}"));
 		}
-		else {
-			return workflowInstanceLinks.get(0);
-		}
+
+		return workflowInstanceLinks.get(0);
 	}
 
 	@Override
@@ -193,6 +176,13 @@ public class WorkflowInstanceLinkLocalServiceImpl
 		long companyId, long groupId, String className, long classPK) {
 
 		long classNameId = classNameLocalService.getClassNameId(className);
+
+		int count = workflowInstanceLinkPersistence.countByG_C_C(
+			groupId, companyId, classNameId);
+
+		if (count == 0) {
+			return Collections.emptyList();
+		}
 
 		return workflowInstanceLinkPersistence.findByG_C_C_C(
 			groupId, companyId, classNameId, classPK);
@@ -241,6 +231,18 @@ public class WorkflowInstanceLinkLocalServiceImpl
 			long classPK, Map<String, Serializable> workflowContext)
 		throws PortalException {
 
+		startWorkflowInstance(
+			companyId, groupId, userId, className, classPK, workflowContext,
+			false);
+	}
+
+	@Override
+	public void startWorkflowInstance(
+			long companyId, long groupId, long userId, String className,
+			long classPK, Map<String, Serializable> workflowContext,
+			boolean waitForCompletion)
+		throws PortalException {
+
 		if (!WorkflowThreadLocal.isEnabled()) {
 			return;
 		}
@@ -271,19 +273,20 @@ public class WorkflowInstanceLinkLocalServiceImpl
 		workflowContext.put(
 			WorkflowConstants.CONTEXT_COMPANY_ID, String.valueOf(companyId));
 		workflowContext.put(
-			WorkflowConstants.CONTEXT_GROUP_ID, String.valueOf(groupId));
-		workflowContext.put(
 			WorkflowConstants.CONTEXT_ENTRY_CLASS_NAME, className);
 		workflowContext.put(
 			WorkflowConstants.CONTEXT_ENTRY_CLASS_PK, String.valueOf(classPK));
 		workflowContext.put(
 			WorkflowConstants.CONTEXT_ENTRY_TYPE,
 			workflowHandler.getType(LocaleUtil.getDefault()));
+		workflowContext.put(
+			WorkflowConstants.CONTEXT_GROUP_ID, String.valueOf(groupId));
 
 		WorkflowInstance workflowInstance =
 			WorkflowInstanceManagerUtil.startWorkflowInstance(
 				companyId, groupId, userId, workflowDefinitionName,
-				workflowDefinitionVersion, null, workflowContext);
+				workflowDefinitionVersion, null, workflowContext,
+				waitForCompletion);
 
 		addWorkflowInstanceLink(
 			userId, companyId, groupId, className, classPK,
@@ -313,7 +316,8 @@ public class WorkflowInstanceLinkLocalServiceImpl
 
 			workflowInstanceLink.setClassPK(newClassPK);
 
-			workflowInstanceLinkPersistence.update(workflowInstanceLink);
+			workflowInstanceLink = workflowInstanceLinkPersistence.update(
+				workflowInstanceLink);
 
 			Map<String, Serializable> workflowContext = new HashMap<>(
 				workflowInstance.getWorkflowContext());

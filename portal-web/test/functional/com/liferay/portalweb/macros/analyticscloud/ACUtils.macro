@@ -1,0 +1,378 @@
+definition {
+
+	macro addSiteAndPage {
+		JSONGroup.addGroup(groupName = "Site Name");
+
+		if (!(isSet(layoutName))) {
+			layoutName = "AC Page";
+		}
+
+		JSONLayout.addPublicLayout(
+			groupName = "Site Name",
+			layoutName = "${layoutName}");
+	}
+
+	macro addWidgetToPage {
+		if (!(isSet(layoutName))) {
+			layoutName = "AC Page";
+		}
+
+		JSONLayout.addWidgetToPublicLayout(
+			groupName = "Site Name",
+			layoutName = "${layoutName}",
+			widgetName = "${widgetName}");
+
+		Navigator.gotoSitePage(
+			pageName = "${layoutName}",
+			siteName = "Site Name");
+	}
+
+	macro assertAudienceCard {
+		var key_index = "${index}";
+
+		for (var percentage : list "${percentageList}") {
+			var key_percentage = "${percentage}";
+
+			AssertElementPresent(locator1 = "ACUtils#METRIC_VALUE_PERCENTAGE");
+		}
+	}
+
+	macro assertDataSourceName {
+		var itemName = "${dataSourceName}";
+
+		AssertElementPresent(locator1 = "ACSettings#ITEM_ON_LIST");
+	}
+
+	macro assertEventPropertyValue {
+		var postDataText = ProxyUtil.getHarRecording("$..request..postData..text");
+		var actual = JSONUtil.getWithJSONPath("[${postDataText}]","$..[?(@['eventId'] == '${eventId}')]..${property}");
+
+		TestUtils.assertEquals(
+			actual = "${actual}",
+			expected = "${value}");
+	}
+
+	@summary = "Asserts a list of items by the name"
+	macro assertItemsName {
+		for (var key_itemName : list "${itemList}") {
+			AssertElementPresent(
+				itemName = "${key_itemName}",
+				locator1 = "ACSettings#ITEM_ON_LIST");
+		}
+	}
+
+	macro assertPageTitle {
+		var key_pageTitle = "${pageTitle}";
+		AssertTextEquals(
+			locator1 = "ACUtils#PAGE_TITLE",
+			value1 = "${pageTitle}");
+	}
+
+	macro assertRequestCommonPropertiesValue {
+		var actualChannelId = ACUtils.getRequestCommonPropertyValue(property = "channelId");
+
+		TestUtils.assertEquals(
+			actual = "${actualChannelId}",
+			expected = "${expectedChannelId}");
+
+		var actualDataSourceId = ACUtils.getRequestCommonPropertyValue(property = "dataSourceId");
+
+		TestUtils.assertEquals(
+			actual = "${actualDataSourceId}",
+			expected = "${expectedDataSourceId}");
+
+		var id = ACUtils.getRequestCommonPropertyValue(property = "id");
+
+		TestUtils.assertNotEquals(
+			actual = "${id}",
+			expected = "");
+
+		var userId = ACUtils.getRequestCommonPropertyValue(property = "userId");
+
+		TestUtils.assertNotEquals(
+			actual = "${userId}",
+			expected = "");
+	}
+
+	macro assertXAxisTimedGraph {
+		var key_parentName = "${parentName}";
+		AssertElementPresent(locator1 = "ACUtils#SVG_TIMED_GRAPH");
+	}
+
+	macro changePagination {
+		Click(locator1 = "ACUtils#PAGINATION_ITEMS_PER_PAGE_SELECT");
+
+		MenuItem.click(menuItem = "${itemsPerPage}");
+
+		ACUtils.viewPaginationItemsPerPage(itemsPerPage = "${itemsPerPage}");
+	}
+
+	macro checkAnyPage {
+		var key_pageNumber = "${pageNumber}";
+
+		Click(locator1 = "ACUtils#ANY_PAGE");
+	}
+
+	macro checkPreviousNextButton {
+		if (isSet(previousButton)) {
+			Click(locator1 = "ACUtils#PREVIOUS_PAGES");
+		}
+
+		if (isSet(nextButton)) {
+			Click(locator1 = "ACUtils#NEXT_PAGES");
+		}
+	}
+
+	macro clearSearchBar {
+		Click(locator1 = "ACUtils#CLEAR_SEARCH_BAR_BUTTON");
+	}
+
+	macro closeAllSessions {
+		var analyticsCloudAsahCuratorURL = PropsUtil.get("analytics.cloud.asah.curator.url");
+
+		var cleanCurl = '''
+			${analyticsCloudAsahCuratorURL}/admin/sessions/close \
+			-H 'Content-Type: application/json' \
+			-d '{
+				"query": {
+					"match_all": {}
+				}
+			}'
+		''';
+
+		com.liferay.poshi.runner.util.JSONCurlUtil.post("${cleanCurl}");
+	}
+
+	macro closeModal {
+		Click(locator1 = "ACUtils#MODAL_CLOSE_BUTTON");
+	}
+
+	macro createBlogsAndAddToPage {
+		if (!(isSet(layoutName))) {
+			layoutName = "AC Page";
+		}
+
+		if (!(IsElementPresent(locator1 = "ReportsAdmin#EMPTY_TABLE"))) {
+			ACUtils.addWidgetToPage(
+				layoutName = "${layoutName}",
+				widgetName = "Blogs");
+		}
+
+		if (!(isSet(entryTitle))) {
+			entryTitle = "Blogs AC Title";
+		}
+
+		JSONBlog.addEntry(
+			entryContent = "This is the blog test for AC",
+			entryTitle = "${entryTitle}",
+			groupName = "Site Name");
+	}
+
+	macro createDMAndAddToPage {
+		if (!(isSet(layoutName))) {
+			layoutName = "AC Page";
+		}
+
+		if (!(IsElementPresent(locator1 = "ReportsAdmin#EMPTY_TABLE"))) {
+			ACUtils.addWidgetToPage(
+				layoutName = "${layoutName}",
+				widgetName = "Documents and Media");
+		}
+
+		if (!(isSet(dmDocumentTitle))) {
+			dmDocumentTitle = "DM AC Title";
+		}
+
+		if (!(isSet(dmDocumentFile))) {
+			dmDocumentFile = "Document_1.jpg";
+		}
+
+		JSONDocument.addFileWithUploadedFile(
+			dmDocumentTitle = "${dmDocumentTitle}",
+			groupName = "Site Name",
+			mimeType = "image/jpeg",
+			sourceFileName = "${dmDocumentFile}");
+	}
+
+	macro createFormAndAddToPage {
+		if (!(isSet(formACTitle))) {
+			var formACTitle = "Created Form Name";
+		}
+
+		if (!(isSet(layoutName))) {
+			layoutName = "AC Page";
+		}
+
+		ACUtils.addWidgetToPage(
+			layoutName = "${layoutName}",
+			widgetName = "Form");
+
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Forms");
+
+		FormsAdminNavigator.gotoAddForm();
+
+		Form.editName(formTitle = "${formACTitle}");
+
+		Form.addTextField(fieldPositionNumber = "0");
+
+		Form.closeSidebar();
+
+		Button.clickPublish();
+
+		Navigator.gotoSitePage(
+			pageName = "${layoutName}",
+			siteName = "Site Name");
+
+		FormPortletNavigator.gotoSelectForm();
+
+		FormPortletConfiguration.selectForm(formTitle = "${formACTitle}");
+
+		PortletEntry.save();
+	}
+
+	macro createWCAndAddToPage {
+		if (!(isSet(layoutName))) {
+			layoutName = "AC Page";
+		}
+
+		if (!(isSet(webContentTitle))) {
+			webContentTitle = "Web Content AC Title";
+		}
+
+		if (!(isSet(webContentContent))) {
+			webContentContent = "This is the web content test for AC";
+
+			JSONWebcontent.addWebContent(
+				content = "${webContentContent}",
+				groupName = "Site Name",
+				title = "${webContentTitle}");
+		}
+		else {
+			JSONWebcontent.addWebContent(
+				content = "${webContentContent}",
+				groupName = "Site Name",
+				source = "true",
+				title = "${webContentTitle}");
+		}
+
+		ACUtils.addWidgetToPage(
+			layoutName = "${layoutName}",
+			widgetName = "Web Content Display");
+
+		WebContentDisplayPortlet.selectWebContent(webContentTitle = "${webContentTitle}");
+
+		Navigator.gotoSitePage(
+			pageName = "AC Page",
+			siteName = "Site Name");
+	}
+
+	macro getIPCountry {
+		var curl = '''https://ipinfo.io''';
+
+		var code = JSONCurlUtil.get("${curl}", "$.country");
+
+		if ("${code}" == "GB") {
+			var country = "United Kingdom";
+		}
+
+		if ("${code}" == "BR") {
+			var country = "Brazil";
+		}
+
+		if ("${code}" == "US") {
+			var country = "United States";
+		}
+
+		if ("${code}" == "CN") {
+			var country = "China";
+		}
+
+		if ("${code}" == "ES") {
+			var country = "Spain";
+		}
+
+		if ("${code}" == "NZ") {
+			var country = "New Zealand";
+		}
+
+		return "${country}";
+	}
+
+	macro getRequestCommonPropertyValue {
+		var postDataText = ProxyUtil.getHarRecording("$..request..postData..text");
+		var value = JSONUtil.getWithJSONPath("[${postDataText}]","$.[0].${property}");
+
+		return "${value}";
+	}
+
+	macro launchAC {
+		var analyticsCloudURL = PropsUtil.get("analytics.cloud.url");
+
+		Open(locator1 = "${analyticsCloudURL}");
+
+		if (IsElementPresent(locator1 = "ACLogin#EMAIL_LOGIN_FIELD")) {
+			ACLogin.loginAs();
+		}
+
+		ACWorkspace.openWorkspace();
+	}
+
+	macro launchDXP {
+		Navigator.openURL();
+
+		if (!(isSet(userEmailAddress))) {
+			userEmailAddress = "test@liferay.com";
+		}
+
+		if (IsElementNotPresent(locator1 = "ApplicationsMenu#APPLICATIONS_MENU")) {
+			User.firstLoginPG(userEmailAddress = "${userEmailAddress}");
+		}
+	}
+
+	macro searchBar {
+		Type(
+			locator1 = "ACSettings#SEARCH_BAR",
+			value1 = "${searchItem}");
+
+		KeyPress(
+			locator1 = "ACSettings#SEARCH_BAR",
+			value1 = "\ENTER");
+	}
+
+	macro tearDownAC {
+		ACUtils.launchAC();
+
+		ACSettings.deleteAllProperties();
+
+		ACSettings.deleteAllDataSource();
+	}
+
+	macro tearDownDXP {
+		ACUtils.launchDXP();
+
+		ACDXPSettings.disconnectDXPFromAnalyticsCloud();
+	}
+
+	macro viewPaginationItemsPerPage {
+		AssertTextEquals(
+			locator1 = "ACUtils#PAGINATION_ITEMS_PER_PAGE_SELECT",
+			value1 = "${itemsPerPage} Items");
+	}
+
+	macro viewResultsMessage {
+		AssertTextEquals(
+			locator1 = "ACUtils#RESULT_MESSAGE",
+			value1 = "${results}");
+	}
+
+	macro viewResultsPages {
+		var key_pageNumber = "${pageNumber}";
+
+		AssertTextEquals(
+			locator1 = "ACUtils#ANY_PAGE",
+			value1 = "${key_pageNumber}");
+	}
+
+}

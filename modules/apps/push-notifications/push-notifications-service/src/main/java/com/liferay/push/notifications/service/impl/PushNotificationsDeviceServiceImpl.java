@@ -14,26 +14,36 @@
 
 package com.liferay.push.notifications.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.push.notifications.constants.PushNotificationsActionKeys;
+import com.liferay.push.notifications.constants.PushNotificationsConstants;
 import com.liferay.push.notifications.model.PushNotificationsDevice;
 import com.liferay.push.notifications.service.base.PushNotificationsDeviceServiceBaseImpl;
-import com.liferay.push.notifications.service.permission.PushNotificationsPermission;
 
 import java.util.List;
+
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Silvio Santos
  * @author Bruno Farache
  */
-@ProviderType
+@Component(
+	property = {
+		"json.web.service.context.name=pushnotifications",
+		"json.web.service.context.path=PushNotificationsDevice"
+	},
+	service = AopService.class
+)
 public class PushNotificationsDeviceServiceImpl
 	extends PushNotificationsDeviceServiceBaseImpl {
 
@@ -43,8 +53,9 @@ public class PushNotificationsDeviceServiceImpl
 			String token, String platform)
 		throws PortalException {
 
-		PushNotificationsPermission.check(
-			getPermissionChecker(), PushNotificationsActionKeys.MANAGE_DEVICES);
+		_portletResourcePermission.check(
+			getPermissionChecker(), 0,
+			PushNotificationsActionKeys.MANAGE_DEVICES);
 
 		PushNotificationsDevice pushNotificationsDevice =
 			pushNotificationsDevicePersistence.fetchByToken(token);
@@ -55,9 +66,7 @@ public class PushNotificationsDeviceServiceImpl
 					getGuestOrUserId(), platform, token);
 		}
 		else if (!platform.equals("sms")) {
-			long userId = getGuestOrUserId();
-
-			pushNotificationsDevice.setUserId(userId);
+			pushNotificationsDevice.setUserId(getGuestOrUserId());
 
 			pushNotificationsDeviceLocalService.updatePushNotificationsDevice(
 				pushNotificationsDevice);
@@ -71,8 +80,9 @@ public class PushNotificationsDeviceServiceImpl
 			long pushNotificationsDeviceId)
 		throws PortalException {
 
-		PushNotificationsPermission.check(
-			getPermissionChecker(), PushNotificationsActionKeys.MANAGE_DEVICES);
+		_portletResourcePermission.check(
+			getPermissionChecker(), 0,
+			PushNotificationsActionKeys.MANAGE_DEVICES);
 
 		return pushNotificationsDeviceLocalService.
 			deletePushNotificationsDevice(pushNotificationsDeviceId);
@@ -83,8 +93,9 @@ public class PushNotificationsDeviceServiceImpl
 	public PushNotificationsDevice deletePushNotificationsDevice(String token)
 		throws PortalException {
 
-		PushNotificationsPermission.check(
-			getPermissionChecker(), PushNotificationsActionKeys.MANAGE_DEVICES);
+		_portletResourcePermission.check(
+			getPermissionChecker(), 0,
+			PushNotificationsActionKeys.MANAGE_DEVICES);
 
 		PushNotificationsDevice pushNotificationsDevice =
 			pushNotificationsDevicePersistence.fetchByToken(token);
@@ -104,8 +115,9 @@ public class PushNotificationsDeviceServiceImpl
 			}
 			else if (_log.isInfoEnabled()) {
 				_log.info(
-					"Device found with token " + token +
-						" does not belong to user " + userId);
+					StringBundler.concat(
+						"Device found with token ", token,
+						" does not belong to user ", userId));
 			}
 		}
 
@@ -116,8 +128,8 @@ public class PushNotificationsDeviceServiceImpl
 	public void sendPushNotification(long[] toUserIds, String payload)
 		throws PortalException {
 
-		PushNotificationsPermission.check(
-			getPermissionChecker(),
+		_portletResourcePermission.check(
+			getPermissionChecker(), 0,
 			PushNotificationsActionKeys.SEND_PUSH_NOTIFICATION);
 
 		JSONObject payloadJSONObject = JSONFactoryUtil.createJSONObject(
@@ -132,8 +144,8 @@ public class PushNotificationsDeviceServiceImpl
 			String platform, List<String> tokens, String payload)
 		throws PortalException {
 
-		PushNotificationsPermission.check(
-			getPermissionChecker(),
+		_portletResourcePermission.check(
+			getPermissionChecker(), 0,
 			PushNotificationsActionKeys.SEND_PUSH_NOTIFICATION);
 
 		JSONObject payloadJSONObject = JSONFactoryUtil.createJSONObject(
@@ -145,5 +157,10 @@ public class PushNotificationsDeviceServiceImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		PushNotificationsDeviceServiceImpl.class);
+
+	@Reference(
+		target = "(resource.name=" + PushNotificationsConstants.RESOURCE_NAME + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
 
 }

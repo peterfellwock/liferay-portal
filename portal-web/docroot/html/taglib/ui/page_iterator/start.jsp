@@ -33,11 +33,11 @@ PortletURL portletURL = (PortletURL)request.getAttribute("liferay-ui:page-iterat
 String target = (String)request.getAttribute("liferay-ui:page-iterator:target");
 int total = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:page-iterator:total"));
 String type = (String)request.getAttribute("liferay-ui:page-iterator:type");
-String url = (String)request.getAttribute("liferay-ui:page-iterator:url");
-String urlAnchor = (String)request.getAttribute("liferay-ui:page-iterator:urlAnchor");
+String url = StringPool.BLANK;
+String urlAnchor = StringPool.BLANK;
 int pages = GetterUtil.getInteger((String)request.getAttribute("liferay-ui:page-iterator:pages"));
 
-if ((portletURL != null) && Validator.isNull(url) && Validator.isNull(urlAnchor)) {
+if (portletURL != null) {
 	String[] urlArray = PortalUtil.stripURLAnchor(portletURL.toString(), StringPool.POUND);
 
 	url = urlArray[0];
@@ -56,6 +56,7 @@ if (Validator.isNull(id)) {
 }
 
 int start = (cur - 1) * delta;
+
 int end = cur * delta;
 
 if (end > total) {
@@ -75,22 +76,24 @@ else {
 	}
 }
 
-String deltaURL = HttpUtil.removeParameter(url, namespace + deltaParam);
+if (deltaConfigurable) {
+	url = HttpUtil.setParameter(url, namespace + deltaParam, String.valueOf(delta));
+}
 
 NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
-
-if (forcePost && (portletURL != null)) {
-	url = url.split(namespace)[0];
 %>
 
-	<form action="<%= url %>" id="<%= randomNamespace + namespace %>pageIteratorFm" method="post" name="<%= randomNamespace + namespace %>pageIteratorFm">
+<c:if test="<%= forcePost && (portletURL != null) %>">
+
+	<%
+	url = url.split(namespace)[0];
+	%>
+
+	<form action="<%= HtmlUtil.escapeAttribute(url) %>" id="<%= randomNamespace + namespace %>pageIteratorFm" method="post" name="<%= randomNamespace + namespace %>pageIteratorFm">
 		<aui:input name="<%= curParam %>" type="hidden" />
 		<liferay-portlet:renderURLParams portletURL="<%= portletURL %>" />
 	</form>
-
-<%
-}
-%>
+</c:if>
 
 <c:if test='<%= type.equals("approximate") || type.equals("more") || type.equals("regular") || (type.equals("article") && (total > resultRowsSize)) %>'>
 	<div class="taglib-page-iterator" id="<%= namespace + id %>">
@@ -163,69 +166,60 @@ if (forcePost && (portletURL != null)) {
 			<c:if test="<%= PropsValues.SEARCH_CONTAINER_PAGE_DELTA_VALUES.length > 0 %>">
 				<div class="lfr-pagination-config">
 					<div class="lfr-pagination-page-selector">
-						<c:choose>
-							<c:when test="<%= themeDisplay.isFacebook() %>">
-								<liferay-ui:message key="page" />
 
-								<%= cur %>
-							</c:when>
-							<c:otherwise>
+						<%
+						String suffix = LanguageUtil.get(resourceBundle, "of") + StringPool.SPACE + numberFormat.format(pages);
 
-								<%
-								String suffix = LanguageUtil.get(resourceBundle, "of") + StringPool.SPACE + numberFormat.format(pages);
+						if (type.equals("approximate") || type.equals("more")) {
+							suffix = StringPool.BLANK;
+						}
+						%>
 
-								if (type.equals("approximate") || type.equals("more")) {
-									suffix = StringPool.BLANK;
+						<liferay-ui:icon-menu
+							cssClass="current-page-menu"
+							direction="down"
+							icon=""
+							message='<%= LanguageUtil.get(resourceBundle, "page") + StringPool.SPACE + cur + StringPool.SPACE + suffix %>'
+							showWhenSingleIcon="<%= true %>"
+						>
+
+							<%
+							int pagesIteratorMax = maxPages;
+							int pagesIteratorBegin = 1;
+							int pagesIteratorEnd = pages;
+
+							if (pages > pagesIteratorMax) {
+								pagesIteratorBegin = cur - pagesIteratorMax;
+								pagesIteratorEnd = cur + pagesIteratorMax;
+
+								if (pagesIteratorBegin < 1) {
+									pagesIteratorBegin = 1;
 								}
-								%>
 
-								<liferay-ui:icon-menu
-									cssClass="current-page-menu"
-									direction="down"
-									icon=""
-									message='<%= LanguageUtil.get(resourceBundle, "page") + StringPool.SPACE + cur + StringPool.SPACE + suffix %>'
-									showWhenSingleIcon="<%= true %>"
-								>
+								if (pagesIteratorEnd > pages) {
+									pagesIteratorEnd = pages;
+								}
+							}
 
-									<%
-									int pagesIteratorMax = maxPages;
-									int pagesIteratorBegin = 1;
-									int pagesIteratorEnd = pages;
+							for (int i = pagesIteratorBegin; i <= pagesIteratorEnd; i++) {
+							%>
 
-									if (pages > pagesIteratorMax) {
-										pagesIteratorBegin = cur - pagesIteratorMax;
-										pagesIteratorEnd = cur + pagesIteratorMax;
+								<liferay-ui:icon
+									message="<%= String.valueOf(i) %>"
+									onClick='<%= forcePost ? _getOnClick(namespace, curParam, i) : "" %>'
+									url="<%= HtmlUtil.escapeJSLink(HttpUtil.setParameter(url + urlAnchor, namespace + curParam, i)) %>"
+								/>
 
-										if (pagesIteratorBegin < 1) {
-											pagesIteratorBegin = 1;
-										}
+							<%
+							}
+							%>
 
-										if (pagesIteratorEnd > pages) {
-											pagesIteratorEnd = pages;
-										}
-									}
-
-									for (int i = pagesIteratorBegin; i <= pagesIteratorEnd; i++) {
-									%>
-
-										<liferay-ui:icon
-											message="<%= String.valueOf(i) %>"
-											onClick='<%= forcePost ? _getOnClick(namespace, curParam, i) : "" %>'
-											url='<%= url + namespace + curParam + "=" + i + urlAnchor %>'
-										/>
-
-									<%
-									}
-									%>
-
-								</liferay-ui:icon-menu>
-							</c:otherwise>
-						</c:choose>
+						</liferay-ui:icon-menu>
 					</div>
 
 					<div class="lfr-pagination-delta-selector">
 						<c:choose>
-							<c:when test="<%= !deltaConfigurable || themeDisplay.isFacebook() %>">
+							<c:when test="<%= !deltaConfigurable %>">
 								&mdash;
 
 								<liferay-ui:message arguments="<%= delta %>" key="x-items-per-page" />
@@ -243,12 +237,14 @@ if (forcePost && (portletURL != null)) {
 										if (curDelta > SearchContainer.MAX_DELTA) {
 											continue;
 										}
+
+										String curDeltaURL = HttpUtil.setParameter(url + urlAnchor, namespace + deltaParam, curDelta);
 									%>
 
 										<liferay-ui:icon
 											message="<%= String.valueOf(curDelta) %>"
 											onClick='<%= forcePost ? _getOnClick(namespace, deltaParam, curDelta) : "" %>'
-											url='<%= deltaURL + "&" + namespace + deltaParam + "=" + curDelta + urlAnchor %>'
+											url="<%= HtmlUtil.escapeJSLink(curDeltaURL) %>"
 										/>
 
 									<%
@@ -267,22 +263,22 @@ if (forcePost && (portletURL != null)) {
 			<%@ include file="/html/taglib/ui/page_iterator/showing_x_results.jspf" %>
 		</c:if>
 
-		<ul class="lfr-pagination-buttons pager">
+		<ul class="lfr-pagination-buttons pagination">
 			<c:if test='<%= type.equals("approximate") || type.equals("more") || type.equals("regular") %>'>
-				<li class="<%= (cur != 1) ? "" : "disabled" %> first">
-					<a href="<%= (cur != 1) ? _getHREF(formName, namespace + curParam, 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur != 1 && forcePost) ? _getOnClick(namespace, curParam, 1) : "" %>" tabIndex="<%= (cur != 1) ? "0" : "-1" %>" target="<%= target %>">
+				<li class="<%= (cur != 1) ? "" : "disabled" %> first page-item">
+					<a href="<%= (cur != 1) ? _getHREF(formName, namespace + curParam, 1, jsCall, url, urlAnchor) : "javascript:;" %>" page-link onclick="<%= ((cur != 1) && forcePost) ? _getOnClick(namespace, curParam, 1) : "" %>" tabIndex="<%= (cur != 1) ? "0" : "-1" %>" target="<%= target %>">
 						<%= PortalUtil.isRightToLeft(request) ? "&rarr;" : "&larr;" %> <liferay-ui:message key="first" />
 					</a>
 				</li>
 			</c:if>
 
-			<li class="<%= (cur != 1) ? "" : "disabled" %>">
-				<a href="<%= (cur != 1) ? _getHREF(formName, namespace + curParam, cur - 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur != 1 && forcePost) ? _getOnClick(namespace, curParam, cur - 1) : "" %>" tabIndex="<%= (cur != 1) ? "0" : "-1" %>" target="<%= target %>">
+			<li class="<%= (cur != 1) ? "" : "disabled" %> page-item">
+				<a href="<%= (cur != 1) ? _getHREF(formName, namespace + curParam, cur - 1, jsCall, url, urlAnchor) : "javascript:;" %>" page-link onclick="<%= ((cur != 1) && forcePost) ? _getOnClick(namespace, curParam, cur - 1) : "" %>" tabIndex="<%= (cur != 1) ? "0" : "-1" %>" target="<%= target %>">
 					<liferay-ui:message key="previous" />
 				</a>
 			</li>
-			<li class="<%= (cur != pages) ? "" : "disabled" %>">
-				<a href="<%= (cur != pages) ? _getHREF(formName, namespace + curParam, cur + 1, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur != pages && forcePost) ? _getOnClick(namespace, curParam, cur + 1) : "" %>" tabIndex="<%= (cur != pages) ? "0" : "-1" %>" target="<%= target %>">
+			<li class="<%= (cur != pages) ? "" : "disabled" %> page-item">
+				<a href="<%= (cur != pages) ? _getHREF(formName, namespace + curParam, cur + 1, jsCall, url, urlAnchor) : "javascript:;" %>" page-link onclick="<%= ((cur != pages) && forcePost) ? _getOnClick(namespace, curParam, cur + 1) : "" %>" tabIndex="<%= (cur != pages) ? "0" : "-1" %>" target="<%= target %>">
 					<c:choose>
 						<c:when test='<%= type.equals("approximate") || type.equals("more") %>'>
 							<liferay-ui:message key="more" />
@@ -295,8 +291,8 @@ if (forcePost && (portletURL != null)) {
 			</li>
 
 			<c:if test='<%= type.equals("regular") %>'>
-				<li class="<%= (cur != pages) ? "" : "disabled" %> last">
-					<a href="<%= (cur != pages) ? _getHREF(formName, namespace + curParam, pages, jsCall, url, urlAnchor) : "javascript:;" %>" onclick="<%= (cur != pages && forcePost) ? _getOnClick(namespace, curParam, pages) : "" %>" tabIndex="<%= (cur != pages) ? "0" : "-1" %>" target="<%= target %>">
+				<li class="<%= (cur != pages) ? "" : "disabled" %> last page-item">
+					<a href="<%= (cur != pages) ? _getHREF(formName, namespace + curParam, pages, jsCall, url, urlAnchor) : "javascript:;" %>" page-link onclick="<%= ((cur != pages) && forcePost) ? _getOnClick(namespace, curParam, pages) : "" %>" tabIndex="<%= (cur != pages) ? "0" : "-1" %>" target="<%= target %>">
 						<liferay-ui:message key="last" /> <%= PortalUtil.isRightToLeft(request) ? "&larr;" : "&rarr;" %>
 					</a>
 				</li>
@@ -309,22 +305,27 @@ if (forcePost && (portletURL != null)) {
 	</div>
 </c:if>
 
-<aui:script>
+<script>
 	function <portlet:namespace />submitForm(curParam, cur) {
-		var form = AUI.$(document.<%= randomNamespace + namespace %>pageIteratorFm);
+		var data = {};
 
-		form.fm(curParam).val(cur);
+		data[curParam] = cur;
 
-		submitForm(form);
+		Liferay.Util.postForm(
+			document.<%= randomNamespace + namespace %>pageIteratorFm,
+			{
+				data: data
+			}
+		);
 	}
-</aui:script>
+</script>
 
 <%!
 private String _getHREF(String formName, String curParam, int cur, String jsCall, String url, String urlAnchor) throws Exception {
 	String href = null;
 
 	if (Validator.isNotNull(url)) {
-		href = HtmlUtil.escape(url + curParam + "=" + cur + urlAnchor);
+		href = HtmlUtil.escapeHREF(HttpUtil.addParameter(HttpUtil.removeParameter(url, curParam) + urlAnchor, curParam, cur));
 	}
 	else {
 		href = "javascript:document." + formName + "." + curParam + ".value = '" + cur + "'; " + jsCall;
@@ -338,4 +339,5 @@ private String _getHREF(String formName, String curParam, int cur, String jsCall
 private String _getOnClick(String namespace, String curParam, int cur) {
 	return "event.preventDefault(); " + namespace + "submitForm('" + namespace + curParam + "','" + cur + "');";
 }
+
 %>

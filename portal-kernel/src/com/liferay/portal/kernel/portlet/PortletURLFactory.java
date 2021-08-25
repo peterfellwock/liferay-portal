@@ -14,30 +14,58 @@
 
 package com.liferay.portal.kernel.portlet;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.Portlet;
 
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
 @ProviderType
 public interface PortletURLFactory {
 
 	public LiferayPortletURL create(
-		HttpServletRequest request, String portletId, Layout layout,
+		HttpServletRequest httpServletRequest, Portlet portlet, Layout layout,
 		String lifecycle);
 
 	public LiferayPortletURL create(
-		HttpServletRequest request, String portletId, long plid,
+		HttpServletRequest httpServletRequest, Portlet portlet, Layout layout,
+		String lifecycle, MimeResponse.Copy copy);
+
+	public LiferayPortletURL create(
+		HttpServletRequest httpServletRequest, Portlet portlet,
 		String lifecycle);
 
 	public LiferayPortletURL create(
-		HttpServletRequest request, String portletId, String lifecycle);
+		HttpServletRequest httpServletRequest, String portletId, Layout layout,
+		String lifecycle);
+
+	public LiferayPortletURL create(
+		HttpServletRequest httpServletRequest, String portletId, long plid,
+		String lifecycle);
+
+	public LiferayPortletURL create(
+		HttpServletRequest httpServletRequest, String portletId,
+		String lifecycle);
+
+	public LiferayPortletURL create(
+		PortletRequest portletRequest, Portlet portlet, Layout layout,
+		String lifecycle);
+
+	public LiferayPortletURL create(
+		PortletRequest portletRequest, Portlet portlet, long plid,
+		String lifecycle);
+
+	public LiferayPortletURL create(
+		PortletRequest portletRequest, Portlet portlet, long plid,
+		String lifecycle, MimeResponse.Copy copy);
 
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, Layout layout,
@@ -46,6 +74,10 @@ public interface PortletURLFactory {
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, long plid,
 		String lifecycle);
+
+	public LiferayPortletURL create(
+		PortletRequest portletRequest, String portletId, long plid,
+		String lifecycle, MimeResponse.Copy copy);
 
 	public LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, String lifecycle);

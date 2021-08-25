@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.test.util;
 
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.ReflectionUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,40 +31,40 @@ import java.util.Properties;
 public class TestPropsUtil {
 
 	public static String get(String key) {
-		return _instance._get(key);
+		return _testPropsUtil._get(key);
 	}
 
 	public static Properties getProperties() {
-		return _instance._props;
+		return _testPropsUtil._props;
 	}
 
 	public static void printProperties() {
-		_instance._printProperties(true);
+		_testPropsUtil._printProperties(true);
 	}
 
 	public static void set(String key, String value) {
-		_instance._set(key, value);
+		_testPropsUtil._set(key, value);
 	}
 
 	private TestPropsUtil() {
-		try (InputStream is = TestPropsUtil.class.getResourceAsStream(
+		try (InputStream inputStream = TestPropsUtil.class.getResourceAsStream(
 				"/test-portal-impl.properties")) {
 
-			_props.load(is);
+			_props.load(inputStream);
 		}
-		catch (IOException ioe) {
-			ReflectionUtil.throwException(ioe);
+		catch (IOException ioException) {
+			ReflectionUtil.throwException(ioException);
 		}
 
-		try (InputStream is = TestPropsUtil.class.getResourceAsStream(
+		try (InputStream inputStream = TestPropsUtil.class.getResourceAsStream(
 				"/test-portal-impl-ext.properties")) {
 
-			if (is != null) {
-				_props.load(is);
+			if (inputStream != null) {
+				_props.load(inputStream);
 			}
 		}
-		catch (IOException ioe) {
-			ReflectionUtil.throwException(ioe);
+		catch (IOException ioException) {
+			ReflectionUtil.throwException(ioException);
 		}
 
 		_printProperties(false);
@@ -98,7 +98,7 @@ public class TestPropsUtil {
 		_props.setProperty(key, value);
 	}
 
-	private static final TestPropsUtil _instance = new TestPropsUtil();
+	private static final TestPropsUtil _testPropsUtil = new TestPropsUtil();
 
 	private final Properties _props = new Properties();
 

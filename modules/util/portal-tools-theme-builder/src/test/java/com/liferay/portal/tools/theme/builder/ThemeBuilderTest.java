@@ -16,7 +16,6 @@ package com.liferay.portal.tools.theme.builder;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 
 import java.net.URL;
 
@@ -50,20 +49,47 @@ public class ThemeBuilderTest {
 			String line;
 
 			while ((line = bufferedReader.readLine()) != null) {
-				File jarFile = new File(line);
+				File file = new File(line);
 
-				Assert.assertTrue(jarFile.isFile());
+				Assert.assertTrue(file.isFile());
 
-				if (line.contains("com.liferay.frontend.theme.styled-")) {
-					_styledJarFile = jarFile;
+				if (line.contains("classic-theme-")) {
+					_classicWarFile = file;
+				}
+				else if (line.contains("com.liferay.frontend.theme.styled-")) {
+					_styledJarFile = file;
 				}
 				else if (line.contains(
 							"com.liferay.frontend.theme.unstyled-")) {
 
-					_unstyledJarFile = jarFile;
+					_unstyledJarFile = file;
 				}
 			}
 		}
+
+		Assert.assertNotNull(_classicWarFile);
+		Assert.assertTrue(_classicWarFile.isFile());
+
+		Assert.assertNotNull(_styledJarFile);
+		Assert.assertTrue(_styledJarFile.isFile());
+
+		Assert.assertNotNull(_unstyledJarFile);
+		Assert.assertTrue(_unstyledJarFile.isFile());
+	}
+
+	@Test
+	public void testThemeBuilderClassic() throws Exception {
+		buildTheme(
+			_diffsDir, _NAME, temporaryFolder.getRoot(), _classicWarFile,
+			"classic", "ftl", _unstyledJarFile);
+
+		_assertEquals("css/_custom.scss", ".text { color: black; }");
+		_assertNotExists("css/main.css");
+		_assertNotEquals("css/_portal.scss", "");
+		_assertExists("images/thumbnail.png");
+		_assertExists("templates/init.ftl");
+		_assertNotExists("templates/init.vm");
+		_assertExists("WEB-INF/liferay-look-and-feel.xml");
 	}
 
 	@Test
@@ -72,7 +98,8 @@ public class ThemeBuilderTest {
 			_diffsDir, _NAME, temporaryFolder.getRoot(), _styledJarFile,
 			ThemeBuilder.STYLED, "ftl", _unstyledJarFile);
 
-		_assertEquals("css/custom.scss", ".text { color: black; }");
+		_assertEquals("css/_custom.scss", ".text { color: black; }");
+		_assertNotEquals("css/_portal.scss", "");
 		_assertExists("images/thumbnail.png");
 		_assertExists("templates/init.ftl");
 		_assertNotExists("templates/init.vm");
@@ -83,11 +110,13 @@ public class ThemeBuilderTest {
 	public void testThemeBuilderUnstyled() throws Exception {
 		buildTheme(
 			_diffsDir, _NAME, temporaryFolder.getRoot(), null,
-			ThemeBuilder.UNSTYLED, "vm", _unstyledJarFile);
+			ThemeBuilder.UNSTYLED, "ftl", _unstyledJarFile);
 
-		_assertEquals("css/custom.scss", ".text { color: black; }");
-		_assertNotExists("templates/init.ftl");
-		_assertExists("templates/init.vm");
+		_assertEquals("css/_custom.scss", ".text { color: black; }");
+		_assertEquals("css/_portal.scss", "");
+		_assertNotExists("images/thumbnail.png");
+		_assertExists("templates/init.ftl");
+		_assertNotExists("templates/init.vm");
 		_assertExists("WEB-INF/liferay-look-and-feel.xml");
 	}
 
@@ -107,12 +136,9 @@ public class ThemeBuilderTest {
 	}
 
 	private void _assertEquals(String fileName, String expected)
-		throws IOException {
+		throws Exception {
 
-		File file = _assertExists(fileName);
-
-		String content = new String(
-			Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+		String content = _read(fileName);
 
 		Assert.assertEquals(expected, content);
 	}
@@ -125,6 +151,14 @@ public class ThemeBuilderTest {
 		return file;
 	}
 
+	private void _assertNotEquals(String fileName, String expected)
+		throws Exception {
+
+		String content = _read(fileName);
+
+		Assert.assertNotEquals(expected, content);
+	}
+
 	private File _assertNotExists(String fileName) {
 		File file = new File(temporaryFolder.getRoot(), fileName);
 
@@ -133,8 +167,16 @@ public class ThemeBuilderTest {
 		return file;
 	}
 
+	private String _read(String fileName) throws Exception {
+		File file = _assertExists(fileName);
+
+		return new String(
+			Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+	}
+
 	private static final String _NAME = "Test Theme";
 
+	private static File _classicWarFile;
 	private static File _diffsDir;
 	private static File _styledJarFile;
 	private static File _unstyledJarFile;

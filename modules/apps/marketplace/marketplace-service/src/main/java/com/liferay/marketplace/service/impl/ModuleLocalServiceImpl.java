@@ -14,27 +14,32 @@
 
 package com.liferay.marketplace.service.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.marketplace.exception.ModuleNamespaceException;
+import com.liferay.marketplace.model.App;
 import com.liferay.marketplace.model.Module;
 import com.liferay.marketplace.service.base.ModuleLocalServiceBaseImpl;
+import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
 
+import org.osgi.service.component.annotations.Component;
+
 /**
  * @author Ryan Park
  * @author Joan Kim
  */
-@ProviderType
+@Component(
+	property = "module.class.name=com.liferay.marketplace.model.Module",
+	service = AopService.class
+)
 public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 
 	@Override
 	public Module addModule(
-			long userId, long appId, String bundleSymbolicName,
-			String bundleVersion, String contextName)
+			long appId, String bundleSymbolicName, String bundleVersion,
+			String contextName)
 		throws PortalException {
 
 		Module module = fetchModule(
@@ -44,6 +49,8 @@ public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 			return module;
 		}
 
+		App app = appPersistence.findByPrimaryKey(appId);
+
 		validate(bundleSymbolicName, contextName);
 
 		long moduleId = counterLocalService.increment();
@@ -52,14 +59,13 @@ public class ModuleLocalServiceImpl extends ModuleLocalServiceBaseImpl {
 
 		module.setModuleId(moduleId);
 
+		module.setCompanyId(app.getCompanyId());
 		module.setAppId(appId);
 		module.setBundleSymbolicName(bundleSymbolicName);
 		module.setBundleVersion(bundleVersion);
 		module.setContextName(contextName);
 
-		modulePersistence.update(module);
-
-		return module;
+		return modulePersistence.update(module);
 	}
 
 	@Override

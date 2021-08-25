@@ -21,38 +21,39 @@ import com.liferay.portal.kernel.repository.model.ModelValidator;
 import com.liferay.portal.kernel.util.Validator;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Mueller (7.2.x), with no direct replacement
  */
+@Deprecated
 public class ModelValidatorUtil {
 
-	public static final <T> ModelValidator<T> compose(
+	public static <T> ModelValidator<T> compose(
 		ModelValidator<T>... modelValidators) {
 
 		return new CompositeModelValidator<>(modelValidators);
 	}
 
-	public static final ModelValidator<FileContentReference>
+	public static ModelValidator<FileContentReference>
 		getDefaultDLFileEntryModelValidator() {
 
 		return compose(
-			getDefaultFileNameModelValidator(),
-			getDefaultFileExtensionModelValidator(),
-			getDefaultFileSizeModelValidator());
+			_defaultFileNameModelValidator, _defaultFileExtensionModelValidator,
+			_defaultFileSizeModelValidator);
 	}
 
-	public static final ModelValidator<FileContentReference>
+	public static ModelValidator<FileContentReference>
 		getDefaultFileExtensionModelValidator() {
 
 		return _defaultFileExtensionModelValidator;
 	}
 
-	public static final ModelValidator<FileContentReference>
+	public static ModelValidator<FileContentReference>
 		getDefaultFileNameModelValidator() {
 
 		return _defaultFileNameModelValidator;
 	}
 
-	public static final ModelValidator<FileContentReference>
+	public static ModelValidator<FileContentReference>
 		getDefaultFileSizeModelValidator() {
 
 		return _defaultFileSizeModelValidator;
@@ -65,6 +66,13 @@ public class ModelValidatorUtil {
 				@Override
 				public void validate(FileContentReference fileContentReference)
 					throws PortalException {
+
+					if ((fileContentReference.getFileEntryId() != 0) &&
+						Validator.isNull(
+							fileContentReference.getSourceFileName())) {
+
+						return;
+					}
 
 					DLValidatorUtil.validateFileExtension(
 						fileContentReference.getSourceFileName());

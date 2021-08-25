@@ -23,32 +23,61 @@ import java.io.InputStream;
  */
 public class FileContentReference {
 
-	public static final FileContentReference fromBytes(
+	public static FileContentReference fromBytes(
+		long fileEntryId, String sourceFileName, String extension,
+		String mimeType, byte[] bytes) {
+
+		return fromInputStream(
+			fileEntryId, sourceFileName, extension, mimeType,
+			new ByteArrayInputStream(bytes), bytes.length);
+	}
+
+	public static FileContentReference fromBytes(
 		String sourceFileName, String extension, String mimeType,
 		byte[] bytes) {
 
 		return fromInputStream(
-			sourceFileName, extension, mimeType,
+			0, sourceFileName, extension, mimeType,
 			new ByteArrayInputStream(bytes), bytes.length);
 	}
 
-	public static final FileContentReference fromFile(
-		String sourceFileName, String extension, String mimeType, File file) {
+	public static FileContentReference fromFile(
+		long fileEntryId, String sourceFileName, String extension,
+		String mimeType, File file) {
 
 		return new FileContentReference(
-			sourceFileName, extension, mimeType, file, null, 0);
+			fileEntryId, sourceFileName, extension, mimeType, file, null, 0);
 	}
 
-	public static final FileContentReference fromInputStream(
+	public static FileContentReference fromFile(
+		String sourceFileName, String extension, String mimeType, File file) {
+
+		return fromFile(0, sourceFileName, extension, mimeType, file);
+	}
+
+	public static FileContentReference fromInputStream(
+		long fileEntryId, String sourceFileName, String extension,
+		String mimeType, InputStream inputStream, long size) {
+
+		return new FileContentReference(
+			fileEntryId, sourceFileName, extension, mimeType, null, inputStream,
+			size);
+	}
+
+	public static FileContentReference fromInputStream(
 		String sourceFileName, String extension, String mimeType,
 		InputStream inputStream, long size) {
 
-		return new FileContentReference(
-			sourceFileName, extension, mimeType, null, inputStream, size);
+		return fromInputStream(
+			0, sourceFileName, extension, mimeType, inputStream, size);
 	}
 
 	public String getExtension() {
 		return _extension;
+	}
+
+	public long getFileEntryId() {
+		return _fileEntryId;
 	}
 
 	public String getMimeType() {
@@ -71,10 +100,11 @@ public class FileContentReference {
 		return _sourceFileName;
 	}
 
-	protected FileContentReference(
-		String sourceFileName, String extension, String mimeType, File file,
-		InputStream inputStream, long size) {
+	private FileContentReference(
+		long fileEntryId, String sourceFileName, String extension,
+		String mimeType, File file, InputStream inputStream, long size) {
 
+		_fileEntryId = fileEntryId;
 		_sourceFileName = sourceFileName;
 		_extension = extension;
 		_mimeType = mimeType;
@@ -85,6 +115,7 @@ public class FileContentReference {
 
 	private final String _extension;
 	private final File _file;
+	private final long _fileEntryId;
 	private final InputStream _inputStream;
 	private final String _mimeType;
 	private final long _size;

@@ -1,9 +1,0 @@
-;
-; Do not manually edit this file.
-;
-[subrepo]
-	cmdver = liferay
-	commit = 6a73204b8e203d6e5307ba8b64ad3c341cc7396d
-	mode = push
-	parent = 72f0568206208935d02217817177fb1ee9d61426
-	remote = git@github.com:liferay/com-liferay-portal-lock.git

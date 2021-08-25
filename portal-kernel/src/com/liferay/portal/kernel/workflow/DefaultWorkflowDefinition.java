@@ -14,12 +14,14 @@
 
 package com.liferay.portal.kernel.workflow;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.LocalizationUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.InputStream;
 import java.io.Serializable;
 
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -31,13 +33,37 @@ public class DefaultWorkflowDefinition
 	implements Serializable, WorkflowDefinition {
 
 	@Override
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	@Override
 	public String getContent() {
 		return _content;
 	}
 
 	@Override
+	public Date getCreateDate() {
+		return _createDate;
+	}
+
+	@Override
+	public String getDescription() {
+		if (_description == null) {
+			return StringPool.BLANK;
+		}
+
+		return _description;
+	}
+
+	@Override
 	public InputStream getInputStream() {
 		return _inputStream;
+	}
+
+	@Override
+	public Date getModifiedDate() {
+		return _modifiedDate;
 	}
 
 	@Override
@@ -51,13 +77,17 @@ public class DefaultWorkflowDefinition
 	}
 
 	@Override
+	public String getScope() {
+		return _scope;
+	}
+
+	@Override
 	public String getTitle() {
 		if (_title == null) {
 			return StringPool.BLANK;
 		}
-		else {
-			return _title;
-		}
+
+		return _title;
 	}
 
 	@Override
@@ -66,8 +96,28 @@ public class DefaultWorkflowDefinition
 	}
 
 	@Override
+	public long getUserId() {
+		return _userId;
+	}
+
+	@Override
 	public int getVersion() {
 		return _version;
+	}
+
+	@Override
+	public long getWorkflowDefinitionId() {
+		return _workflowDefinitionId;
+	}
+
+	@Override
+	public List<WorkflowNode> getWorkflowNodes() {
+		return _workflowNodes;
+	}
+
+	@Override
+	public List<WorkflowTransition> getWorkflowTransitions() {
+		return _workflowTransitions;
 	}
 
 	@Override
@@ -79,12 +129,28 @@ public class DefaultWorkflowDefinition
 		_active = active;
 	}
 
+	public void setCompanyId(long companyId) {
+		_companyId = companyId;
+	}
+
 	public void setContent(String content) {
 		_content = content;
 	}
 
+	public void setCreateDate(Date createDate) {
+		_createDate = createDate;
+	}
+
+	public void setDescription(String description) {
+		_description = description;
+	}
+
 	public void setInputStream(InputStream inputStream) {
 		_inputStream = inputStream;
+	}
+
+	public void setModifiedDate(Date modifiedDate) {
+		_modifiedDate = modifiedDate;
 	}
 
 	public void setName(String name) {
@@ -95,20 +161,51 @@ public class DefaultWorkflowDefinition
 		_optionalAttributes = optionalAttributes;
 	}
 
+	public void setScope(String scope) {
+		_scope = scope;
+	}
+
 	public void setTitle(String title) {
 		_title = title;
+	}
+
+	public void setUserId(long userId) {
+		_userId = userId;
 	}
 
 	public void setVersion(int version) {
 		_version = version;
 	}
 
+	public void setWorkflowDefinitionId(long workflowDefinitionId) {
+		_workflowDefinitionId = workflowDefinitionId;
+	}
+
+	public void setWorkflowNodes(List<WorkflowNode> workflowNodes) {
+		_workflowNodes = workflowNodes;
+	}
+
+	public void setWorkflowTransitions(
+		List<WorkflowTransition> workflowTransitions) {
+
+		_workflowTransitions = workflowTransitions;
+	}
+
 	private boolean _active;
+	private long _companyId;
 	private String _content;
+	private Date _createDate;
+	private String _description;
 	private InputStream _inputStream;
+	private Date _modifiedDate;
 	private String _name;
 	private Map<String, Object> _optionalAttributes;
+	private String _scope;
 	private String _title;
+	private long _userId;
 	private int _version;
+	private long _workflowDefinitionId;
+	private List<WorkflowNode> _workflowNodes;
+	private List<WorkflowTransition> _workflowTransitions;
 
 }

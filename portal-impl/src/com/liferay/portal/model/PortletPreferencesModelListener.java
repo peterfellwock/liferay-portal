@@ -14,6 +14,7 @@
 
 package com.liferay.portal.model;
 
+import com.liferay.asset.kernel.util.NotifiedAssetEntryThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModelListener;
@@ -25,7 +26,6 @@ import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalServiceUtil;
-import com.liferay.portal.kernel.service.SubscriptionLocalServiceUtil;
 import com.liferay.portal.kernel.service.persistence.LayoutRevisionUtil;
 import com.liferay.portal.kernel.service.persistence.LayoutUtil;
 import com.liferay.portal.kernel.util.PortletKeys;
@@ -43,8 +43,6 @@ public class PortletPreferencesModelListener
 	@Override
 	public void onAfterRemove(PortletPreferences portletPreferences) {
 		clearCache(portletPreferences);
-
-		deleteSubscriptions(portletPreferences);
 	}
 
 	@Override
@@ -84,24 +82,12 @@ public class PortletPreferencesModelListener
 				CacheUtil.clearCache(companyId);
 			}
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			CacheUtil.clearCache();
-		}
-	}
-
-	protected void deleteSubscriptions(PortletPreferences portletPreferences) {
-		if (portletPreferences == null) {
-			return;
-		}
-
-		try {
-			SubscriptionLocalServiceUtil.deleteSubscriptions(
-				portletPreferences.getCompanyId(),
-				portletPreferences.getModelClassName(),
-				portletPreferences.getPortletPreferencesId());
-		}
-		catch (Exception e) {
-			_log.error("Unable to delete subscriptions", e);
 		}
 	}
 
@@ -144,17 +130,23 @@ public class PortletPreferencesModelListener
 				Layout layout = LayoutLocalServiceUtil.fetchLayout(
 					portletPreferences.getPlid());
 
-				if (layout == null) {
+				if ((layout == null) ||
+					NotifiedAssetEntryThreadLocal.
+						isNotifiedAssetEntryIdsModified()) {
+
 					return;
 				}
 
 				layout.setModifiedDate(new Date());
 
-				LayoutLocalServiceUtil.updateLayout(layout);
+				LayoutLocalServiceUtil.updateLayout(
+					layout.getGroupId(), layout.isPrivateLayout(),
+					layout.getLayoutId(), layout.getTypeSettings());
 			}
 		}
-		catch (Exception e) {
-			_log.error("Unable to update the layout's modified date", e);
+		catch (Exception exception) {
+			_log.error(
+				"Unable to update the layout's modified date", exception);
 		}
 	}
 

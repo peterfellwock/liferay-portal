@@ -20,6 +20,7 @@
 long kbFolderClassNameId = PortalUtil.getClassNameId(KBFolderConstants.getClassName());
 
 long parentResourceClassNameId = ParamUtil.getLong(request, "parentResourceClassNameId", kbFolderClassNameId);
+
 long parentResourcePrimKey = ParamUtil.getLong(request, "parentResourcePrimKey", KBFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 List<KBFolder> kbFolders = (List<KBFolder>)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_KB_FOLDERS);
@@ -42,8 +43,6 @@ if (ListUtil.isEmpty(kbFolders) && ListUtil.isEmpty(kbArticles)) {
 		kbArticles.add(KBArticleServiceUtil.getLatestKBArticle(parentResourcePrimKey, WorkflowConstants.STATUS_ANY));
 	}
 }
-
-boolean showSidebarHeader = ParamUtil.getBoolean(request, "showSidebarHeader", GetterUtil.getBoolean(request.getAttribute(KBWebKeys.SHOW_SIDEBAR_HEADER)));
 %>
 
 <c:choose>
@@ -56,47 +55,60 @@ boolean showSidebarHeader = ParamUtil.getBoolean(request, "showSidebarHeader", G
 		%>
 
 		<div class="sidebar-header">
-			<ul class="sidebar-header-actions">
-				<li>
-					<liferay-util:include page="/admin/folder_action.jsp" servletContext="<%= application %>" />
-				</li>
-			</ul>
+			<div class="autofit-row sidebar-section">
+				<div class="autofit-col autofit-col-expand">
+					<h4 class="component-title"><%= (kbFolder != null) ? HtmlUtil.escape(kbFolder.getName()) : LanguageUtil.get(request, "home") %></h4>
 
-			<h4><%= (kbFolder != null) ? HtmlUtil.escape(kbFolder.getName()) : LanguageUtil.get(request, "home") %></h4>
+					<h5 class="component-subtitle">
+						<liferay-ui:message key="folder" />
+					</h5>
+				</div>
 
-			<div>
-				<liferay-ui:message key="folder" />
+				<div class="autofit-col">
+					<ul class="autofit-padded-no-gutters autofit-row">
+						<li class="autofit-col">
+							<liferay-util:include page="/admin/folder_action.jsp" servletContext="<%= application %>" />
+						</li>
+					</ul>
+				</div>
 			</div>
 		</div>
 
-		<aui:nav-bar cssClass="navbar-no-collapse" markupView="lexicon">
-			<aui:nav collapsible="<%= false %>" cssClass="navbar-nav">
-				<aui:nav-item label="details" selected="<%= true %>" />
-			</aui:nav>
-		</aui:nav-bar>
+		<%
+		KBAdminNavigationDisplayContext kbAdminNavigationDisplayContext = new KBAdminNavigationDisplayContext(request, liferayPortletResponse);
+		%>
+
+		<clay:navigation-bar
+			navigationItems="<%= kbAdminNavigationDisplayContext.getInfoPanelNavigationItems() %>"
+		/>
 
 		<div class="sidebar-body">
-			<h5><liferay-ui:message key="num-of-items" /></h5>
+			<dl class="sidebar-dl sidebar-section">
+				<dt class="sidebar-dt">
+					<liferay-ui:message key="num-of-items" />
+				</dt>
 
-			<%
-			long folderId = KBFolderConstants.DEFAULT_PARENT_FOLDER_ID;
+				<%
+				long folderId = KBFolderConstants.DEFAULT_PARENT_FOLDER_ID;
 
-			if (kbFolder != null) {
-				folderId = kbFolder.getKbFolderId();
-			}
-			%>
+				if (kbFolder != null) {
+					folderId = kbFolder.getKbFolderId();
+				}
+				%>
 
-			<p>
-				<%= KBFolderServiceUtil.getKBFoldersAndKBArticlesCount(scopeGroupId, folderId, WorkflowConstants.STATUS_APPROVED) %>
-			</p>
+				<dd class="sidebar-dd">
+					<%= KBFolderServiceUtil.getKBFoldersAndKBArticlesCount(scopeGroupId, folderId, WorkflowConstants.STATUS_APPROVED) %>
+				</dd>
 
-			<c:if test="<%= kbFolder != null %>">
-				<h5><liferay-ui:message key="created" /></h5>
-
-				<p>
-					<%= HtmlUtil.escape(kbFolder.getUserName()) %>
-				</p>
-			</c:if>
+				<c:if test="<%= kbFolder != null %>">
+					<dt class="sidebar-dt">
+						<liferay-ui:message key="created" />
+					</dt>
+					<dd class="sidebar-dd">
+						<%= HtmlUtil.escape(kbFolder.getUserName()) %>
+					</dd>
+				</c:if>
+			</dl>
 		</div>
 	</c:when>
 	<c:when test="<%= ListUtil.isEmpty(kbFolders) && ListUtil.isNotEmpty(kbArticles) && (kbArticles.size() == 1) %>">
@@ -108,68 +120,79 @@ boolean showSidebarHeader = ParamUtil.getBoolean(request, "showSidebarHeader", G
 		%>
 
 		<div class="sidebar-header">
-			<c:if test="<%= showSidebarHeader %>">
-				<ul class="sidebar-header-actions">
-					<li>
-						<liferay-util:include page="/admin/subscribe.jsp" servletContext="<%= application %>" />
-					</li>
-					<li>
-						<liferay-util:include page="/admin/article_action.jsp" servletContext="<%= application %>" />
-					</li>
-				</ul>
-			</c:if>
+			<div class="autofit-row sidebar-section">
+				<div class="autofit-col autofit-col-expand">
+					<h4 class="component-title"><%= HtmlUtil.escape(kbArticle.getTitle()) %></h4>
 
-			<h4><%= HtmlUtil.escape(kbArticle.getTitle()) %></h4>
+					<h5>
+						<liferay-ui:message key="entry" />
+					</h5>
+				</div>
 
-			<div>
-				<liferay-ui:message key="entry" />
+				<div class="autofit-col">
+					<c:if test='<%= ParamUtil.getBoolean(request, "showSidebarHeader", GetterUtil.getBoolean(request.getAttribute(KBWebKeys.SHOW_SIDEBAR_HEADER))) %>'>
+						<ul class="autofit-padded-no-gutters autofit-row">
+							<li class="autofit-col">
+								<liferay-util:include page="/admin/subscribe.jsp" servletContext="<%= application %>" />
+							</li>
+							<li class="autofit-col">
+								<liferay-util:include page="/admin/article_action.jsp" servletContext="<%= application %>" />
+							</li>
+						</ul>
+					</c:if>
+				</div>
 			</div>
 		</div>
 
-		<liferay-ui:tabs cssClass="navbar-no-collapse" names="details,versions" refresh="<%= false %>" type="dropdown">
+		<liferay-ui:tabs
+			cssClass="navbar-no-collapse"
+			names="details,versions"
+			refresh="<%= false %>"
+			type="dropdown"
+		>
 			<liferay-ui:section>
 				<div class="sidebar-body">
-					<dl>
-						<dt class="h5">
+					<dl class="sidebar-dl sidebar-section">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="title" />
 						</dt>
-						<dd>
+						<dd class="sidebar-dd">
 							<%= HtmlUtil.escape(kbArticle.getTitle()) %>
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="author" />
 						</dt>
-						<dd>
+						<dd class="sidebar-dd">
 							<%= HtmlUtil.escape(kbArticle.getUserName()) %>
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="status" />
 						</dt>
-						<dd>
+						<dd class="sidebar-dd">
 							<liferay-ui:message key="<%= WorkflowConstants.getStatusLabel(kbArticle.getStatus()) %>" />
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="priority" />
 						</dt>
-						<dd>
+						<dd class="sidebar-dd">
 							<%= kbArticle.getPriority() %>
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="create-date" />
 						</dt>
-						<dd>
+						<dd class="sidebar-dd">
 							<%= dateFormatDateTime.format(kbArticle.getCreateDate()) %>
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="modified-date" />
 						</dt>
-						<dd>
+						<dd class="sidebar-dd">
 							<%= dateFormatDateTime.format(kbArticle.getModifiedDate()) %>
 						</dd>
-						<dt class="h5">
+						<dt class="sidebar-dt">
 							<liferay-ui:message key="views" />
 						</dt>
-						<dd>
+						<dd class="sidebar-dd">
 							<%= kbArticle.getViewCount() %>
 						</dd>
 					</dl>
@@ -185,14 +208,20 @@ boolean showSidebarHeader = ParamUtil.getBoolean(request, "showSidebarHeader", G
 	</c:when>
 	<c:otherwise>
 		<div class="sidebar-header">
-			<h4><liferay-ui:message arguments="<%= kbFolders.size() + kbArticles.size() %>" key="x-items-are-selected" /></h4>
+			<div class="autofit-row sidebar-section">
+				<div class="autofit-col autofit-col-expand">
+					<h4 class="component-title"><liferay-ui:message arguments="<%= kbFolders.size() + kbArticles.size() %>" key="x-items-are-selected" /></h4>
+				</div>
+			</div>
 		</div>
 
-		<aui:nav-bar cssClass="navbar-no-collapse" markupView="lexicon">
-			<aui:nav collapsible="<%= false %>" cssClass="navbar-nav">
-				<aui:nav-item label="details" selected="<%= true %>" />
-			</aui:nav>
-		</aui:nav-bar>
+		<%
+		KBAdminNavigationDisplayContext kbAdminNavigationDisplayContext = new KBAdminNavigationDisplayContext(request, liferayPortletResponse);
+		%>
+
+		<clay:navigation-bar
+			navigationItems="<%= kbAdminNavigationDisplayContext.getInfoPanelNavigationItems() %>"
+		/>
 
 		<div class="sidebar-body">
 			<h5><liferay-ui:message arguments="<%= kbFolders.size() + kbArticles.size() %>" key="x-items-are-selected" /></h5>

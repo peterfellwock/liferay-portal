@@ -1,48 +1,35 @@
 <#assign wikiNodeModels = dataFactory.newWikiNodeModels(groupId) />
 
 <#list wikiNodeModels as wikiNodeModel>
-	insert into WikiNode values ('${wikiNodeModel.uuid}', ${wikiNodeModel.nodeId}, ${wikiNodeModel.groupId}, ${wikiNodeModel.companyId}, ${wikiNodeModel.userId}, '${wikiNodeModel.userName}', '${dataFactory.getDateString(wikiNodeModel.createDate)}', '${dataFactory.getDateString(wikiNodeModel.modifiedDate)}', '${wikiNodeModel.name}', '${wikiNodeModel.description}', '${dataFactory.getDateString(wikiNodeModel.lastPostDate)}', '${dataFactory.getDateString(wikiNodeModel.lastPublishDate)}', ${wikiNodeModel.status}, ${wikiNodeModel.statusByUserId}, '${wikiNodeModel.statusByUserName}', '${dataFactory.getDateString(wikiNodeModel.statusDate)}');
-
-	<@insertResourcePermissions
-		_entry = wikiNodeModel
-	/>
+	${dataFactory.toInsertSQL(wikiNodeModel)}
 
 	<#assign wikiPageModels = dataFactory.newWikiPageModels(wikiNodeModel) />
 
 	<#list wikiPageModels as wikiPageModel>
-		insert into WikiPage values ('${wikiPageModel.uuid}', ${wikiPageModel.pageId}, ${wikiPageModel.resourcePrimKey}, ${wikiPageModel.groupId}, ${wikiPageModel.companyId}, ${wikiPageModel.userId}, '${wikiPageModel.userName}', '${dataFactory.getDateString(wikiPageModel.createDate)}', '${dataFactory.getDateString(wikiPageModel.modifiedDate)}', ${wikiPageModel.nodeId}, '${wikiPageModel.title}', ${wikiPageModel.version}, ${wikiPageModel.minorEdit?string}, '${wikiPageModel.content}', '${wikiPageModel.summary}', '${wikiPageModel.format}', ${wikiPageModel.head?string}, '${wikiPageModel.parentTitle}', '${wikiPageModel.redirectTitle}', '${dataFactory.getDateString(wikiPageModel.lastPublishDate)}', ${wikiPageModel.status}, ${wikiPageModel.statusByUserId}, '${wikiPageModel.statusByUserName}', ${wikiPageModel.statusDate!'null'});
+		${dataFactory.toInsertSQL(wikiPageModel)}
 
-		<@insertResourcePermissions
-			_entry = wikiPageModel
-		/>
+		${dataFactory.toInsertSQL(dataFactory.newMBDiscussionAssetEntryModel(wikiPageModel))}
 
-		<@insertSubscription
-			_entry = wikiPageModel
-		/>
+		${dataFactory.toInsertSQL(dataFactory.newSubscriptionModel(wikiPageModel))}
 
-		<#assign wikiPageResourceModel = dataFactory.newWikiPageResourceModel(wikiPageModel) />
-
-		insert into WikiPageResource values ('${wikiPageResourceModel.uuid}', ${wikiPageResourceModel.resourcePrimKey}, ${wikiPageResourceModel.groupId}, '${wikiPageResourceModel.companyId}', ${wikiPageResourceModel.nodeId}, '${wikiPageResourceModel.title}');
+		${dataFactory.toInsertSQL(dataFactory.newWikiPageResourceModel(wikiPageModel))}
 
 		<@insertAssetEntry
-			_entry = wikiPageModel
-			_categoryAndTag = true
+			_categoryAndTag=true
+			_entry=wikiPageModel
 		/>
 
-		<#assign
-			mbRootMessageId = dataFactory.getCounterNext()
-			mbThreadId = dataFactory.getCounterNext()
-		/>
+		<#assign mbRootMessageId = dataFactory.getCounterNext() />
 
 		<@insertMBDiscussion
-			_classNameId = dataFactory.wikiPageClassNameId
-			_classPK = wikiPageModel.resourcePrimKey
-			_groupId = groupId
-			_maxCommentCount = dataFactory.maxWikiPageCommentCount
-			_mbRootMessageId = mbRootMessageId
-			_mbThreadId = mbThreadId
+			_classNameId=dataFactory.wikiPageClassNameId
+			_classPK=wikiPageModel.resourcePrimKey
+			_groupId=groupId
+			_maxCommentCount=dataFactory.maxWikiPageCommentCount
+			_mbRootMessageId=mbRootMessageId
+			_mbThreadId=dataFactory.getCounterNext()
 		/>
 
-		${wikiCSVWriter.write(wikiNodeModel.nodeId + "," + wikiNodeModel.name + "," + wikiPageModel.resourcePrimKey + "," + wikiPageModel.title + "," + mbThreadId + "," + mbRootMessageId + "\n")}
+		${csvFileWriter.write("wiki", wikiNodeModel.nodeId + "," + wikiNodeModel.name + "," + wikiPageModel.resourcePrimKey + "," + wikiPageModel.title + "," + mbRootMessageId + "\n")}
 	</#list>
 </#list>

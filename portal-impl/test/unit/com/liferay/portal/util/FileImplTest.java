@@ -14,9 +14,12 @@
 
 package com.liferay.portal.util;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -24,6 +27,11 @@ import org.junit.Test;
  * @author Roberto Díaz
  */
 public class FileImplTest {
+
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@Test
 	public void testAppendParentheticalSuffixWhenFileNameHasParenthesis() {
@@ -58,9 +66,7 @@ public class FileImplTest {
 	}
 
 	@Test
-	public void
-		testAppendParentheticalSuffixWithMultipleStringWithSpaceValue() {
-
+	public void testAppendParentheticalSuffixWithMultipleStringWithSpaceValue() {
 		String fileName = _fileImpl.appendParentheticalSuffix(
 			"test.jsp", "A B");
 
@@ -197,6 +203,12 @@ public class FileImplTest {
 	public void testStripSuffixWhenFileNameHasNoCloseParenthesis() {
 		Assert.assertEquals(
 			"test(1.jsp", _fileImpl.stripParentheticalSuffix("test(1.jsp"));
+	}
+
+	@Test
+	public void testStripSuffixWhenFileNameHasNoExtension() {
+		Assert.assertEquals(
+			"test", _fileImpl.stripParentheticalSuffix("test (1)"));
 	}
 
 	@Test

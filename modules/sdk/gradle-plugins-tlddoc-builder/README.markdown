@@ -5,6 +5,8 @@ The TLDDoc Builder Gradle plugin lets you run the
 tool in order to generate documentation for the JSP Tag Library Descriptor (TLD)
 files in your project.
 
+The plugin has been successfully tested with Gradle 5.6.4 and 6.6.1.
+
 ## Usage
 
 To use the plugin, include it in your build script:
@@ -12,12 +14,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.tlddoc.builder", version: "1.2.0"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.tlddoc.builder", version: "1.3.8"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -49,7 +51,7 @@ all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```
@@ -69,18 +71,18 @@ depending on whether the [`java`](https://docs.gradle.org/current/userguide/java
 plugin is applied:
 
 Property Name | Default Value with the `java` plugin
-------------- | -------------
+------------- | ------------------------------------
 [`destinationDir`](#destinationdir) | `${project.docsDir}/tlddoc`
 [`includes`](#includes) | `["**/*.tld"]`
 [`source`](#source) | `project.sourceSets.main.resources.srcDirs`
 
-If the `java` plugin is applied, the `validateTLD` task is similarly configured
-with the following sensible defaults:
+The `validateTLD` task is also automatically configured with sensible defaults,
+depending on whether the `java` plugin is applied:
 
-Property Name | Default Value with the `java` plugin
+Property Name | Default Value
 ------------- | -------------
-[`includes`](#includes) | `["**/*.tld"]`
-[`source`](#source) | `project.sourceSets.main.resources.srcDirs`
+`includes` | <p>**If the `java` plugin is applied:** `["**/*.tld"]`</p><p>**Otherwise:** `[]`</p>
+`source` | <p>**If the `java` plugin is applied:** `project.sourceSets.main.resources.srcDirs`</p><p>**Otherwise:** `null`</p>
 
 By default, the `tlddoc` task generates the documentation for all the TLD files
 that are found in the resources directories of the `main` source set. The
@@ -165,7 +167,7 @@ Property Name | Type | Default Value | Description
 `excludes` | `Set<String>` | `[]` | The TLD file patterns to exclude.
 <a name="includes"></a>`includes` | `Set<String>` | `[]` | The TLD file patterns to include.
 <a name="source"></a>`source` | [`FileTree`](https://docs.gradle.org/current/javadoc/org/gradle/api/file/FileTree.html) | `[]` | The TLD files to generate documentation for, after the include and exclude patterns have been applied.
-`xsltDir` | `File` | `null` | The directory which contains the custom XSLT stylesheets used by the Tag Library Documentation Generator to produce the final documentation files. It sets the `-xslt` argument.
+`xsltDir` | `File` | `null` | The directory that contains the custom XSLT stylesheets used by the Tag Library Documentation Generator to produce the final documentation files. It sets the `-xslt` argument.
 
 The properties of type `File` support any type that can be resolved by
 [`project.file`](https://docs.gradle.org/current/dsl/org.gradle.api.Project.html#org.gradle.api.Project:file(java.tlddoc.Object)).
@@ -193,6 +195,11 @@ Property Name | Type | Default Value | Description
 `dtdDisabled` | `boolean` | `false` | Whether to disable DTD support.
 `fullChecking` | `boolean` | `true` | Whether to enable full schema checking.
 `lenient` | `boolean` | `false` | Whether to only check if the XML document is well-formed.
+<a name="xmlparserclassname"></a>`xmlParserClassName` | `String` | `null` | The class name of the XML parser to use.
+<a name="xmlparserclasspath"></a>`xmlParserClasspath` | `FileCollection` | `null` | The classpath with the XML parser.
+
+It is possible to use Closures and Callables as values for the `String`
+properties to defer evaluation until task execution.
 
 ## Additional Configuration
 

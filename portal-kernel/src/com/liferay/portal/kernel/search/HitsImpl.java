@@ -14,12 +14,12 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSON;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,9 +30,6 @@ import java.util.Map;
  * @author Bruno Farache
  */
 public class HitsImpl implements Hits {
-
-	public HitsImpl() {
-	}
 
 	@Override
 	public void addGroupedHits(String groupValue, Hits hits) {
@@ -213,22 +210,24 @@ public class HitsImpl implements Hits {
 
 	@Override
 	public List<Document> toList() {
-		List<Document> subset = new ArrayList<>(_docs.length);
-
-		for (Document doc : _docs) {
-			subset.add(doc);
-		}
-
-		return subset;
+		return Arrays.asList(_docs);
 	}
 
 	@Override
 	public String toString() {
 		if ((_docs == null) || (_docs.length == 0)) {
-			return "{}";
+			StringBundler sb = new StringBundler(5);
+
+			sb.append("{docs={}, length=");
+			sb.append(_length);
+			sb.append(", query=");
+			sb.append(_query);
+			sb.append(StringPool.CLOSE_BRACKET);
+
+			return sb.toString();
 		}
 
-		StringBundler sb = new StringBundler(2 * _docs.length + 1);
+		StringBundler sb = new StringBundler((2 * _docs.length) + 4);
 
 		sb.append(StringPool.OPEN_BRACKET);
 
@@ -237,7 +236,12 @@ public class HitsImpl implements Hits {
 			sb.append(StringPool.COMMA_AND_SPACE);
 		}
 
-		sb.setStringAt(StringPool.CLOSE_BRACKET, sb.index() - 1);
+		sb.setStringAt("}, length=", sb.index() - 1);
+
+		sb.append(_length);
+		sb.append(", query=");
+		sb.append(_query);
+		sb.append(StringPool.CLOSE_BRACKET);
 
 		return sb.toString();
 	}

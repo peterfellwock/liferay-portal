@@ -1,605 +1,517 @@
-<definition>
-	<var name="assetType" value="Documents Folder" />
+definition {
+
+	var assetType = "Documents Folder";
 
-	<command name="addCP">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+	macro addCP {
+		var key_dmFolderName = "${dmFolderName}";
 
-		<execute function="Click" locator1="Button#PLUS" />
+		LexiconEntry.gotoAdd();
 
-		<execute function="AssertClick#assertTextClickAt" locator1="MenuItem#FOLDER" value1="Folder" />
+		AssertClick.assertTextClickAt(
+			key_menuItem = "Folder",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Folder");
 
-		<execute function="Pause" locator1="1000" />
+		Pause(locator1 = "1000");
 
-		<execute function="Type" locator1="DocumentsAndMediaEditFolder#NAME_FIELD" value1="${dmFolderName}" />
+		PortletEntry.inputName(name = "${dmFolderName}");
 
-		<if>
-			<isset var="dmFolderDescription" />
-			<then>
-				<execute function="Type" locator1="DocumentsAndMediaEditFolder#DESCRIPTION_FIELD" value1="${dmFolderDescription}" />
-			</then>
-		</if>
+		if (isSet(dmFolderDescription)) {
+			PortletEntry.inputDescription(description = "${dmFolderDescription}");
+		}
 
-		<execute macro="PortletEntry#save" />
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
+		Button.clickSave();
 
-		<execute function="MakeVisible" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL_GENERIC" />
+		if ("${dmFolder}" == "Duplicate") {
+			Alert.viewRequestFailedToComplete();
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_FOLDER_TITLE" value1="${dmFolderName}" />
-	</command>
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "Please enter a unique folder name.");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
 
-	<command name="addPG">
-		<execute function="Click#makeVisibleClickAt" locator1="Portlet#ICON_PLUS_SIGN" />
+		if (isSet(siteName)) {
+			Navigator.openSiteURL(siteName = "${siteName}");
 
-		<execute function="AssertClick#assertTextClickAt" locator1="MenuItem#FOLDER" value1="Folder" />
+			ProductMenu.gotoPortlet(
+				category = "Content &amp; Data",
+				portlet = "Documents and Media",
+				site = "${siteName}");
+		}
 
-		<execute function="Pause" locator1="1000" />
+		DMFolder.viewEntryPresent(dmFolderName = "${dmFolderName}");
+	}
 
-		<execute function="Type" locator1="DocumentsAndMediaEditFolder#NAME_FIELD" value1="${dmFolderName}" />
-		<execute function="Type" locator1="DocumentsAndMediaEditFolder#DESCRIPTION_FIELD" value1="${dmFolderDescription}" />
+	macro addPG {
+		if (isSet(contentPage)) {
+			LexiconEntry.gotoAdd();
+		}
+		else {
+			Portlet.clickPortletPlusIconPG(portletName = "Documents and Media");
+		}
 
-		<if>
-			<isset var="viewableBy" />
-			<then>
-				<execute macro="Panel#expandPanel">
-					<var name="panelHeading" value="Permissions" />
-				</execute>
+		AssertClick.assertTextClickAt(
+			key_menuItem = "Folder",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Folder");
 
-				<execute function="Select" locator1="DocumentsAndMediaEditFolder#PERMISSIONS_SELECT" value1="${viewableBy}" />
-			</then>
-		</if>
+		Pause(locator1 = "1000");
 
-		<execute macro="Button#clickSave" />
+		PortletEntry.inputName(name = "${dmFolderName}");
 
-		<if>
-			<equals arg1="${dmFolder}" arg2="Duplicate" />
-			<then>
-				<execute macro="Alert#viewRequestFailedToComplete" />
+		PortletEntry.inputDescription(description = "${dmFolderDescription}");
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a unique folder name." />
-			</then>
-			<elseif>
-				<equals arg1="${dmFolder}" arg2="Invalid" />
-				<then>
-					<execute macro="Alert#viewRequestFailedToComplete" />
+		if (isSet(viewableBy)) {
+			Panel.expandPanel(panel = "Permissions");
 
-					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="The Folder Name cannot contain the following invalid characters: \ // : * ? &quot; &lt; &gt; | ../ /..." />
-				</then>
-			</elseif>
-			<else>
-				<execute macro="Alert#viewSuccessMessage" />
-			</else>
-		</if>
-	</command>
+			Select(
+				locator1 = "Select#PERMISSIONS",
+				value1 = "${viewableBy}");
 
-	<command name="addPGViaMG">
-		<execute function="Click#makeVisibleClickAt" locator1="Portlet#ICON_PLUS_SIGN" />
+			if (isSet(permissionDefinitionKeyList)) {
+				PermissionsInline.addOrRemoveEntryPermissionsFromAllRoles(
+					addOrRemoveViewPermission = "${addOrRemoveViewPermission}",
+					key_roleTitle = "${roleTitle}",
+					permissionDefinitionKeyList = "${permissionDefinitionKeyList}");
+			}
+		}
 
-		<execute function="AssertClick#assertTextClickAt" locator1="MenuItem#ADD_FOLDER" value1="Folder" />
+		Button.clickSave();
 
-		<execute function="Pause" locator1="1000" />
+		if ("${dmFolder}" == "Duplicate") {
+			Alert.viewRequestFailedToComplete();
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${mgFolderName}" />
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "Please enter a unique folder name.");
+		}
+		else if ("${dmFolder}" == "Invalid") {
+			Alert.viewRequestFailedToComplete();
 
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${mgFolderDescription}" />
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR_1",
+				value1 = "The folder name cannot contain the following invalid characters: \ // : * ? &quot; < > | ../ /...");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
 
-		<execute macro="PortletEntry#save" />
+	macro addPGViaMG {
+		Portlet.clickPortletPlusIconPG(portletName = "Media Gallery");
 
-		<var name="key_mgFolderName" value="${mgFolderName}" />
+		AssertClick.assertTextClickAt(
+			key_menuItem = "Folder",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Folder");
 
-		<execute function="AssertTextEquals" locator1="MediaGallery#FOLDER_NAME" value1="${mgFolderName}" />
-	</command>
+		Pause(locator1 = "1000");
 
-	<command name="addSubfolderCP">
-		<execute function="Click#makeVisibleClickAt" locator1="Button#PLUS" />
+		PortletEntry.inputName(name = "${mgFolderName}");
 
-		<execute function="AssertClick#assertTextClickAt" locator1="MenuItem#SUBFOLDER" value1="Subfolder" />
+		PortletEntry.inputDescription(description = "${mgFolderDescription}");
 
-		<execute function="Pause" locator1="1000" />
+		PortletEntry.save();
 
-		<execute function="Type" locator1="DocumentsAndMediaEditFolder#NAME_FIELD" value1="${dmSubFolderName}" />
+		var key_mgFolderName = "${mgFolderName}";
 
-		<if>
-			<isset var="dmSubFolderDescription" />
-			<then>
-				<execute function="Type" locator1="DocumentsAndMediaEditFolder#DESCRIPTION_FIELD" value1="${dmSubFolderDescription}" />
-			</then>
-		</if>
-
-		<execute macro="Button#clickSave" />
-
-		<if>
-			<equals arg1="${dmSubFolder}" arg2="Duplicate" />
-			<then>
-				<execute macro="Alert#viewRequestFailedToComplete" />
-
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a unique folder name." />
-			</then>
-			<elseif>
-				<equals arg1="${dmSubFolder}" arg2="Invalid" />
-				<then>
-					<execute macro="Alert#viewRequestFailedToComplete" />
-
-					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a valid name." />
-				</then>
-			</elseif>
-			<else>
-				<execute macro="Alert#viewSuccessMessage" />
-			</else>
-		</if>
-	</command>
+		DMFolder.viewEntryPresent(dmFolderName = "${mgFolderName}");
+	}
 
-	<command name="addSubfolderPG">
-		<execute function="Click#makeVisibleClickAt" locator1="Portlet#ICON_PLUS_SIGN" />
+	macro cannotViewCP {
+		var key_dmFolderName = "${dmFolderName}";
 
-		<execute function="AssertClick#assertTextClickAt" locator1="MenuItem#SUBFOLDER" value1="Subfolder" />
+		LexiconCard.viewCardNotPresent(card = "${dmFolderName}");
+	}
 
-		<execute function="Pause" locator1="1000" />
+	macro configureWorkflowCP {
+		DMFolder.gotoEditCP(folderName = "${dmFolderName}");
 
-		<execute function="Type" locator1="DocumentsAndMediaEditFolder#NAME_FIELD" value1="${dmSubFolderName}" />
+		if (IsElementNotPresent.isNotVisible(locator1 = "Radio#WORKFLOW_PARENT_FOLDER")) {
+			Click(locator1 = "DocumentsAndMediaEditFolder#WORKFLOW_DOCUMENT_TYPE_RESTRICTIONS_TOGGLE");
+		}
 
-		<if>
-			<isset var="dmSubFolderDescription" />
-			<then>
-				<execute function="Type" locator1="DocumentsAndMediaEditFolder#DESCRIPTION_FIELD" value1="${dmSubFolderDescription}" />
-			</then>
-		</if>
+		if ("${workflowRestriction}" == "Parent Folder") {
+			Click(locator1 = "Radio#WORKFLOW_PARENT_FOLDER");
 
-		<execute macro="Button#clickSave" />
+			Button.clickSave();
+		}
+		else if ("${workflowRestriction}" == "Specific Restrictions") {
+			Click(locator1 = "Radio#WORKFLOW_SPECIFIC_RESTRICTIONS");
 
-		<if>
-			<equals arg1="${dmSubFolder}" arg2="Duplicate" />
-			<then>
-				<execute macro="Alert#viewRequestFailedToComplete" />
+			AssertClick(
+				locator1 = "DocumentsAndMediaEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_SELECT_DOCUMENT_TYPE_BUTTON",
+				value1 = "Select Document Type");
 
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a unique folder name." />
-			</then>
-			<elseif>
-				<equals arg1="${dmSubFolder}" arg2="Invalid" />
-				<then>
-					<execute macro="Alert#viewRequestFailedToComplete" />
+			SelectFrame(value1 = "relative=top");
 
-					<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR_2" value1="Please enter a valid name." />
-				</then>
-			</elseif>
-			<else>
-				<execute macro="Alert#viewSuccessMessage" />
-			</else>
-		</if>
-	</command>
+			SelectFrame(locator1 = "DocumentsAndMediaSelectDocument#SELECT_DOCUMENT_IFRAME");
 
-	<command name="addSubfolderPGViaMG">
-		<execute function="Click#makeVisibleClickAt" locator1="Portlet#ICON_PLUS_SIGN" />
+			var key_dmDocumentTypeName = "${dmDocumentTypeName}";
 
-		<execute function="AssertClick#assertTextClickAt" locator1="MenuItem#ADD_SUBFOLDER" value1="Subfolder" />
+			AssertClick(
+				locator1 = "DocumentsAndMediaSelectDocument#DOCUMENTS_TABLE_CHOOSE",
+				value1 = "Choose");
 
-		<execute function="Pause" locator1="1000" />
+			SelectFrameTop(value1 = "relative=top");
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${mgSubfolderName}" />
+			Select(
+				locator1 = "DocumentsAndMediaEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_TYPE_WORKFLOW_SELECT",
+				value1 = "${workflowDefinition}");
 
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${mgSubfolderDescription}" />
+			AssertClickNoError(
+				key_text = "Save",
+				locator1 = "Button#ANY",
+				value1 = "Save");
 
-		<execute macro="PortletEntry#save" />
-	</command>
+			AssertConfirm(value1 = "You are making changes to the document types. If a document in this folder or its subfolders is currently in draft or pending workflow states, you may lose some or all of its metadata. A new version will be created for all other documents. Are you sure you wish to continue?");
+		}
+		else if ("${workflowRestriction}" == "Default Workflow") {
+			Click(locator1 = "Radio#WORKFLOW_DEFAULT_WORKFLOW");
 
-	<command name="cannotViewCP">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+			Select(
+				locator1 = "Select#WORKFLOW_DEFAULT",
+				value1 = "${workflowDefinition}");
 
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
-	</command>
+			Button.clickSave();
+		}
+	}
 
-	<command name="configureWorkflowCP">
-		<execute macro="DMFolder#gotoEditCP">
-			<var name="folderName" value="${dmFolderName}" />
-		</execute>
+	macro deleteCP {
+		var key_dmFolderName = "${dmFolderName}";
 
-		<if>
-			<condition function="IsElementNotPresent#isNotVisible" locator1="DocumentsAndMediaEditFolder#WORKFLOW_PARENT_FOLDER_RADIO" />
-			<then>
-				<execute function="Click" locator1="DocumentsAndMediaEditFolder#WORKFLOW_DOCUMENT_TYPE_RESTRICTIONS_TOGGLE" />
-			</then>
-		</if>
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
 
-		<if>
-			<equals arg1="${workflowRestriction}" arg2="Parent Folder" />
-			<then>
-				<execute function="Click" locator1="DocumentsAndMediaEditFolder#WORKFLOW_PARENT_FOLDER_RADIO" />
+		if (isSet(recycleBinDisabled)) {
+			MenuItem.clickNoError(menuItem = "Delete");
 
-				<execute macro="Button#clickSave" />
-			</then>
-			<elseif>
-				<equals arg1="${workflowRestriction}" arg2="Specific Restrictions" />
-				<then>
-					<execute function="Click" locator1="DocumentsAndMediaEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_RADIO" />
+			AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-					<execute function="AssertClick" locator1="DocumentsAndMediaEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_SELECT_DOCUMENT_TYPE_BUTTON" value1="Select Document Type" />
+			Alert.viewSuccessMessage();
+		}
+		else {
+			PortletEntry.clickMoveToRecycleBin();
 
-					<execute function="SelectFrame" value1="relative=top" />
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
+		}
+	}
 
-					<execute function="SelectFrame" locator1="DocumentsAndMediaSelectDocument#SELECT_DOCUMENT_IFRAME" />
+	macro deletePG {
+		var key_dmFolderName = "${dmFolderName}";
 
-					<var name="key_dmDocumentTypeName" value="${dmDocumentTypeName}" />
+		AssertTextEquals(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
+			value1 = "${dmFolderName}");
 
-					<execute function="AssertClick" locator1="DocumentsAndMediaSelectDocument#DOCUMENTS_TABLE_CHOOSE" value1="Choose" />
+		Check(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_CHECKBOX");
 
-					<execute function="SelectFrameTop" value1="relative=top" />
+		Click(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
 
-					<execute function="Select" locator1="DocumentsAndMediaEditFolder#WORKFLOW_SPECIFIC_RESTRICTIONS_TYPE_WORKFLOW_SELECT" value1="${workflowDefinition}" />
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
-					<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
+		AssertElementNotPresent(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_ICON");
+	}
 
-					<execute function="Confirm" value1="You are making changes to the document types. If a document in this folder or its subfolders is currently in draft or pending workflow states, you may lose some or all of its metadata. A new version will be created for all other documents. Are you sure you wish to continue?" />
-				</then>
-			</elseif>
-			<elseif>
-				<equals arg1="${workflowRestriction}" arg2="Default Workflow" />
-				<then>
-					<execute function="Click" locator1="DocumentsAndMediaEditFolder#WORKFLOW_DEFAULT_WORKFLOW_RADIO" />
+	macro editCP {
+		var key_dmFolderName = "${dmFolderName}";
 
-					<execute function="Select" locator1="DocumentsAndMediaEditFolder#WORKFLOW_DEFAULT_WORKFLOW_WORKFLOW_SELECT" value1="${workflowDefinition}" />
+		DMFolder.viewEntryPresent(dmFolderName = "${dmFolderName}");
 
-					<execute macro="Button#clickSave" />
-				</then>
-			</elseif>
-		</if>
+		AssertElementPresent(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
 
-	<command name="deleteCP">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+		MenuItem.click(menuItem = "Edit");
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
+		PortletEntry.inputName(name = "${dmFolderNameEdit}");
 
-		<if>
-			<isset var="recycleBinDisabled" />
-			<then>
-				<execute function="AssertClickNoError" locator1="MenuItem#DELETE" value1="Delete" />
+		PortletEntry.inputDescription(description = "${dmFolderDescriptionEdit}");
 
-				<execute function="Confirm" value1="Are you sure you want to delete this? It will be deleted immediately." />
+		PortletEntry.save();
 
-				<execute macro="Alert#viewSuccessMessage" />
-			</then>
-			<else>
-				<execute macro="PortletEntry#clickMoveToRecycleBin" />
+		DMFolder.viewEntryPresent(dmFolderName = "${dmFolderName}");
+	}
 
-				<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-			</else>
-		</if>
-	</command>
+	macro editPG {
+		var key_dmFolderName = "${dmFolderName}";
 
-	<command name="deletePG">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+		AssertTextEquals(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
+			value1 = "${dmFolderName}");
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName}" />
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
 
-		<execute function="Check" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_CHECKBOX" />
+		MenuItem.click(menuItem = "Edit");
 
-		<execute function="Click" locator1="Icon#MOVE_TO_RECYCLE_BIN" />
+		PortletEntry.inputName(name = "${dmFolderNameEdit}");
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_ICON" />
-	</command>
+		PortletEntry.inputDescription(description = "${dmFolderDescriptionEdit}");
 
-	<command name="editCP">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+		Button.clickSave();
 
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" value1="${dmFolderName}" />
+		var key_dmFolderNameEdit = "${dmFolderNameEdit}";
 
-		<execute function="MouseOver" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
+		Alert.viewSuccessMessage();
 
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_EDITED_TITLE",
+			value1 = "${dmFolderNameEdit}");
+	}
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
+	macro editPGViaMG {
+		LexiconEntry.gotoEllipsisMenuItem(menuItem = "Edit");
 
-		<execute function="AssertElementPresent" locator1="MenuItem#EDIT" />
+		PortletEntry.inputName(name = "${mgFolderNameEdit}");
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		PortletEntry.inputDescription(description = "${mgFolderDescriptionEdit}");
 
-		<execute function="Type" locator1="DocumentsAndMediaEditFolder#NAME_FIELD" value1="${dmFolderNameEdit}" />
-		<execute function="Type" locator1="DocumentsAndMediaEditFolder#DESCRIPTION_FIELD" value1="${dmFolderDescriptionEdit}" />
+		PortletEntry.save();
 
-		<execute macro="PortletEntry#save" />
+		var key_mgFolderName = "${mgFolderName}";
 
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" value1="${dmFolderNameEdit}" />
-	</command>
+		DMFolder.viewEntryPresent(dmFolderName = "${mgFolderNameEdit}");
+	}
 
-	<command name="editPG">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+	macro gotoEditCP {
+		var key_dmFolderName = "${folderName}";
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName}" />
+		DMFolder.viewEntryPresent(dmFolderName = "${folderName}");
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		MenuItem.click(menuItem = "Edit");
+	}
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${dmFolderNameEdit}" />
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${dmFolderDescriptionEdit}" />
+	macro gotoEntry {
+		LexiconCard.clickCard(card = "${dmFolderName}");
+	}
 
-		<execute macro="Button#clickSave" />
+	macro gotoPGViaMG {
+		var key_mgFolderName = "${mgFolderName}";
 
-		<var name="key_dmFolderNameEdit" value="${dmFolderNameEdit}" />
+		DMFolder.gotoEntry(dmFolderName = "${mgFolderName}");
 
-		<execute macro="Alert#viewSuccessMessage" />
+		AssertTextEquals(
+			locator1 = "MediaGallery#BREADCRUMB",
+			value1 = "${mgFolderName}");
+	}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_EDITED_TITLE" value1="${dmFolderNameEdit}" />
-	</command>
+	macro moveToFolderCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-	<command name="editPGViaMG">
-		<execute macro="PortletEntry#clickEditFromEllipsis" />
+		var key_dmFolderName = "${dmFolderName}";
 
-		<execute function="Type" locator1="TextInput#NAME" value1="${mgFolderNameEdit}" />
+		AssertElementPresent(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE");
 
-		<execute function="Type" locator1="TextArea#DESCRIPTION" value1="${mgFolderDescriptionEdit}" />
+		Click(
+			locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS",
+			value1 = "${dmFolderName2}");
 
-		<execute macro="PortletEntry#save" />
+		MenuItem.click(menuItem = "Move");
 
-		<var name="key_mgFolderName" value="${mgFolderName}" />
+		SelectFrame.selectFrameNoLoading(locator1 = "DocumentsAndMediaSelectFolder#SELECT_FOLDER_IFRAME");
 
-		<execute function="AssertTextEquals" locator1="MediaGallery#FOLDER_NAME" value1="${mgFolderNameEdit}" />
-	</command>
+		if ("${moveSubfolder}" == "true") {
+			AssertClick(
+				key_breadcrumbName = "Home",
+				locator1 = "BreadcrumbPortlet#BREADCRUMB_FOLDER",
+				value1 = "Home");
 
-	<command name="gotoCP">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+			AssertClick(
+				key_text = "Select This Folder",
+				locator1 = "Button#ANY",
+				value1 = "Select This Folder");
 
-		<execute function="MakeVisible" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL_GENERIC" />
+			SelectFrame(locator1 = "relative=top");
 
-		<execute function="AssertClick#assertTextClickAt" locator1="DocumentsAndMedia#ICON_FOLDER_TITLE" value1="${dmFolderName}" />
+			if ("${moveFailure}" == "true") {
+				AssertTextEquals.assertPartialText(
+					locator1 = "Message#ERROR",
+					value1 = "Error:The folder you selected already has an entry with this name. Please select a different folder.");
+			}
+			else {
+				Alert.viewSuccessMessage();
+			}
+		}
+		else {
+			var key_dmFolderName = "${dmFolderName1}";
 
-		<execute function="AssertVisible" locator1="DocumentsAndMedia#BREADCRUMB_FOLDER_NAME" />
-	</command>
+			AssertClick(
+				locator1 = "DocumentsAndMediaSelectFolder#SELECT_BUTTON",
+				value1 = "Select");
 
-	<command name="gotoEditCP">
-		<var name="key_dmFolderName" value="${folderName}" />
+			SelectFrame(locator1 = "relative=top");
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" value1="${folderName}" />
+			Alert.viewSuccessMessage();
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
+			AssertElementNotPresent(
+				key_dmFolderName = "${dmFolderName2}",
+				locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE");
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-	</command>
+			Click(
+				key_dmFolderName = "${dmFolderName1}",
+				locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
+				value1 = "${dmFolderName1}");
 
-	<command name="gotoPGViaMG">
-		<execute function="MakeVisible" locator1="MediaGallery#FOLDER_GENERIC" />
+			AssertElementPresent(
+				key_dmFolderName = "${dmFolderName2}",
+				locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE");
+		}
+	}
 
-		<var name="key_mgFolderName" value="${mgFolderName}" />
+	macro moveToRecycleBinCP {
+		var key_dmFolderName = "${dmFolderName}";
 
-		<execute function="Click" locator1="MediaGallery#FOLDER_NAME" />
+		DMFolder.viewEntryPresent(dmFolderName = "${dmFolderName}");
 
-		<execute function="AssertTextEquals" locator1="MediaGallery#BREADCRUMB" value1="${mgFolderName}" />
-	</command>
+		LexiconCard.checkCardCheckbox(card = "${dmFolderName}");
 
-	<command name="moveToFolderCP">
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE" />
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
 
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+		PortletEntry.clickMoveToRecycleBin();
 
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName1}" />
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName2}" />
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" value1="${dmFolderName2}" />
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "There are no documents or media files in this folder.");
+	}
 
-		<execute function="AssertElementPresent" locator1="MenuItem#MOVE" />
+	macro removePermissions {
+		DMFolder.viewFolderPermissionsPG(
+			dmFolder = "${dmFolder}",
+			key_roleTitle = "${roleTitle}");
 
-		<execute function="AssertClick" locator1="MenuItem#MOVE" value1="Move" />
+		var key_roleTitle = "${roleTitle}";
 
-		<execute function="AssertClick" locator1="Button#SELECT" value1="Select" />
+		for (var permissionName : list "${permissionNameList}") {
+			Uncheck(locator1 = "Permissions#CONTENT_PERMISSIONS_${permissionName}_CHECKBOX");
+		}
 
-		<execute function="SelectFrame" locator1="DocumentsAndMediaSelectFolder#SELECT_FOLDER_IFRAME" />
+		PortletEntry.save();
+	}
 
-		<var name="key_dmFolderName" value="${dmFolderName1}" />
+	macro subscribePG {
+		Click(locator1 = "Icon#INFO");
 
-		<execute function="AssertClick" locator1="DocumentsAndMediaSelectFolder#CHOOSE_BUTTON" value1="Choose" />
+		Click(locator1 = "Icon#SUBSCRIBE");
 
-		<execute function="SelectFrame" locator1="relative=top" />
+		Alert.viewSuccessMessage();
+	}
 
-		<execute function="AssertTextEquals" locator1="DocumentsAndMediaEditDocument#FOLDER" value1="${dmFolderName1}" />
+	macro tearDownCP {
+		Navigator.openURL();
 
-		<execute function="AssertClick" locator1="Button#MOVE" value1="Move" />
+		ProductMenu.gotoPortlet(
+			category = "Content &amp; Data",
+			portlet = "Documents and Media",
+			site = "${site}");
 
-		<var name="key_dmFolderName" value="${dmFolderName2}" />
+		if (IsElementNotPresent(locator1 = "Message#EMPTY_INFO")) {
+			Click.clickNoMouseOverNoWaitForVisible(locator1 = "DocumentsAndMedia#TOOLBAR_SELECT_ALL_CHECKBOX");
 
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName2}" />
+			Click(locator1 = "DocumentsAndMedia#TOOLBAR_ACTIONS");
 
-		<var name="key_dmFolderName" value="${dmFolderName1}" />
+			MenuItem.viewPresent(menuItem = "Move to Recycle Bin");
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName1}" />
+			PortletEntry.clickMoveToRecycleBin();
+		}
 
-		<var name="key_dmFolderName" value="${dmFolderName2}" />
+		JSONRecycleBin.emptyRecycleBin();
+	}
 
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName2}" />
-	</command>
+	macro tearDownPGViaMG {
+		Navigator.gotoPage(pageName = "${pageName}");
 
-	<command name="moveToRecycleBinCP">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
+		while (IsElementPresent(locator1 = "MediaGallery#ENTRIES_FOLDER")) {
+			Click(locator1 = "MediaGallery#ENTRIES_FOLDER");
 
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" value1="${dmFolderName}" />
+			AssertClick(
+				locator1 = "MediaGallery#ENTRY_RECYCLE_BIN_ICON",
+				value1 = "Move to Recycle Bin");
 
-		<execute function="Click" locator1="DocumentsAndMedia#ICON_FOLDER_CHECKBOX" />
+			VerifyElementPresent(locator1 = "Message#SUCCESS");
+		}
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
+		JSONRecycleBin.emptyRecycleBin();
+	}
 
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
+	macro viewCP {
+		var key_dmFolderName = "${dmFolderName}";
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no documents or media files in this folder." />
-	</command>
+		if (IsElementPresent(locator1 = "Icon#CURRENT_DISPLAY_STYLE_ACTIVE", key_displayStyle = "list")) {
+			AssertElementPresent(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_ICON");
 
-	<command name="removeFolderViewPermissionsPG">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
-		<var method="StringUtil#lowerCase('${key_roleTitle}')" name="key_roleTitle" />
+			AssertTextEquals(
+				locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
+				value1 = "${dmFolderName}");
+		}
+		else {
+			DMFolder.viewEntryPresent(dmFolderName = "${dmFolderName}");
+		}
 
-		<execute function="Check" locator1="DocumentsAndMedia#ICON_FOLDER_CHECKBOX" />
+		if ("${specificNameFolder}" == "true") {
+			var rowEntry = "${dmFolderName}";
 
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
+			AssertClick(
+				locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE",
+				value1 = "${dmFolderName}");
+		}
+		else {
+			LexiconEntry.gotoEntry(
+				displayStyle = "${displayStyle}",
+				rowEntry = "${dmFolderName}");
+		}
 
-		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS" value1="Permissions" />
+		AssertTextEquals(
+			locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME",
+			value1 = "${dmFolderName}");
+	}
 
-		<execute macro="IFrame#selectPermissionsFrame" />
+	macro viewDefaultCP {
+		AssertElementNotPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_GENERIC");
 
-		<execute function="Uncheck" locator1="Permissions#CONFIGURATION_PERMISSIONS_VIEW_CHECKBOX" />
+		AssertTextEquals(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "There are no documents or media files in this folder.");
+	}
 
-		<execute macro="Button#clickSave" />
+	macro viewEntryPresent {
+		LexiconCard.viewCardPresent(card = "${dmFolderName}");
+	}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Permissions#SUCCESS_MESSAGE" value1="Your request completed successfully." />
+	macro viewFolderPermissionsPG {
+		var key_dmFolderName = "${dmFolder}";
+		var key_roleTitle = StringUtil.lowerCase("${key_roleTitle}");
 
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-	<command name="subscribePG">
-		<execute function="Click" locator1="Icon#INFO" />
+		Click(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS");
 
-		<execute function="Click" locator1="Icon#SUBSCRIBE" />
+		MenuItem.click(menuItem = "Permissions");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		IFrame.selectPermissionsFrame();
+	}
 
-	<command name="tearDownCP">
-		<execute macro="Navigator#openURL" />
+	macro viewPG {
+		var key_dmFolderName = "${dmFolderName}";
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Documents and Media" />
-		</execute>
+		AssertTextEquals.assertPartialText(
+			locator1 = "DocumentsAndMedia#BREADCRUMB_FOLDER_NAME",
+			value1 = "${dmFolderName}");
+	}
 
-		<if>
-			<condition function="IsElementNotPresent" locator1="Message#EMPTY_INFO" />
-			<then>
-				<execute function="Check" locator1="DocumentsAndMedia#TOOLBAR_SELECT_ALL_CHECKBOX" />
+	macro viewPGViaMG {
+		var key_mgFolderName = "${mgFolderName}";
 
-				<execute function="AssertClick#waitForDMHomeAssertTextEqualsClick" locator1="DocumentsAndMedia#TOOLBAR_ACTIONS" value1="Actions" />
+		DMFolder.gotoEntry(dmFolderName = "${mgFolderName}");
 
-				<execute function="AssertElementPresent" locator1="MenuItem#MOVE_TO_THE_RECYCLE_BIN" />
+		AssertTextEquals(
+			locator1 = "MediaGallery#FOLDER_HEADER_TITLE",
+			value1 = "${mgFolderName}");
+	}
 
-				<execute macro="PortletEntry#clickMoveToRecycleBin" />
-			</then>
-		</if>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Recycle Bin" />
-		</execute>
-
-		<execute macro="RecycleBin#emptyCP" />
-	</command>
-
-	<command name="tearDownPGViaMG" >
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="${pageName}" />
-		</execute>
-
-		<while>
-			<condition function="IsElementPresent" locator1="MediaGallery#ENTRIES_FOLDER" />
-			<then>
-				<execute function="Click" locator1="MediaGallery#ENTRIES_FOLDER" />
-
-				<execute function="AssertClick" locator1="MediaGallery#ENTRY_RECYCLE_BIN_ICON" value1="Move to the Recycle Bin" />
-
-				<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-			</then>
-		</while>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Recycle Bin" />
-		</execute>
-
-		<execute macro="RecycleBin#emptyCP" />
-	</command>
-
-	<command name="viewCP">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
-
-		<if>
-			<condition function="IsElementPresent" locator1="Icon#DISPLAY_STYLE_DESCRIPTIVE_ACTIVE" />
-			<then>
-				<execute function="AssertElementPresent" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_ICON" />
-				<execute function="AssertTextEquals" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName}" />
-
-				<execute function="AssertClick" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_FOLDER_TITLE" value1="${dmFolderName}" />
-			</then>
-			<else>
-				<execute function="AssertElementPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
-				<execute function="AssertTextEquals" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" value1="${dmFolderName}" />
-
-				<execute function="AssertClick" locator1="DocumentsAndMedia#ICON_FOLDER_TITLE" value1="${dmFolderName}" />
-			</else>
-		</if>
-
-		<var method="StringUtil#upperCase('${dmFolderName}')" name="dmFolderNameUpperCase" />
-
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#BREADCRUMB_LAST" value1="${dmFolderNameUpperCase}" />
-	</command>
-
-	<command name="viewDefaultCP">
-		<execute function="AssertElementNotPresent" locator1="DocumentsAndMedia#ICON_DOCUMENT_GENERIC" />
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no documents or media files in this folder." />
-	</command>
-
-	<command name="viewEditCP">
-		<var name="key_dmFolderName" value="${dmFolderNameEdit}" />
-
-		<execute function="AssertElementPresent" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL" />
-
-		<execute function="MakeVisible" locator1="DocumentsAndMedia#ICON_FOLDER_THUMBNAIL_GENERIC" />
-
-		<execute function="AssertClick" locator1="DocumentsAndMedia#ICON_FOLDER_TITLE" value1="${dmFolderNameEdit}" />
-
-		<var method="StringUtil#upperCase('${dmFolderNameEdit}')" name="dmFolderNameEditUpperCase" />
-
-		<execute function="AssertTextEquals" locator1="DocumentsAndMedia#BREADCRUMB_LAST" value1="${dmFolderNameEditUpperCase}" />
-	</command>
-
-	<command name="viewFolderViewPermissionsPG">
-		<var name="key_dmFolderName" value="${dmFolder}" />
-		<var method="StringUtil#lowerCase('${key_roleTitle}')" name="key_roleTitle" />
-
-		<execute function="Check" locator1="DocumentsAndMedia#ICON_FOLDER_CHECKBOX" />
-
-		<execute function="Click" locator1="DocumentsAndMedia#DESCRIPTIVE_LIST_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#PERMISSIONS" value1="Permissions" />
-
-		<execute macro="IFrame#selectPermissionsFrame" />
-
-		<if>
-			<equals arg1="${viewPermissionValue}" arg2="checked" />
-			<then>
-				<execute function="AssertChecked" locator1="Permissions#CONTENT_PERMISSIONS_VIEW_CHECKBOX" value1="${roleTitle}" />
-			</then>
-			<elseif>
-				<equals arg1="${viewPermissionValue}" arg2="unchecked" />
-				<then>
-					<execute function="AssertNotChecked" locator1="Permissions#CONTENT_PERMISSIONS_VIEW_CHECKBOX" value1="${roleTitle}" />
-				</then>
-			</elseif>
-			<else>
-				<execute function="AssertChecked" locator1="Permissions#CONTENT_PERMISSIONS_VIEW_CHECKBOX" value1="${roleTitle}" />
-			</else>
-		</if>
-
-		<execute function="SelectFrame" value1="relative=top" />
-	</command>
-
-	<command name="viewPG">
-		<var name="key_dmFolderName" value="${dmFolderName}" />
-
-		<var method="StringUtil#upperCase('${dmFolderName}')" name="dmFolderNameUpperCase" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="DocumentsAndMedia#BREADCRUMB_FOLDER_NAME" value1="${dmFolderNameUpperCase}" />
-	</command>
-
-	<command name="viewPGViaMG">
-		<execute function="MakeVisible" locator1="MediaGallery#FOLDER_GENERIC" />
-
-		<var name="key_mgFolderName" value="${mgFolderName}" />
-
-		<execute function="Click" locator1="MediaGallery#FOLDER_NAME" />
-
-		<execute function="AssertTextEquals" locator1="MediaGallery#FOLDER_HEADER_TITLE" value1="${mgFolderName}" />
-	</command>
-</definition>
+}

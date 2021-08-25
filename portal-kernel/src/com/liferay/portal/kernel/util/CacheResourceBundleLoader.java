@@ -14,50 +14,103 @@
 
 package com.liferay.portal.kernel.util;
 
-import java.util.HashMap;
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author Carlos Sierra Andrés
+ * @author     Carlos Sierra Andrés
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.portal.kernel.resource.bundle.CacheResourceBundleLoader}
  */
+@Deprecated
 public class CacheResourceBundleLoader implements ResourceBundleLoader {
+
+	public static void clearCache() {
+		for (CacheResourceBundleLoader cacheResourceBundleLoader :
+				_cacheResourceBundleLoaders) {
+
+			if (cacheResourceBundleLoader != null) {
+				Map<Locale, ResourceBundle> resourceBundles =
+					cacheResourceBundleLoader._resourceBundles;
+
+				resourceBundles.clear();
+			}
+		}
+	}
 
 	public CacheResourceBundleLoader(
 		ResourceBundleLoader resourceBundleLoader) {
 
 		_resourceBundleLoader = resourceBundleLoader;
+
+		_cacheResourceBundleLoaders.add(this);
 	}
 
 	@Override
-	public ResourceBundle loadResourceBundle(String languageId) {
-		if (_resourceBundles.containsKey(languageId)) {
-			return _resourceBundles.get(languageId);
+	public ResourceBundle loadResourceBundle(Locale locale) {
+		ResourceBundle resourceBundle = _resourceBundles.get(locale);
+
+		if (resourceBundle == _nullResourceBundle) {
+			return null;
 		}
 
-		synchronized (_resourceBundles) {
-			if (_resourceBundles.containsKey(languageId)) {
-				return _resourceBundles.get(languageId);
-			}
-
-			ResourceBundle resourceBundle;
-
+		if (resourceBundle == null) {
 			try {
 				resourceBundle = _resourceBundleLoader.loadResourceBundle(
-					languageId);
+					locale);
 			}
-			catch (Exception e) {
-				resourceBundle = null;
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 
-			_resourceBundles.put(languageId, resourceBundle);
-
-			return resourceBundle;
+			if (resourceBundle == null) {
+				_resourceBundles.put(locale, _nullResourceBundle);
+			}
+			else {
+				_resourceBundles.put(locale, resourceBundle);
+			}
 		}
+
+		return resourceBundle;
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		CacheResourceBundleLoader.class);
+
+	private static final Set<CacheResourceBundleLoader>
+		_cacheResourceBundleLoaders = Collections.newSetFromMap(
+			new ConcurrentReferenceKeyHashMap<>(
+				FinalizeManager.WEAK_REFERENCE_FACTORY));
+
+	private static final ResourceBundle _nullResourceBundle =
+		new ResourceBundle() {
+
+			@Override
+			public Enumeration<String> getKeys() {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			protected Object handleGetObject(String key) {
+				throw new UnsupportedOperationException();
+			}
+
+		};
+
 	private final ResourceBundleLoader _resourceBundleLoader;
-	private final Map<String, ResourceBundle> _resourceBundles =
-		new HashMap<>();
+	private final Map<Locale, ResourceBundle> _resourceBundles =
+		new ConcurrentHashMap<>();
 
 }

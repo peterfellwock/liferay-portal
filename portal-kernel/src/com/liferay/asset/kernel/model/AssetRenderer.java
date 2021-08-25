@@ -14,25 +14,30 @@
 
 package com.liferay.asset.kernel.model;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 
-import java.util.Date;
 import java.util.Locale;
 
-import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
-import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 import javax.portlet.WindowState;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Jorge Ferrer
  * @author Juan Fernández
  */
+@ProviderType
 public interface AssetRenderer<T> extends Renderer {
 
 	public static final String TEMPLATE_ABSTRACT = "abstract";
@@ -41,13 +46,11 @@ public interface AssetRenderer<T> extends Renderer {
 
 	public static final String TEMPLATE_PREVIEW = "preview";
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public String getAddToPagePortletId() throws Exception;
-
 	public T getAssetObject();
+
+	public default T getAssetObject(long versionClassPK) {
+		return getAssetObject();
+	}
 
 	public AssetRendererFactory<T> getAssetRendererFactory();
 
@@ -57,25 +60,26 @@ public interface AssetRenderer<T> extends Renderer {
 
 	public DDMFormValuesReader getDDMFormValuesReader();
 
-	public String getDiscussionPath();
+	public default String getDefaultLanguageId() throws Exception {
+		String[] availableLanguageIds = getAvailableLanguageIds();
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public Date getDisplayDate();
+		String siteDefaultLanguageId = LocaleUtil.toLanguageId(
+			LocaleUtil.getSiteDefault());
+
+		if (ArrayUtil.isNotEmpty(availableLanguageIds) &&
+			!ArrayUtil.contains(availableLanguageIds, siteDefaultLanguageId)) {
+
+			return availableLanguageIds[0];
+		}
+
+		return siteDefaultLanguageId;
+	}
+
+	public String getDiscussionPath();
 
 	public long getGroupId();
 
 	public String getNewName(String oldName, String token);
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public String getPreviewPath(
-			PortletRequest portletRequest, PortletResponse portletResponse)
-		throws Exception;
 
 	public String getSearchSummary(Locale locale);
 
@@ -83,19 +87,34 @@ public interface AssetRenderer<T> extends Renderer {
 
 	public String getSummary();
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSummary(PortletRequest,
-	 *             PortletResponse)}
-	 */
-	@Deprecated
-	public String getSummary(Locale locale);
-
 	public String[] getSupportedConversions();
 
 	public String getThumbnailPath(PortletRequest portletRequest)
 		throws Exception;
 
 	public String getURLDownload(ThemeDisplay themeDisplay);
+
+	public default PortletURL getURLEdit(HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		return null;
+	}
+
+	public default PortletURL getURLEdit(
+			HttpServletRequest httpServletRequest, WindowState windowState,
+			PortletURL redirectURL)
+		throws Exception {
+
+		return null;
+	}
+
+	public default PortletURL getURLEdit(
+			HttpServletRequest httpServletRequest, WindowState windowState,
+			String redirect)
+		throws Exception {
+
+		return null;
+	}
 
 	public PortletURL getURLEdit(
 			LiferayPortletRequest liferayPortletRequest,
@@ -108,6 +127,15 @@ public interface AssetRenderer<T> extends Renderer {
 			WindowState windowState, PortletURL redirectURL)
 		throws Exception;
 
+	public default PortletURL getURLEdit(
+			LiferayPortletRequest liferayPortletRequest,
+			LiferayPortletResponse liferayPortletResponse,
+			WindowState windowState, String redirect)
+		throws Exception {
+
+		return null;
+	}
+
 	public PortletURL getURLExport(
 			LiferayPortletRequest liferayPortletRequest,
 			LiferayPortletResponse liferayPortletResponse)
@@ -117,6 +145,8 @@ public interface AssetRenderer<T> extends Renderer {
 		throws Exception;
 
 	public String getUrlTitle();
+
+	public String getUrlTitle(Locale locale);
 
 	public String getURLView(
 			LiferayPortletResponse liferayPortletResponse,
@@ -134,6 +164,13 @@ public interface AssetRenderer<T> extends Renderer {
 			String noSuchEntryRedirect)
 		throws Exception;
 
+	public default String getURLViewUsages(
+			HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		return StringPool.BLANK;
+	}
+
 	public long getUserId();
 
 	public String getUserName();
@@ -148,6 +185,10 @@ public interface AssetRenderer<T> extends Renderer {
 	public boolean hasViewPermission(PermissionChecker permissionChecker)
 		throws PortalException;
 
+	public default boolean isCategorizable(long groupId) {
+		return true;
+	}
+
 	public boolean isCommentable();
 
 	public boolean isConvertible();
@@ -161,14 +202,5 @@ public interface AssetRenderer<T> extends Renderer {
 	public boolean isPrintable();
 
 	public boolean isRatable();
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public void setAddToPagePreferences(
-			PortletPreferences portletPreferences, String portletId,
-			ThemeDisplay themeDisplay)
-		throws Exception;
 
 }

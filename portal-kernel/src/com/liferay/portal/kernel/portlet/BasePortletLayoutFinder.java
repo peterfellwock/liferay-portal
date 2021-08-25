@@ -14,22 +14,33 @@
 
 package com.liferay.portal.kernel.portlet;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
-import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.service.PortletPreferencesLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.PortletKeys;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.sites.kernel.util.SitesUtil;
+
+import java.util.Arrays;
+import java.util.List;
+
+import javax.portlet.PortletPreferences;
 
 /**
  * @author Adolfo Pérez
@@ -63,38 +74,179 @@ public abstract class BasePortletLayoutFinder implements PortletLayoutFinder {
 
 					portletId = getPortletId(layoutTypePortlet, portletId);
 
-					return new ResultImpl(themeDisplay.getPlid(), portletId);
+					return new ResultImpl(
+						themeDisplay.getPlid(), portletId, false);
 				}
 			}
-			catch (NoSuchLayoutException nsle) {
+			catch (NoSuchLayoutException noSuchLayoutException) {
 
 				// LPS-52675
 
 				if (_log.isDebugEnabled()) {
-					_log.debug(nsle, nsle);
+					_log.debug(noSuchLayoutException, noSuchLayoutException);
 				}
 			}
 		}
 
-		Object[] plidAndPortletId = fetchPlidAndPortletId(
+		Object[] plidAndPortletId = _fetchPlidAndPortletId(
 			themeDisplay.getPermissionChecker(), groupId, portletIds);
 
-		if ((plidAndPortletId == null) &&
-			SitesUtil.isUserGroupLayoutSetViewable(
-				themeDisplay.getPermissionChecker(),
-				themeDisplay.getScopeGroup())) {
+		Group scopeGroup = themeDisplay.getScopeGroup();
 
-			plidAndPortletId = fetchPlidAndPortletId(
+		if (((plidAndPortletId == null) || (boolean)plidAndPortletId[2]) &&
+			(scopeGroup.isSite() ||
+			 SitesUtil.isUserGroupLayoutSetViewable(
+				 themeDisplay.getPermissionChecker(), scopeGroup))) {
+
+			Object[] scopePlidAndPortletId = _fetchPlidAndPortletId(
 				themeDisplay.getPermissionChecker(),
 				themeDisplay.getScopeGroupId(), portletIds);
+
+			if (scopePlidAndPortletId != null) {
+				plidAndPortletId = scopePlidAndPortletId;
+			}
 		}
 
-		if (plidAndPortletId != null) {
-			return new ResultImpl(
-				(long)plidAndPortletId[0], (String)plidAndPortletId[1]);
+		if (plidAndPortletId == null) {
+			throw new NoSuchLayoutException(
+				_getErrorMessage(groupId, themeDisplay, portletIds));
 		}
 
-		StringBundler sb = new StringBundler(portletIds.length * 2 + 5);
+		return new ResultImpl(
+			(long)plidAndPortletId[0], (String)plidAndPortletId[1],
+			(boolean)plidAndPortletId[2]);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	protected Object[] fetchPlidAndPortletId(
+			PermissionChecker permissionChecker, long groupId,
+			String[] portletIds)
+		throws PortalException {
+
+		Object[] plidAndPortletId = _fetchPlidAndPortletId(
+			permissionChecker, groupId, portletIds);
+
+		if ((plidAndPortletId == null) || (boolean)plidAndPortletId[2]) {
+			return null;
+		}
+
+		return new Object[] {plidAndPortletId[0], plidAndPortletId[1]};
+	}
+
+	protected String getPortletId(
+		LayoutTypePortlet layoutTypePortlet, String portletId) {
+
+		for (String curPortletId : layoutTypePortlet.getPortletIds()) {
+			String curRootPortletId = PortletIdCodec.decodePortletName(
+				curPortletId);
+
+			if (portletId.equals(curRootPortletId)) {
+				return curPortletId;
+			}
+		}
+
+		Layout layout = layoutTypePortlet.getLayout();
+
+		List<com.liferay.portal.kernel.model.PortletPreferences>
+			layoutPortletPreferences =
+				PortletPreferencesLocalServiceUtil.getPortletPreferences(
+					PortletKeys.PREFS_OWNER_TYPE_LAYOUT, layout.getPlid(),
+					portletId);
+
+		if (!layoutPortletPreferences.isEmpty()) {
+			com.liferay.portal.kernel.model.PortletPreferences
+				portletPreferences = layoutPortletPreferences.get(0);
+
+			return portletPreferences.getPortletId();
+		}
+
+		return null;
+	}
+
+	protected abstract String[] getPortletIds();
+
+	protected class ResultImpl implements PortletLayoutFinder.Result {
+
+		/**
+		 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+		 *             #ResultImpl(long, String, boolean)}
+		 */
+		@Deprecated
+		public ResultImpl(long plid, String portletId) {
+			this(plid, portletId, false);
+		}
+
+		public ResultImpl(long plid, String portletId, boolean signInRequired) {
+			_plid = plid;
+			_portletId = portletId;
+			_signInRequired = signInRequired;
+		}
+
+		@Override
+		public long getPlid() {
+			return _plid;
+		}
+
+		@Override
+		public String getPortletId() {
+			return _portletId;
+		}
+
+		@Override
+		public boolean isSignInRequired() {
+			return _signInRequired;
+		}
+
+		private final long _plid;
+		private final String _portletId;
+		private final boolean _signInRequired;
+
+	}
+
+	private Object[] _fetchPlidAndPortletId(
+			PermissionChecker permissionChecker, long groupId,
+			String[] portletIds)
+		throws PortalException {
+
+		Object[] fallbackPlidAndPortletId = null;
+
+		for (String portletId : portletIds) {
+			ObjectValuePair<Long, String> plidAndPortletIdObjectValuePair =
+				_getPlidPortletIdObjectValuePair(groupId, portletId);
+
+			long plid = plidAndPortletIdObjectValuePair.getKey();
+
+			if (plid == LayoutConstants.DEFAULT_PLID) {
+				continue;
+			}
+
+			if (!LayoutPermissionUtil.contains(
+					permissionChecker, LayoutLocalServiceUtil.getLayout(plid),
+					ActionKeys.VIEW) &&
+				!permissionChecker.isSignedIn()) {
+
+				fallbackPlidAndPortletId = new Object[] {
+					plid, plidAndPortletIdObjectValuePair.getValue(), true
+				};
+
+				continue;
+			}
+
+			return new Object[] {
+				plid, plidAndPortletIdObjectValuePair.getValue(), false
+			};
+		}
+
+		return fallbackPlidAndPortletId;
+	}
+
+	private String _getErrorMessage(
+		long groupId, ThemeDisplay themeDisplay, String[] portletIds) {
+
+		StringBundler sb = new StringBundler((portletIds.length * 2) + 5);
 
 		sb.append("{groupId=");
 		sb.append(groupId);
@@ -108,77 +260,87 @@ public abstract class BasePortletLayoutFinder implements PortletLayoutFinder {
 
 		sb.append("}");
 
-		throw new NoSuchLayoutException(sb.toString());
+		return sb.toString();
 	}
 
-	protected Object[] fetchPlidAndPortletId(
-			PermissionChecker permissionChecker, long groupId,
-			String[] portletIds)
+	private ObjectValuePair<Long, String> _getPlidPortletIdObjectValuePair(
+			long groupId, long scopeGroupId, String portletId)
 		throws PortalException {
 
-		for (String portletId : portletIds) {
-			long plid = PortalUtil.getPlidFromPortletId(groupId, portletId);
+		for (boolean privateLayout : Arrays.asList(false, true)) {
+			List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
+				groupId, privateLayout, LayoutConstants.TYPE_PORTLET);
 
-			if (plid == LayoutConstants.DEFAULT_PLID) {
-				continue;
+			for (Layout layout : layouts) {
+				LayoutTypePortlet layoutTypePortlet =
+					(LayoutTypePortlet)layout.getLayoutType();
+
+				String candidatePortletId = getPortletId(
+					layoutTypePortlet, portletId);
+
+				if (Validator.isNotNull(candidatePortletId) &&
+					(_getScopeGroupId(layout, candidatePortletId) ==
+						scopeGroupId)) {
+
+					return new ObjectValuePair<>(
+						layout.getPlid(), candidatePortletId);
+				}
 			}
-
-			Layout layout = LayoutLocalServiceUtil.getLayout(plid);
-
-			if (!LayoutPermissionUtil.contains(
-					permissionChecker, layout, ActionKeys.VIEW)) {
-
-				continue;
-			}
-
-			LayoutTypePortlet layoutTypePortlet =
-				(LayoutTypePortlet)layout.getLayoutType();
-
-			portletId = getPortletId(layoutTypePortlet, portletId);
-
-			return new Object[] {plid, portletId};
 		}
 
-		return null;
+		return new ObjectValuePair<>(
+			LayoutConstants.DEFAULT_PLID, StringPool.BLANK);
 	}
 
-	protected String getPortletId(
-		LayoutTypePortlet layoutTypePortlet, String portletId) {
+	private ObjectValuePair<Long, String> _getPlidPortletIdObjectValuePair(
+			long scopeGroupId, String portletId)
+		throws PortalException {
 
-		for (String curPortletId : layoutTypePortlet.getPortletIds()) {
-			String curRootPortletId = PortletConstants.getRootPortletId(
-				curPortletId);
+		Group group = GroupLocalServiceUtil.getGroup(scopeGroupId);
 
-			if (portletId.equals(curRootPortletId)) {
-				return curPortletId;
-			}
+		long groupId = group.getGroupId();
+
+		if (group.isLayout()) {
+			Layout scopeLayout = LayoutLocalServiceUtil.getLayout(
+				group.getClassPK());
+
+			groupId = scopeLayout.getGroupId();
 		}
 
-		return portletId;
+		return _getPlidPortletIdObjectValuePair(
+			groupId, scopeGroupId, portletId);
 	}
 
-	protected abstract String[] getPortletIds();
+	private long _getScopeGroupId(Layout layout, String portletId)
+		throws PortalException {
 
-	protected class ResultImpl implements PortletLayoutFinder.Result {
+		PortletPreferences portletSetup =
+			PortletPreferencesFactoryUtil.getStrictLayoutPortletSetup(
+				layout, portletId);
 
-		public ResultImpl(long plid, String portletId) {
-			_plid = plid;
-			_portletId = portletId;
+		String scopeType = GetterUtil.getString(
+			portletSetup.getValue("lfrScopeType", null));
+
+		if (Validator.isNull(scopeType)) {
+			return layout.getGroupId();
 		}
 
-		@Override
-		public long getPlid() {
-			return _plid;
+		if (scopeType.equals("company")) {
+			Group companyGroup = GroupLocalServiceUtil.getCompanyGroup(
+				layout.getCompanyId());
+
+			return companyGroup.getGroupId();
 		}
 
-		@Override
-		public String getPortletId() {
-			return _portletId;
-		}
+		String scopeLayoutUuid = GetterUtil.getString(
+			portletSetup.getValue("lfrScopeLayoutUuid", null));
 
-		private final long _plid;
-		private final String _portletId;
+		Layout scopeLayout = LayoutLocalServiceUtil.getLayoutByUuidAndGroupId(
+			scopeLayoutUuid, layout.getGroupId(), layout.isPrivateLayout());
 
+		Group scopeGroup = scopeLayout.getScopeGroup();
+
+		return scopeGroup.getGroupId();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

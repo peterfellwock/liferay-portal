@@ -14,6 +14,7 @@
 
 package com.liferay.registry.dependency;
 
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.registry.BasicRegistryImpl;
 import com.liferay.registry.Filter;
 import com.liferay.registry.Registry;
@@ -25,12 +26,19 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
  * @author Michael C. Han
  */
 public class FilterServiceDependencyVerifierTest {
+
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@Before
 	public void setUp() {
@@ -51,7 +59,7 @@ public class FilterServiceDependencyVerifierTest {
 		registry.registerService(
 			TestInterface2.class, new TestInstance2(), properties);
 
-		ServiceReference<?> serviceReference = registry.getServiceReference(
+		ServiceReference<?> serviceReference1 = registry.getServiceReference(
 			TestInstance1.class);
 
 		Filter filter1 = registry.getFilter(
@@ -62,7 +70,7 @@ public class FilterServiceDependencyVerifierTest {
 			new FilterServiceDependencyVerifier(filter1);
 
 		Assert.assertTrue(
-			filterServiceDependencyVerifier1.verify(serviceReference));
+			filterServiceDependencyVerifier1.verify(serviceReference1));
 
 		Filter filter2 = registry.getFilter(
 			"(&(objectClass=" + TestInterface2.class.getName() +
@@ -75,7 +83,7 @@ public class FilterServiceDependencyVerifierTest {
 			TestInterface2.class);
 
 		Assert.assertFalse(
-			filterServiceDependencyVerifier2.verify(serviceReference));
+			filterServiceDependencyVerifier2.verify(serviceReference1));
 		Assert.assertTrue(
 			filterServiceDependencyVerifier2.verify(serviceReference2));
 	}

@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
 
@@ -51,31 +50,35 @@ public class SitesUtil {
 	public static void addMergeFailFriendlyURLLayout(Layout layout)
 		throws PortalException {
 
-		getSites().addMergeFailFriendlyURLLayout(layout);
+		_sites.addMergeFailFriendlyURLLayout(layout);
 	}
 
 	public static void addPortletBreadcrumbEntries(
-			Group group, HttpServletRequest request, PortletURL portletURL)
+			Group group, HttpServletRequest httpServletRequest,
+			PortletURL portletURL)
 		throws Exception {
 
-		getSites().addPortletBreadcrumbEntries(group, request, portletURL);
+		_sites.addPortletBreadcrumbEntries(
+			group, httpServletRequest, portletURL);
 	}
 
 	public static void addPortletBreadcrumbEntries(
-			Group group, HttpServletRequest request,
+			Group group, HttpServletRequest httpServletRequest,
 			RenderResponse renderResponse)
 		throws Exception {
 
-		getSites().addPortletBreadcrumbEntries(group, request, renderResponse);
+		_sites.addPortletBreadcrumbEntries(
+			group, httpServletRequest, renderResponse);
 	}
 
 	public static void addPortletBreadcrumbEntries(
 			Group group, String pagesName, PortletURL redirectURL,
-			HttpServletRequest request, RenderResponse renderResponse)
+			HttpServletRequest httpServletRequest,
+			RenderResponse renderResponse)
 		throws Exception {
 
-		getSites().addPortletBreadcrumbEntries(
-			group, pagesName, redirectURL, request, renderResponse);
+		_sites.addPortletBreadcrumbEntries(
+			group, pagesName, redirectURL, httpServletRequest, renderResponse);
 	}
 
 	public static void applyLayoutPrototype(
@@ -83,8 +86,7 @@ public class SitesUtil {
 			boolean linkEnabled)
 		throws Exception {
 
-		getSites().applyLayoutPrototype(
-			layoutPrototype, targetLayout, linkEnabled);
+		_sites.applyLayoutPrototype(layoutPrototype, targetLayout, linkEnabled);
 	}
 
 	public static void copyLayout(
@@ -92,55 +94,55 @@ public class SitesUtil {
 			ServiceContext serviceContext)
 		throws Exception {
 
-		getSites().copyLayout(
-			userId, sourceLayout, targetLayout, serviceContext);
+		_sites.copyLayout(userId, sourceLayout, targetLayout, serviceContext);
 	}
 
 	public static void copyLookAndFeel(Layout targetLayout, Layout sourceLayout)
 		throws Exception {
 
-		getSites().copyLookAndFeel(targetLayout, sourceLayout);
+		_sites.copyLookAndFeel(targetLayout, sourceLayout);
 	}
 
 	public static void copyPortletPermissions(
 			Layout targetLayout, Layout sourceLayout)
 		throws Exception {
 
-		getSites().copyPortletPermissions(targetLayout, sourceLayout);
+		_sites.copyPortletPermissions(targetLayout, sourceLayout);
 	}
 
 	public static void copyPortletSetups(
 			Layout sourceLayout, Layout targetLayout)
 		throws Exception {
 
-		getSites().copyPortletSetups(sourceLayout, targetLayout);
+		_sites.copyPortletSetups(sourceLayout, targetLayout);
 	}
 
 	public static void copyTypeSettings(Group sourceGroup, Group targetGroup)
 		throws Exception {
 
-		getSites().copyTypeSettings(sourceGroup, targetGroup);
+		_sites.copyTypeSettings(sourceGroup, targetGroup);
 	}
 
 	public static Object[] deleteLayout(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		return getSites().deleteLayout(request, response);
+		return _sites.deleteLayout(httpServletRequest, httpServletResponse);
 	}
 
 	public static Object[] deleteLayout(
 			PortletRequest portletRequest, PortletResponse portletResponse)
 		throws Exception {
 
-		return getSites().deleteLayout(portletRequest, portletResponse);
+		return _sites.deleteLayout(portletRequest, portletResponse);
 	}
 
 	public static void deleteLayout(
 			RenderRequest renderRequest, RenderResponse renderResponse)
 		throws Exception {
 
-		getSites().deleteLayout(renderRequest, renderResponse);
+		_sites.deleteLayout(renderRequest, renderResponse);
 	}
 
 	public static File exportLayoutSetPrototype(
@@ -148,59 +150,57 @@ public class SitesUtil {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		return getSites().exportLayoutSetPrototype(
+		return _sites.exportLayoutSetPrototype(
 			layoutSetPrototype, serviceContext);
 	}
 
 	public static Long[] filterGroups(List<Group> groups, String[] names) {
-		return getSites().filterGroups(groups, names);
+		return _sites.filterGroups(groups, names);
 	}
 
 	public static Layout getLayoutSetPrototypeLayout(Layout layout) {
-		return getSites().getLayoutSetPrototypeLayout(layout);
+		return _sites.getLayoutSetPrototypeLayout(layout);
 	}
 
 	public static Map<String, String[]> getLayoutSetPrototypeParameters(
 		ServiceContext serviceContext) {
 
-		return getSites().getLayoutSetPrototypeParameters(serviceContext);
+		return _sites.getLayoutSetPrototypeParameters(serviceContext);
 	}
 
 	public static int getMergeFailCount(LayoutPrototype layoutPrototype)
 		throws PortalException {
 
-		return getSites().getMergeFailCount(layoutPrototype);
+		return _sites.getMergeFailCount(layoutPrototype);
 	}
 
 	public static int getMergeFailCount(LayoutSetPrototype layoutSetPrototype)
 		throws PortalException {
 
-		return getSites().getMergeFailCount(layoutSetPrototype);
+		return _sites.getMergeFailCount(layoutSetPrototype);
 	}
 
 	public static List<Layout> getMergeFailFriendlyURLLayouts(
 			LayoutSet layoutSet)
 		throws PortalException {
 
-		return getSites().getMergeFailFriendlyURLLayouts(layoutSet);
+		return _sites.getMergeFailFriendlyURLLayouts(layoutSet);
 	}
 
 	public static List<String> getOrganizationNames(Group group, User user)
 		throws Exception {
 
-		return getSites().getOrganizationNames(group, user);
+		return _sites.getOrganizationNames(group, user);
 	}
 
 	public static Sites getSites() {
-		PortalRuntimePermission.checkGetBeanProperty(SitesUtil.class);
-
 		return _sites;
 	}
 
 	public static List<String> getUserGroupNames(Group group, User user)
 		throws Exception {
 
-		return getSites().getUserGroupNames(group, user);
+		return _sites.getUserGroupNames(group, user);
 	}
 
 	public static void importLayoutSetPrototype(
@@ -208,101 +208,103 @@ public class SitesUtil {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		getSites().importLayoutSetPrototype(
+		_sites.importLayoutSetPrototype(
 			layoutSetPrototype, inputStream, serviceContext);
 	}
 
 	public static boolean isContentSharingWithChildrenEnabled(Group group) {
-		return getSites().isContentSharingWithChildrenEnabled(group);
+		return _sites.isContentSharingWithChildrenEnabled(group);
 	}
 
 	public static boolean isFirstLayout(
 		long groupId, boolean privateLayout, long layoutId) {
 
-		return getSites().isFirstLayout(groupId, privateLayout, layoutId);
+		return _sites.isFirstLayout(groupId, privateLayout, layoutId);
 	}
 
 	public static boolean isLayoutDeleteable(Layout layout) {
-		return getSites().isLayoutDeleteable(layout);
+		return _sites.isLayoutDeleteable(layout);
 	}
 
 	public static boolean isLayoutModifiedSinceLastMerge(Layout layout)
 		throws PortalException {
 
-		return getSites().isLayoutModifiedSinceLastMerge(layout);
+		return _sites.isLayoutModifiedSinceLastMerge(layout);
 	}
 
 	public static boolean isLayoutSetMergeable(Group group, LayoutSet layoutSet)
 		throws PortalException {
 
-		return getSites().isLayoutSetMergeable(group, layoutSet);
+		return _sites.isLayoutSetMergeable(group, layoutSet);
 	}
 
 	public static boolean isLayoutSetPrototypeUpdateable(LayoutSet layoutSet) {
-		return getSites().isLayoutSetPrototypeUpdateable(layoutSet);
+		return _sites.isLayoutSetPrototypeUpdateable(layoutSet);
 	}
 
 	public static boolean isLayoutSortable(Layout layout) {
-		return getSites().isLayoutSortable(layout);
+		return _sites.isLayoutSortable(layout);
 	}
 
 	public static boolean isLayoutUpdateable(Layout layout) {
-		return getSites().isLayoutUpdateable(layout);
+		return _sites.isLayoutUpdateable(layout);
 	}
 
 	public static boolean isUserGroupLayout(Layout layout)
 		throws PortalException {
 
-		return getSites().isUserGroupLayout(layout);
+		return _sites.isUserGroupLayout(layout);
 	}
 
 	public static boolean isUserGroupLayoutSetViewable(
 			PermissionChecker permissionChecker, Group userGroupGroup)
 		throws PortalException {
 
-		return getSites().isUserGroupLayoutSetViewable(
+		return _sites.isUserGroupLayoutSetViewable(
 			permissionChecker, userGroupGroup);
 	}
 
 	public static void mergeLayoutPrototypeLayout(Group group, Layout layout)
 		throws Exception {
 
-		getSites().mergeLayoutPrototypeLayout(group, layout);
+		_sites.mergeLayoutPrototypeLayout(group, layout);
 	}
 
 	public static void mergeLayoutSetPrototypeLayouts(
 			Group group, LayoutSet layoutSet)
 		throws Exception {
 
-		getSites().mergeLayoutSetPrototypeLayouts(group, layoutSet);
+		_sites.mergeLayoutSetPrototypeLayouts(group, layoutSet);
 	}
 
-	public static void removeMergeFailFriendlyURLLayouts(LayoutSet layoutSet) {
-		getSites().removeMergeFailFriendlyURLLayouts(layoutSet);
+	public static void removeMergeFailFriendlyURLLayouts(LayoutSet layoutSet)
+		throws PortalException {
+
+		_sites.removeMergeFailFriendlyURLLayouts(layoutSet);
 	}
 
 	public static void resetPrototype(Layout layout) throws PortalException {
-		getSites().resetPrototype(layout);
+		_sites.resetPrototype(layout);
 	}
 
 	public static void resetPrototype(LayoutSet layoutSet)
 		throws PortalException {
 
-		getSites().resetPrototype(layoutSet);
+		_sites.resetPrototype(layoutSet);
 	}
 
 	public static void setMergeFailCount(
 			LayoutPrototype layoutPrototype, int newMergeFailCount)
 		throws PortalException {
 
-		getSites().setMergeFailCount(layoutPrototype, newMergeFailCount);
+		_sites.setMergeFailCount(layoutPrototype, newMergeFailCount);
 	}
 
 	public static void setMergeFailCount(
 			LayoutSetPrototype layoutSetPrototype, int newMergeFailCount)
 		throws PortalException {
 
-		getSites().setMergeFailCount(layoutSetPrototype, newMergeFailCount);
+		_sites.setMergeFailCount(layoutSetPrototype, newMergeFailCount);
 	}
 
 	public static void updateLayoutScopes(
@@ -312,7 +314,7 @@ public class SitesUtil {
 			String languageId)
 		throws Exception {
 
-		getSites().updateLayoutScopes(
+		_sites.updateLayoutScopes(
 			userId, sourceLayout, targetLayout, sourcePreferences,
 			targetPreferences, sourcePortletId, languageId);
 	}
@@ -324,15 +326,13 @@ public class SitesUtil {
 			boolean privateLayoutSetPrototypeLinkEnabled)
 		throws Exception {
 
-		getSites().updateLayoutSetPrototypesLinks(
+		_sites.updateLayoutSetPrototypesLinks(
 			group, publicLayoutSetPrototypeId, privateLayoutSetPrototypeId,
 			publicLayoutSetPrototypeLinkEnabled,
 			privateLayoutSetPrototypeLinkEnabled);
 	}
 
 	public void setSites(Sites sites) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_sites = sites;
 	}
 

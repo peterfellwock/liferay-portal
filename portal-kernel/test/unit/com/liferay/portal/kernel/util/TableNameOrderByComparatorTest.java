@@ -43,9 +43,7 @@ public class TableNameOrderByComparatorTest {
 	}
 
 	@Test
-	public void
-		testGetOrderByWithMultipleColumnNamesReturnsDecoratedTableName() {
-
+	public void testGetOrderByWithMultipleColumnNamesReturnsDecoratedTableName() {
 		TableNameOrderByComparator<?> tableNameOrderByComparator =
 			new TableNameOrderByComparator<>(
 				new TestGetOrderByComparator("column1, column2"), "table");
@@ -58,7 +56,7 @@ public class TableNameOrderByComparatorTest {
 	@Test
 	public void testGetOrderByWithMultipleTableNameReturnsNewTableName() {
 		TableNameOrderByComparator<?> tableNameOrderByComparator =
-			new TableNameOrderByComparator<Object>(
+			new TableNameOrderByComparator<>(
 				new TestGetOrderByComparator("table1.column1, column2"),
 				"table2");
 
@@ -115,7 +113,7 @@ public class TableNameOrderByComparatorTest {
 		}
 
 		@Override
-		public int compare(Object obj1, Object obj2) {
+		public int compare(Object object1, Object object2) {
 			return 0;
 		}
 

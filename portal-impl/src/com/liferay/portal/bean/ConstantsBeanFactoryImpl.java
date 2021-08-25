@@ -14,11 +14,12 @@
 
 package com.liferay.portal.bean;
 
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.bean.ConstantsBeanFactory;
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceKeyHashMap;
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceValueHashMap;
-import com.liferay.portal.kernel.memory.FinalizeManager;
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.lang.ref.Reference;
 import java.lang.reflect.Field;
@@ -62,27 +63,23 @@ public class ConstantsBeanFactoryImpl implements ConstantsBeanFactory {
 				constantsBeanClass = classLoader.loadClass(
 					constantsBeanClassName);
 			}
-			catch (ClassNotFoundException cnfe) {
+			catch (ClassNotFoundException classNotFoundException) {
 			}
 
 			try {
 				if (constantsBeanClass == null) {
-					Method defineClassMethod = ReflectionUtil.getDeclaredMethod(
-						ClassLoader.class, "defineClass", String.class,
-						byte[].class, int.class, int.class);
-
 					byte[] classData = generateConstantsBeanClassData(
 						constantsClass);
 
-					constantsBeanClass = (Class<?>)defineClassMethod.invoke(
+					constantsBeanClass = (Class<?>)_defineClassMethod.invoke(
 						classLoader, constantsBeanClassName, classData, 0,
 						classData.length);
 				}
 
 				return constantsBeanClass.newInstance();
 			}
-			catch (Throwable t) {
-				throw new RuntimeException(t);
+			catch (Throwable throwable) {
+				throw new RuntimeException(throwable);
 			}
 		}
 	}
@@ -180,13 +177,26 @@ public class ConstantsBeanFactoryImpl implements ConstantsBeanFactory {
 	protected static String getClassBinaryName(Class<?> clazz) {
 		String className = clazz.getName();
 
-		return className.replace('.', '/');
+		return StringUtil.replace(className, '.', '/');
 	}
 
 	protected static ConcurrentMap<Class<?>, Object> constantsBeans =
-		new ConcurrentReferenceKeyHashMap<Class<?>, Object>(
+		new ConcurrentReferenceKeyHashMap<>(
 			new ConcurrentReferenceValueHashMap<Reference<Class<?>>, Object>(
 				FinalizeManager.WEAK_REFERENCE_FACTORY),
 			FinalizeManager.WEAK_REFERENCE_FACTORY);
+
+	private static final Method _defineClassMethod;
+
+	static {
+		try {
+			_defineClassMethod = ReflectionUtil.getDeclaredMethod(
+				ClassLoader.class, "defineClass", String.class, byte[].class,
+				int.class, int.class);
+		}
+		catch (Throwable throwable) {
+			throw new ExceptionInInitializerError(throwable);
+		}
+	}
 
 }

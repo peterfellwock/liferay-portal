@@ -17,24 +17,28 @@ package com.liferay.knowledge.base.web.internal.portlet.configuration.icon;
 import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBTemplate;
-import com.liferay.knowledge.base.service.permission.KBTemplatePermission;
 import com.liferay.knowledge.base.web.internal.constants.KBWebKeys;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
-import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Ambrin Chaudhary
+ * @author Ambrín Chaudhary
  */
 @Component(
 	immediate = true,
@@ -57,21 +61,23 @@ public class EditKBTemplatePortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
-			portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
-			PortletRequest.RENDER_PHASE);
+		return PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
+				PortletRequest.RENDER_PHASE)
+		).setMVCPath(
+			"/admin/edit_template.jsp"
+		).setRedirect(
+			_portal.getCurrentURL(portletRequest)
+		).setParameter(
+			"kbTemplateId",
+			() -> {
+				KBTemplate kbTemplate = (KBTemplate)portletRequest.getAttribute(
+					KBWebKeys.KNOWLEDGE_BASE_KB_TEMPLATE);
 
-		portletURL.setParameter("mvcPath", "/admin/edit_template.jsp");
-		portletURL.setParameter(
-			"redirect", PortalUtil.getCurrentURL(portletRequest));
-
-		KBTemplate kbTemplate = (KBTemplate)portletRequest.getAttribute(
-			KBWebKeys.KNOWLEDGE_BASE_KB_TEMPLATE);
-
-		portletURL.setParameter(
-			"kbTemplateId", String.valueOf(kbTemplate.getKbTemplateId()));
-
-		return portletURL.toString();
+				return kbTemplate.getKbTemplateId();
+			}
+		).buildString();
 	}
 
 	@Override
@@ -90,13 +96,29 @@ public class EditKBTemplatePortletConfigurationIcon
 		KBTemplate kbTemplate = (KBTemplate)portletRequest.getAttribute(
 			KBWebKeys.KNOWLEDGE_BASE_KB_TEMPLATE);
 
-		if (KBTemplatePermission.contains(
-				permissionChecker, kbTemplate, KBActionKeys.UPDATE)) {
-
-			return true;
+		try {
+			return _kbTemplateModelResourcePermission.contains(
+				permissionChecker, kbTemplate, KBActionKeys.UPDATE);
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException, portalException);
+			}
 		}
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		EditKBTemplatePortletConfigurationIcon.class);
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBTemplate)"
+	)
+	private ModelResourcePermission<KBTemplate>
+		_kbTemplateModelResourcePermission;
+
+	@Reference
+	private Portal _portal;
 
 }

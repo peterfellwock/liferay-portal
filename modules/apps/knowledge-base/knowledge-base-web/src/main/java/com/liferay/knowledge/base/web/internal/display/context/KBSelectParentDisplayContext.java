@@ -19,6 +19,7 @@ import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBArticleServiceUtil;
 import com.liferay.knowledge.base.service.KBFolderServiceUtil;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -37,12 +38,12 @@ public class KBSelectParentDisplayContext {
 
 	public KBSelectParentDisplayContext(
 		long parentResourceClassNameId, long parentResourcePrimKey,
-		HttpServletRequest request,
+		HttpServletRequest httpServletRequest,
 		LiferayPortletResponse liferayPortletResponse) {
 
 		_parentResourceClassNameId = parentResourceClassNameId;
 		_parentResourcePrimKey = parentResourcePrimKey;
-		_request = request;
+		_httpServletRequest = httpServletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
 	}
 
@@ -58,14 +59,13 @@ public class KBSelectParentDisplayContext {
 			PortletURL portletURL)
 		throws Exception {
 
-		PortletURL currentURL = PortletURLUtil.clone(
-			portletURL, _liferayPortletResponse);
-
-		currentURL.setParameter(
-			"parentResourceClassNameId",
-			String.valueOf(parentResourceClassNameId));
-		currentURL.setParameter(
-			"parentResourcePrimKey", String.valueOf(parentResourcePrimKey));
+		PortletURL currentURL = PortletURLBuilder.create(
+			PortletURLUtil.clone(portletURL, _liferayPortletResponse)
+		).setParameter(
+			"parentResourceClassNameId", parentResourceClassNameId
+		).setParameter(
+			"parentResourcePrimKey", parentResourcePrimKey
+		).buildPortletURL();
 
 		long kbFolderClassNameId = PortalUtil.getClassNameId(
 			KBFolderConstants.getClassName());
@@ -73,11 +73,12 @@ public class KBSelectParentDisplayContext {
 		if (parentResourcePrimKey ==
 				KBFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
-			ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
-				WebKeys.THEME_DISPLAY);
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)_httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
 
 			PortalUtil.addPortletBreadcrumbEntry(
-				_request, themeDisplay.translate("home"),
+				_httpServletRequest, themeDisplay.translate("home"),
 				currentURL.toString());
 		}
 		else if (parentResourceClassNameId == kbFolderClassNameId) {
@@ -89,7 +90,7 @@ public class KBSelectParentDisplayContext {
 				currentURL);
 
 			PortalUtil.addPortletBreadcrumbEntry(
-				_request, kbFolder.getName(), currentURL.toString());
+				_httpServletRequest, kbFolder.getName(), currentURL.toString());
 		}
 		else {
 			KBArticle kbArticle = KBArticleServiceUtil.getLatestKBArticle(
@@ -100,13 +101,14 @@ public class KBSelectParentDisplayContext {
 				kbArticle.getParentResourcePrimKey(), currentURL);
 
 			PortalUtil.addPortletBreadcrumbEntry(
-				_request, kbArticle.getTitle(), currentURL.toString());
+				_httpServletRequest, kbArticle.getTitle(),
+				currentURL.toString());
 		}
 	}
 
+	private final HttpServletRequest _httpServletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private final long _parentResourceClassNameId;
 	private final long _parentResourcePrimKey;
-	private final HttpServletRequest _request;
 
 }

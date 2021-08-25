@@ -14,56 +14,45 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Image;
 
 /**
  * Provides the remote service utility for Image. This utility wraps
- * {@link com.liferay.portal.service.impl.ImageServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portal.service.impl.ImageServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see ImageService
- * @see com.liferay.portal.service.base.ImageServiceBaseImpl
- * @see com.liferay.portal.service.impl.ImageServiceImpl
  * @generated
  */
-@ProviderType
 public class ImageServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portal.service.impl.ImageServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portal.service.impl.ImageServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.portal.kernel.model.Image getImage(long imageId)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static Image getImage(long imageId) throws PortalException {
 		return getService().getImage(imageId);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
 	public static ImageService getService() {
-		if (_service == null) {
-			_service = (ImageService)PortalBeanLocatorUtil.locate(ImageService.class.getName());
-
-			ReferenceRegistry.registerReference(ImageServiceUtil.class,
-				"_service");
-		}
-
 		return _service;
 	}
 
-	private static ImageService _service;
+	private static volatile ImageService _service;
+
 }

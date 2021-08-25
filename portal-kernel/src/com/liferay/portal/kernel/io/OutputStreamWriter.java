@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.io;
 
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.string.StringPool;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -68,14 +68,15 @@ public class OutputStreamWriter extends Writer {
 
 		_outputStream = outputStream;
 		_charsetName = charsetName;
+		_autoFlush = autoFlush;
+
 		_charsetEncoder = CharsetEncoderUtil.getCharsetEncoder(charsetName);
 		_outputByteBuffer = ByteBuffer.allocate(outputBufferSize);
-		_autoFlush = autoFlush;
 	}
 
 	@Override
 	public void close() throws IOException {
-		if (!_isOpen) {
+		if (!_open) {
 			return;
 		}
 
@@ -87,7 +88,7 @@ public class OutputStreamWriter extends Writer {
 			_outputStream.close();
 		}
 		finally {
-			_isOpen = false;
+			_open = false;
 		}
 	}
 
@@ -116,9 +117,14 @@ public class OutputStreamWriter extends Writer {
 
 	@Override
 	public void write(int c) throws IOException {
-		_inputCharBuffer.put((char)c);
+		if (_inputCharBuffer.hasRemaining()) {
+			_inputCharBuffer.put((char)c);
 
-		_write(_EMPTY_CHAR_BUFFER);
+			_write(_EMPTY_CHAR_BUFFER);
+		}
+		else {
+			_write(CharBuffer.wrap(new char[] {(char)c}));
+		}
 	}
 
 	@Override
@@ -149,9 +155,12 @@ public class OutputStreamWriter extends Writer {
 
 		_inputCharBuffer.flip();
 
-		_encodeLoop(_inputCharBuffer, endOfInput);
-
-		_inputCharBuffer.compact();
+		try {
+			_encodeLoop(_inputCharBuffer, endOfInput);
+		}
+		finally {
+			_inputCharBuffer.compact();
+		}
 	}
 
 	private void _encodeLoop(CharBuffer inputCharBuffer, boolean endOfInput)
@@ -170,10 +179,12 @@ public class OutputStreamWriter extends Writer {
 					_flushBuffer();
 				}
 
-				if ((_inputCharBuffer != inputCharBuffer) &&
-					inputCharBuffer.hasRemaining()) {
+				if (_inputCharBuffer != inputCharBuffer) {
+					_inputCharBuffer.clear();
 
-					_inputCharBuffer.put(inputCharBuffer.get());
+					if (inputCharBuffer.hasRemaining()) {
+						_inputCharBuffer.put(inputCharBuffer.get());
+					}
 				}
 
 				break;
@@ -186,7 +197,7 @@ public class OutputStreamWriter extends Writer {
 	}
 
 	private void _ensureOpen() throws IOException {
-		if (!_isOpen) {
+		if (!_open) {
 			throw new IOException("Stream closed");
 		}
 	}
@@ -241,7 +252,7 @@ public class OutputStreamWriter extends Writer {
 	private final CharsetEncoder _charsetEncoder;
 	private final String _charsetName;
 	private final CharBuffer _inputCharBuffer = CharBuffer.allocate(2);
-	private boolean _isOpen = true;
+	private boolean _open = true;
 	private final ByteBuffer _outputByteBuffer;
 	private final OutputStream _outputStream;
 

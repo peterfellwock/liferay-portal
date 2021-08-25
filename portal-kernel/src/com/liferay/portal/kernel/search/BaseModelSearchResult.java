@@ -14,10 +14,13 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.BaseModel;
 
 import java.io.Serializable;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -27,8 +30,18 @@ public class BaseModelSearchResult<T extends BaseModel<T>>
 	implements Serializable {
 
 	public BaseModelSearchResult(List<T> baseModels, int length) {
-		_baseModels = baseModels;
+		if (baseModels == null) {
+			_baseModels = Collections.emptyList();
+		}
+		else {
+			_baseModels = baseModels;
+		}
+
 		_length = length;
+	}
+
+	public BaseModelSearchResult(List<T> baseModels, Long length) {
+		this(baseModels, length.intValue());
 	}
 
 	public List<T> getBaseModels() {
@@ -37,6 +50,31 @@ public class BaseModelSearchResult<T extends BaseModel<T>>
 
 	public int getLength() {
 		return _length;
+	}
+
+	@Override
+	public String toString() {
+		if (_baseModels.isEmpty()) {
+			return StringBundler.concat(
+				"{baseModels={}, length=", _length, StringPool.CLOSE_BRACKET);
+		}
+
+		StringBundler sb = new StringBundler((2 * _baseModels.size()) + 3);
+
+		sb.append("{baseModels={");
+
+		for (T baseModel : _baseModels) {
+			sb.append(baseModel);
+			sb.append(StringPool.COMMA_AND_SPACE);
+		}
+
+		sb.setStringAt(StringPool.CLOSE_BRACKET, sb.index() - 1);
+
+		sb.append(", length=");
+		sb.append(_length);
+		sb.append(StringPool.CLOSE_BRACKET);
+
+		return sb.toString();
 	}
 
 	private final List<T> _baseModels;

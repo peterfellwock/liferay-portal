@@ -16,41 +16,85 @@ package com.liferay.portal.upgrade.v7_0_0;
 
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.portletdisplaytemplate.PortletDisplayTemplateManager;
-import com.liferay.portal.kernel.upgrade.BaseUpgradePortletPreferences;
+import com.liferay.portal.kernel.upgrade.BasePortletPreferencesUpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ObjectValuePair;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.portlet.PortletPreferences;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public class UpgradePortletDisplayTemplatePreferences
-	extends BaseUpgradePortletPreferences {
+	extends BasePortletPreferencesUpgradeProcess {
 
-	protected String getTemplateKey(
+	protected long getCompanyGroupId(long companyId) throws Exception {
+		Long companyGroupId = _companyGroupIds.get(companyId);
+
+		if (companyGroupId != null) {
+			return companyGroupId;
+		}
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				"select groupId from Group_ where classNameId = ? and " +
+					"classPK = ?")) {
+
+			preparedStatement.setLong(1, _COMPANY_CLASS_NAME_ID);
+			preparedStatement.setLong(2, companyId);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					companyGroupId = resultSet.getLong("groupId");
+				}
+				else {
+					companyGroupId = 0L;
+				}
+
+				_companyGroupIds.put(companyId, companyGroupId);
+
+				return companyGroupId;
+			}
+		}
+	}
+
+	protected ObjectValuePair<Long, String> getTemplateGroupAndKey(
 			long displayStyleGroupId, String displayStyle)
 		throws Exception {
 
 		String uuid = displayStyle.substring(DISPLAY_STYLE_PREFIX_6_2.length());
 
-		try (PreparedStatement ps = connection.prepareStatement(
-				"select templateKey from DDMTemplate where groupId = ? and " +
-					"uuid_ = ?")) {
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				"select groupId, templateKey from DDMTemplate where (groupId " +
+					"= ? or groupId = ?) and uuid_ = ?")) {
 
-			ps.setLong(1, displayStyleGroupId);
-			ps.setString(2, uuid);
+			preparedStatement.setLong(1, displayStyleGroupId);
+			preparedStatement.setLong(2, _companyGroupId);
+			preparedStatement.setString(3, uuid);
 
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					return rs.getString("templateKey");
+			ObjectValuePair<Long, String> objectValuePair = null;
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				while (resultSet.next()) {
+					long groupId = resultSet.getLong("groupId");
+
+					objectValuePair = new ObjectValuePair<>(
+						groupId, resultSet.getString("templateKey"));
+
+					if (groupId == displayStyleGroupId) {
+						return objectValuePair;
+					}
 				}
-
-				return null;
 			}
+
+			return objectValuePair;
 		}
 	}
 
@@ -74,13 +118,18 @@ public class UpgradePortletDisplayTemplatePreferences
 		long displayStyleGroupId = GetterUtil.getLong(
 			portletPreferences.getValue("displayStyleGroupId", null));
 
-		String templateKey = getTemplateKey(displayStyleGroupId, displayStyle);
+		ObjectValuePair<Long, String> objectValuePair = getTemplateGroupAndKey(
+			displayStyleGroupId, displayStyle);
 
-		if (templateKey != null) {
+		if (objectValuePair != null) {
+			Long key = objectValuePair.getKey();
+
+			portletPreferences.setValue("displayStyleGroupId", key.toString());
+
 			portletPreferences.setValue(
 				"displayStyle",
 				PortletDisplayTemplateManager.DISPLAY_STYLE_PREFIX +
-					templateKey);
+					objectValuePair.getValue());
 		}
 	}
 
@@ -94,6 +143,8 @@ public class UpgradePortletDisplayTemplatePreferences
 			PortletPreferencesFactoryUtil.fromXML(
 				companyId, ownerId, ownerType, plid, portletId, xml);
 
+		_companyGroupId = getCompanyGroupId(companyId);
+
 		upgradeDisplayStyle(portletPreferences);
 
 		return PortletPreferencesFactoryUtil.toXML(portletPreferences);
@@ -103,5 +154,11 @@ public class UpgradePortletDisplayTemplatePreferences
 
 	protected static final String UPDATE_PORTLET_PREFERENCES_WHERE_CLAUSE =
 		"(preferences like '%" + DISPLAY_STYLE_PREFIX_6_2 + "%')";
+
+	private static final Long _COMPANY_CLASS_NAME_ID =
+		PortalUtil.getClassNameId("com.liferay.portal.kernel.model.Company");
+
+	private long _companyGroupId = 0L;
+	private final Map<Long, Long> _companyGroupIds = new HashMap<>();
 
 }

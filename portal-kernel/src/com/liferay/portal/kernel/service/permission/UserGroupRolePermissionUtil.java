@@ -14,40 +14,36 @@
 
 package com.liferay.portal.kernel.service.permission;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
  * @author Brian Wing Shun Chan
  * @author Julio Camarero
  */
-@ProviderType
 public class UserGroupRolePermissionUtil {
 
 	public static void check(
 			PermissionChecker permissionChecker, Group group, Role role)
 		throws PortalException {
 
-		getUserGroupRolePermission().check(permissionChecker, group, role);
+		_userGroupRolePermission.check(permissionChecker, group, role);
 	}
 
 	public static void check(
 			PermissionChecker permissionChecker, long groupId, long roleId)
 		throws PortalException {
 
-		getUserGroupRolePermission().check(permissionChecker, groupId, roleId);
+		_userGroupRolePermission.check(permissionChecker, groupId, roleId);
 	}
 
 	public static boolean contains(
 			PermissionChecker permissionChecker, Group group, Role role)
 		throws PortalException {
 
-		return getUserGroupRolePermission().contains(
+		return _userGroupRolePermission.contains(
 			permissionChecker, group, role);
 	}
 
@@ -55,21 +51,16 @@ public class UserGroupRolePermissionUtil {
 			PermissionChecker permissionChecker, long groupId, long roleId)
 		throws PortalException {
 
-		return getUserGroupRolePermission().contains(
+		return _userGroupRolePermission.contains(
 			permissionChecker, groupId, roleId);
 	}
 
 	public static UserGroupRolePermission getUserGroupRolePermission() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			UserGroupRolePermissionUtil.class);
-
 		return _userGroupRolePermission;
 	}
 
 	public void setUserGroupRolePermission(
 		UserGroupRolePermission userGroupRolePermission) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_userGroupRolePermission = userGroupRolePermission;
 	}

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.repository.liferayrepository;
 
+import com.liferay.document.library.kernel.model.DLVersionNumberIncrease;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.repository.Repository;
 import com.liferay.portal.kernel.repository.capabilities.ProcessorCapability;
@@ -24,6 +25,8 @@ import com.liferay.portal.repository.util.RepositoryWrapper;
 
 import java.io.File;
 import java.io.InputStream;
+
+import java.util.Date;
 
 /**
  * @author Adolfo Pérez
@@ -40,14 +43,16 @@ public class LiferayProcessorRepositoryWrapper extends RepositoryWrapper {
 
 	@Override
 	public FileEntry addFileEntry(
-			long userId, long folderId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog, File file,
-			ServiceContext serviceContext)
+			String externalReferenceCode, long userId, long folderId,
+			String sourceFileName, String mimeType, String title,
+			String description, String changeLog, File file,
+			Date expirationDate, Date reviewDate, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.addFileEntry(
-			userId, folderId, sourceFileName, mimeType, title, description,
-			changeLog, file, serviceContext);
+			externalReferenceCode, userId, folderId, sourceFileName, mimeType,
+			title, description, changeLog, file, expirationDate, reviewDate,
+			serviceContext);
 
 		_processorCapability.generateNew(fileEntry);
 
@@ -56,14 +61,17 @@ public class LiferayProcessorRepositoryWrapper extends RepositoryWrapper {
 
 	@Override
 	public FileEntry addFileEntry(
-			long userId, long folderId, String sourceFileName, String mimeType,
-			String title, String description, String changeLog, InputStream is,
-			long size, ServiceContext serviceContext)
+			String externalReferenceCode, long userId, long folderId,
+			String sourceFileName, String mimeType, String title,
+			String description, String changeLog, InputStream inputStream,
+			long size, Date expirationDate, Date reviewDate,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.addFileEntry(
-			userId, folderId, sourceFileName, mimeType, title, description,
-			changeLog, is, size, serviceContext);
+			externalReferenceCode, userId, folderId, sourceFileName, mimeType,
+			title, description, changeLog, inputStream, size, expirationDate,
+			reviewDate, serviceContext);
 
 		_processorCapability.generateNew(fileEntry);
 
@@ -85,16 +93,16 @@ public class LiferayProcessorRepositoryWrapper extends RepositoryWrapper {
 
 	@Override
 	public void checkInFileEntry(
-			long userId, long fileEntryId, boolean majorVersion,
-			String changeLog, ServiceContext serviceContext)
+			long userId, long fileEntryId,
+			DLVersionNumberIncrease dlVersionNumberIncrease, String changeLog,
+			ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = getFileEntry(fileEntryId);
 
-		_processorCapability.cleanUp(fileEntry.getLatestFileVersion());
-
 		super.checkInFileEntry(
-			userId, fileEntryId, majorVersion, changeLog, serviceContext);
+			userId, fileEntryId, dlVersionNumberIncrease, changeLog,
+			serviceContext);
 
 		_processorCapability.copy(fileEntry, fileEntry.getFileVersion());
 	}
@@ -106,8 +114,6 @@ public class LiferayProcessorRepositoryWrapper extends RepositoryWrapper {
 		throws PortalException {
 
 		FileEntry fileEntry = getFileEntry(fileEntryId);
-
-		_processorCapability.cleanUp(fileEntry.getLatestFileVersion());
 
 		super.checkInFileEntry(userId, fileEntryId, lockUuid, serviceContext);
 
@@ -179,12 +185,14 @@ public class LiferayProcessorRepositoryWrapper extends RepositoryWrapper {
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, File file, ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease, File file,
+			Date expirationDate, Date reviewDate, ServiceContext serviceContext)
 		throws PortalException {
 
 		FileEntry fileEntry = super.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, file, serviceContext);
+			changeLog, dlVersionNumberIncrease, file, expirationDate,
+			reviewDate, serviceContext);
 
 		_processorCapability.cleanUp(fileEntry.getLatestFileVersion());
 		_processorCapability.generateNew(fileEntry);
@@ -196,24 +204,25 @@ public class LiferayProcessorRepositoryWrapper extends RepositoryWrapper {
 	public FileEntry updateFileEntry(
 			long userId, long fileEntryId, String sourceFileName,
 			String mimeType, String title, String description, String changeLog,
-			boolean majorVersion, InputStream is, long size,
-			ServiceContext serviceContext)
+			DLVersionNumberIncrease dlVersionNumberIncrease,
+			InputStream inputStream, long size, Date expirationDate,
+			Date reviewDate, ServiceContext serviceContext)
 		throws PortalException {
 
-		FileEntry oldFileEntry = null;
 		FileVersion oldFileVersion = null;
 
-		if (is == null) {
-			oldFileEntry = getFileEntry(fileEntryId);
+		if (inputStream == null) {
+			FileEntry oldFileEntry = getFileEntry(fileEntryId);
 
 			oldFileVersion = oldFileEntry.getLatestFileVersion(true);
 		}
 
 		FileEntry fileEntry = super.updateFileEntry(
 			userId, fileEntryId, sourceFileName, mimeType, title, description,
-			changeLog, majorVersion, is, size, serviceContext);
+			changeLog, dlVersionNumberIncrease, inputStream, size,
+			expirationDate, reviewDate, serviceContext);
 
-		if (is == null) {
+		if (inputStream == null) {
 			_processorCapability.copy(fileEntry, oldFileVersion);
 		}
 		else {

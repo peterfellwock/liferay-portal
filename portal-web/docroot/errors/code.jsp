@@ -14,21 +14,7 @@
  */
 --%>
 
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-
-<%@ page contentType="text/html; charset=UTF-8" %>
-<%@ page isErrorPage="true" %>
-
-<%@ page import="com.liferay.portal.kernel.language.LanguageUtil" %>
-<%@ page import="com.liferay.portal.kernel.log.Log" %>
-<%@ page import="com.liferay.portal.kernel.log.LogFactoryUtil" %>
-<%@ page import="com.liferay.portal.kernel.model.LayoutSet" %>
-<%@ page import="com.liferay.portal.kernel.servlet.HttpHeaders" %>
-<%@ page import="com.liferay.portal.kernel.util.HtmlUtil" %>
-<%@ page import="com.liferay.portal.kernel.util.JavaConstants" %>
-<%@ page import="com.liferay.portal.kernel.util.PortalUtil" %>
-<%@ page import="com.liferay.portal.kernel.util.StringUtil" %>
-<%@ page import="com.liferay.portal.kernel.util.WebKeys" %>
+<%@ include file="/errors/init.jsp" %>
 
 <%
 
@@ -44,6 +30,7 @@
 ErrorData errorData = pageContext.getErrorData();
 
 int code = errorData.getStatusCode();
+
 String msg = String.valueOf(request.getAttribute(JavaConstants.JAVAX_SERVLET_ERROR_MESSAGE));
 String uri = errorData.getRequestURI();
 
@@ -51,12 +38,18 @@ if (_log.isWarnEnabled()) {
 	_log.warn("{code=\"" + code + "\", msg=\"" + msg + "\", uri=" + uri + "}", exception);
 }
 
+String dynamicIncludeKey = DynamicIncludeKeyUtil.getDynamicIncludeKey(request.getHeader("Accept"));
 String xRequestWith = request.getHeader(HttpHeaders.X_REQUESTED_WITH);
 %>
 
-<html>
-	<c:choose>
-		<c:when test="<%= !StringUtil.equalsIgnoreCase(HttpHeaders.XML_HTTP_REQUEST, xRequestWith) %>">
+<c:choose>
+	<c:when test="<%= !Validator.isBlank(dynamicIncludeKey) %>">
+		<liferay-util:dynamic-include key="<%= dynamicIncludeKey %>" />
+	</c:when>
+	<c:when test="<%= !StringUtil.equalsIgnoreCase(HttpHeaders.XML_HTTP_REQUEST, xRequestWith) %>">
+		<%@ page contentType="text/html; charset=UTF-8" %>
+
+		<html>
 
 			<%
 			String redirect = null;
@@ -67,9 +60,7 @@ String xRequestWith = request.getHeader(HttpHeaders.X_REQUESTED_WITH);
 				redirect = PortalUtil.getPathMain();
 			}
 			else {
-				String validPortalDomain = PortalUtil.getValidPortalDomain(PortalUtil.getDefaultCompanyId(), request.getServerName());
-
-				redirect = PortalUtil.getPortalURL(validPortalDomain, request.getServerPort(), request.isSecure()) + PortalUtil.getPathContext() + PortalUtil.getRelativeHomeURL(request);
+				redirect = PortalUtil.getPortalURL(PortalUtil.getValidPortalDomain(PortalUtil.getDefaultCompanyId(), request.getServerName()), request.getServerPort(), request.isSecure()) + PortalUtil.getPathContext() + PortalUtil.getRelativeHomeURL(request);
 			}
 
 			if (!request.isRequestedSessionIdFromCookie()) {
@@ -79,6 +70,7 @@ String xRequestWith = request.getHeader(HttpHeaders.X_REQUESTED_WITH);
 
 			<head>
 				<title></title>
+
 				<meta content="1; url=<%= HtmlUtil.escapeAttribute(redirect) %>" http-equiv="refresh" />
 			</head>
 
@@ -94,8 +86,12 @@ String xRequestWith = request.getHeader(HttpHeaders.X_REQUESTED_WITH);
 				12345678901234567890123456789012345678901234567890123456789012345678901234567890
 				-->
 			</body>
-		</c:when>
-		<c:otherwise>
+		</html>
+	</c:when>
+	<c:otherwise>
+		<%@ page contentType="text/html; charset=UTF-8" %>
+
+		<html>
 			<head>
 				<title>Http Status <%= code %> - <%= LanguageUtil.get(request, "http-status-code[" + code + "]") %></title>
 			</head>
@@ -111,10 +107,10 @@ String xRequestWith = request.getHeader(HttpHeaders.X_REQUESTED_WITH);
 					<liferay-ui:message key="resource" />: <%= HtmlUtil.escape(uri) %>
 				</p>
 			</body>
-		</c:otherwise>
-	</c:choose>
-</html>
+		</html>
+	</c:otherwise>
+</c:choose>
 
 <%!
-private static Log _log = LogFactoryUtil.getLog("portal_web.docroot.errors.code_jsp");
+private static final Log _log = LogFactoryUtil.getLog("portal_web.docroot.errors.code_jsp");
 %>

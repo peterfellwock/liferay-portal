@@ -1,20 +1,30 @@
-<#assign layoutModel = dataFactory.newLayoutModel(dataFactory.guestGroupModel.groupId, "welcome", "com_liferay_login_web_portlet_LoginPortlet,", "com_liferay_hello_world_web_portlet_HelloWorldPortlet,") />
+<#assign
+	globalGroupModel = dataFactory.newGlobalGroupModel()
+	guestGroupModel = dataFactory.newGuestGroupModel()
 
-<@insertLayout
-	_layoutModel = layoutModel
+	commerceCurrencyModel = dataFactory.newCommerceCurrencyModel()
+	countryModel = dataFactory.newCountryModel()
 />
 
-<@insertGroup
-	_groupModel = dataFactory.globalGroupModel
-	_publicPageCount = 1
-/>
+${dataFactory.toInsertSQL(commerceCurrencyModel)}
 
-<@insertGroup
-	_groupModel = dataFactory.guestGroupModel
-	_publicPageCount = 1
-/>
+${dataFactory.toInsertSQL(countryModel)}
 
-<#list dataFactory.groupModels as groupModel>
+<#include "default_user.ftl">
+
+<#include "segments.ftl">
+
+<#include "commerce_groups.ftl">
+
+<@insertLayout _layoutModel=dataFactory.newLayoutModel(guestGroupModel.groupId, "welcome", "com_liferay_login_web_portlet_LoginPortlet,", "com_liferay_hello_world_web_portlet_HelloWorldPortlet,") />
+
+<@insertGroup _groupModel=globalGroupModel />
+
+<@insertGroup _groupModel=guestGroupModel />
+
+<@insertGroup _groupModel=dataFactory.newUserPersonalSiteGroupModel() />
+
+<#list dataFactory.newGroupModels() as groupModel>
 	<#assign groupId = groupModel.groupId />
 
 	<#include "asset_publisher.ftl">
@@ -25,6 +35,8 @@
 
 	<#include "journal_article.ftl">
 
+	<#include "fragment.ftl">
+
 	<#include "mb.ftl">
 
 	<#include "users.ftl">
@@ -32,26 +44,19 @@
 	<#include "wiki.ftl">
 
 	<@insertDLFolder
-		_ddmStructureId = dataFactory.defaultDLDDMStructureId
-		_dlFolderDepth = 1
-		_groupId = groupId
-		_parentDLFolderId = 0
+		_ddmStructureId=dataFactory.defaultDLDDMStructureId
+		_dlFolderDepth=1
+		_groupId=groupId
+		_parentDLFolderId=0
 	/>
 
-	<#assign publicLayoutModels = dataFactory.newPublicLayoutModels(groupId) />
+	<#assign groupLayoutModels = dataFactory.newGroupLayoutModels(groupId) />
 
-	<#list publicLayoutModels as publicLayoutModel>
-		<@insertLayout
-			_layoutModel = publicLayoutModel
-		/>
+	<#list groupLayoutModels as groupLayoutModel>
+		<@insertLayout _layoutModel=groupLayoutModel />
 	</#list>
 
-	<#assign publicPageCount = publicLayoutModels?size + dataFactory.maxDDLRecordSetCount + dataFactory.maxJournalArticleCount />
+	<@insertGroup _groupModel=groupModel />
 
-	<@insertGroup
-		_groupModel = groupModel
-		_publicPageCount = publicPageCount
-	/>
-
-	${repositoryCSVWriter.write(groupId + ", " + groupModel.name + "\n")}
+	${csvFileWriter.write("repository", groupId + ", " + groupModel.name + "\n")}
 </#list>

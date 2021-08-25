@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.security.xml;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.stream.XMLInputFactory;
 
@@ -27,28 +25,23 @@ import org.xml.sax.XMLReader;
 public class SecureXMLFactoryProviderUtil {
 
 	public static SecureXMLFactoryProvider getSecureXMLFactoryProvider() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			SecureXMLFactoryProvider.class);
-
 		return _secureXMLFactoryProvider;
 	}
 
 	public static DocumentBuilderFactory newDocumentBuilderFactory() {
-		return getSecureXMLFactoryProvider().newDocumentBuilderFactory();
+		return _secureXMLFactoryProvider.newDocumentBuilderFactory();
 	}
 
 	public static XMLInputFactory newXMLInputFactory() {
-		return getSecureXMLFactoryProvider().newXMLInputFactory();
+		return _secureXMLFactoryProvider.newXMLInputFactory();
 	}
 
 	public static XMLReader newXMLReader() {
-		return getSecureXMLFactoryProvider().newXMLReader();
+		return _secureXMLFactoryProvider.newXMLReader();
 	}
 
 	public void setSecureXMLFactoryProvider(
 		SecureXMLFactoryProvider secureXMLFactoryProvider) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_secureXMLFactoryProvider = secureXMLFactoryProvider;
 	}

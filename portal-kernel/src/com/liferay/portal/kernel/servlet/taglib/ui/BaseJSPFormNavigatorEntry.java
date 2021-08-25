@@ -16,9 +16,9 @@ package com.liferay.portal.kernel.servlet.taglib.ui;
 
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.portlet.PortletBag;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -32,28 +32,34 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @author Julio Camarero
+ * @author     Julio Camarero
+ * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+ *             com.liferay.frontend.taglib.form.navigator.BaseJSPFormNavigatorEntry}
  */
+@Deprecated
 public abstract class BaseJSPFormNavigatorEntry<T>
 	extends BaseFormNavigatorEntry<T> implements FormNavigatorEntry<T> {
 
 	@Override
 	public void include(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException {
 
-		ServletContext servletContext = getServletContext(request);
+		ServletContext servletContext = getServletContext(httpServletRequest);
 
 		RequestDispatcher requestDispatcher =
 			servletContext.getRequestDispatcher(getJspPath());
 
 		try {
-			requestDispatcher.include(request, response);
+			requestDispatcher.include(httpServletRequest, httpServletResponse);
 		}
-		catch (ServletException se) {
-			_log.error("Unable to include JSP " + getJspPath(), se);
+		catch (ServletException servletException) {
+			_log.error(
+				"Unable to include JSP " + getJspPath(), servletException);
 
-			throw new IOException("Unable to include " + getJspPath(), se);
+			throw new IOException(
+				"Unable to include " + getJspPath(), servletException);
 		}
 	}
 
@@ -63,22 +69,24 @@ public abstract class BaseJSPFormNavigatorEntry<T>
 
 	protected abstract String getJspPath();
 
-	protected ServletContext getServletContext(HttpServletRequest request) {
+	protected ServletContext getServletContext(
+		HttpServletRequest httpServletRequest) {
+
 		if (_servletContext != null) {
 			return _servletContext;
 		}
 
-		String portletId = PortalUtil.getPortletId(request);
+		String portletId = PortalUtil.getPortletId(httpServletRequest);
 
 		if (Validator.isNotNull(portletId)) {
-			String rootPortletId = PortletConstants.getRootPortletId(portletId);
+			String rootPortletId = PortletIdCodec.decodePortletName(portletId);
 
 			PortletBag portletBag = PortletBagPool.get(rootPortletId);
 
 			return portletBag.getServletContext();
 		}
 
-		return (ServletContext)request.getAttribute(WebKeys.CTX);
+		return (ServletContext)httpServletRequest.getAttribute(WebKeys.CTX);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

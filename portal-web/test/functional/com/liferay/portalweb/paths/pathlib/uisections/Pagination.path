@@ -2,12 +2,24 @@
 <head>
 <title>Pagination</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Pagination</td></tr>
 </thead>
+
 <tbody>
+<tr>
+	<td>ICON</td>
+	<td>//button[contains(@class, 'page-link')][*[name()='svg'][contains(@class,'lexicon-icon-${type}')]]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ICON_DISABLED</td>
+	<td>//button[contains(@class, 'page-link')][*[name()='svg'][contains(@class,'lexicon-icon-${type}')]][@disabled]</td>
+	<td></td>
+</tr>
 <tr>
 	<td>PAGES</td>
 	<td>//div[@class='search-results' and contains(.,'Pages')]</td>
@@ -15,17 +27,22 @@
 </tr>
 <tr>
 	<td>FIRST_LINK</td>
-	<td>//ul[contains(@class,'pagination')]/li/a/span[contains(@class,'icon-caret-left')]</td>
+	<td>//ul[contains(@class,'pagination')]/li/a[contains(.,'1')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>PREVIOUS_LINK</td>
-	<td>//ul[contains(@class,'pagination')]/li/a[contains(.,'2')] | //ul[contains(@class,'pagination')]/li/a[contains(.,'Previous')]</td>
+	<td>//ul[contains(@class,'pagination')]/li/a[contains(.,'2')] | //ul[contains(@class,'pagination')]/li/a[contains(.,'Previous')] | //ul[contains(@class,'pagination')]/li/a/span[contains(@class,'icon-caret-left')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>NEXT_LINK</td>
-	<td>//ul[contains(@class,'pagination')]/li/a[contains(.,'Next')] | //ul[contains(@class,'pagination')]/li/a/span[contains(@class,'icon-caret-right')]</td>
+	<td>//ul[contains(@class,'pagination')]/li/a[contains(.,'Next')] | //ul[contains(@class,'pagination')]/li[@class='']/a/span[contains(@class,'icon-caret-right')] | //button[contains(@class, 'page-link')]//*[contains(@class,'right')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>NEXT_LINK_2</td>
+	<td>xpath=(//ul[contains(@class,'pagination')]/li/a[contains(.,'Next')])[2]</td>
 	<td></td>
 </tr>
 <tr>
@@ -34,13 +51,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PAGE_1</td>
-	<td>//div[@class='search-results']/a[contains(.,'1')]</td>
+	<td>PAGE_2</td>
+	<td>//div[@class='search-results']/a[contains(.,'2')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>PAGE_2</td>
-	<td>//div[@class='search-results']/a[contains(.,'2')]</td>
+	<td>PAGINATION_BAR</td>
+	<td>//div[@data-qa-id='paginator']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PAGINATION_ITEMS_PER_PAGE</td>
+	<td>//div[@class='dropdown pagination-items-per-page']</td>
 	<td></td>
 </tr>
 <tr>
@@ -49,8 +71,13 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_PAGE</td>
+	<td>//ul[contains(@class,'pagination')]//li[contains(@class,'page-item')]//*[contains(@class,'page-link')][normalize-space(text())='${key_pageNumber}']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>CURRENT_PAGE_SELECT</td>
-	<td>//div[contains(@class,'pagination-results')]</td>
+	<td>//p[contains(@class,'pagination-results')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -59,18 +86,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>FIVE_ITEMS_PER_PAGE</td>
-	<td>//a[contains(.,'5')]</td>
+	<td>ITEMS_PER_PAGE_SELECT_2</td>
+	<td>xpath=(//div[contains(@class,'pagination-items-per-page')]/a[contains(@class,'toggle')])[2]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>RESULTS</td>
-	<td>//div[@class='pagination-results']</td>
+	<td>//p[@class='pagination-results']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>SHOWING_TOTAL_ITEMS</td>
-	<td>//ul[contains(@class,'dropdown-menu')]/li[contains(.,'Showing ${key_pageMod} Items')]</td>
+	<td>RESULTS_2</td>
+	<td>//div[@class='pagination-results']</td>
 	<td></td>
 </tr>
 <tr>

@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.zip;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,25 +24,20 @@ import java.io.InputStream;
 public class ZipReaderFactoryUtil {
 
 	public static ZipReader getZipReader(File file) {
-		return getZipReaderFactory().getZipReader(file);
+		return _zipReaderFactory.getZipReader(file);
 	}
 
 	public static ZipReader getZipReader(InputStream inputStream)
 		throws IOException {
 
-		return getZipReaderFactory().getZipReader(inputStream);
+		return _zipReaderFactory.getZipReader(inputStream);
 	}
 
 	public static ZipReaderFactory getZipReaderFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			ZipReaderFactoryUtil.class);
-
 		return _zipReaderFactory;
 	}
 
 	public void setZipReaderFactory(ZipReaderFactory zipReaderFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_zipReaderFactory = zipReaderFactory;
 	}
 

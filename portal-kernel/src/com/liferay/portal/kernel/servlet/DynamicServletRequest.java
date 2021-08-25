@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Collections;
@@ -39,20 +39,22 @@ public class DynamicServletRequest extends HttpServletRequestWrapper {
 	public static final String DYNAMIC_QUERY_STRING = "DYNAMIC_QUERY_STRING";
 
 	public static HttpServletRequest addQueryString(
-		HttpServletRequest request, Map<String, String[]> parameterMap,
-		String queryString) {
+		HttpServletRequest httpServletRequest,
+		Map<String, String[]> parameterMap, String queryString) {
 
-		return addQueryString(request, parameterMap, queryString, true);
+		return addQueryString(
+			httpServletRequest, parameterMap, queryString, true);
 	}
 
 	public static HttpServletRequest addQueryString(
-		HttpServletRequest request, Map<String, String[]> parameterMap,
-		String queryString, boolean inherit) {
+		HttpServletRequest httpServletRequest,
+		Map<String, String[]> parameterMap, String queryString,
+		boolean inherit) {
 
 		String[] parameters = StringUtil.split(queryString, CharPool.AMPERSAND);
 
 		if (parameters.length == 0) {
-			return request;
+			return httpServletRequest;
 		}
 
 		parameterMap = new HashMap<>(parameterMap);
@@ -85,57 +87,64 @@ public class DynamicServletRequest extends HttpServletRequestWrapper {
 			}
 		}
 
-		request = new DynamicServletRequest(request, parameterMap, inherit);
+		httpServletRequest = new DynamicServletRequest(
+			httpServletRequest, parameterMap, inherit);
 
-		request.setAttribute(DYNAMIC_QUERY_STRING, queryString);
+		httpServletRequest.setAttribute(DYNAMIC_QUERY_STRING, queryString);
 
-		return request;
+		return httpServletRequest;
 	}
 
 	public static HttpServletRequest addQueryString(
-		HttpServletRequest request, String queryString) {
+		HttpServletRequest httpServletRequest, String queryString) {
 
 		return addQueryString(
-			request, new HashMap<String, String[]>(), queryString, true);
+			httpServletRequest, new HashMap<String, String[]>(), queryString,
+			true);
 	}
 
 	public static HttpServletRequest addQueryString(
-		HttpServletRequest request, String queryString, boolean inherit) {
-
-		return addQueryString(
-			request, new HashMap<String, String[]>(), queryString, inherit);
-	}
-
-	public DynamicServletRequest(HttpServletRequest request) {
-		this(request, null, true);
-	}
-
-	public DynamicServletRequest(HttpServletRequest request, boolean inherit) {
-		this(request, null, inherit);
-	}
-
-	public DynamicServletRequest(
-		HttpServletRequest request, Map<String, String[]> params) {
-
-		this(request, params, true);
-	}
-
-	public DynamicServletRequest(
-		HttpServletRequest request, Map<String, String[]> params,
+		HttpServletRequest httpServletRequest, String queryString,
 		boolean inherit) {
 
-		super(request);
+		return addQueryString(
+			httpServletRequest, new HashMap<String, String[]>(), queryString,
+			inherit);
+	}
+
+	public DynamicServletRequest(HttpServletRequest httpServletRequest) {
+		this(httpServletRequest, null, true);
+	}
+
+	public DynamicServletRequest(
+		HttpServletRequest httpServletRequest, boolean inherit) {
+
+		this(httpServletRequest, null, inherit);
+	}
+
+	public DynamicServletRequest(
+		HttpServletRequest httpServletRequest, Map<String, String[]> params) {
+
+		this(httpServletRequest, params, true);
+	}
+
+	public DynamicServletRequest(
+		HttpServletRequest httpServletRequest, Map<String, String[]> params,
+		boolean inherit) {
+
+		super(httpServletRequest);
+
+		_inherit = inherit;
 
 		_params = new HashMap<>();
-		_inherit = inherit;
 
 		if (params != null) {
 			_params.putAll(params);
 		}
 
-		if (_inherit && (request instanceof DynamicServletRequest)) {
+		if (_inherit && (httpServletRequest instanceof DynamicServletRequest)) {
 			DynamicServletRequest dynamicRequest =
-				(DynamicServletRequest)request;
+				(DynamicServletRequest)httpServletRequest;
 
 			dynamicRequest.injectInto(this);
 
@@ -193,9 +202,8 @@ public class DynamicServletRequest extends HttpServletRequestWrapper {
 		if (ArrayUtil.isNotEmpty(values)) {
 			return values[0];
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	@Override
@@ -213,17 +221,34 @@ public class DynamicServletRequest extends HttpServletRequestWrapper {
 
 	@Override
 	public Enumeration<String> getParameterNames() {
-		Set<String> names = new LinkedHashSet<>();
+		if (_params.isEmpty()) {
+			if (_inherit) {
+				return super.getParameterNames();
+			}
+
+			return Collections.emptyEnumeration();
+		}
+
+		Set<String> names = null;
 
 		if (_inherit) {
-			Enumeration<String> enu = super.getParameterNames();
+			Enumeration<String> enumeration = super.getParameterNames();
 
-			while (enu.hasMoreElements()) {
-				names.add(enu.nextElement());
+			while (enumeration.hasMoreElements()) {
+				if (names == null) {
+					names = new LinkedHashSet<>();
+				}
+
+				names.add(enumeration.nextElement());
 			}
 		}
 
-		names.addAll(_params.keySet());
+		if (names == null) {
+			names = _params.keySet();
+		}
+		else {
+			names.addAll(_params.keySet());
+		}
 
 		return Collections.enumeration(names);
 	}

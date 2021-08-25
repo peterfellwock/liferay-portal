@@ -39,14 +39,14 @@ public class TaskQueueTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
 			new TaskQueue<Object>(-1);
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		TaskQueue<Object> taskQueue = new TaskQueue<>(10);
@@ -67,7 +67,7 @@ public class TaskQueueTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 
 		Object object1 = new Object();
@@ -86,11 +86,11 @@ public class TaskQueueTest {
 
 		taskQueue.drainTo(set);
 
-		Assert.assertEquals(4, set.size());
-		Assert.assertTrue(set.contains(object1));
-		Assert.assertTrue(set.contains(object2));
-		Assert.assertTrue(set.contains(object3));
-		Assert.assertTrue(set.contains(object4));
+		Assert.assertEquals(set.toString(), 4, set.size());
+		Assert.assertTrue(set.toString(), set.contains(object1));
+		Assert.assertTrue(set.toString(), set.contains(object2));
+		Assert.assertTrue(set.toString(), set.contains(object3));
+		Assert.assertTrue(set.toString(), set.contains(object4));
 
 		object1 = new Object();
 		object2 = new Object();
@@ -122,10 +122,10 @@ public class TaskQueueTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 		}
 
-		Assert.assertEquals(2, list.size());
+		Assert.assertEquals(list.toString(), 2, list.size());
 		Assert.assertSame(object1, list.get(0));
 		Assert.assertSame(object2, list.get(1));
 		Assert.assertEquals(2, taskQueue.size());
@@ -153,7 +153,7 @@ public class TaskQueueTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 
 		taskQueue = new TaskQueue<>(10);
@@ -163,7 +163,7 @@ public class TaskQueueTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 
 		taskQueue = new TaskQueue<>(10);
@@ -173,7 +173,7 @@ public class TaskQueueTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		taskQueue = new TaskQueue<>(10);
@@ -203,10 +203,11 @@ public class TaskQueueTest {
 		taskQueue = new TaskQueue<>();
 
 		object1 = new Object();
-		Object object2 = new Object();
 
 		Assert.assertTrue(taskQueue.offer(object1, new boolean[1]));
-		Assert.assertTrue(taskQueue.offer(object2, new boolean[1]));
+
+		Assert.assertTrue(taskQueue.offer(new Object(), new boolean[1]));
+
 		Assert.assertSame(object1, taskQueue.poll());
 
 		taskQueue = new TaskQueue<>();
@@ -231,10 +232,11 @@ public class TaskQueueTest {
 		taskQueue = new TaskQueue<>();
 
 		object1 = new Object();
-		object2 = new Object();
 
 		Assert.assertTrue(taskQueue.offer(object1, new boolean[1]));
-		Assert.assertTrue(taskQueue.offer(object2, new boolean[1]));
+
+		Assert.assertTrue(taskQueue.offer(new Object(), new boolean[1]));
+
 		Assert.assertSame(object1, taskQueue.poll(100, TimeUnit.MILLISECONDS));
 	}
 
@@ -288,7 +290,7 @@ public class TaskQueueTest {
 	@Test
 	public void testTake() throws InterruptedException {
 		final TaskQueue<Object> taskQueue = new TaskQueue<>();
-		final Object object = new Object();
+		Object object = new Object();
 
 		Assert.assertTrue(taskQueue.offer(object, new boolean[1]));
 		Assert.assertSame(object, taskQueue.take());
@@ -308,7 +310,7 @@ public class TaskQueueTest {
 
 							Assert.fail();
 						}
-						catch (InterruptedException ie) {
+						catch (InterruptedException interruptedException) {
 						}
 
 						return null;

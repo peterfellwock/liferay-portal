@@ -22,26 +22,11 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class GroovySourceProcessor extends JavaSourceProcessor {
+public class GroovySourceProcessor extends BaseSourceProcessor {
 
 	@Override
-	public String[] getIncludes() {
-		return _INCLUDES;
-	}
-
-	@Override
-	protected void checkInefficientStringMethods(
-		String line, String fileName, String absolutePath, int lineCount,
-		boolean javaSource) {
-	}
-
-	@Override
-	protected void checkPackagePath(String fileName, String packagePath) {
-	}
-
-	@Override
-	protected List<String> doGetFileNames() throws Exception {
-		if (!portalSource) {
+	protected List<String> doGetFileNames() throws IOException {
+		if (!isPortalSource() && !isSubrepository()) {
 			return new ArrayList<>();
 		}
 
@@ -49,23 +34,10 @@ public class GroovySourceProcessor extends JavaSourceProcessor {
 	}
 
 	@Override
-	protected String fixCopyright(
-			String content, String absolutePath, String fileName,
-			String className)
-		throws IOException {
-
-		if (Character.isUpperCase(className.charAt(0))) {
-			return super.fixCopyright(
-				content, absolutePath, fileName, className);
-		}
-
-		return content;
+	protected String[] doGetIncludes() {
+		return _INCLUDES;
 	}
 
-	@Override
-	protected void postFormat() throws Exception {
-	}
-
-	private static final String[] _INCLUDES = new String[] {"**/*.groovy"};
+	private static final String[] _INCLUDES = {"**/*.groovy"};
 
 }

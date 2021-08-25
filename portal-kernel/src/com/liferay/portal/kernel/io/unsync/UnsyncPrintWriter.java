@@ -14,8 +14,11 @@
 
 package com.liferay.portal.kernel.io.unsync;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.OutputStreamWriter;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -94,7 +97,9 @@ public class UnsyncPrintWriter extends PrintWriter {
 			charSequence = StringPool.NULL;
 		}
 
-		write(charSequence.subSequence(start, end).toString());
+		charSequence = charSequence.subSequence(start, end);
+
+		write(charSequence.toString());
 
 		return this;
 	}
@@ -119,7 +124,11 @@ public class UnsyncPrintWriter extends PrintWriter {
 
 			_writer = null;
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(ioException, ioException);
+			}
+
 			_hasError = true;
 		}
 	}
@@ -133,7 +142,11 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.flush();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -159,7 +172,7 @@ public class UnsyncPrintWriter extends PrintWriter {
 
 	@Override
 	public PrintWriter format(String format, Object... arguments) {
-		return format(Locale.getDefault(), format, arguments);
+		return format(LocaleUtil.getDefault(), format, arguments);
 	}
 
 	@Override
@@ -237,12 +250,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(_LINE_SEPARATOR);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -305,6 +326,7 @@ public class UnsyncPrintWriter extends PrintWriter {
 	public void reset(Writer writer) {
 		_formatter = null;
 		_hasError = false;
+
 		_writer = writer;
 
 		lock = _writer;
@@ -325,12 +347,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(chars, offset, length);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -345,12 +375,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(c);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -365,12 +403,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(string);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -385,12 +431,20 @@ public class UnsyncPrintWriter extends PrintWriter {
 			try {
 				_writer.write(string, offset, length);
 			}
-			catch (InterruptedIOException iioe) {
+			catch (InterruptedIOException interruptedIOException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(interruptedIOException, interruptedIOException);
+				}
+
 				Thread currentThread = Thread.currentThread();
 
 				currentThread.interrupt();
 			}
-			catch (IOException ioe) {
+			catch (IOException ioException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(ioException, ioException);
+				}
+
 				_hasError = true;
 			}
 		}
@@ -398,6 +452,9 @@ public class UnsyncPrintWriter extends PrintWriter {
 
 	private static final String _LINE_SEPARATOR = System.getProperty(
 		"line.separator");
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UnsyncPrintWriter.class);
 
 	private Formatter _formatter;
 	private boolean _hasError;

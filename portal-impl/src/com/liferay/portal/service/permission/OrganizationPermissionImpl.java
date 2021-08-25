@@ -65,14 +65,13 @@ public class OrganizationPermissionImpl implements OrganizationPermission {
 		throws PortalException {
 
 		if (organizationId > 0) {
-			Organization organization =
-				OrganizationLocalServiceUtil.getOrganization(organizationId);
+			return contains(
+				permissionChecker,
+				OrganizationLocalServiceUtil.getOrganization(organizationId),
+				actionId);
+		}
 
-			return contains(permissionChecker, organization, actionId);
-		}
-		else {
-			return false;
-		}
+		return false;
 	}
 
 	@Override
@@ -82,7 +81,7 @@ public class OrganizationPermissionImpl implements OrganizationPermission {
 		throws PortalException {
 
 		if (ArrayUtil.isEmpty(organizationIds)) {
-			return true;
+			return false;
 		}
 
 		for (long organizationId : organizationIds) {
@@ -100,29 +99,9 @@ public class OrganizationPermissionImpl implements OrganizationPermission {
 			String actionId)
 		throws PortalException {
 
-		long groupId = organization.getGroupId();
-
-		if (contains(permissionChecker, groupId, organization, actionId)) {
-			return true;
-		}
-
-		while (!organization.isRoot()) {
-			Organization parentOrganization =
-				organization.getParentOrganization();
-
-			groupId = parentOrganization.getGroupId();
-
-			if (contains(
-					permissionChecker, groupId, parentOrganization,
-					ActionKeys.MANAGE_SUBORGANIZATIONS)) {
-
-				return true;
-			}
-
-			organization = parentOrganization;
-		}
-
-		return false;
+		return contains(
+			permissionChecker, organization.getGroupId(), organization,
+			actionId);
 	}
 
 	protected boolean contains(

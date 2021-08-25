@@ -2,11 +2,13 @@
 <head>
 <title>RolesPermissionsSummary</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">RolesPermissionsSummary</td></tr>
 </thead>
+
 <tbody>
 <!--PERMISSION_TABLE-->
 <tr>
@@ -20,8 +22,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>PERMISSION_TABLE_VERTICAL_ELLIPSIS</td>
-	<td>//tr[contains(.,'${key_permissionNavigationValue}') and contains(.,'${key_permissionDefinitionValue}')]//a[contains(@class,'dropdown-toggle')]</td>
+	<td>PERMISSION_TABLE_SCOPE</td>
+	<td>//tr[contains(.,'${key_permissionNavigationValue}') and contains(.,'${key_permissionDefinitionValue}')]/td[contains(.,'${siteNameScope}')]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -1,173 +1,151 @@
-<definition component-name="portal-collaboration">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="Mentions" />
+@component-name = "portal-collaboration"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property custom.properties = "jsonws.web.service.paths.excludes=";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Mentions";
 
-		<execute macro="User#firstLoginPG" />
+	setUp {
+		TestCase.setUpPortalInstance();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		User.firstLoginPG();
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		<execute macro="User#editPasswordCP">
-			<var name="password" value="password" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-	</set-up>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+	}
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="MessageboardsCategory#tearDownCP" />
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-				<execute macro="MessageboardsThread#tearDownCP">
-					<var name="assetType" value="Message Boards Thread" />
-				</execute>
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			MessageboardsThread.tearDownCP(assetType = "Thread Subject");
+		}
+	}
 
-				<execute macro="Page#tearDownPG" />
-			</else>
-		</if>
-	</tear-down>
+	@priority = "5"
+	@refactordone
+	test CanViewMentionViaMBThread {
+		Mentions.addMentionViaMessageBoardThread(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn",
+			siteURLKey = "guest",
+			threadSubject = "Thread Subject");
 
-	<command name="ViewMentionViaMessageBoardsThread" priority="5">
-		<execute macro="Navigator#openURL" />
+		Mentions.viewMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
+	@priority = "5"
+	@refactordone
+	test CanViewMentionViaMBThreadReply {
+		JSONMBMessage.addMessage(
+			groupName = "Guest",
+			threadBody = "Thread Body",
+			threadSubject = "Thread Subject");
 
-		<execute macro="Mentions#addMentionViaMessageBoardThread">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
+		Mentions.addMentionViaMessageBoardsReply(
+			groupName = "Guest",
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn",
+			siteURLKey = "guest",
+			threadBody = "Thread Reply Body",
+			threadSubject = "Thread Subject");
 
-		<execute macro="Navigator#openURL" />
+		Mentions.viewMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
+	@priority = "5"
+	@refactorneeded
+	test CanViewMentionViaUpdatedMBThread {
+		JSONMBMessage.addMessage(
+			groupName = "Guest",
+			threadBody = "Thread Body",
+			threadSubject = "Thread Subject");
 
-		<execute macro="MessageboardsThread#gotoCP">
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
+		Mentions.addMentionViaMessageBoardThreadEdit(
+			groupName = "Guest",
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn",
+			siteURLKey = "guest",
+			threadBody = "Thread Body Edit",
+			threadSubject = "Thread Subject");
 
-		<execute macro="Mentions#viewMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
+		MessageBoardsAdmin.openMessageBoardsAdmin(siteURLKey = "guest");
 
-	<command name="ViewMentionViaMessageBoardsThreadReply" priority="5">
-		<execute macro="Navigator#openURL" />
+		MessageboardsThread.viewCP(
+			replyCount = "0",
+			threadBody = "Thread Body Edit",
+			threadSubject = "Thread Subject");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
+		Mentions.viewMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
 
-		<execute macro="MessageboardsThread#addCP">
-			<var name="threadBody" value="Thread Body" />
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
+	@description = "This test covers LPS-117986. It ensures that multiple mentions can be added to thread."
+	@priority = "4"
+	@refactordone
+	test MultipleMentionsCanBeAddedToThread {
+		JSONUser.addUser(
+			userEmailAddress = "userea2@liferay.com",
+			userFirstName = "userfn2",
+			userLastName = "userln2",
+			userScreenName = "usersn2");
 
-		<execute macro="Navigator#openURL" />
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea2@liferay.com");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea2@liferay.com",
+			userLoginFullName = "userfn2 userln2");
 
-		<execute macro="Mentions#addMentionViaMessageBoardsReply">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-			<var name="threadBody" value="Thread Reply Body" />
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
 
-		<execute macro="Navigator#openURL" />
+		Mentions.addMentionViaMessageBoardThread(
+			mentionsUserScreenNameList = "usersn,usersn2",
+			multipleMentions = "true",
+			siteURLKey = "guest",
+			threadSubject = "Thread Subject");
 
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
+		Mentions.viewMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
 
-		<execute macro="MessageboardsThread#gotoCP">
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
+		MessageboardsThread.openToThread(
+			groupName = "Guest",
+			siteURLKey = "guest",
+			threadSubject = "Thread Subject");
 
-		<execute macro="MessageboardsThread#viewReplyCP">
-			<var name="postsNumber" value="2" />
-			<var name="threadBody" value="Thread Body" />
-			<var name="threadBody2" value="Thread Reply Body" />
-			<var name="threadSubject" value="Thread Subject" />
-			<var name="userName" value="Test Test" />
-			<var name="userName2" value="Test Test" />
-		</execute>
+		Mentions.viewMentionTagLink(
+			mentionsUserFullName = "userfn2 userln2",
+			mentionsUserScreenName = "usersn2");
+	}
 
-		<execute macro="Mentions#viewMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
-
-	<command name="ViewMentionViaUpdatedMessageBoardsThread" priority="5">
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
-
-		<execute macro="MessageboardsThread#addCP">
-			<var name="threadBody" value="Thread Body" />
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
-
-		<execute macro="Mentions#addMentionViaMessageBoardThreadEdit">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-			<var name="threadBody" value="Thread Body" />
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Message Boards" />
-		</execute>
-
-		<execute macro="MessageboardsThread#viewCP">
-			<var name="postsNumber" value="1" />
-			<var name="threadBody" value="Thread Body" />
-			<var name="threadSubject" value="Thread Subject" />
-		</execute>
-
-		<execute macro="Mentions#viewMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
-</definition>
+}

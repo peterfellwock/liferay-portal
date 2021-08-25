@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.audit;
 
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 import java.util.Date;
@@ -27,20 +26,17 @@ import java.util.Date;
 public class AuditMessageFactoryUtil {
 
 	public static AuditMessageFactory getAuditMessageFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			AuditMessageFactoryUtil.class);
-
 		return _auditMessageFactory;
 	}
 
 	public AuditMessage getAuditMessage(String message) throws JSONException {
-		return getAuditMessageFactory().getAuditMessage(message);
+		return _auditMessageFactory.getAuditMessage(message);
 	}
 
 	public AuditMessage getAuditMessage(
 		String eventType, long companyId, long userId, String userName) {
 
-		return getAuditMessageFactory().getAuditMessage(
+		return _auditMessageFactory.getAuditMessage(
 			eventType, companyId, userId, userName);
 	}
 
@@ -48,7 +44,7 @@ public class AuditMessageFactoryUtil {
 		String eventType, long companyId, long userId, String userName,
 		String className, String classPK) {
 
-		return getAuditMessageFactory().getAuditMessage(
+		return _auditMessageFactory.getAuditMessage(
 			eventType, companyId, userId, userName, className, classPK);
 	}
 
@@ -56,7 +52,7 @@ public class AuditMessageFactoryUtil {
 		String eventType, long companyId, long userId, String userName,
 		String className, String classPK, String message) {
 
-		return getAuditMessageFactory().getAuditMessage(
+		return _auditMessageFactory.getAuditMessage(
 			eventType, companyId, userId, userName, className, classPK,
 			message);
 	}
@@ -64,21 +60,21 @@ public class AuditMessageFactoryUtil {
 	public AuditMessage getAuditMessage(
 		String eventType, long companyId, long userId, String userName,
 		String className, String classPK, String message, Date timestamp,
-		JSONObject additionalInfo) {
+		JSONObject additionalInfoJSONObject) {
 
-		return getAuditMessageFactory().getAuditMessage(
+		return _auditMessageFactory.getAuditMessage(
 			eventType, companyId, userId, userName, className, classPK, message,
-			timestamp, additionalInfo);
+			timestamp, additionalInfoJSONObject);
 	}
 
 	public AuditMessage getAuditMessage(
 		String eventType, long companyId, long userId, String userName,
 		String className, String classPK, String message,
-		JSONObject additionalInfo) {
+		JSONObject additionalInfoJSONObject) {
 
-		return getAuditMessageFactory().getAuditMessage(
+		return _auditMessageFactory.getAuditMessage(
 			eventType, companyId, userId, userName, className, classPK, message,
-			additionalInfo);
+			additionalInfoJSONObject);
 	}
 
 	private static volatile AuditMessageFactory _auditMessageFactory =

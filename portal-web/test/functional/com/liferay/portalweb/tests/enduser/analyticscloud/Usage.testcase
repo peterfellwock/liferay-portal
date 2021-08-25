@@ -1,0 +1,252 @@
+@component-name = "portal-analytics-cloud"
+definition {
+
+	property analytics.cloud.enabled = "true";
+	property minimum.slave.ram = "32";
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Analytics Cloud";
+
+	setUp {
+		ACUtils.launchAC();
+
+		ACSettings.takeTokenFromAnalyticsCloud();
+
+		TestCase.setUpPortalInstance();
+
+		ACUtils.launchDXP();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		ACUtils.tearDownDXP();
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+
+		ACUtils.tearDownAC();
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8147 | Test Summary: Anonymous individuals are not counted towards usage"
+	@priority = "5"
+	test AnonymousIndividualsDoNotCountAsIndividualsForUsage {
+		ACUtils.addSiteAndPage();
+
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToSettings();
+
+		ACSettings.goToUsage();
+
+		var currentIndividuals = selenium.getText("ACUsage#USAGE_CURRENT_INDIVIDUALS");
+
+		ACUtils.launchDXP();
+
+		User.logoutPG();
+
+		Navigator.gotoSitePage(
+			pageName = "AC Page",
+			siteName = "Site Name");
+
+		ACUtils.closeAllSessions();
+
+		ACUtils.launchAC();
+
+		ACNavigation.goToSettings();
+
+		ACSettings.goToUsage();
+
+		AssertTextEquals(
+			locator1 = "ACUsage#USAGE_CURRENT_INDIVIDUALS",
+			value1 = "${currentIndividuals}");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8156 | Test Summary: Current AC plan level is shown in a card"
+	@priority = "5"
+	test CurrentACPlanLevelShownInCard {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Liferay DXP");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToSettings();
+
+		ACSettings.goToUsage();
+
+		ACSettings.assertPlanDetails(
+			individualsAddOns = "5,000",
+			individualsAddOnsPrice = "500 USD",
+			individualsLimit = "100,000",
+			pageViews = "60,000,000",
+			pageViewsAddOns = "5,000,000",
+			pageViewsAddOnsPrice = "250 USD",
+			planName = "Enterprise",
+			usersLimit = "Unlimited");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8157 | Test Summary: Current add-ons are displayed in a card"
+	@priority = "5"
+	test CurrentAddonsDisplayedInCard {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToSettings();
+
+		ACSettings.goToUsage();
+
+		ACSettings.assertAddonsDetails(
+			key_planLimit = "5,000",
+			key_planName = "Individuals",
+			key_planValue = "500 USD");
+
+		ACSettings.assertAddonsDetails(
+			key_planLimit = "5,000,000",
+			key_planName = "Page Views",
+			key_planValue = "250 USD");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8148 | Test Summary: Individuals usage update in real time"
+	@priority = "5"
+	test IndividualsUpdatesInRealTime {
+		ACUtils.addSiteAndPage();
+
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToSettings();
+
+		ACSettings.goToUsage();
+
+		var currentIndividuals = selenium.getText("ACUsage#USAGE_CURRENT_INDIVIDUALS");
+
+		ACUtils.launchDXP();
+
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		ACDXPSettings.syncNewContactData();
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		Navigator.gotoSitePage(
+			pageName = "AC Page",
+			siteName = "Site Name");
+
+		ACUtils.closeAllSessions();
+
+		ACUtils.launchAC();
+
+		ACNavigation.goToSettings();
+
+		ACSettings.goToUsage();
+
+		var newIdividuals = ${currentIndividuals} + 1;
+
+		AssertTextEquals(
+			locator1 = "ACUsage#USAGE_CURRENT_INDIVIDUALS",
+			value1 = "${newIdividuals}");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8150 | Test Summary: Page views update in real time"
+	@priority = "5"
+	test PageViewsUpdateInRealTime {
+		task ("Go to Usage, save the value of Page Views, remove the comma and add 3(correspond to the value of interaction with DXP)") {
+			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = "${propertyName}");
+
+			ACNavigation.goToSettings();
+
+			ACSettings.goToUsage();
+
+			var actualPageViews = selenium.getText("ACUsage#USAGE_CURRENT_PAGE_VIEWS");
+			var replacePageViews = StringUtil.replace("${actualPageViews}",",","");
+			var sumPageViews = ${replacePageViews} + 3;
+
+			ACUtils.launchDXP();
+
+			ACUtils.closeAllSessions();
+
+			Pause(locator1 = "30000");
+		}
+
+		task ("Go to AC > Usage again and get the new value of Page Views") {
+			ACUtils.launchAC();
+
+			ACNavigation.goToSettings();
+
+			ACSettings.goToUsage();
+
+			var expectedPageViews = selenium.getText("ACUsage#USAGE_CURRENT_PAGE_VIEWS");
+		}
+
+		task ("Remove the comma and compare the values") {
+			var replacePageViews2 = StringUtil.replace("${expectedPageViews}",",","");
+
+			TestUtils.assertEquals(
+				actual = "${sumPageViews}",
+				expected = "${replacePageViews2}");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8146 | Test Summary: Total number of individuals is shown"
+	@priority = "5"
+	test PlanLimitNumberOfIndividualsIsShown {
+		task ("Go to Usage and assert that the plan number of individuals is '110,000'") {
+			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = "${propertyName}");
+
+			ACNavigation.goToSettings();
+
+			ACSettings.goToUsage();
+
+			AssertElementPresent(
+				key_metricName = "Individuals",
+				key_totalNumber = "110,000",
+				locator1 = "ACUsage#USAGE_TOTAL_NUMBER_METRICS");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8149 | Test Summary: Total number of pages is shown"
+	@priority = "5"
+	test PlanLimitNumberOfPageViewsIsShown {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToSettings();
+
+		ACSettings.goToUsage();
+
+		AssertElementPresent(
+			key_metricName = "Page Views",
+			key_totalNumber = "75,000,000",
+			locator1 = "ACUsage#USAGE_TOTAL_NUMBER_METRICS");
+	}
+
+}

@@ -15,10 +15,14 @@
 package com.liferay.portal.kernel.repository.capabilities;
 
 import com.liferay.portal.kernel.repository.DocumentRepository;
+import com.liferay.portal.kernel.repository.event.RepositoryEventTrigger;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Adolfo Pérez
  */
+@ProviderType
 public interface PortalCapabilityLocator {
 
 	public BulkOperationCapability getBulkOperationCapability(
@@ -30,11 +34,22 @@ public interface PortalCapabilityLocator {
 	public ConfigurationCapability getConfigurationCapability(
 		DocumentRepository documentRepository);
 
+	public DynamicCapability getDynamicCapability(
+		DocumentRepository documentRepository, String repositoryClassName);
+
+	public FileEntryTypeCapability getFileEntryTypeCapability();
+
 	public ProcessorCapability getProcessorCapability(
-		DocumentRepository documentRepository);
+		DocumentRepository documentRepository,
+		ProcessorCapability.ResourceGenerationStrategy
+			resourceGenerationStrategy);
 
 	public RelatedModelCapability getRelatedModelCapability(
 		DocumentRepository documentRepository);
+
+	public RepositoryEventTriggerCapability getRepositoryEventTriggerCapability(
+		DocumentRepository documentRepository,
+		RepositoryEventTrigger repositoryEventTrigger);
 
 	public SyncCapability getSyncCapability(
 		DocumentRepository documentRepository);

@@ -14,12 +14,13 @@
 
 package com.liferay.portal.osgi.web.servlet.jsp.compiler.internal;
 
-import com.liferay.portal.kernel.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.concurrent.ConcurrentReferenceValueHashMap;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.memory.FinalizeManager;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.osgi.web.servlet.jsp.compiler.internal.util.ClassPathUtil;
 
 import java.io.File;
@@ -29,7 +30,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.nio.file.DirectoryStream;
-import java.nio.file.DirectoryStream.Filter;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -41,7 +41,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.tools.JavaFileObject;
@@ -86,10 +85,15 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 				_jspBundleWiring.listResources(
 					packagePath, "*.class", options)));
 
-		String packageName = packagePath.replace(
-			CharPool.SLASH, CharPool.PERIOD);
+		javaFileObjects.addAll(
+			toJavaFileObjects(
+				_bundleWiring.getBundle(),
+				_bundleWiring.listResources(packagePath, "*.class", options)));
 
-		for (Entry<BundleWiring, Set<String>> entry :
+		String packageName = StringUtil.replace(
+			packagePath, CharPool.SLASH, CharPool.PERIOD);
+
+		for (Map.Entry<BundleWiring, Set<String>> entry :
 				_bundleWiringPackageNames.entrySet()) {
 
 			Set<String> packageNames = entry.getValue();
@@ -98,12 +102,6 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 				javaFileObjects.addAll(
 					doResolveClasses(entry.getKey(), packagePath, options));
 			}
-		}
-
-		if (javaFileObjects.isEmpty()) {
-			return toJavaFileObjects(
-				_bundleWiring.getBundle(),
-				_bundleWiring.listResources(packagePath, "*.class", options));
 		}
 
 		return javaFileObjects;
@@ -126,7 +124,8 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 		classResourceName = classResourceName.substring(
 			0, classResourceName.length() - 6);
 
-		return classResourceName.replace(CharPool.SLASH, CharPool.PERIOD);
+		return StringUtil.replace(
+			classResourceName, CharPool.SLASH, CharPool.PERIOD);
 	}
 
 	protected JavaFileObject getJavaFileObject(
@@ -145,8 +144,8 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 					className, ClassPathUtil.getFile(resourceURL),
 					resourceName);
 			}
-			catch (IOException ioe) {
-				_log.error(ioe.getMessage(), ioe);
+			catch (IOException ioException) {
+				_log.error(ioException.getMessage(), ioException);
 			}
 		}
 		else if (protocol.equals("vfs")) {
@@ -154,8 +153,9 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 				return new VfsJavaFileObject(
 					className, resourceURL, resourceName);
 			}
-			catch (MalformedURLException murle) {
-				_log.error(murle.getMessage(), murle);
+			catch (MalformedURLException malformedURLException) {
+				_log.error(
+					malformedURLException.getMessage(), malformedURLException);
 			}
 		}
 
@@ -176,7 +176,7 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 		Map<String, List<URL>> extraPackageMap = _serviceTracker.getService();
 
 		if (extraPackageMap != null) {
-			urls = extraPackageMap.get(path.replace('/', '.'));
+			urls = extraPackageMap.get(StringUtil.replace(path, '/', '.'));
 		}
 
 		if ((urls == null) || urls.isEmpty()) {
@@ -199,8 +199,8 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 					urls = Collections.list(enumeration);
 				}
 			}
-			catch (IOException ioe) {
-				_log.error(ioe.getMessage(), ioe);
+			catch (IOException ioException) {
+				_log.error(ioException.getMessage(), ioException);
 			}
 		}
 
@@ -233,7 +233,7 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 					try (DirectoryStream<Path> directoryStream =
 							fileSystemProvider.newDirectoryStream(
 								fileSystem.getPath(path),
-								new Filter<Path>() {
+								new DirectoryStream.Filter<Path>() {
 
 									@Override
 									public boolean accept(Path entryPath) {
@@ -253,7 +253,9 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 
 							String entryPathString = entryPath.toString();
 
-							entryPathString = entryPathString.substring(1);
+							if (entryPathString.charAt(0) == CharPool.SLASH) {
+								entryPathString = entryPathString.substring(1);
+							}
 
 							javaFileObjects.add(
 								new JarJavaFileObject(
@@ -263,8 +265,8 @@ public class JspJavaFileObjectResolver implements JavaFileObjectResolver {
 					}
 				}
 			}
-			catch (IOException ioe) {
-				_log.error(ioe.getMessage(), ioe);
+			catch (IOException ioException) {
+				_log.error(ioException.getMessage(), ioException);
 			}
 		}
 

@@ -1,0 +1,51 @@
+<html>
+<head>
+<title>ACUsage</title>
+</head>
+
+<body>
+<table border="1" cellpadding="1" cellspacing="1">
+<thead>
+<tr><td rowspan="1" colspan="3">ACUsage</td></tr>
+</thead>
+
+<tbody>
+<tr>
+	<td>USAGE_CURRENT_INDIVIDUALS</td>
+	<td>//h3[contains(.,'Individuals')]/..//span[contains(@class,'metric-current')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USAGE_TOTAL_NUMBER_METRICS</td>
+	<td>//h3[contains(.,'${key_metricName}')]/..//span[contains(@class,'metric-limit') and contains(.,'${key_totalNumber}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PLAN_NAME</td>
+	<td>//h4[contains(.,'Plans')]/..//div[contains(@class,'plan-name') and contains(.,'${key_planName}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USAGE_PLAN_LIMITS_TABLE</td>
+	<td>//div[@class='${key_tableName}']//ul//li[contains(.,'${key_planLimits}') and contains(.,'${key_planItem}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USAGE_ADDONS_LIMITS</td>
+	<td>//h4[contains(.,'Add-ons')]/..//b[contains(@class,'details-label')and contains(.,'${key_planName}')]/../..//span[contains(@class,'limit-amount') and contains(.,'${key_planLimit}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USAGE_ADDONS_PRICE</td>
+	<td>//b[contains(@class,'details-label')and contains(.,'${key_planName}')]/../../../..//div[contains(@class,'annual-price') and contains(.,'${key_planValue}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USAGE_CURRENT_PAGE_VIEWS</td>
+	<td>//h3[contains(.,'Page Views')]/..//span[contains(@class,'metric-current')]</td>
+	<td></td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

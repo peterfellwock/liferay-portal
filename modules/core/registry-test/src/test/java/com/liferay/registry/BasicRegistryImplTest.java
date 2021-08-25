@@ -14,18 +14,29 @@
 
 package com.liferay.registry;
 
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
+
 import java.util.Collections;
 import java.util.EventListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
  * @author Raymond Augé
  */
 public class BasicRegistryImplTest {
+
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
@@ -45,6 +56,44 @@ public class BasicRegistryImplTest {
 	}
 
 	@Test
+	public void testServiceRanking() {
+		Registry registry = RegistryUtil.getRegistry();
+
+		Foo foo1 = new Foo();
+
+		Map<String, Object> properties = new HashMap<>();
+
+		properties.put("service.ranking", 1);
+
+		ServiceRegistration<Foo> serviceRegistration1 =
+			registry.registerService(Foo.class, foo1, properties);
+
+		ServiceReference<Foo> serviceReference = registry.getServiceReference(
+			Foo.class);
+
+		Assert.assertSame(foo1, registry.getService(serviceReference));
+
+		Foo foo2 = new Foo();
+
+		properties = new HashMap<>();
+
+		properties.put("service.ranking", 2);
+
+		ServiceRegistration<Foo> serviceRegistration2 =
+			registry.registerService(Foo.class, foo2, properties);
+
+		Assert.assertSame(
+			foo2, registry.getService(registry.getServiceReference(Foo.class)));
+
+		serviceRegistration2.unregister();
+
+		Assert.assertSame(
+			foo1, registry.getService(registry.getServiceReference(Foo.class)));
+
+		serviceRegistration1.unregister();
+	}
+
+	@Test
 	public void testServiceTrackerCount() {
 		Registry registry = RegistryUtil.getRegistry();
 
@@ -56,12 +105,18 @@ public class BasicRegistryImplTest {
 		Assert.assertEquals(0, serviceTracker.size());
 
 		ServiceRegistration<Foo> serviceRegistrationA =
-			registry.registerService(Foo.class, new Foo() {});
+			registry.registerService(
+				Foo.class,
+				new Foo() {
+				});
 
 		Assert.assertEquals(1, serviceTracker.size());
 
 		ServiceRegistration<Foo> serviceRegistrationB =
-			registry.registerService(Foo.class, new Foo() {});
+			registry.registerService(
+				Foo.class,
+				new Foo() {
+				});
 
 		Assert.assertEquals(2, serviceTracker.size());
 
@@ -89,7 +144,9 @@ public class BasicRegistryImplTest {
 		serviceTracker.open();
 
 		ServiceRegistration<Foo> serviceRegistration = registry.registerService(
-			Foo.class, new Foo() {});
+			Foo.class,
+			new Foo() {
+			});
 
 		Assert.assertEquals(1, addingState.get());
 

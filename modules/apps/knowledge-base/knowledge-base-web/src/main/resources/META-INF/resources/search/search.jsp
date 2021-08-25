@@ -44,9 +44,10 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 
 	searchContext.setAttribute("paginationType", "regular");
 	searchContext.setEnd(searchContainer.getEnd());
+	searchContext.setIncludeInternalAssetCategories(true);
 	searchContext.setKeywords(keywords);
-	searchContext.setStart(searchContainer.getStart());
 	searchContext.setSorts(KBUtil.getKBArticleSorts(orderByCol, orderByType));
+	searchContext.setStart(searchContainer.getStart());
 
 	Indexer<KBArticle> indexer = IndexerRegistryUtil.getIndexer(KBArticle.class);
 
@@ -54,7 +55,9 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 
 	List<Tuple> tuples = new ArrayList<Tuple>();
 
-	for (int i = 0; i < hits.getDocs().length; i++) {
+	Document[] documents = hits.getDocs();
+
+	for (int i = 0; i < documents.length; i++) {
 		Object[] array = new Object[5];
 
 		Document document = hits.doc(i);
@@ -134,9 +137,10 @@ String orderByType = ParamUtil.getString(request, "orderByType", "desc");
 				<%
 				KBArticle kbArticle = KBArticleLocalServiceUtil.fetchLatestKBArticle(GetterUtil.getLong((String)tuple.getObject(0)), WorkflowConstants.STATUS_APPROVED);
 
-				int viewCount = (kbArticle != null) ? kbArticle.getViewCount() : 0;
+				long viewCount = (kbArticle != null) ? kbArticle.getViewCount() : 0;
 
 				buffer.append(viewCount);
+
 				buffer.append(StringPool.SPACE);
 				buffer.append((viewCount == 1) ? LanguageUtil.get(request, "view") : LanguageUtil.get(request, "views"));
 				%>

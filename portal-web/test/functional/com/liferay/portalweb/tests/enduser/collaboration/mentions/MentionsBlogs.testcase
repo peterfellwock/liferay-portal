@@ -1,132 +1,163 @@
-<definition component-name="portal-collaboration">
-	<property name="portal.release" value="true" />
-	<property name="custom.properties" value="default.layout.template.id=1_column" />
-	<property name="testray.main.component.name" value="Mentions" />
+@component-name = "portal-collaboration"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property custom.properties = "default.layout.template.id=1_column${line.separator}jsonws.web.service.paths.excludes=";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Mentions";
+	property testray.main.component.name = "Mentions";
 
-		<execute macro="User#firstLoginPG" />
+	setUp {
+		TestCase.setUpPortalInstance();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		User.firstLoginPG();
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Blogs Page");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Blogs Page",
+			widgetName = "Blogs");
 
-		<execute macro="User#editPasswordCP">
-			<var name="password" value="password" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-	</set-up>
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="BlogsEntry#tearDownCP" />
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
 
-				<execute macro="User#tearDownCP" />
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+	}
 
-				<execute macro="Page#tearDownPG" />
-			</else>
-		</if>
-	</tear-down>
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-	<command name="ViewMentionViaBlogsEntry" priority="5">
-		<execute macro="Page#add">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			BlogsEntry.tearDownCP();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+			JSONUser.tearDownNonAdminUsers();
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Blogs" />
-		</execute>
+			Page.tearDownCP();
+		}
+	}
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+	@priority = "5"
+	@refactordone
+	test CanViewMentionViaBlogsEntry {
+		Mentions.addMentionViaBlogsEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title",
+			layoutName = "Blogs Page",
+			mentionsUserScreenName = "usersn",
+			siteURLKey = "guest");
 
-		<execute macro="Mentions#addMentionViaBlogsEntry">
-			<var name="entryContent" value="Blogs Entry Content" />
-			<var name="entryTitle" value="Blogs Entry Title" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
+		BlogsNavigator.openToBlogEntry(
+			entryTitle = "Blogs Entry Title",
+			layoutName = "Blogs Page",
+			siteURLKey = "guest");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+		Mentions.viewMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
 
-		<execute macro="BlogsNavigator#gotoPG">
-			<var name="entryTitle" value="Blogs Entry Title" />
-		</execute>
+	@priority = "5"
+	@refactordone
+	test CanViewMentionViaBlogsEntryComment {
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
 
-		<execute macro="Mentions#viewMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
+		BlogsNavigator.openToBlogEntry(
+			entryTitle = "Blogs Entry Title",
+			layoutName = "Blogs Page",
+			siteURLKey = "guest");
 
-	<command name="ViewMentionViaBlogsEntryComment" priority="5">
-		<execute macro="Page#add">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+		Mentions.addMentionViaComments(
+			entryComment = "Comment mentioning",
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+		Mentions.viewCommentMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Blogs" />
-		</execute>
+	@description = "This ensures that a guest is able to mention others in the comment section."
+	@priority = "3"
+	@refactordone
+	test CanViewMentionViaBlogsEntryCommentAsGuest {
+		property osgi.module.configuration.file.names = "com.liferay.portal.bundle.blacklist.internal.configuration.BundleBlacklistConfiguration.config";
+		property osgi.module.configurations = "blacklistBundleSymbolicNames=&quot;com.liferay.saml.addon.keep.alive.web,com.liferay.saml.api,com.liferay.saml.impl,com.liferay.saml.opensaml.integration,com.liferay.saml.persistence.api,com.liferay.saml.persistence.service,com.liferay.saml.web,saml-hook&quot;";
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
 
-		<execute macro="Blogs#addEntry">
-			<var name="entryContent" value="Blogs Entry Content" />
-			<var name="entryTitle" value="Blogs Entry Title" />
-		</execute>
+		User.logoutPG();
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Blogs Page" />
-		</execute>
+		BlogsNavigator.openToBlogEntry(
+			entryTitle = "Blogs Entry Title",
+			layoutName = "Blogs Page",
+			siteURLKey = "guest");
 
-		<execute macro="BlogsNavigator#gotoEntryPG">
-			<var name="entryContent" value="Blogs Entry Content" />
-			<var name="entryTitle" value="Blogs Entry Title" />
-		</execute>
+		Mentions.addMentionViaComments(
+			entryComment = "Comment mentioning",
+			guest = "true",
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn",
+			userEmailAddress = "guest@liferay.com",
+			userFirstName = "Guestfn",
+			userLastName = "Guestln");
 
-		<execute function="Pause" locator1="3000" />
+		AssertElementPresent(
+			key_mentionsUserScreenName = "usersn",
+			locator1 = "Mentions#MENTIONS_COMMENT_TAG_LINK");
+	}
 
-		<execute macro="Mentions#addMentionViaComments">
-			<var name="entryComment" value="Comment mentioning" />
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
+	@description = "This ensures that a user is able to mention others in comment section when editing."
+	@priority = "4"
+	@refactordone
+	test CanViewMentionViaEditedBlogsEntryComment {
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
 
-		<execute macro="Mentions#viewCommentMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
-</definition>
+		JSONBlog.addComment(
+			commentBody = "Blog Comment",
+			entryTitle = "Blogs Entry Title",
+			groupName = "Guest");
+
+		BlogsNavigator.openToBlogEntry(
+			entryTitle = "Blogs Entry Title",
+			layoutName = "Blogs Page",
+			siteURLKey = "guest");
+
+		Comments.edit(
+			addMention = "true",
+			entryComment = "Blog Comment",
+			entryCommentEdit = "Blogs Comment mentioning",
+			mentionsUserScreenName = "usersn");
+
+		Mentions.viewCommentMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
+
+}

@@ -14,7 +14,10 @@
 
 package com.liferay.portal.asm;
 
-import com.liferay.portal.kernel.util.ReflectionUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -31,16 +34,21 @@ import org.objectweb.asm.Type;
 public class ASMWrapperUtil {
 
 	public static <T> T createASMWrapper(
-		Class<T> interfaceClass, Object delegateObject, T defaultObject) {
+		ClassLoader classLoader, Class<T> interfaceClass, Object delegateObject,
+		T defaultObject) {
 
 		if (!interfaceClass.isInterface()) {
 			throw new IllegalArgumentException(
 				interfaceClass + " is not an interface");
 		}
 
-		ClassLoader classLoader = interfaceClass.getClassLoader();
+		Class<?> clazz = delegateObject.getClass();
 
-		String asmWrapperClassName = interfaceClass.getName() + "ASMWrapper";
+		Package pkg = clazz.getPackage();
+
+		String asmWrapperClassName = StringBundler.concat(
+			pkg.getName(), StringPool.PERIOD, interfaceClass.getSimpleName(),
+			"ASMWrapper");
 
 		Class<?> asmWrapperClass = null;
 
@@ -50,15 +58,12 @@ public class ASMWrapperUtil {
 					asmWrapperClass = classLoader.loadClass(
 						asmWrapperClassName);
 				}
-				catch (ClassNotFoundException cnfe) {
-					Method defineClassMethod = ReflectionUtil.getDeclaredMethod(
-						ClassLoader.class, "defineClass", String.class,
-						byte[].class, int.class, int.class);
-
+				catch (ClassNotFoundException classNotFoundException) {
 					byte[] classData = _generateASMWrapperClassData(
+						StringUtil.replace(asmWrapperClassName, '.', '/'),
 						interfaceClass, delegateObject, defaultObject);
 
-					asmWrapperClass = (Class<?>)defineClassMethod.invoke(
+					asmWrapperClass = (Class<?>)_defineClassMethod.invoke(
 						classLoader, asmWrapperClassName, classData, 0,
 						classData.length);
 				}
@@ -72,19 +77,17 @@ public class ASMWrapperUtil {
 				return (T)constructor.newInstance(
 					delegateObject, defaultObject);
 			}
-			catch (Throwable t) {
-				throw new RuntimeException(t);
+			catch (Throwable throwable) {
+				throw new RuntimeException(throwable);
 			}
 		}
 	}
 
 	private static <T> byte[] _generateASMWrapperClassData(
-		Class<T> interfaceClass, Object delegateObject, T defaultObject) {
+		String asmWrapperClassBinaryName, Class<T> interfaceClass,
+		Object delegateObject, T defaultObject) {
 
 		String interfaceClassBinaryName = _getClassBinaryName(interfaceClass);
-
-		String asmWrapperClassBinaryName =
-			interfaceClassBinaryName + "ASMWrapper";
 
 		Class<?> delegateObjectClass = delegateObject.getClass();
 
@@ -165,13 +168,26 @@ public class ASMWrapperUtil {
 					"_delegate", delegateObjectClassDescriptor,
 					_getClassBinaryName(delegateObjectClass));
 			}
-			catch (NoSuchMethodException nsme) {
+			catch (NoSuchMethodException noSuchMethodException) {
 				_generateMethod(
 					classWriter, method, asmWrapperClassBinaryName, "_default",
 					defaultObjectClassDescriptor,
 					_getClassBinaryName(defaultObject.getClass()));
 			}
 		}
+
+		_generateMethod(
+			classWriter, _equalsMethod, asmWrapperClassBinaryName, "_delegate",
+			delegateObjectClassDescriptor,
+			_getClassBinaryName(delegateObjectClass));
+		_generateMethod(
+			classWriter, _hashCodeMethod, asmWrapperClassBinaryName,
+			"_delegate", delegateObjectClassDescriptor,
+			_getClassBinaryName(delegateObjectClass));
+		_generateMethod(
+			classWriter, _toStringMethod, asmWrapperClassBinaryName,
+			"_delegate", delegateObjectClassDescriptor,
+			_getClassBinaryName(delegateObjectClass));
 
 		classWriter.visitEnd();
 
@@ -229,10 +245,32 @@ public class ASMWrapperUtil {
 	private static String _getClassBinaryName(Class<?> clazz) {
 		String className = clazz.getName();
 
-		return className.replace('.', '/');
+		return StringUtil.replace(className, '.', '/');
 	}
 
 	private ASMWrapperUtil() {
+	}
+
+	private static final Method _defineClassMethod;
+	private static final Method _equalsMethod;
+	private static final Method _hashCodeMethod;
+	private static final Method _toStringMethod;
+
+	static {
+		try {
+			_defineClassMethod = ReflectionUtil.getDeclaredMethod(
+				ClassLoader.class, "defineClass", String.class, byte[].class,
+				int.class, int.class);
+			_equalsMethod = ReflectionUtil.getDeclaredMethod(
+				Object.class, "equals", Object.class);
+			_hashCodeMethod = ReflectionUtil.getDeclaredMethod(
+				Object.class, "hashCode");
+			_toStringMethod = ReflectionUtil.getDeclaredMethod(
+				Object.class, "toString");
+		}
+		catch (Throwable throwable) {
+			throw new ExceptionInInitializerError(throwable);
+		}
 	}
 
 }

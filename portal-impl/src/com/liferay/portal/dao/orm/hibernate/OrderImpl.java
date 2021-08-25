@@ -14,8 +14,8 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.Order;
-import com.liferay.portal.kernel.util.StringBundler;
 
 /**
  * @author Brian Wing Shun Chan
@@ -32,13 +32,7 @@ public class OrderImpl implements Order {
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(3);
-
-		sb.append("{_order=");
-		sb.append(String.valueOf(_order));
-		sb.append("}");
-
-		return sb.toString();
+		return StringBundler.concat("{_order=", _order, "}");
 	}
 
 	private final org.hibernate.criterion.Order _order;

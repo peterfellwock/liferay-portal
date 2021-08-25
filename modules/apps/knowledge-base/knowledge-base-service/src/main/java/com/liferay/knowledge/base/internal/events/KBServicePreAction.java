@@ -22,8 +22,9 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -33,61 +34,64 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Peter Shin
  */
 @Component(
-	property = {"key=servlet.service.events.pre"},
-	service = LifecycleAction.class
+	property = "key=servlet.service.events.pre", service = LifecycleAction.class
 )
 public class KBServicePreAction extends Action {
 
 	@Override
-	public void run(HttpServletRequest request, HttpServletResponse response) {
+	public void run(
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse) {
+
 		try {
-			doRun(request, response);
+			doRun(httpServletRequest, httpServletResponse);
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 	}
 
 	protected void doRun(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws Exception {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-			WebKeys.THEME_DISPLAY);
 
 		if (!_PORTLET_ADD_DEFAULT_RESOURCE_CHECK_ENABLED) {
 			return;
 		}
 
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
 		if (!themeDisplay.isLifecycleRender()) {
 			return;
 		}
 
-		String portletId = ParamUtil.getString(request, "p_p_id");
+		String portletId = ParamUtil.getString(httpServletRequest, "p_p_id");
 
-		if (Validator.isNull(portletId)) {
-			return;
-		}
-
-		if (!portletId.equals(
+		if (Validator.isNull(portletId) ||
+			!portletId.equals(
 				KBPortletKeys.KNOWLEDGE_BASE_ARTICLE_DEFAULT_INSTANCE)) {
 
 			return;
 		}
 
-		String request_p_p_auth = ParamUtil.getString(request, "p_p_auth");
+		String request_p_p_auth = ParamUtil.getString(
+			httpServletRequest, "p_p_auth");
 
 		if (Validator.isNull(request_p_p_auth)) {
 			return;
 		}
 
 		String actual_p_p_auth = AuthTokenUtil.getToken(
-			request, themeDisplay.getPlid(), portletId);
+			httpServletRequest, themeDisplay.getPlid(), portletId);
 
 		if (request_p_p_auth.equals(actual_p_p_auth)) {
 			return;
@@ -96,10 +100,15 @@ public class KBServicePreAction extends Action {
 		// A guest user that signs in will cause the original portlet
 		// authentication token to become stale. See SessionAuthToken.
 
-		String redirect = HttpUtil.setParameter(
-			themeDisplay.getURLCurrent(), "p_p_auth", actual_p_p_auth);
+		String redirect = _portal.escapeRedirect(themeDisplay.getURLCurrent());
 
-		response.sendRedirect(redirect);
+		if (Validator.isNull(redirect)) {
+			return;
+		}
+
+		redirect = _http.setParameter(redirect, "p_p_auth", actual_p_p_auth);
+
+		httpServletResponse.sendRedirect(redirect);
 	}
 
 	private static final boolean _PORTLET_ADD_DEFAULT_RESOURCE_CHECK_ENABLED =
@@ -109,5 +118,11 @@ public class KBServicePreAction extends Action {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		KBServicePreAction.class);
+
+	@Reference
+	private Http _http;
+
+	@Reference
+	private Portal _portal;
 
 }

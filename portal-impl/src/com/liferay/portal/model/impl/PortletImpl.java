@@ -18,6 +18,9 @@ import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.expando.kernel.model.CustomAttributesDisplay;
 import com.liferay.exportimport.kernel.lar.PortletDataHandler;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandler;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.application.type.ApplicationType;
 import com.liferay.portal.kernel.atom.AtomCollectionAdapter;
 import com.liferay.portal.kernel.log.Log;
@@ -30,7 +33,7 @@ import com.liferay.portal.kernel.model.PortletConstants;
 import com.liferay.portal.kernel.model.PortletFilter;
 import com.liferay.portal.kernel.model.PortletInfo;
 import com.liferay.portal.kernel.model.PublicRenderParameter;
-import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.portlet.PortletDependency;
 import com.liferay.portal.kernel.notifications.UserNotificationHandler;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.poller.PollerProcessor;
@@ -41,6 +44,7 @@ import com.liferay.portal.kernel.portlet.FriendlyURLMapper;
 import com.liferay.portal.kernel.portlet.FriendlyURLMapperTracker;
 import com.liferay.portal.kernel.portlet.PortletBag;
 import com.liferay.portal.kernel.portlet.PortletBagPool;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portlet.PortletLayoutListener;
 import com.liferay.portal.kernel.portlet.PortletQNameUtil;
 import com.liferay.portal.kernel.scheduler.SchedulerEntry;
@@ -49,8 +53,8 @@ import com.liferay.portal.kernel.search.OpenSearch;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
-import com.liferay.portal.kernel.security.permission.PermissionPropagator;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.security.permission.propagator.PermissionPropagator;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.servlet.ServletContextUtil;
@@ -59,8 +63,10 @@ import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.kernel.util.ServiceProxyFactory;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.webdav.WebDAVStorage;
@@ -68,7 +74,6 @@ import com.liferay.portal.kernel.workflow.WorkflowHandler;
 import com.liferay.portal.kernel.xml.QName;
 import com.liferay.portal.kernel.xmlrpc.Method;
 import com.liferay.portal.util.PropsValues;
-import com.liferay.portlet.DefaultControlPanelEntryFactory;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceRegistrar;
@@ -90,8 +95,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import javax.portlet.PortletMode;
 import javax.portlet.WindowState;
-
-import javax.servlet.ServletContext;
 
 /**
  * @author Brian Wing Shun Chan
@@ -127,8 +130,12 @@ public class PortletImpl extends PortletBaseImpl {
 		_headerPortalJavaScript = new ArrayList<>();
 		_headerPortletCss = new ArrayList<>();
 		_headerPortletJavaScript = new ArrayList<>();
+		_headerRequestAttributePrefixes = new ArrayList<>();
 		_indexerClasses = new ArrayList<>();
 		_initParams = new HashMap<>();
+		_portletDependencies = new ArrayList<>();
+		_portletDependencyCssEnabled = true;
+		_portletDependencyJavaScriptEnabled = true;
 		_portletFilters = new LinkedHashMap<>();
 		_portletModes = new HashMap<>();
 		_roleMappers = new LinkedHashMap<>();
@@ -149,7 +156,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	public PortletImpl(
 		String portletId, Portlet rootPortlet, PluginPackage pluginPackage,
-		PluginSetting pluginSetting, long companyId, String icon,
+		PluginSetting defaultPluginSetting, long companyId, String icon,
 		String virtualPath, String strutsPath, String parentStrutsPath,
 		String portletName, String displayName, String portletClass,
 		String configurationActionClass, List<String> indexerClasses,
@@ -166,7 +173,7 @@ public class PortletImpl extends PortletBaseImpl {
 		List<String> userNotificationHandlerClasses, String webDAVStorageToken,
 		String webDAVStorageClass, String xmlRpcMethodClass,
 		String controlPanelEntryCategory, double controlPanelEntryWeight,
-		String controlPanelClass, List<String> assetRendererFactoryClasses,
+		String controlPanelEntryClass, List<String> assetRendererFactoryClasses,
 		List<String> atomCollectionAdapterClasses,
 		List<String> customAttributesDisplayClasses,
 		String permissionPropagatorClass, List<String> trashHandlerClasses,
@@ -177,21 +184,27 @@ public class PortletImpl extends PortletBaseImpl {
 		boolean showPortletInactive, boolean actionURLRedirect,
 		boolean restoreCurrentView, boolean maximizeEdit, boolean maximizeHelp,
 		boolean popUpPrint, boolean layoutCacheable, boolean instanceable,
-		boolean remoteable, boolean scopeable, boolean singlePageApplication,
+		boolean scopeable, boolean singlePageApplication,
 		String userPrincipalStrategy, boolean privateRequestAttributes,
 		boolean privateSessionAttributes, Set<String> autopropagatedParameters,
 		boolean requiresNamespacedParameters, int actionTimeout,
 		int renderTimeout, int renderWeight, boolean ajaxable,
 		List<String> headerPortalCss, List<String> headerPortletCss,
 		List<String> headerPortalJavaScript,
-		List<String> headerPortletJavaScript, List<String> footerPortalCss,
-		List<String> footerPortletCss, List<String> footerPortalJavaScript,
-		List<String> footerPortletJavaScript, String cssClassWrapper,
-		String facebookIntegration, boolean addDefaultResource, String roles,
-		Set<String> unlinkedRoles, Map<String, String> roleMappers,
-		boolean system, boolean active, boolean include,
-		Map<String, String> initParams, Integer expCache,
-		Map<String, Set<String>> portletModes,
+		List<String> headerPortletJavaScript,
+		List<String> headerRequestAttributePrefixes, int headerTimeout,
+		List<String> footerPortalCss, List<String> footerPortletCss,
+		List<String> footerPortalJavaScript,
+		List<String> footerPortletJavaScript,
+		boolean partialActionServeResource, boolean portletDependencyCssEnabled,
+		boolean portletDependencyJavaScriptEnabled,
+		List<PortletDependency> portletDependencies, String cssClassWrapper,
+		boolean addDefaultResource, String roles, Set<String> unlinkedRoles,
+		Map<String, String> roleMappers, boolean system, boolean active,
+		boolean include, Map<String, String> initParams, Integer expCache,
+		boolean asyncSupported, int multipartFileSizeThreshold,
+		String multipartLocation, long multipartMaxFileSize,
+		long multipartMaxRequestSize, Map<String, Set<String>> portletModes,
 		Map<String, Set<String>> windowStates, Set<String> supportedLocales,
 		String resourceBundle, PortletInfo portletInfo,
 		Map<String, PortletFilter> portletFilters, Set<QName> processingEvents,
@@ -209,7 +222,7 @@ public class PortletImpl extends PortletBaseImpl {
 
 		_rootPortlet = rootPortlet;
 		_pluginPackage = pluginPackage;
-		_defaultPluginSetting = pluginSetting;
+		_defaultPluginSetting = defaultPluginSetting;
 		_icon = icon;
 		_virtualPath = virtualPath;
 		_strutsPath = strutsPath;
@@ -241,7 +254,7 @@ public class PortletImpl extends PortletBaseImpl {
 		_xmlRpcMethodClass = xmlRpcMethodClass;
 		_controlPanelEntryCategory = controlPanelEntryCategory;
 		_controlPanelEntryWeight = controlPanelEntryWeight;
-		_controlPanelEntryClass = controlPanelClass;
+		_controlPanelEntryClass = controlPanelEntryClass;
 		_assetRendererFactoryClasses = assetRendererFactoryClasses;
 		_atomCollectionAdapterClasses = atomCollectionAdapterClasses;
 		_customAttributesDisplayClasses = customAttributesDisplayClasses;
@@ -263,7 +276,6 @@ public class PortletImpl extends PortletBaseImpl {
 		_popUpPrint = popUpPrint;
 		_layoutCacheable = layoutCacheable;
 		_instanceable = instanceable;
-		_remoteable = remoteable;
 		_scopeable = scopeable;
 		_singlePageApplication = singlePageApplication;
 		_userPrincipalStrategy = userPrincipalStrategy;
@@ -279,12 +291,18 @@ public class PortletImpl extends PortletBaseImpl {
 		_headerPortletCss = headerPortletCss;
 		_headerPortalJavaScript = headerPortalJavaScript;
 		_headerPortletJavaScript = headerPortletJavaScript;
+		_headerRequestAttributePrefixes = headerRequestAttributePrefixes;
+		_headerTimeout = headerTimeout;
 		_footerPortalCss = footerPortalCss;
 		_footerPortletCss = footerPortletCss;
 		_footerPortalJavaScript = footerPortalJavaScript;
 		_footerPortletJavaScript = footerPortletJavaScript;
+		_partialActionServeResource = partialActionServeResource;
+		_portletDependencyCssEnabled = portletDependencyCssEnabled;
+		_portletDependencyJavaScriptEnabled =
+			portletDependencyJavaScriptEnabled;
+		_portletDependencies = portletDependencies;
 		_cssClassWrapper = cssClassWrapper;
-		_facebookIntegration = facebookIntegration;
 		_addDefaultResource = addDefaultResource;
 		_unlinkedRoles = unlinkedRoles;
 		_roleMappers = roleMappers;
@@ -292,6 +310,11 @@ public class PortletImpl extends PortletBaseImpl {
 		_include = include;
 		_initParams = initParams;
 		_expCache = expCache;
+		_asyncSupported = asyncSupported;
+		_multipartFileSizeThreshold = multipartFileSizeThreshold;
+		_multipartLocation = multipartLocation;
+		_multipartMaxFileSize = multipartMaxFileSize;
+		_multipartMaxRequestSize = multipartMaxRequestSize;
 		_portletModes = portletModes;
 		_windowStates = windowStates;
 		_supportedLocales = supportedLocales;
@@ -309,6 +332,16 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public void addApplicationType(ApplicationType applicationType) {
 		_applicationTypes.add(applicationType);
+	}
+
+	/**
+	 * Adds a portlet CSS/JavaScript resource dependency.
+	 *
+	 * @param portletDependency the portlet CSS/JavaScript resource dependency
+	 */
+	@Override
+	public void addPortletDependency(PortletDependency portletDependency) {
+		_portletDependencies.add(portletDependency);
 	}
 
 	/**
@@ -342,11 +375,8 @@ public class PortletImpl extends PortletBaseImpl {
 		_publicRenderParametersByQName.put(
 			PortletQNameUtil.getKey(qName), publicRenderParameter);
 
-		String publicRenderParameterName =
-			PortletQNameUtil.getPublicRenderParameterName(qName);
-
 		PortletQNameUtil.setPublicRenderParameterIdentifier(
-			publicRenderParameterName, identifier);
+			PortletQNameUtil.getPublicRenderParameterName(qName), identifier);
 	}
 
 	/**
@@ -372,7 +402,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public Object clone() {
-		Portlet portlet = new PortletImpl(
+		PortletImpl portletImpl = new PortletImpl(
 			getPortletId(), getRootPortlet(), getPluginPackage(),
 			getDefaultPluginSetting(), getCompanyId(), getIcon(),
 			getVirtualPath(), getStrutsPath(), getParentStrutsPath(),
@@ -400,29 +430,35 @@ public class PortletImpl extends PortletBaseImpl {
 			isShowPortletAccessDenied(), isShowPortletInactive(),
 			isActionURLRedirect(), isRestoreCurrentView(), isMaximizeEdit(),
 			isMaximizeHelp(), isPopUpPrint(), isLayoutCacheable(),
-			isInstanceable(), isRemoteable(), isScopeable(),
-			isSinglePageApplication(), getUserPrincipalStrategy(),
-			isPrivateRequestAttributes(), isPrivateSessionAttributes(),
-			getAutopropagatedParameters(), isRequiresNamespacedParameters(),
-			getActionTimeout(), getRenderTimeout(), getRenderWeight(),
-			isAjaxable(), getHeaderPortalCss(), getHeaderPortletCss(),
+			isInstanceable(), isScopeable(), isSinglePageApplication(),
+			getUserPrincipalStrategy(), isPrivateRequestAttributes(),
+			isPrivateSessionAttributes(), getAutopropagatedParameters(),
+			isRequiresNamespacedParameters(), getActionTimeout(),
+			getRenderTimeout(), getRenderWeight(), isAjaxable(),
+			getHeaderPortalCss(), getHeaderPortletCss(),
 			getHeaderPortalJavaScript(), getHeaderPortletJavaScript(),
+			getHeaderRequestAttributePrefixes(), getHeaderTimeout(),
 			getFooterPortalCss(), getFooterPortletCss(),
 			getFooterPortalJavaScript(), getFooterPortletJavaScript(),
-			getCssClassWrapper(), getFacebookIntegration(),
-			isAddDefaultResource(), getRoles(), getUnlinkedRoles(),
-			getRoleMappers(), isSystem(), isActive(), isInclude(),
-			getInitParams(), getExpCache(), getPortletModes(),
-			getWindowStates(), getSupportedLocales(), getResourceBundle(),
-			getPortletInfo(), getPortletFilters(), getProcessingEvents(),
-			getPublishingEvents(), getPublicRenderParameters(),
-			getPortletApp());
+			isPartialActionServeResource(), isPortletDependencyCssEnabled(),
+			isPortletDependencyJavaScriptEnabled(), getPortletDependencies(),
+			getCssClassWrapper(), isAddDefaultResource(), getRoles(),
+			getUnlinkedRoles(), getRoleMappers(), isSystem(), isActive(),
+			isInclude(), getInitParams(), getExpCache(), isAsyncSupported(),
+			getMultipartFileSizeThreshold(), getMultipartLocation(),
+			getMultipartMaxFileSize(), getMultipartMaxRequestSize(),
+			getPortletModes(), getWindowStates(), getSupportedLocales(),
+			getResourceBundle(), getPortletInfo(), getPortletFilters(),
+			getProcessingEvents(), getPublishingEvents(),
+			getPublicRenderParameters(), getPortletApp());
 
-		portlet.setApplicationTypes(getApplicationTypes());
-		portlet.setId(getId());
-		portlet.setUndeployedPortlet(isUndeployedPortlet());
+		portletImpl.setApplicationTypes(getApplicationTypes());
+		portletImpl.setId(getId());
+		portletImpl.setUndeployedPortlet(isUndeployedPortlet());
 
-		return portlet;
+		portletImpl._rootPortletId = _rootPortletId;
+
+		return portletImpl;
 	}
 
 	/**
@@ -444,20 +480,20 @@ public class PortletImpl extends PortletBaseImpl {
 	/**
 	 * Checks whether this portlet is equal to the specified object.
 	 *
-	 * @param  obj the object to compare this portlet against
+	 * @param  object the object to compare this portlet against
 	 * @return <code>true</code> if the portlet is equal to the specified object
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof Portlet)) {
+		if (!(object instanceof Portlet)) {
 			return false;
 		}
 
-		Portlet portlet = (Portlet)obj;
+		Portlet portlet = (Portlet)object;
 
 		String portletId = getPortletId();
 
@@ -660,6 +696,10 @@ public class PortletImpl extends PortletBaseImpl {
 	public ConfigurationAction getConfigurationActionInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
+		if (portletBag == null) {
+			return null;
+		}
+
 		List<ConfigurationAction> configurationActionInstances =
 			portletBag.getConfigurationActionInstances();
 
@@ -729,11 +769,15 @@ public class PortletImpl extends PortletBaseImpl {
 	public ControlPanelEntry getControlPanelEntryInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
+		if (portletBag == null) {
+			return _controlPanelEntry;
+		}
+
 		List<ControlPanelEntry> controlPanelEntryInstances =
 			portletBag.getControlPanelEntryInstances();
 
 		if (controlPanelEntryInstances.isEmpty()) {
-			return DefaultControlPanelEntryFactory.getInstance();
+			return _controlPanelEntry;
 		}
 
 		return controlPanelEntryInstances.get(0);
@@ -807,9 +851,8 @@ public class PortletImpl extends PortletBaseImpl {
 		if (Validator.isNull(_defaultPreferences)) {
 			return PortletConstants.DEFAULT_PREFERENCES;
 		}
-		else {
-			return _defaultPreferences;
-		}
+
+		return _defaultPreferences;
 	}
 
 	/**
@@ -819,7 +862,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public String getDisplayName() {
-		return _displayName;
+		return GetterUtil.getString(_displayName);
 	}
 
 	/**
@@ -830,16 +873,6 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public Integer getExpCache() {
 		return _expCache;
-	}
-
-	/**
-	 * Returns the Facebook integration method of the portlet.
-	 *
-	 * @return the Facebook integration method of the portlet
-	 */
-	@Override
-	public String getFacebookIntegration() {
-		return _facebookIntegration;
 	}
 
 	/**
@@ -1001,6 +1034,33 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Returns a list of attribute name prefixes that will be referenced after
+	 * the HEADER_PHASE completes for each portlet. Header request attributes
+	 * that have names starting with any of the prefixes will be copied from the
+	 * header request to the subsequent render request.
+	 *
+	 * @return a list of attribute name prefixes that will be referenced after
+	 *         the HEADER_PHASE completes for each portlet. Header request
+	 *         attributes that have names starting with any of the prefixes will
+	 *         be copied from the header request to the subsequent render
+	 *         request.
+	 */
+	@Override
+	public List<String> getHeaderRequestAttributePrefixes() {
+		return _headerRequestAttributePrefixes;
+	}
+
+	/**
+	 * Returns the header timeout of the portlet.
+	 *
+	 * @return the header timeout of the portlet
+	 */
+	@Override
+	public int getHeaderTimeout() {
+		return _headerTimeout;
+	}
+
+	/**
 	 * Returns the icon of the portlet.
 	 *
 	 * @return the icon of the portlet
@@ -1075,7 +1135,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public String getInstanceId() {
-		return PortletConstants.getInstanceId(getPortletId());
+		return PortletIdCodec.decodeInstanceId(getPortletId());
 	}
 
 	/**
@@ -1111,6 +1171,46 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public boolean getMaximizeHelp() {
 		return _maximizeHelp;
+	}
+
+	/**
+	 * Returns the maximum size of buffered bytes before storing occurs.
+	 *
+	 * @return the maximum size of buffered bytes before storing occurs
+	 */
+	@Override
+	public int getMultipartFileSizeThreshold() {
+		return _multipartFileSizeThreshold;
+	}
+
+	/**
+	 * Returns the directory for storing uploaded files.
+	 *
+	 * @return the directory for storing uploaded files
+	 */
+	@Override
+	public String getMultipartLocation() {
+		return _multipartLocation;
+	}
+
+	/**
+	 * Returns the maximum number of bytes permitted for an uploaded file.
+	 *
+	 * @return the maximum number of bytes permitted for an uploaded file
+	 */
+	@Override
+	public long getMultipartMaxFileSize() {
+		return _multipartMaxFileSize;
+	}
+
+	/**
+	 * Returns the maximum number of bytes permitted for a multipart request.
+	 *
+	 * @return the maximum number of bytes permitted for a multipart request
+	 */
+	@Override
+	public long getMultipartMaxRequestSize() {
+		return _multipartMaxRequestSize;
 	}
 
 	/**
@@ -1334,6 +1434,16 @@ public class PortletImpl extends PortletBaseImpl {
 		}
 
 		return portletDataHandlerInstances.get(0);
+	}
+
+	/**
+	 * Returns the portlet's CSS/JavaScript resource dependencies.
+	 *
+	 * @return the portlet's CSS/JavaScript resource dependencies
+	 */
+	@Override
+	public List<PortletDependency> getPortletDependencies() {
+		return _portletDependencies;
 	}
 
 	/**
@@ -1571,16 +1681,6 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
-	 * Returns <code>true</code> if the portlet supports remoting.
-	 *
-	 * @return <code>true</code> if the portlet supports remoting
-	 */
-	@Override
-	public boolean getRemoteable() {
-		return _remoteable;
-	}
-
-	/**
 	 * Returns the render timeout of the portlet.
 	 *
 	 * @return the render timeout of the portlet
@@ -1659,7 +1759,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public String getRootPortletId() {
-		return PortletConstants.getRootPortletId(getPortletId());
+		return _rootPortletId;
 	}
 
 	/**
@@ -1937,10 +2037,8 @@ public class PortletImpl extends PortletBaseImpl {
 		if (_timestamp == null) {
 			PortletApp portletApp = getPortletApp();
 
-			ServletContext servletContext = portletApp.getServletContext();
-
 			_timestamp = ServletContextUtil.getLastModified(
-				servletContext, StringPool.SLASH, true);
+				portletApp.getServletContext(), StringPool.SLASH, true);
 		}
 
 		return _timestamp;
@@ -2014,6 +2112,10 @@ public class PortletImpl extends PortletBaseImpl {
 	public URLEncoder getURLEncoderInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
 
+		if (portletBag == null) {
+			return null;
+		}
+
 		List<URLEncoder> urlEncoderInstances =
 			portletBag.getURLEncoderInstances();
 
@@ -2042,7 +2144,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public long getUserId() {
-		return PortletConstants.getUserId(getPortletId());
+		return PortletIdCodec.decodeUserId(getPortletId());
 	}
 
 	/**
@@ -2123,6 +2225,10 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public WebDAVStorage getWebDAVStorageInstance() {
 		PortletBag portletBag = PortletBagPool.get(getRootPortletId());
+
+		if (portletBag == null) {
+			return null;
+		}
 
 		List<WebDAVStorage> webDAVStorageInstances =
 			portletBag.getWebDAVStorageInstances();
@@ -2228,9 +2334,8 @@ public class PortletImpl extends PortletBaseImpl {
 			if ((permissionChecker == null) ||
 				(permissionChecker.getUserId() != userId)) {
 
-				User user = UserLocalServiceUtil.getUser(userId);
-
-				permissionChecker = PermissionCheckerFactoryUtil.create(user);
+				permissionChecker = PermissionCheckerFactoryUtil.create(
+					UserLocalServiceUtil.getUser(userId));
 			}
 
 			if (PortletPermissionUtil.contains(
@@ -2240,8 +2345,8 @@ public class PortletImpl extends PortletBaseImpl {
 				return true;
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		return false;
@@ -2305,9 +2410,8 @@ public class PortletImpl extends PortletBaseImpl {
 		if (_portletModes.size() > 1) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -2328,15 +2432,36 @@ public class PortletImpl extends PortletBaseImpl {
 		Set<String> mimeTypePortletModes = _portletModes.get(mimeType);
 
 		if (mimeTypePortletModes == null) {
+			mimeTypePortletModes = _portletModes.get("*/*");
+
+			if (mimeTypePortletModes == null) {
+				String[] mimeTypeParts = StringUtil.split(
+					mimeType, CharPool.SLASH);
+
+				if (mimeTypeParts.length != 2) {
+					throw new IllegalArgumentException(
+						"Unable to handle MIME type " + mimeType);
+				}
+
+				mimeTypePortletModes = _portletModes.get(
+					mimeTypeParts[0].concat("/*"));
+
+				if (mimeTypePortletModes == null) {
+					mimeTypePortletModes = _portletModes.get(
+						"*/".concat(mimeTypeParts[1]));
+				}
+			}
+		}
+
+		if (mimeTypePortletModes == null) {
 			return false;
 		}
 
 		if (mimeTypePortletModes.contains(portletMode.toString())) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -2386,9 +2511,8 @@ public class PortletImpl extends PortletBaseImpl {
 		if (mimeTypeWindowStates.contains(windowState.toString())) {
 			return true;
 		}
-		else {
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
@@ -2423,6 +2547,18 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public boolean isAjaxable() {
 		return _ajaxable;
+	}
+
+	/**
+	 * Returns <code>true</code> if the portlet supports asynchronous processing
+	 * in resource requests.
+	 *
+	 * @return <code>true</code> if the portlet supports asynchrounous
+	 *         processing in resource requests
+	 */
+	@Override
+	public boolean isAsyncSupported() {
+		return _asyncSupported;
 	}
 
 	@Override
@@ -2491,6 +2627,22 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Returns <code>true</code> if the portlet's
+	 * <code>serveResource(ResourceRequest,ResourceResponse)</code> method
+	 * should be invoked during a partial action triggered by a different
+	 * portlet on the same portal page.
+	 *
+	 * @return <code>true</code> if the portlet's
+	 *         <code>serveResource(ResourceRequest,ResourceResponse)</code>
+	 *         method should be invoked during a partial action triggered by a
+	 *         different portlet on the same portal page
+	 */
+	@Override
+	public boolean isPartialActionServeResource() {
+		return _partialActionServeResource;
+	}
+
+	/**
 	 * Returns <code>true</code> if the portlet goes into the pop up state when
 	 * the user goes into the print mode.
 	 *
@@ -2500,6 +2652,37 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public boolean isPopUpPrint() {
 		return _popUpPrint;
+	}
+
+	/**
+	 * Returns <code>true</code> if the CSS resource dependencies specified in
+	 * <code>portlet.xml</code>, @{@link javax.portlet.annotations.Dependency},
+	 * {@link javax.portlet.HeaderResponse#addDependency(String, String,
+	 * String)}, or {@link javax.portlet.HeaderResponse#addDependency(String,
+	 * String, String, String)} are to be referenced in the page's header.
+	 *
+	 * @return <code>true</code> if the specified CSS resource dependencies are
+	 *         to be referenced in the page's header
+	 */
+	@Override
+	public boolean isPortletDependencyCssEnabled() {
+		return _portletDependencyCssEnabled;
+	}
+
+	/**
+	 * Returns <code>true</code> if the JavaScript resource dependencies
+	 * specified in <code>portlet.xml</code>, @{@link
+	 * javax.portlet.annotations.Dependency}, {@link
+	 * javax.portlet.HeaderResponse#addDependency(String, String, String)}, or
+	 * {@link javax.portlet.HeaderResponse#addDependency(String, String, String,
+	 * String)} are to be referenced in the page's header.
+	 *
+	 * @return <code>true</code> if the specified JavaScript resource
+	 *         dependencies are to be referenced in the page's header
+	 */
+	@Override
+	public boolean isPortletDependencyJavaScriptEnabled() {
+		return _portletDependencyJavaScriptEnabled;
 	}
 
 	/**
@@ -2569,24 +2752,17 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public boolean isReady() {
+		if (_undeployedPortlet) {
+			return true;
+		}
+
 		Readiness readiness = _readinessMap.get(getRootPortletId());
 
 		if (readiness == null) {
-			return true;
+			return false;
 		}
-		else {
-			return readiness._ready;
-		}
-	}
 
-	/**
-	 * Returns <code>true</code> if the portlet supports remoting.
-	 *
-	 * @return <code>true</code> if the portlet supports remoting
-	 */
-	@Override
-	public boolean isRemoteable() {
-		return _remoteable;
+		return readiness._ready;
 	}
 
 	/**
@@ -2739,22 +2915,24 @@ public class PortletImpl extends PortletBaseImpl {
 			if (Validator.isNotNull(roleLink)) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(
-						"Linking role for portlet [" + getPortletId() +
-							"] with role-name [" + unlinkedRole +
-								"] to role-link [" + roleLink + "]");
+						StringBundler.concat(
+							"Linking role for portlet [", getPortletId(),
+							"] with role-name [", unlinkedRole,
+							"] to role-link [", roleLink, "]"));
 				}
 
 				linkedRoles.add(roleLink);
 			}
 			else {
 				_log.error(
-					"Unable to link role for portlet [" + getPortletId() +
-						"] with role-name [" + unlinkedRole +
-							"] because role-link is null");
+					StringBundler.concat(
+						"Unable to link role for portlet [", getPortletId(),
+						"] with role-name [", unlinkedRole,
+						"] because role-link is null"));
 			}
 		}
 
-		String[] array = linkedRoles.toArray(new String[linkedRoles.size()]);
+		String[] array = linkedRoles.toArray(new String[0]);
 
 		Arrays.sort(array);
 
@@ -2813,9 +2991,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public void setApplicationTypes(Set<ApplicationType> applicationTypes) {
-		for (ApplicationType applicationType : applicationTypes) {
-			addApplicationType(applicationType);
-		}
+		_applicationTypes.addAll(applicationTypes);
 	}
 
 	/**
@@ -2830,6 +3006,18 @@ public class PortletImpl extends PortletBaseImpl {
 		List<String> assetRendererFactoryClasses) {
 
 		_assetRendererFactoryClasses = assetRendererFactoryClasses;
+	}
+
+	/**
+	 * Set to <code>true</code> if the portlet supports asynchronous processing
+	 * in resource requests.
+	 *
+	 * @param asyncSupported boolean value for whether the portlet supports
+	 *        asynchronous processing in resource requests
+	 */
+	@Override
+	public void setAsyncSupported(boolean asyncSupported) {
+		_asyncSupported = asyncSupported;
 	}
 
 	/**
@@ -2975,18 +3163,6 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
-	 * Sets the Facebook integration method of the portlet.
-	 *
-	 * @param facebookIntegration the Facebook integration method of the portlet
-	 */
-	@Override
-	public void setFacebookIntegration(String facebookIntegration) {
-		if (Validator.isNotNull(facebookIntegration)) {
-			_facebookIntegration = facebookIntegration;
-		}
-	}
-
-	/**
 	 * Sets a list of CSS files that will be referenced from the page's footer
 	 * relative to the portal's context path.
 	 *
@@ -3125,6 +3301,35 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Sets a list of attribute name prefixes that will be referenced after the
+	 * HEADER_PHASE completes for each portlet. Header request attributes that
+	 * have names starting with any of the prefixes will be copied from the
+	 * header request to the subsequent render request.
+	 *
+	 * @param headerRequestAttributePrefixes a list of attribute name prefixes
+	 *        that will be referenced after the HEADER_PHASE completes for each
+	 *        portlet. Header request attributes that have names starting with
+	 *        any of the prefixes will be copied from the header request to the
+	 *        subsequent render request.
+	 */
+	@Override
+	public void setHeaderRequestAttributePrefixes(
+		List<String> headerRequestAttributePrefixes) {
+
+		_headerRequestAttributePrefixes = headerRequestAttributePrefixes;
+	}
+
+	/**
+	 * Sets the header timeout of the portlet.
+	 *
+	 * @param headerTimeout the header timeout of the portlet
+	 */
+	@Override
+	public void setHeaderTimeout(int headerTimeout) {
+		_headerTimeout = headerTimeout;
+	}
+
+	/**
 	 * Sets the icon of the portlet.
 	 *
 	 * @param icon the icon of the portlet
@@ -3217,6 +3422,49 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Sets the maximum size of buffered bytes before storing occurs.
+	 *
+	 * @param multipartFileSizeThreshold the maximum size of buffered bytes
+	 *        before storing occurs
+	 */
+	@Override
+	public void setMultipartFileSizeThreshold(int multipartFileSizeThreshold) {
+		_multipartFileSizeThreshold = multipartFileSizeThreshold;
+	}
+
+	/**
+	 * Sets the directory for storing uploaded files.
+	 *
+	 * @param multipartLocation the directory for storing uploaded files
+	 */
+	@Override
+	public void setMultipartLocation(String multipartLocation) {
+		_multipartLocation = multipartLocation;
+	}
+
+	/**
+	 * Sets the maximum number of bytes permitted for an uploaded file.
+	 *
+	 * @param multipartMaxFileSize the maximum number of bytes permitted for an
+	 *        uploaded file
+	 */
+	@Override
+	public void setMultipartMaxFileSize(long multipartMaxFileSize) {
+		_multipartMaxFileSize = multipartMaxFileSize;
+	}
+
+	/**
+	 * Sets the maximum number of bytes permitted for a multipart request.
+	 *
+	 * @param multipartMaxRequestSize the maximum number of bytes permitted for
+	 *        a multipart request
+	 */
+	@Override
+	public void setMultipartMaxRequestSize(long multipartMaxRequestSize) {
+		_multipartMaxRequestSize = multipartMaxRequestSize;
+	}
+
+	/**
 	 * Sets the name of the open search class of the portlet.
 	 *
 	 * @param openSearchClass the name of the open search class of the portlet
@@ -3234,6 +3482,22 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public void setParentStrutsPath(String parentStrutsPath) {
 		_parentStrutsPath = parentStrutsPath;
+	}
+
+	/**
+	 * Sets whether the portlet's serve resource should be invoked during a
+	 * partial action triggered by a different portlet on the same portal page.
+	 *
+	 * @param partialActionServeResource whether the portlet's
+	 *        <code>serveResource(ResourceRequest,ResourceResponse)</code>
+	 *        method should be invoked during a partial action triggered by a
+	 *        different portlet on the same portal page
+	 */
+	@Override
+	public void setPartialActionServeResource(
+		boolean partialActionServeResource) {
+
+		_partialActionServeResource = partialActionServeResource;
 	}
 
 	/**
@@ -3277,11 +3541,11 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
-	 * Set to <code>true</code> if the portlet goes into the pop up state when
-	 * the user goes into the print mode.
+	 * Sets whether the portlet goes into the pop up state when the user goes
+	 * into the print mode.
 	 *
-	 * @param popUpPrint boolean value for whether the portlet goes into the pop
-	 *        up state when the user goes into the print mode
+	 * @param popUpPrint whether the portlet goes into the pop up state when the
+	 *        user goes into the print mode
 	 */
 	@Override
 	public void setPopUpPrint(boolean popUpPrint) {
@@ -3322,6 +3586,46 @@ public class PortletImpl extends PortletBaseImpl {
 	}
 
 	/**
+	 * Sets whether the CSS resource dependencies specified in
+	 * <code>portlet.xml</code>, @{@link javax.portlet.annotations.Dependency},
+	 * {@link javax.portlet.HeaderResponse#addDependency(String, String,
+	 * String)}, or {@link javax.portlet.HeaderResponse#addDependency(String,
+	 * String, String, String)} are to be referenced in the page's header.
+	 *
+	 * @param portletDependencyCssEnabled whether the CSS resource dependencies
+	 *        that are specified in <code>portlet.xml</code>,
+	 */
+	@Override
+	public void setPortletDependencyCssEnabled(
+		boolean portletDependencyCssEnabled) {
+
+		_portletDependencyCssEnabled = portletDependencyCssEnabled;
+	}
+
+	/**
+	 * Sets whether the JavaScript resource dependencies specified in
+	 * <code>portlet.xml</code>, @{@link javax.portlet.annotations.Dependency},
+	 * {@link javax.portlet.HeaderResponse#addDependency(String, String,
+	 * String)}, or {@link javax.portlet.HeaderResponse#addDependency(String,
+	 * String, String, String)} are to be referenced in the page's header.
+	 *
+	 * @param portletDependencyJavaScriptEnabled whether the JavaScript resource
+	 *        dependencies specified in <code>portlet.xml</code>, @{@link
+	 *        javax.portlet.annotations.Dependency}, {@link
+	 *        javax.portlet.HeaderResponse#addDependency(String, String,
+	 *        String)}, or {@link
+	 *        javax.portlet.HeaderResponse#addDependency(String, String, String,
+	 *        String)} are to be referenced in the page's header
+	 */
+	@Override
+	public void setPortletDependencyJavaScriptEnabled(
+		boolean portletDependencyJavaScriptEnabled) {
+
+		_portletDependencyJavaScriptEnabled =
+			portletDependencyJavaScriptEnabled;
+	}
+
+	/**
 	 * Sets the filters of the portlet.
 	 *
 	 * @param portletFilters the filters of the portlet
@@ -3329,6 +3633,13 @@ public class PortletImpl extends PortletBaseImpl {
 	@Override
 	public void setPortletFilters(Map<String, PortletFilter> portletFilters) {
 		_portletFilters = portletFilters;
+	}
+
+	@Override
+	public void setPortletId(String portletId) {
+		super.setPortletId(portletId);
+
+		_rootPortletId = PortletIdCodec.decodePortletName(getPortletId());
 	}
 
 	/**
@@ -3475,8 +3786,11 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public void setProcessingEvents(Set<QName> processingEvents) {
+		_processingEvents.addAll(processingEvents);
+
 		for (QName processingEvent : processingEvents) {
-			addProcessingEvent(processingEvent);
+			_processingEventsByQName.put(
+				PortletQNameUtil.getKey(processingEvent), processingEvent);
 		}
 	}
 
@@ -3503,9 +3817,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public void setPublishingEvents(Set<QName> publishingEvents) {
-		for (QName publishingEvent : publishingEvents) {
-			addPublishingEvent(publishingEvent);
-		}
+		_publishingEvents.addAll(publishingEvents);
 	}
 
 	/**
@@ -3539,7 +3851,7 @@ public class PortletImpl extends PortletBaseImpl {
 			ServiceRegistrar<Portlet> serviceRegistrar =
 				readiness._serviceRegistrar;
 
-			if (ready) {
+			if (ready && !_undeployedPortlet) {
 				if (serviceRegistrar.isDestroyed()) {
 					serviceRegistrar = registry.getServiceRegistrar(
 						Portlet.class);
@@ -3547,28 +3859,16 @@ public class PortletImpl extends PortletBaseImpl {
 					readiness._serviceRegistrar = serviceRegistrar;
 				}
 
-				Map<String, Object> properties = new HashMap<>();
-
-				properties.put("javax.portlet.name", getPortletName());
-
 				serviceRegistrar.registerService(
-					Portlet.class, this, properties);
+					Portlet.class, this,
+					HashMapBuilder.<String, Object>put(
+						"javax.portlet.name", getPortletName()
+					).build());
 			}
 			else {
 				serviceRegistrar.destroy();
 			}
 		}
-	}
-
-	/**
-	 * Set to <code>true</code> if the portlet supports remoting
-	 *
-	 * @param remoteable boolean value for whether or not the the portlet
-	 *        supports remoting
-	 */
-	@Override
-	public void setRemoteable(boolean remoteable) {
-		_remoteable = remoteable;
 	}
 
 	/**
@@ -3668,9 +3968,7 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	@Override
 	public void setSchedulerEntries(List<SchedulerEntry> schedulerEntries) {
-		for (SchedulerEntry schedulerEntry : schedulerEntries) {
-			addSchedulerEntry(schedulerEntry);
-		}
+		_schedulerEntries.addAll(schedulerEntries);
 	}
 
 	/**
@@ -4008,6 +4306,13 @@ public class PortletImpl extends PortletBaseImpl {
 	 */
 	private static final Log _log = LogFactoryUtil.getLog(PortletImpl.class);
 
+	private static volatile ControlPanelEntry _controlPanelEntry =
+		ServiceProxyFactory.newServiceTrackedInstance(
+			ControlPanelEntry.class, PortletImpl.class, "_controlPanelEntry",
+			"(&(!(javax.portlet.name=*))(objectClass=" +
+				ControlPanelEntry.class.getName() + "))",
+			false);
+
 	/**
 	 * Map of the ready states of all portlets keyed by their root portlet ID.
 	 */
@@ -4046,6 +4351,12 @@ public class PortletImpl extends PortletBaseImpl {
 	 * portlet.
 	 */
 	private List<String> _assetRendererFactoryClasses;
+
+	/**
+	 * <code>True</code> if the portlet supports asynchronous processing in
+	 * resource requests.
+	 */
+	private boolean _asyncSupported;
 
 	/**
 	 * The names of the classes that represents atom collection adapters
@@ -4115,12 +4426,6 @@ public class PortletImpl extends PortletBaseImpl {
 	private Integer _expCache;
 
 	/**
-	 * The Facebook integration method of the portlet.
-	 */
-	private String _facebookIntegration =
-		PortletConstants.FACEBOOK_INTEGRATION_IFRAME;
-
-	/**
 	 * A list of CSS files that will be referenced from the page's footer
 	 * relative to the portal's context path.
 	 */
@@ -4185,6 +4490,19 @@ public class PortletImpl extends PortletBaseImpl {
 	private List<String> _headerPortletJavaScript;
 
 	/**
+	 * A list of header request attribute prefixes that will be referenced after
+	 * the HEADER_PHASE completes for each portlet. Header request attributes
+	 * that have names starting with any of the prefixes will be copied from the
+	 * header request to the subsequent render request.
+	 */
+	private List<String> _headerRequestAttributePrefixes;
+
+	/**
+	 * The header timeout of the portlet.
+	 */
+	private int _headerTimeout;
+
+	/**
 	 * The icon of the portlet.
 	 */
 	private String _icon;
@@ -4229,6 +4547,26 @@ public class PortletImpl extends PortletBaseImpl {
 	private boolean _maximizeHelp;
 
 	/**
+	 * The maximum size of buffered bytes before storing occurs.
+	 */
+	private int _multipartFileSizeThreshold;
+
+	/**
+	 * The directory for storing uploaded files.
+	 */
+	private String _multipartLocation;
+
+	/**
+	 * The maximum number of bytes permitted for an uploaded file.
+	 */
+	private long _multipartMaxFileSize;
+
+	/**
+	 * The maximum number of bytes permitted for a multipart request.
+	 */
+	private long _multipartMaxRequestSize;
+
+	/**
 	 * The name of the open search class of the portlet.
 	 */
 	private String _openSearchClass;
@@ -4237,6 +4575,14 @@ public class PortletImpl extends PortletBaseImpl {
 	 * The parent struts path of the portlet.
 	 */
 	private String _parentStrutsPath;
+
+	/**
+	 * <code>True</code> if the portlet's
+	 * <code>serveResource(ResourceRequest,ResourceResponse)</code> method
+	 * should be invoked during a partial action triggered by a different
+	 * portlet on the same portal page.
+	 */
+	private boolean _partialActionServeResource;
 
 	/**
 	 * The name of the permission propagator class of the portlet.
@@ -4278,6 +4624,29 @@ public class PortletImpl extends PortletBaseImpl {
 	 * The name of the portlet data handler class of the portlet.
 	 */
 	private String _portletDataHandlerClass;
+
+	/**
+	 * The client-side dependencies associated with the portlet.
+	 */
+	private List<PortletDependency> _portletDependencies;
+
+	/**
+	 * <code>True</code> if the CSS resource dependencies specified in
+	 * <code>portlet.xml</code>, @{@link javax.portlet.annotations.Dependency},
+	 * {@link javax.portlet.HeaderResponse#addDependency(String, String,
+	 * String)}, or {@link javax.portlet.HeaderResponse#addDependency(String,
+	 * String, String, String)} are to be referenced in the page's header.
+	 */
+	private boolean _portletDependencyCssEnabled = true;
+
+	/**
+	 * <code>True</code> if the JavaScript resource dependencies specified in
+	 * <code>portlet.xml</code>, @{@link javax.portlet.annotations.Dependency},
+	 * {@link javax.portlet.HeaderResponse#addDependency(String, String,
+	 * String)}, or {@link javax.portlet.HeaderResponse#addDependency(String,
+	 * String, String, String)} are to be referenced in the page's header.
+	 */
+	private boolean _portletDependencyJavaScriptEnabled = true;
 
 	/**
 	 * The filters of the portlet.
@@ -4378,11 +4747,6 @@ public class PortletImpl extends PortletBaseImpl {
 	private final Set<QName> _publishingEvents = new HashSet<>();
 
 	/**
-	 * <code>True</code> if the portlet supports remoting.
-	 */
-	private boolean _remoteable;
-
-	/**
 	 * The render timeout of the portlet.
 	 */
 	private int _renderTimeout;
@@ -4422,6 +4786,8 @@ public class PortletImpl extends PortletBaseImpl {
 	 * The root portlet of this portlet instance.
 	 */
 	private final Portlet _rootPortlet;
+
+	private String _rootPortletId;
 
 	/**
 	 * The scheduler entries of the portlet.

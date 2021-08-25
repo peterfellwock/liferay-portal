@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.oauth;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
  * @author Brian Wing Shun Chan
  */
@@ -26,37 +24,33 @@ public class OAuthFactoryUtil {
 			String callbackURL, String scope)
 		throws OAuthException {
 
-		return getOAuthFactory().createOAuthManager(
+		return _oAuthFactory.createOAuthManager(
 			key, secret, accessURL, requestURL, callbackURL, scope);
 	}
 
 	public static OAuthRequest createOAuthRequest(Verb verb, String url)
 		throws OAuthException {
 
-		return getOAuthFactory().createOAuthRequest(verb, url);
+		return _oAuthFactory.createOAuthRequest(verb, url);
 	}
 
 	public static Token createToken(String token, String secret)
 		throws OAuthException {
 
-		return getOAuthFactory().createToken(token, secret);
+		return _oAuthFactory.createToken(token, secret);
 	}
 
 	public static Verifier createVerifier(String verifier)
 		throws OAuthException {
 
-		return getOAuthFactory().createVerifier(verifier);
+		return _oAuthFactory.createVerifier(verifier);
 	}
 
 	public static OAuthFactory getOAuthFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(OAuthFactoryUtil.class);
-
 		return _oAuthFactory;
 	}
 
 	public void setOAuthFactory(OAuthFactory oAuthFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_oAuthFactory = oAuthFactory;
 	}
 

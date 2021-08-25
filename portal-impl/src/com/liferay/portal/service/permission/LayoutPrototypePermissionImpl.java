@@ -18,6 +18,8 @@ import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.permission.LayoutPrototypePermission;
+import com.liferay.registry.collections.ServiceTrackerCollections;
+import com.liferay.registry.collections.ServiceTrackerList;
 
 /**
  * @author Jorge Ferrer
@@ -44,13 +46,27 @@ public class LayoutPrototypePermissionImpl
 		String actionId) {
 
 		if (permissionChecker.hasPermission(
-				0, LayoutPrototype.class.getName(), layoutPrototypeId,
+				null, LayoutPrototype.class.getName(), layoutPrototypeId,
 				actionId)) {
 
 			return true;
 		}
 
+		for (LayoutPrototypePermission layoutPrototypePermission :
+				_layoutPrototypePermissions) {
+
+			if (layoutPrototypePermission.contains(
+					permissionChecker, layoutPrototypeId, actionId)) {
+
+				return true;
+			}
+		}
+
 		return false;
 	}
+
+	private final ServiceTrackerList<LayoutPrototypePermission>
+		_layoutPrototypePermissions = ServiceTrackerCollections.openList(
+			LayoutPrototypePermission.class, "(extended=true)");
 
 }

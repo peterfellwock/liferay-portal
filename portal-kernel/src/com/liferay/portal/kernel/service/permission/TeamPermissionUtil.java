@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Team;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -29,40 +28,35 @@ public class TeamPermissionUtil {
 			PermissionChecker permissionChecker, long teamId, String actionId)
 		throws PortalException {
 
-		getTeamPermission().check(permissionChecker, teamId, actionId);
+		_teamPermission.check(permissionChecker, teamId, actionId);
 	}
 
 	public static void check(
 			PermissionChecker permissionChecker, Team team, String actionId)
 		throws PortalException {
 
-		getTeamPermission().check(permissionChecker, team, actionId);
+		_teamPermission.check(permissionChecker, team, actionId);
 	}
 
 	public static boolean contains(
 			PermissionChecker permissionChecker, long teamId, String actionId)
 		throws PortalException {
 
-		return getTeamPermission().contains(
-			permissionChecker, teamId, actionId);
+		return _teamPermission.contains(permissionChecker, teamId, actionId);
 	}
 
 	public static boolean contains(
 			PermissionChecker permissionChecker, Team team, String actionId)
 		throws PortalException {
 
-		return getTeamPermission().contains(permissionChecker, team, actionId);
+		return _teamPermission.contains(permissionChecker, team, actionId);
 	}
 
 	public static TeamPermission getTeamPermission() {
-		PortalRuntimePermission.checkGetBeanProperty(TeamPermissionUtil.class);
-
 		return _teamPermission;
 	}
 
 	public void setTeamPermission(TeamPermission teamPermission) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_teamPermission = teamPermission;
 	}
 

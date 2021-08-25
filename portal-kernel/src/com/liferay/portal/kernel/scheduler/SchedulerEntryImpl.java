@@ -14,13 +14,25 @@
 
 package com.liferay.portal.kernel.scheduler;
 
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 
 /**
  * @author Shuyang Zhou
  */
 public class SchedulerEntryImpl implements SchedulerEntry {
+
+	public SchedulerEntryImpl(String eventListenerClass, Trigger trigger) {
+		this(eventListenerClass, trigger, StringPool.BLANK);
+	}
+
+	public SchedulerEntryImpl(
+		String eventListenerClass, Trigger trigger, String description) {
+
+		_eventListenerClass = eventListenerClass;
+		_trigger = trigger;
+		_description = description;
+	}
 
 	@Override
 	public String getDescription() {
@@ -37,18 +49,6 @@ public class SchedulerEntryImpl implements SchedulerEntry {
 		return _trigger;
 	}
 
-	public void setDescription(String description) {
-		_description = description;
-	}
-
-	public void setEventListenerClass(String eventListenerClass) {
-		_eventListenerClass = eventListenerClass;
-	}
-
-	public void setTrigger(Trigger trigger) {
-		_trigger = trigger;
-	}
-
 	@Override
 	public String toString() {
 		StringBundler sb = new StringBundler(5);
@@ -62,8 +62,8 @@ public class SchedulerEntryImpl implements SchedulerEntry {
 		return sb.toString();
 	}
 
-	private String _description = StringPool.BLANK;
-	private String _eventListenerClass = StringPool.BLANK;
+	private String _description;
+	private String _eventListenerClass;
 	private Trigger _trigger;
 
 }

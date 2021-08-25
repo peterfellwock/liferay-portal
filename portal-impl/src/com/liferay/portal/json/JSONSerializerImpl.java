@@ -17,10 +17,10 @@ package com.liferay.portal.json;
 import com.liferay.portal.kernel.json.JSONSerializer;
 import com.liferay.portal.kernel.json.JSONTransformer;
 
-import jodd.json.JoddJson;
 import jodd.json.JsonContext;
 import jodd.json.JsonSerializer;
 import jodd.json.TypeJsonSerializer;
+import jodd.json.TypeJsonSerializerMap;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -31,7 +31,7 @@ import org.json.JSONObject;
 public class JSONSerializerImpl implements JSONSerializer {
 
 	public JSONSerializerImpl() {
-		_jsonSerializer = new JsonSerializer();
+		_jsonSerializer.strictStringEncoding(true);
 	}
 
 	@Override
@@ -55,7 +55,9 @@ public class JSONSerializerImpl implements JSONSerializer {
 
 	@Override
 	public String serializeDeep(Object target) {
-		return _jsonSerializer.deep(true).serialize(target);
+		JsonSerializer jsonSerializer = _jsonSerializer.deep(true);
+
+		return jsonSerializer.serialize(target);
 	}
 
 	@Override
@@ -71,7 +73,7 @@ public class JSONSerializerImpl implements JSONSerializer {
 			typeJsonSerializer = new JoddJsonTransformer(jsonTransformer);
 		}
 
-		_jsonSerializer.use(type, typeJsonSerializer);
+		_jsonSerializer.withSerializer(type, typeJsonSerializer);
 
 		return this;
 	}
@@ -89,30 +91,21 @@ public class JSONSerializerImpl implements JSONSerializer {
 			typeJsonSerializer = new JoddJsonTransformer(jsonTransformer);
 		}
 
-		_jsonSerializer.use(field, typeJsonSerializer);
+		_jsonSerializer.withSerializer(field, typeJsonSerializer);
 
 		return this;
 	}
 
-	static {
-		JoddJson.defaultSerializers.register(
-			JSONArray.class, new JSONArrayTypeJSONSerializer());
-		JoddJson.defaultSerializers.register(
-			JSONObject.class, new JSONObjectTypeJSONSerializer());
-		JoddJson.defaultSerializers.register(
-			Long.TYPE, new LongToStringTypeJSONSerializer());
-		JoddJson.defaultSerializers.register(
-			Long.class, new LongToStringTypeJSONSerializer());
-	}
-
-	private final JsonSerializer _jsonSerializer;
+	private final JsonSerializer _jsonSerializer = new JsonSerializer();
 
 	private static class JSONArrayTypeJSONSerializer
 		implements TypeJsonSerializer<JSONArray> {
 
 		@Override
-		public void serialize(JsonContext jsonContext, JSONArray jsonArray) {
+		public boolean serialize(JsonContext jsonContext, JSONArray jsonArray) {
 			jsonContext.write(jsonArray.toString());
+
+			return true;
 		}
 
 	}
@@ -121,8 +114,12 @@ public class JSONSerializerImpl implements JSONSerializer {
 		implements TypeJsonSerializer<JSONObject> {
 
 		@Override
-		public void serialize(JsonContext jsonContext, JSONObject jsonObject) {
+		public boolean serialize(
+			JsonContext jsonContext, JSONObject jsonObject) {
+
 			jsonContext.write(jsonObject.toString());
+
+			return true;
 		}
 
 	}
@@ -131,10 +128,26 @@ public class JSONSerializerImpl implements JSONSerializer {
 		implements TypeJsonSerializer<Long> {
 
 		@Override
-		public void serialize(JsonContext jsonContext, Long value) {
-			jsonContext.writeString(Long.toString(value));
+		public boolean serialize(JsonContext jsonContext, Long value) {
+			jsonContext.writeString(String.valueOf(value));
+
+			return true;
 		}
 
+	}
+
+	static {
+		TypeJsonSerializerMap typeJsonSerializerMap =
+			TypeJsonSerializerMap.get();
+
+		typeJsonSerializerMap.register(
+			JSONArray.class, new JSONArrayTypeJSONSerializer());
+		typeJsonSerializerMap.register(
+			JSONObject.class, new JSONObjectTypeJSONSerializer());
+		typeJsonSerializerMap.register(
+			Long.TYPE, new LongToStringTypeJSONSerializer());
+		typeJsonSerializerMap.register(
+			Long.class, new LongToStringTypeJSONSerializer());
 	}
 
 }

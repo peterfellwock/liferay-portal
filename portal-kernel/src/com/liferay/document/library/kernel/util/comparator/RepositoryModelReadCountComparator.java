@@ -18,6 +18,8 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFileShortcut;
 import com.liferay.document.library.kernel.model.DLFolder;
 import com.liferay.document.library.kernel.service.DLFileEntryLocalServiceUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileShortcut;
 import com.liferay.portal.kernel.repository.model.Folder;
@@ -48,6 +50,7 @@ public class RepositoryModelReadCountComparator<T>
 
 	public RepositoryModelReadCountComparator(boolean ascending) {
 		_ascending = ascending;
+
 		_orderByModel = false;
 	}
 
@@ -66,15 +69,15 @@ public class RepositoryModelReadCountComparator<T>
 		Long readCount2 = getReadCount(t2);
 
 		if (_orderByModel) {
-			if (((t1 instanceof DLFolder) || (t1 instanceof Folder)) &&
-				((t2 instanceof DLFolder) || (t2 instanceof Folder))) {
+			if ((t1 instanceof DLFolder || t1 instanceof Folder) &&
+				(t2 instanceof DLFolder || t2 instanceof Folder)) {
 
 				value = readCount1.compareTo(readCount2);
 			}
-			else if ((t1 instanceof DLFolder) || (t1 instanceof Folder)) {
+			else if (t1 instanceof DLFolder || t1 instanceof Folder) {
 				value = -1;
 			}
-			else if ((t2 instanceof DLFolder) || (t2 instanceof Folder)) {
+			else if (t2 instanceof DLFolder || t2 instanceof Folder) {
 				value = 1;
 			}
 			else {
@@ -88,9 +91,8 @@ public class RepositoryModelReadCountComparator<T>
 		if (_ascending) {
 			return value;
 		}
-		else {
-			return -value;
-		}
+
+		return -value;
 	}
 
 	@Override
@@ -99,18 +101,15 @@ public class RepositoryModelReadCountComparator<T>
 			if (_ascending) {
 				return ORDER_BY_MODEL_ASC;
 			}
-			else {
-				return ORDER_BY_MODEL_DESC;
-			}
+
+			return ORDER_BY_MODEL_DESC;
 		}
-		else {
-			if (_ascending) {
-				return ORDER_BY_ASC;
-			}
-			else {
-				return ORDER_BY_DESC;
-			}
+
+		if (_ascending) {
+			return ORDER_BY_ASC;
 		}
+
+		return ORDER_BY_DESC;
 	}
 
 	@Override
@@ -123,16 +122,16 @@ public class RepositoryModelReadCountComparator<T>
 		return _ascending;
 	}
 
-	protected long getFileShortcutReadCount(Object obj) {
+	protected long getFileShortcutReadCount(Object object) {
 		long toFileEntryId = 0;
 
-		if (obj instanceof FileShortcut) {
-			FileShortcut fileShortcut = (FileShortcut)obj;
+		if (object instanceof FileShortcut) {
+			FileShortcut fileShortcut = (FileShortcut)object;
 
 			toFileEntryId = fileShortcut.getToFileEntryId();
 		}
 		else {
-			DLFileShortcut fileShortcut = (DLFileShortcut)obj;
+			DLFileShortcut fileShortcut = (DLFileShortcut)object;
 
 			toFileEntryId = fileShortcut.getToFileEntryId();
 		}
@@ -143,31 +142,38 @@ public class RepositoryModelReadCountComparator<T>
 
 			return dlFileEntry.getReadCount();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return 0;
 		}
 	}
 
-	protected long getReadCount(Object obj) {
-		if (obj instanceof DLFileEntry) {
-			DLFileEntry dlFileEntry = (DLFileEntry)obj;
+	protected long getReadCount(Object object) {
+		if (object instanceof DLFileEntry) {
+			DLFileEntry dlFileEntry = (DLFileEntry)object;
 
 			return dlFileEntry.getReadCount();
 		}
-		else if ((obj instanceof DLFileShortcut) ||
-				 (obj instanceof FileShortcut)) {
+		else if (object instanceof DLFileShortcut ||
+				 object instanceof FileShortcut) {
 
-			return getFileShortcutReadCount(obj);
+			return getFileShortcutReadCount(object);
 		}
-		else if ((obj instanceof DLFolder) || (obj instanceof Folder)) {
+		else if (object instanceof DLFolder || object instanceof Folder) {
 			return 0;
 		}
 		else {
-			FileEntry fileEntry = (FileEntry)obj;
+			FileEntry fileEntry = (FileEntry)object;
 
 			return fileEntry.getReadCount();
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		RepositoryModelReadCountComparator.class);
 
 	private final boolean _ascending;
 	private final boolean _orderByModel;

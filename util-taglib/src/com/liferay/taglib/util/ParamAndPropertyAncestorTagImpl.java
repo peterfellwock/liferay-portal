@@ -15,6 +15,7 @@
 package com.liferay.taglib.util;
 
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.BaseBodyTagSupport;
 
@@ -37,10 +38,14 @@ public class ParamAndPropertyAncestorTagImpl
 
 	@Override
 	public void addParam(String name, String value) {
-		if (_dynamicServletRequest == null) {
-			_dynamicServletRequest = new DynamicServletRequest(request);
+		if (Validator.isNull(name)) {
+			throw new IllegalArgumentException();
+		}
 
-			request = _dynamicServletRequest;
+		if (_dynamicServletRequest == null) {
+			_dynamicServletRequest = new DynamicServletRequest(getRequest());
+
+			_httpServletRequest = _dynamicServletRequest;
 		}
 
 		Map<String, String[]> params =
@@ -109,7 +114,8 @@ public class ParamAndPropertyAncestorTagImpl
 
 			params.clear();
 
-			request = (HttpServletRequest)_dynamicServletRequest.getRequest();
+			_httpServletRequest =
+				(HttpServletRequest)_dynamicServletRequest.getRequest();
 
 			_dynamicServletRequest = null;
 		}
@@ -129,9 +135,8 @@ public class ParamAndPropertyAncestorTagImpl
 		if (_dynamicServletRequest != null) {
 			return _dynamicServletRequest.getDynamicParameterMap();
 		}
-		else {
-			return null;
-		}
+
+		return null;
 	}
 
 	public Map<String, String[]> getProperties() {
@@ -142,6 +147,19 @@ public class ParamAndPropertyAncestorTagImpl
 		return _removedParameterNames;
 	}
 
+	@Override
+	public HttpServletRequest getRequest() {
+		if (_dynamicServletRequest != null) {
+			return _dynamicServletRequest;
+		}
+
+		if (_httpServletRequest != null) {
+			return _httpServletRequest;
+		}
+
+		return super.getRequest();
+	}
+
 	public boolean isAllowEmptyParam() {
 		return _allowEmptyParam;
 	}
@@ -150,8 +168,8 @@ public class ParamAndPropertyAncestorTagImpl
 	public void release() {
 		super.release();
 
-		request = null;
-		servletContext = null;
+		_httpServletRequest = null;
+		_servletContext = null;
 
 		_allowEmptyParam = false;
 		_copyCurrentRenderParameters = true;
@@ -173,26 +191,30 @@ public class ParamAndPropertyAncestorTagImpl
 	public void setPageContext(PageContext pageContext) {
 		super.setPageContext(pageContext);
 
-		request = (HttpServletRequest)pageContext.getRequest();
+		_httpServletRequest = (HttpServletRequest)pageContext.getRequest();
 
-		servletContext = (ServletContext)request.getAttribute(WebKeys.CTX);
+		_servletContext = (ServletContext)_httpServletRequest.getAttribute(
+			WebKeys.CTX);
 
-		if (servletContext == null) {
-			servletContext = pageContext.getServletContext();
+		if (_servletContext == null) {
+			_servletContext = pageContext.getServletContext();
 		}
 	}
 
 	public void setServletContext(ServletContext servletContext) {
-		this.servletContext = servletContext;
+		_servletContext = servletContext;
 	}
 
-	protected HttpServletRequest request;
-	protected ServletContext servletContext;
+	protected ServletContext getServletContext() {
+		return _servletContext;
+	}
 
 	private boolean _allowEmptyParam;
 	private boolean _copyCurrentRenderParameters = true;
 	private DynamicServletRequest _dynamicServletRequest;
+	private HttpServletRequest _httpServletRequest;
 	private Map<String, String[]> _properties;
 	private Set<String> _removedParameterNames;
+	private ServletContext _servletContext;
 
 }

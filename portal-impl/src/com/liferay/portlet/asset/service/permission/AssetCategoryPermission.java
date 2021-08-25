@@ -80,19 +80,21 @@ public class AssetCategoryPermission {
 		if (actionId.equals(ActionKeys.VIEW) &&
 			PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
 
-			long categoryId = category.getCategoryId();
-
-			while (categoryId !=
-						AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) {
-
-				category = AssetCategoryLocalServiceUtil.getCategory(
-					categoryId);
-
+			while (true) {
 				if (!_hasPermission(permissionChecker, category, actionId)) {
 					return false;
 				}
 
-				categoryId = category.getParentCategoryId();
+				long parentCategoryId = category.getParentCategoryId();
+
+				if (parentCategoryId ==
+						AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) {
+
+					break;
+				}
+
+				category = AssetCategoryLocalServiceUtil.getCategory(
+					parentCategoryId);
 			}
 
 			return AssetVocabularyPermission.contains(
@@ -108,12 +110,11 @@ public class AssetCategoryPermission {
 		throws PortalException {
 
 		if (categoryId == AssetCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) {
-			return AssetPermission.contains(
+			return AssetCategoriesPermission.contains(
 				permissionChecker, groupId, actionId);
 		}
-		else {
-			return contains(permissionChecker, categoryId, actionId);
-		}
+
+		return contains(permissionChecker, categoryId, actionId);
 	}
 
 	public static boolean contains(
@@ -121,10 +122,9 @@ public class AssetCategoryPermission {
 			String actionId)
 		throws PortalException {
 
-		AssetCategory category = AssetCategoryLocalServiceUtil.getCategory(
-			categoryId);
-
-		return contains(permissionChecker, category, actionId);
+		return contains(
+			permissionChecker,
+			AssetCategoryLocalServiceUtil.getCategory(categoryId), actionId);
 	}
 
 	private static boolean _hasPermission(

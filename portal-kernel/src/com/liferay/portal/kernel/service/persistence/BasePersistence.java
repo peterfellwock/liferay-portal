@@ -14,6 +14,9 @@
 
 package com.liferay.portal.kernel.service.persistence;
 
+import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.portal.kernel.dao.db.DB;
+import com.liferay.portal.kernel.dao.orm.Dialect;
 import com.liferay.portal.kernel.dao.orm.DynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ORMException;
 import com.liferay.portal.kernel.dao.orm.Projection;
@@ -71,6 +74,10 @@ public interface BasePersistence<T extends BaseModel<T>> {
 	 */
 	public void clearCache(List<T> modelList);
 
+	public default void clearCache(Set<Serializable> primaryKeys) {
+		clearCache();
+	}
+
 	/**
 	 * Clears the cache for one instance of this model.
 	 *
@@ -103,6 +110,14 @@ public interface BasePersistence<T extends BaseModel<T>> {
 	 */
 	public long countWithDynamicQuery(
 		DynamicQuery dynamicQuery, Projection projection);
+
+	public <R> R dslQuery(DSLQuery dslQuery);
+
+	public default int dslQueryCount(DSLQuery dslQuery) {
+		Long count = dslQuery(dslQuery);
+
+		return count.intValue();
+	}
 
 	/**
 	 * Returns the model instance with the primary key or returns
@@ -155,7 +170,7 @@ public interface BasePersistence<T extends BaseModel<T>> {
 	 * @return the range of matching rows
 	 * @see    com.liferay.portal.kernel.dao.orm.QueryUtil#list(
 	 *         com.liferay.portal.kernel.dao.orm.Query,
-	 *         com.liferay.portal.kernel.dao.orm.Dialect, int, int)
+	 *         Dialect, int, int)
 	 */
 	public <V> List<V> findWithDynamicQuery(
 		DynamicQuery dynamicQuery, int start, int end);
@@ -199,6 +214,10 @@ public interface BasePersistence<T extends BaseModel<T>> {
 	 */
 	public DataSource getDataSource();
 
+	public DB getDB();
+
+	public Dialect getDialect();
+
 	/**
 	 * Returns the listeners registered for this model.
 	 *
@@ -211,7 +230,7 @@ public interface BasePersistence<T extends BaseModel<T>> {
 
 	public Session openSession() throws ORMException;
 
-	public SystemException processException(Exception e);
+	public SystemException processException(Exception exception);
 
 	/**
 	 * Registers a new listener for this model.

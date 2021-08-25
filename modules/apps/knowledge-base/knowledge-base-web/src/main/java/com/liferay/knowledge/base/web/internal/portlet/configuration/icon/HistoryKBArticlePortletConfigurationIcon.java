@@ -17,10 +17,11 @@ package com.liferay.knowledge.base.web.internal.portlet.configuration.icon;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.web.internal.constants.KBWebKeys;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.PortletRequest;
@@ -28,9 +29,10 @@ import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Ambrin Chaudhary
+ * @author Ambrín Chaudhary
  */
 @Component(
 	immediate = true,
@@ -53,16 +55,21 @@ public class HistoryKBArticlePortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
-			portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
-			PortletRequest.RENDER_PHASE);
+		PortletURL portletURL = PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
+				PortletRequest.RENDER_PHASE)
+		).setMVCPath(
+			"/admin/history.jsp"
+		).setRedirect(
+			() -> {
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)portletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
-		portletURL.setParameter("mvcPath", "/admin/history.jsp");
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
+				return themeDisplay.getURLCurrent();
+			}
+		).buildPortletURL();
 
 		KBArticle kbArticle = getKBArticle(portletRequest);
 
@@ -72,7 +79,8 @@ public class HistoryKBArticlePortletConfigurationIcon
 			"resourcePrimKey", String.valueOf(kbArticle.getResourcePrimKey()));
 
 		portletURL.setParameter(
-			"status", String.valueOf(
+			"status",
+			String.valueOf(
 				portletRequest.getAttribute(KBWebKeys.KNOWLEDGE_BASE_STATUS)));
 
 		return portletURL.toString();
@@ -93,5 +101,8 @@ public class HistoryKBArticlePortletConfigurationIcon
 
 		return false;
 	}
+
+	@Reference
+	private Portal _portal;
 
 }

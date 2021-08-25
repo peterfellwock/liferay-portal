@@ -52,6 +52,8 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 
 	public static final String VALIDATE_TLD_TASK_NAME = "validateTLD";
 
+	public static final String XML_PARSER_CONFIGURATION_NAME = "xmlParser";
+
 	@Override
 	public void apply(Project project) {
 		Configuration tlddocConfiguration = addConfigurationTLDDoc(project);
@@ -104,10 +106,10 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public File call() throws Exception {
-					TLDDocTask tlddocTask = (TLDDocTask)GradleUtil.getTask(
+					TLDDocTask tldDocTask = (TLDDocTask)GradleUtil.getTask(
 						project, TLDDOC_TASK_NAME);
 
-					return tlddocTask.getDestinationDir();
+					return tldDocTask.getDestinationDir();
 				}
 
 			});
@@ -122,12 +124,12 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 
 		Project project = copyTLDDocResourcesTask.getProject();
 
-		final TLDDocTask tlddocTask = GradleUtil.addTask(
+		final TLDDocTask tldDocTask = GradleUtil.addTask(
 			project, TLDDOC_TASK_NAME, TLDDocTask.class);
 
-		tlddocTask.dependsOn(copyTLDDocResourcesTask, validateTLDTask);
-		tlddocTask.setDescription("Generates tag library documentation.");
-		tlddocTask.setGroup(JavaBasePlugin.DOCUMENTATION_GROUP);
+		tldDocTask.dependsOn(copyTLDDocResourcesTask, validateTLDTask);
+		tldDocTask.setDescription("Generates tag library documentation.");
+		tldDocTask.setGroup(JavaBasePlugin.DOCUMENTATION_GROUP);
 
 		PluginContainer pluginContainer = project.getPlugins();
 
@@ -137,12 +139,12 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 
 				@Override
 				public void execute(JavaPlugin javaPlugin) {
-					_configureTaskTLDDocForJavaPlugin(tlddocTask);
+					_configureTaskTLDDocForJavaPlugin(tldDocTask);
 				}
 
 			});
 
-		return tlddocTask;
+		return tldDocTask;
 	}
 
 	private ValidateSchemaTask _addTaskValidateTLD(Project project) {
@@ -178,24 +180,24 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 			new Action<TLDDocTask>() {
 
 				@Override
-				public void execute(TLDDocTask tlddocTask) {
+				public void execute(TLDDocTask tldDocTask) {
 					_configureTaskTLDDocClasspath(
-						tlddocTask, tlddocConfiguration);
+						tldDocTask, tlddocConfiguration);
 				}
 
 			});
 	}
 
 	private void _configureTaskTLDDocClasspath(
-		TLDDocTask tlddocTask, FileCollection fileCollection) {
+		TLDDocTask tldDocTask, FileCollection fileCollection) {
 
-		tlddocTask.setClasspath(fileCollection);
+		tldDocTask.setClasspath(fileCollection);
 	}
 
-	private void _configureTaskTLDDocForJavaPlugin(TLDDocTask tlddocTask) {
-		final Project project = tlddocTask.getProject();
+	private void _configureTaskTLDDocForJavaPlugin(TLDDocTask tldDocTask) {
+		final Project project = tldDocTask.getProject();
 
-		tlddocTask.setDestinationDir(
+		tldDocTask.setDestinationDir(
 			new Callable<File>() {
 
 				@Override
@@ -210,11 +212,12 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 
 			});
 
-		tlddocTask.setIncludes(Collections.singleton("**/*.tld"));
+		tldDocTask.setIncludes(Collections.singleton("**/*.tld"));
 
-		tlddocTask.setSource(
+		tldDocTask.setSource(
 			new Callable<Iterable<File>>() {
 
+				@Override
 				public Iterable<File> call() throws Exception {
 					return _getResourceDirs(project);
 				}
@@ -232,6 +235,7 @@ public class TLDDocBuilderPlugin implements Plugin<Project> {
 		validateSchemaTask.setSource(
 			new Callable<Iterable<File>>() {
 
+				@Override
 				public Iterable<File> call() throws Exception {
 					return _getResourceDirs(project);
 				}

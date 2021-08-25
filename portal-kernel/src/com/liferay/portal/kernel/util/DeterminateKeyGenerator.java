@@ -14,6 +14,9 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.lang.CentralizedThreadLocal;
+import com.liferay.petra.string.StringBundler;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -54,7 +57,7 @@ public class DeterminateKeyGenerator {
 			seed = previousSeed;
 		}
 
-		StringBuilder sb = new StringBuilder(length);
+		StringBundler sb = new StringBundler(length);
 
 		for (int i = 0; i < length; i++) {
 			int index = 0;
@@ -89,7 +92,7 @@ public class DeterminateKeyGenerator {
 	}
 
 	private static int _nextRandom(int seed) {
-		return (seed % 127773) * 16807 - (seed / 127773) * 2836;
+		return ((seed % 127773) * 16807) - ((seed / 127773) * 2836);
 	}
 
 	private static final char[] _CHARACTERS =
@@ -98,8 +101,7 @@ public class DeterminateKeyGenerator {
 	private static final int _DEFAULT_LENGTH = 4;
 
 	private static final ThreadLocal<Map<String, Integer>> _seedMap =
-		new AutoResetThreadLocal<Map<String, Integer>>(
-			DeterminateKeyGenerator.class + "._seedMap",
-			new HashMap<String, Integer>());
+		new CentralizedThreadLocal<>(
+			DeterminateKeyGenerator.class + "._seedMap", HashMap::new);
 
 }

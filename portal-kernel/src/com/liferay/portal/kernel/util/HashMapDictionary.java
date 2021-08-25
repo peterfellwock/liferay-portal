@@ -25,6 +25,13 @@ import java.util.Map;
  */
 public class HashMapDictionary<K, V> extends Dictionary<K, V> {
 
+	public HashMapDictionary() {
+	}
+
+	public HashMapDictionary(Map<K, V> map) {
+		_map.putAll(map);
+	}
+
 	@Override
 	public Enumeration<V> elements() {
 		return Collections.enumeration(_map.values());
@@ -50,6 +57,16 @@ public class HashMapDictionary<K, V> extends Dictionary<K, V> {
 		return _map.put(key, value);
 	}
 
+	public void putAll(Dictionary<? extends K, ? extends V> dictionary) {
+		Enumeration<? extends K> enumeration = dictionary.keys();
+
+		while (enumeration.hasMoreElements()) {
+			K key = enumeration.nextElement();
+
+			_map.put(key, dictionary.get(key));
+		}
+	}
+
 	public void putAll(Map<? extends K, ? extends V> map) {
 		_map.putAll(map);
 	}
@@ -62,6 +79,11 @@ public class HashMapDictionary<K, V> extends Dictionary<K, V> {
 	@Override
 	public int size() {
 		return _map.size();
+	}
+
+	@Override
+	public String toString() {
+		return _map.toString();
 	}
 
 	private final Map<K, V> _map = new HashMap<>();

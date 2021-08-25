@@ -34,11 +34,11 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class TrashHandlerRegistryUtil {
 
 	public static TrashHandler getTrashHandler(String className) {
-		return _instance._getTrashHandler(className);
+		return _trashHandlerRegistryUtil._getTrashHandler(className);
 	}
 
 	public static List<TrashHandler> getTrashHandlers() {
-		return _instance._getTrashHandlers();
+		return _trashHandlerRegistryUtil._getTrashHandlers();
 	}
 
 	public static void register(List<TrashHandler> trashHandlers) {
@@ -48,7 +48,7 @@ public class TrashHandlerRegistryUtil {
 	}
 
 	public static void register(TrashHandler trashHandler) {
-		_instance._register(trashHandler);
+		_trashHandlerRegistryUtil._register(trashHandler);
 	}
 
 	public static void unregister(List<TrashHandler> trashHandlers) {
@@ -58,7 +58,7 @@ public class TrashHandlerRegistryUtil {
 	}
 
 	public static void unregister(TrashHandler trashHandler) {
-		_instance._unregister(trashHandler);
+		_trashHandlerRegistryUtil._unregister(trashHandler);
 	}
 
 	private TrashHandlerRegistryUtil() {
@@ -84,22 +84,22 @@ public class TrashHandlerRegistryUtil {
 		ServiceRegistration<TrashHandler> serviceRegistration =
 			registry.registerService(TrashHandler.class, trashHandler);
 
-		_serviceRegistrations.put(trashHandler, serviceRegistration);
+		_serviceRegistrationMap.put(trashHandler, serviceRegistration);
 	}
 
 	private void _unregister(TrashHandler trashHandler) {
 		ServiceRegistration<TrashHandler> serviceRegistration =
-			_serviceRegistrations.remove(trashHandler);
+			_serviceRegistrationMap.remove(trashHandler);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
 		}
 	}
 
-	private static final TrashHandlerRegistryUtil _instance =
+	private static final TrashHandlerRegistryUtil _trashHandlerRegistryUtil =
 		new TrashHandlerRegistryUtil();
 
-	private final ServiceRegistrationMap<TrashHandler> _serviceRegistrations =
+	private final ServiceRegistrationMap<TrashHandler> _serviceRegistrationMap =
 		new ServiceRegistrationMapImpl<>();
 	private final ServiceTracker<TrashHandler, TrashHandler> _serviceTracker;
 	private final Map<String, TrashHandler> _trashHandlers =

@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.search.generic;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.search.BaseBooleanQueryImpl;
 import com.liferay.portal.kernel.search.BooleanClause;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
@@ -112,10 +113,10 @@ public class BooleanQueryImpl extends BaseBooleanQueryImpl {
 
 	@Override
 	public Query addExactTerm(String field, String value) {
-		TermQueryImpl termQuery = new TermQueryImpl(
+		TermQueryImpl termQueryImpl = new TermQueryImpl(
 			new QueryTermImpl(field, String.valueOf(value)));
 
-		return add(termQuery, BooleanClauseOccur.SHOULD);
+		return add(termQueryImpl, BooleanClauseOccur.SHOULD);
 	}
 
 	@Override
@@ -360,6 +361,23 @@ public class BooleanQueryImpl extends BaseBooleanQueryImpl {
 	@Override
 	public boolean hasClauses() {
 		return !_booleanClauses.isEmpty();
+	}
+
+	@Override
+	public String toString() {
+		StringBundler sb = new StringBundler(5);
+
+		sb.append("{booleanClauses=");
+		sb.append(_booleanClauses);
+		sb.append(", className=");
+
+		Class<?> clazz = getClass();
+
+		sb.append(clazz.getSimpleName());
+
+		sb.append("}");
+
+		return sb.toString();
 	}
 
 	private final List<BooleanClause<Query>> _booleanClauses =

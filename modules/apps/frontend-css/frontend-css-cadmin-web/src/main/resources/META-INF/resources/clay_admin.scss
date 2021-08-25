@@ -1,0 +1,135 @@
+@import 'cadmin';
+@import 'sidebar';
+
+$user-icon-color-0: $cadmin-secondary !default;
+$user-icon-color-1: $cadmin-blue !default;
+$user-icon-color-2: $cadmin-orange !default;
+$user-icon-color-3: $cadmin-red !default;
+$user-icon-color-4: $cadmin-teal !default;
+$user-icon-color-5: $cadmin-pink !default;
+$user-icon-color-6: $cadmin-green !default;
+$user-icon-color-7: $cadmin-purple !default;
+$user-icon-color-8: $cadmin-yellow !default;
+$user-icon-color-9: $cadmin-cyan !default;
+
+html#{$cadmin-selector} {
+	.cadmin {
+		.form-control-sm[contenteditable] {
+			height: auto;
+			min-height: $cadmin-input-height-sm;
+
+			p {
+				margin-bottom: 0;
+			}
+		}
+
+		&.modal.show,
+		.modal.show {
+			display: block;
+		}
+
+		&.modal-dialog,
+		.modal-dialog {
+			&:not(.dialog-iframe-modal):not(.modal-full-screen) {
+				position: relative;
+			}
+
+			&.dialog-iframe-modal {
+				max-width: none;
+			}
+
+			&.modal-dialog-sm {
+				max-width: $cadmin-modal-md;
+			}
+
+			.yui3-resize-handles-wrapper {
+				pointer-events: all;
+
+				.yui3-resize-handle-inner-br {
+					background-position: -30px 0;
+					background-repeat: no-repeat;
+					bottom: 0;
+					display: block;
+					height: 15px;
+					overflow: hidden;
+					right: 0;
+					text-indent: -99999em;
+					width: 15px;
+				}
+			}
+		}
+
+		.modal-body.dialog-iframe-bd {
+			overflow: hidden;
+			padding: 0;
+		}
+
+		.yui3-widget-content-expanded {
+			height: 100%;
+		}
+
+		.loadingmask-message {
+			left: 50%;
+			padding: 2px;
+			position: absolute;
+			top: 50%;
+		}
+
+		.loadingmask-message-content {
+			-webkit-animation: loading-animation 1.2s infinite ease-out;
+			animation: loading-animation 1.2s infinite ease-out;
+			background: transparent;
+			border-radius: 50%;
+			border-width: 0;
+			clear: both;
+			color: transparent;
+			height: 1em;
+			margin: 0;
+			overflow: hidden;
+			padding: 0;
+			position: relative;
+			transform: translateZ(0);
+			width: 1em;
+		}
+
+		.user-icon-color-0 {
+			color: $user-icon-color-0;
+		}
+
+		.user-icon-color-1 {
+			color: $user-icon-color-1;
+		}
+
+		.user-icon-color-2 {
+			color: $user-icon-color-2;
+		}
+
+		.user-icon-color-3 {
+			color: $user-icon-color-3;
+		}
+
+		.user-icon-color-4 {
+			color: $user-icon-color-4;
+		}
+
+		.user-icon-color-5 {
+			color: $user-icon-color-5;
+		}
+
+		.user-icon-color-6 {
+			color: $user-icon-color-6;
+		}
+
+		.user-icon-color-7 {
+			color: $user-icon-color-7;
+		}
+
+		.user-icon-color-8 {
+			color: $user-icon-color-8;
+		}
+
+		.user-icon-color-9 {
+			color: $user-icon-color-9;
+		}
+	}
+}

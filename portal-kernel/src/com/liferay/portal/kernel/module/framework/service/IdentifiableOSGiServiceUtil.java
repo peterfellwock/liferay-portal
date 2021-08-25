@@ -39,24 +39,12 @@ public class IdentifiableOSGiServiceUtil {
 
 	private static final Map<String, IdentifiableOSGiService>
 		_identifiableOSGiServices = new ConcurrentHashMap<>();
-	private static final
-		ServiceTracker<IdentifiableOSGiService, IdentifiableOSGiService>
-			_serviceTracker;
-
-	static {
-		Registry registry = RegistryUtil.getRegistry();
-
-		_serviceTracker = registry.trackServices(
-			IdentifiableOSGiService.class,
-			new IdentifiableOSGiServiceServiceTrackerCustomizer());
-
-		_serviceTracker.open();
-	}
+	private static final ServiceTracker
+		<IdentifiableOSGiService, IdentifiableOSGiService> _serviceTracker;
 
 	private static class IdentifiableOSGiServiceServiceTrackerCustomizer
-		implements
-			ServiceTrackerCustomizer
-				<IdentifiableOSGiService, IdentifiableOSGiService> {
+		implements ServiceTrackerCustomizer
+			<IdentifiableOSGiService, IdentifiableOSGiService> {
 
 		@Override
 		public IdentifiableOSGiService addingService(
@@ -97,6 +85,16 @@ public class IdentifiableOSGiServiceUtil {
 				identifiableOSGiService.getOSGiServiceIdentifier());
 		}
 
+	}
+
+	static {
+		Registry registry = RegistryUtil.getRegistry();
+
+		_serviceTracker = registry.trackServices(
+			IdentifiableOSGiService.class,
+			new IdentifiableOSGiServiceServiceTrackerCustomizer());
+
+		_serviceTracker.open();
 	}
 
 }

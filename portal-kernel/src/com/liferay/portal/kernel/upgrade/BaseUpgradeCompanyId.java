@@ -14,11 +14,11 @@
 
 package com.liferay.portal.kernel.upgrade;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
 
 import java.io.IOException;
 
@@ -35,8 +35,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 /**
- * @author Brian Wing Shun Chan
+ * @author     Brian Wing Shun Chan
+ * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+ *             BaseCompanyIdUpgradeProcess}
  */
+@Deprecated
 public abstract class BaseUpgradeCompanyId extends UpgradeProcess {
 
 	@Override
@@ -68,18 +71,17 @@ public abstract class BaseUpgradeCompanyId extends UpgradeProcess {
 
 	protected abstract TableUpdater[] getTableUpdaters();
 
-	protected class TableUpdater implements Callable<Void> {
+	protected class TableUpdater extends BaseUpgradeCallable<Void> {
 
 		public TableUpdater(
-			String tableName, String foreignTableName,
-			String foreignColumnName) {
+			String tableName, String foreignTableName, String columnName) {
 
 			_tableName = tableName;
 
-			_columnName = foreignColumnName;
+			_columnName = columnName;
 
 			_foreignNamesArray = new String[][] {
-				new String[] {foreignTableName, foreignColumnName}
+				{foreignTableName, columnName}
 			};
 		}
 
@@ -91,11 +93,28 @@ public abstract class BaseUpgradeCompanyId extends UpgradeProcess {
 			_foreignNamesArray = foreignNamesArray;
 		}
 
+		public String getTableName() {
+			return _tableName;
+		}
+
+		public void setCreateCompanyIdColumn(boolean createCompanyIdColumn) {
+			_createCompanyIdColumn = createCompanyIdColumn;
+		}
+
+		public void update(Connection connection)
+			throws IOException, SQLException {
+
+			for (String[] foreignNames : _foreignNamesArray) {
+				runSQL(
+					connection,
+					getUpdateSQL(connection, foreignNames[0], foreignNames[1]));
+			}
+		}
+
 		@Override
-		public final Void call() throws Exception {
+		protected final Void doCall() throws Exception {
 			try (LoggingTimer loggingTimer = new LoggingTimer(_tableName);
-				Connection connection =
-					DataAccess.getUpgradeOptimizedConnection()) {
+				Connection connection = DataAccess.getConnection()) {
 
 				if (_createCompanyIdColumn) {
 					if (_log.isInfoEnabled()) {
@@ -121,35 +140,18 @@ public abstract class BaseUpgradeCompanyId extends UpgradeProcess {
 			return null;
 		}
 
-		public String getTableName() {
-			return _tableName;
-		}
-
-		public void setCreateCompanyIdColumn(boolean createCompanyIdColumn) {
-			_createCompanyIdColumn = createCompanyIdColumn;
-		}
-
-		public void update(Connection connection)
-			throws IOException, SQLException {
-
-			for (String[] foreignNames : _foreignNamesArray) {
-				runSQL(
-					connection,
-					getUpdateSQL(connection, foreignNames[0], foreignNames[1]));
-			}
-		}
-
 		protected List<Long> getCompanyIds(Connection connection)
 			throws SQLException {
 
 			List<Long> companyIds = new ArrayList<>();
 
-			try (PreparedStatement ps = connection.prepareStatement(
-					"select companyId from Company");
-				ResultSet rs = ps.executeQuery()) {
+			try (PreparedStatement preparedStatement =
+					connection.prepareStatement(
+						"select companyId from Company");
+				ResultSet resultSet = preparedStatement.executeQuery()) {
 
-				while (rs.next()) {
-					long companyId = rs.getLong(1);
+				while (resultSet.next()) {
+					long companyId = resultSet.getLong(1);
 
 					companyIds.add(companyId);
 				}

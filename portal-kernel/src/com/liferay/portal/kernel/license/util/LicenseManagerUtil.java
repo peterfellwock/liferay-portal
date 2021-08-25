@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.license.util;
 
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.license.LicenseInfo;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.util.List;
 import java.util.Map;
@@ -28,60 +27,56 @@ import java.util.Set;
 public class LicenseManagerUtil {
 
 	public static void checkLicense(String productId) {
-		getLicenseManager().checkLicense(productId);
+		_licenseManager.checkLicense(productId);
 	}
 
 	public static List<Map<String, String>> getClusterLicenseProperties(
 		String clusterNodeId) {
 
-		return getLicenseManager().getClusterLicenseProperties(clusterNodeId);
+		return _licenseManager.getClusterLicenseProperties(clusterNodeId);
 	}
 
 	public static String getHostName() {
-		return getLicenseManager().getHostName();
+		return _licenseManager.getHostName();
 	}
 
 	public static Set<String> getIpAddresses() {
-		return getLicenseManager().getIpAddresses();
+		return _licenseManager.getIpAddresses();
 	}
 
 	public static LicenseInfo getLicenseInfo(String productId) {
-		return getLicenseManager().getLicenseInfo(productId);
+		return _licenseManager.getLicenseInfo(productId);
 	}
 
 	public static LicenseManager getLicenseManager() {
-		PortalRuntimePermission.checkGetBeanProperty(LicenseManagerUtil.class);
-
 		return _licenseManager;
 	}
 
 	public static List<Map<String, String>> getLicenseProperties() {
-		return getLicenseManager().getLicenseProperties();
+		return _licenseManager.getLicenseProperties();
 	}
 
 	public static Map<String, String> getLicenseProperties(String productId) {
-		return getLicenseManager().getLicenseProperties(productId);
+		return _licenseManager.getLicenseProperties(productId);
 	}
 
 	public static int getLicenseState(Map<String, String> licenseProperties) {
-		return getLicenseManager().getLicenseState(licenseProperties);
+		return _licenseManager.getLicenseState(licenseProperties);
 	}
 
 	public static int getLicenseState(String productId) {
-		return getLicenseManager().getLicenseState(productId);
+		return _licenseManager.getLicenseState(productId);
 	}
 
 	public static Set<String> getMacAddresses() {
-		return getLicenseManager().getMacAddresses();
+		return _licenseManager.getMacAddresses();
 	}
 
 	public static void registerLicense(JSONObject jsonObject) throws Exception {
-		getLicenseManager().registerLicense(jsonObject);
+		_licenseManager.registerLicense(jsonObject);
 	}
 
 	public void setLicenseManager(LicenseManager licenseManager) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_licenseManager = licenseManager;
 	}
 

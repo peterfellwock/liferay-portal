@@ -14,34 +14,28 @@
 
 package com.liferay.portal.kernel.webcache;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
  * @author Brian Wing Shun Chan
  */
 public class WebCachePoolUtil {
 
 	public static void clear() {
-		getWebCachePool().clear();
+		_webCachePool.clear();
 	}
 
-	public static Object get(String key, WebCacheItem wci) {
-		return getWebCachePool().get(key, wci);
+	public static Object get(String key, WebCacheItem webCacheItem) {
+		return _webCachePool.get(key, webCacheItem);
 	}
 
 	public static WebCachePool getWebCachePool() {
-		PortalRuntimePermission.checkGetBeanProperty(WebCachePoolUtil.class);
-
 		return _webCachePool;
 	}
 
 	public static void remove(String key) {
-		getWebCachePool().remove(key);
+		_webCachePool.remove(key);
 	}
 
 	public void setWebCachePool(WebCachePool webCachePool) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_webCachePool = webCachePool;
 	}
 

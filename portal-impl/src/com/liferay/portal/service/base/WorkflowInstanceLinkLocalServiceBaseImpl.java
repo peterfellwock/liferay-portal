@@ -14,8 +14,8 @@
 
 package com.liferay.portal.service.base;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
@@ -37,15 +37,20 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.BaseLocalServiceImpl;
 import com.liferay.portal.kernel.service.PersistedModelLocalServiceRegistry;
 import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
+import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalServiceUtil;
+import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.service.persistence.ClassNamePersistence;
-import com.liferay.portal.kernel.service.persistence.SubscriptionPersistence;
 import com.liferay.portal.kernel.service.persistence.UserFinder;
 import com.liferay.portal.kernel.service.persistence.UserPersistence;
 import com.liferay.portal.kernel.service.persistence.WorkflowInstanceLinkPersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.io.Serializable;
+
+import java.lang.reflect.Field;
 
 import java.util.List;
 
@@ -60,21 +65,24 @@ import javax.sql.DataSource;
  *
  * @author Brian Wing Shun Chan
  * @see com.liferay.portal.service.impl.WorkflowInstanceLinkLocalServiceImpl
- * @see com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalServiceUtil
  * @generated
  */
-@ProviderType
 public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
-	extends BaseLocalServiceImpl implements WorkflowInstanceLinkLocalService,
-		IdentifiableOSGiService {
+	extends BaseLocalServiceImpl
+	implements IdentifiableOSGiService, WorkflowInstanceLinkLocalService {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalServiceUtil} to access the workflow instance link local service.
+	 * Never modify or reference this class directly. Use <code>WorkflowInstanceLinkLocalService</code> via injection or a <code>org.osgi.util.tracker.ServiceTracker</code> or use <code>WorkflowInstanceLinkLocalServiceUtil</code>.
 	 */
 
 	/**
 	 * Adds the workflow instance link to the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param workflowInstanceLink the workflow instance link
 	 * @return the workflow instance link that was added
@@ -83,6 +91,7 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	@Override
 	public WorkflowInstanceLink addWorkflowInstanceLink(
 		WorkflowInstanceLink workflowInstanceLink) {
+
 		workflowInstanceLink.setNew(true);
 
 		return workflowInstanceLinkPersistence.update(workflowInstanceLink);
@@ -95,13 +104,19 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @return the new workflow instance link
 	 */
 	@Override
+	@Transactional(enabled = false)
 	public WorkflowInstanceLink createWorkflowInstanceLink(
 		long workflowInstanceLinkId) {
+
 		return workflowInstanceLinkPersistence.create(workflowInstanceLinkId);
 	}
 
 	/**
 	 * Deletes the workflow instance link with the primary key from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param workflowInstanceLinkId the primary key of the workflow instance link
 	 * @return the workflow instance link that was removed
@@ -110,12 +125,18 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	public WorkflowInstanceLink deleteWorkflowInstanceLink(
-		long workflowInstanceLinkId) throws PortalException {
+			long workflowInstanceLinkId)
+		throws PortalException {
+
 		return workflowInstanceLinkPersistence.remove(workflowInstanceLinkId);
 	}
 
 	/**
 	 * Deletes the workflow instance link from the database. Also notifies the appropriate model listeners.
+	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
 	 *
 	 * @param workflowInstanceLink the workflow instance link
 	 * @return the workflow instance link that was removed
@@ -124,16 +145,30 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	public WorkflowInstanceLink deleteWorkflowInstanceLink(
-		WorkflowInstanceLink workflowInstanceLink) throws PortalException {
+			WorkflowInstanceLink workflowInstanceLink)
+		throws PortalException {
+
 		return workflowInstanceLinkPersistence.remove(workflowInstanceLink);
+	}
+
+	@Override
+	public <T> T dslQuery(DSLQuery dslQuery) {
+		return workflowInstanceLinkPersistence.dslQuery(dslQuery);
+	}
+
+	@Override
+	public int dslQueryCount(DSLQuery dslQuery) {
+		Long count = dslQuery(dslQuery);
+
+		return count.intValue();
 	}
 
 	@Override
 	public DynamicQuery dynamicQuery() {
 		Class<?> clazz = getClass();
 
-		return DynamicQueryFactoryUtil.forClass(WorkflowInstanceLink.class,
-			clazz.getClassLoader());
+		return DynamicQueryFactoryUtil.forClass(
+			WorkflowInstanceLink.class, clazz.getClassLoader());
 	}
 
 	/**
@@ -144,14 +179,15 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	@Override
 	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery) {
-		return workflowInstanceLinkPersistence.findWithDynamicQuery(dynamicQuery);
+		return workflowInstanceLinkPersistence.findWithDynamicQuery(
+			dynamicQuery);
 	}
 
 	/**
 	 * Performs a dynamic query on the database and returns a range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -160,17 +196,18 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @return the range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end) {
-		return workflowInstanceLinkPersistence.findWithDynamicQuery(dynamicQuery,
-			start, end);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end) {
+
+		return workflowInstanceLinkPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end);
 	}
 
 	/**
 	 * Performs a dynamic query on the database and returns an ordered range of the matching rows.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param dynamicQuery the dynamic query
@@ -180,10 +217,12 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @return the ordered range of matching rows
 	 */
 	@Override
-	public <T> List<T> dynamicQuery(DynamicQuery dynamicQuery, int start,
-		int end, OrderByComparator<T> orderByComparator) {
-		return workflowInstanceLinkPersistence.findWithDynamicQuery(dynamicQuery,
-			start, end, orderByComparator);
+	public <T> List<T> dynamicQuery(
+		DynamicQuery dynamicQuery, int start, int end,
+		OrderByComparator<T> orderByComparator) {
+
+		return workflowInstanceLinkPersistence.findWithDynamicQuery(
+			dynamicQuery, start, end, orderByComparator);
 	}
 
 	/**
@@ -194,7 +233,8 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	@Override
 	public long dynamicQueryCount(DynamicQuery dynamicQuery) {
-		return workflowInstanceLinkPersistence.countWithDynamicQuery(dynamicQuery);
+		return workflowInstanceLinkPersistence.countWithDynamicQuery(
+			dynamicQuery);
 	}
 
 	/**
@@ -205,16 +245,19 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @return the number of rows matching the dynamic query
 	 */
 	@Override
-	public long dynamicQueryCount(DynamicQuery dynamicQuery,
-		Projection projection) {
-		return workflowInstanceLinkPersistence.countWithDynamicQuery(dynamicQuery,
-			projection);
+	public long dynamicQueryCount(
+		DynamicQuery dynamicQuery, Projection projection) {
+
+		return workflowInstanceLinkPersistence.countWithDynamicQuery(
+			dynamicQuery, projection);
 	}
 
 	@Override
 	public WorkflowInstanceLink fetchWorkflowInstanceLink(
 		long workflowInstanceLinkId) {
-		return workflowInstanceLinkPersistence.fetchByPrimaryKey(workflowInstanceLinkId);
+
+		return workflowInstanceLinkPersistence.fetchByPrimaryKey(
+			workflowInstanceLinkId);
 	}
 
 	/**
@@ -226,15 +269,20 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	@Override
 	public WorkflowInstanceLink getWorkflowInstanceLink(
-		long workflowInstanceLinkId) throws PortalException {
-		return workflowInstanceLinkPersistence.findByPrimaryKey(workflowInstanceLinkId);
+			long workflowInstanceLinkId)
+		throws PortalException {
+
+		return workflowInstanceLinkPersistence.findByPrimaryKey(
+			workflowInstanceLinkId);
 	}
 
 	@Override
 	public ActionableDynamicQuery getActionableDynamicQuery() {
-		ActionableDynamicQuery actionableDynamicQuery = new DefaultActionableDynamicQuery();
+		ActionableDynamicQuery actionableDynamicQuery =
+			new DefaultActionableDynamicQuery();
 
-		actionableDynamicQuery.setBaseLocalService(workflowInstanceLinkLocalService);
+		actionableDynamicQuery.setBaseLocalService(
+			workflowInstanceLinkLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
 		actionableDynamicQuery.setModelClass(WorkflowInstanceLink.class);
 
@@ -245,12 +293,17 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	}
 
 	@Override
-	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery() {
-		IndexableActionableDynamicQuery indexableActionableDynamicQuery = new IndexableActionableDynamicQuery();
+	public IndexableActionableDynamicQuery
+		getIndexableActionableDynamicQuery() {
 
-		indexableActionableDynamicQuery.setBaseLocalService(workflowInstanceLinkLocalService);
+		IndexableActionableDynamicQuery indexableActionableDynamicQuery =
+			new IndexableActionableDynamicQuery();
+
+		indexableActionableDynamicQuery.setBaseLocalService(
+			workflowInstanceLinkLocalService);
 		indexableActionableDynamicQuery.setClassLoader(getClassLoader());
-		indexableActionableDynamicQuery.setModelClass(WorkflowInstanceLink.class);
+		indexableActionableDynamicQuery.setModelClass(
+			WorkflowInstanceLink.class);
 
 		indexableActionableDynamicQuery.setPrimaryKeyPropertyName(
 			"workflowInstanceLinkId");
@@ -260,7 +313,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 
 	protected void initActionableDynamicQuery(
 		ActionableDynamicQuery actionableDynamicQuery) {
-		actionableDynamicQuery.setBaseLocalService(workflowInstanceLinkLocalService);
+
+		actionableDynamicQuery.setBaseLocalService(
+			workflowInstanceLinkLocalService);
 		actionableDynamicQuery.setClassLoader(getClassLoader());
 		actionableDynamicQuery.setModelClass(WorkflowInstanceLink.class);
 
@@ -272,14 +327,36 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @throws PortalException
 	 */
 	@Override
+	public PersistedModel createPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		return workflowInstanceLinkPersistence.create(
+			((Long)primaryKeyObj).longValue());
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
 	public PersistedModel deletePersistedModel(PersistedModel persistedModel)
 		throws PortalException {
-		return workflowInstanceLinkLocalService.deleteWorkflowInstanceLink((WorkflowInstanceLink)persistedModel);
+
+		return workflowInstanceLinkLocalService.deleteWorkflowInstanceLink(
+			(WorkflowInstanceLink)persistedModel);
 	}
 
 	@Override
+	public BasePersistence<WorkflowInstanceLink> getBasePersistence() {
+		return workflowInstanceLinkPersistence;
+	}
+
+	/**
+	 * @throws PortalException
+	 */
+	@Override
 	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
 		throws PortalException {
+
 		return workflowInstanceLinkPersistence.findByPrimaryKey(primaryKeyObj);
 	}
 
@@ -287,7 +364,7 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * Returns a range of all the workflow instance links.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.portal.model.impl.WorkflowInstanceLinkModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of workflow instance links
@@ -295,8 +372,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @return the range of workflow instance links
 	 */
 	@Override
-	public List<WorkflowInstanceLink> getWorkflowInstanceLinks(int start,
-		int end) {
+	public List<WorkflowInstanceLink> getWorkflowInstanceLinks(
+		int start, int end) {
+
 		return workflowInstanceLinkPersistence.findAll(start, end);
 	}
 
@@ -313,6 +391,10 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	/**
 	 * Updates the workflow instance link in the database or adds it if it does not yet exist. Also notifies the appropriate model listeners.
 	 *
+	 * <p>
+	 * <strong>Important:</strong> Inspect WorkflowInstanceLinkLocalServiceImpl for overloaded versions of the method. If provided, use these entry points to the API, as the implementation logic may require the additional parameters defined there.
+	 * </p>
+	 *
 	 * @param workflowInstanceLink the workflow instance link
 	 * @return the workflow instance link that was updated
 	 */
@@ -320,6 +402,7 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	@Override
 	public WorkflowInstanceLink updateWorkflowInstanceLink(
 		WorkflowInstanceLink workflowInstanceLink) {
+
 		return workflowInstanceLinkPersistence.update(workflowInstanceLink);
 	}
 
@@ -328,7 +411,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 *
 	 * @return the workflow instance link local service
 	 */
-	public WorkflowInstanceLinkLocalService getWorkflowInstanceLinkLocalService() {
+	public WorkflowInstanceLinkLocalService
+		getWorkflowInstanceLinkLocalService() {
+
 		return workflowInstanceLinkLocalService;
 	}
 
@@ -339,7 +424,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	public void setWorkflowInstanceLinkLocalService(
 		WorkflowInstanceLinkLocalService workflowInstanceLinkLocalService) {
-		this.workflowInstanceLinkLocalService = workflowInstanceLinkLocalService;
+
+		this.workflowInstanceLinkLocalService =
+			workflowInstanceLinkLocalService;
 	}
 
 	/**
@@ -347,7 +434,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 *
 	 * @return the workflow instance link persistence
 	 */
-	public WorkflowInstanceLinkPersistence getWorkflowInstanceLinkPersistence() {
+	public WorkflowInstanceLinkPersistence
+		getWorkflowInstanceLinkPersistence() {
+
 		return workflowInstanceLinkPersistence;
 	}
 
@@ -358,6 +447,7 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	public void setWorkflowInstanceLinkPersistence(
 		WorkflowInstanceLinkPersistence workflowInstanceLinkPersistence) {
+
 		this.workflowInstanceLinkPersistence = workflowInstanceLinkPersistence;
 	}
 
@@ -366,7 +456,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 *
 	 * @return the counter local service
 	 */
-	public com.liferay.counter.kernel.service.CounterLocalService getCounterLocalService() {
+	public com.liferay.counter.kernel.service.CounterLocalService
+		getCounterLocalService() {
+
 		return counterLocalService;
 	}
 
@@ -376,7 +468,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @param counterLocalService the counter local service
 	 */
 	public void setCounterLocalService(
-		com.liferay.counter.kernel.service.CounterLocalService counterLocalService) {
+		com.liferay.counter.kernel.service.CounterLocalService
+			counterLocalService) {
+
 		this.counterLocalService = counterLocalService;
 	}
 
@@ -385,7 +479,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 *
 	 * @return the class name local service
 	 */
-	public com.liferay.portal.kernel.service.ClassNameLocalService getClassNameLocalService() {
+	public com.liferay.portal.kernel.service.ClassNameLocalService
+		getClassNameLocalService() {
+
 		return classNameLocalService;
 	}
 
@@ -395,7 +491,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 * @param classNameLocalService the class name local service
 	 */
 	public void setClassNameLocalService(
-		com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService) {
+		com.liferay.portal.kernel.service.ClassNameLocalService
+			classNameLocalService) {
+
 		this.classNameLocalService = classNameLocalService;
 	}
 
@@ -415,45 +513,8 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	public void setClassNamePersistence(
 		ClassNamePersistence classNamePersistence) {
+
 		this.classNamePersistence = classNamePersistence;
-	}
-
-	/**
-	 * Returns the subscription local service.
-	 *
-	 * @return the subscription local service
-	 */
-	public com.liferay.portal.kernel.service.SubscriptionLocalService getSubscriptionLocalService() {
-		return subscriptionLocalService;
-	}
-
-	/**
-	 * Sets the subscription local service.
-	 *
-	 * @param subscriptionLocalService the subscription local service
-	 */
-	public void setSubscriptionLocalService(
-		com.liferay.portal.kernel.service.SubscriptionLocalService subscriptionLocalService) {
-		this.subscriptionLocalService = subscriptionLocalService;
-	}
-
-	/**
-	 * Returns the subscription persistence.
-	 *
-	 * @return the subscription persistence
-	 */
-	public SubscriptionPersistence getSubscriptionPersistence() {
-		return subscriptionPersistence;
-	}
-
-	/**
-	 * Sets the subscription persistence.
-	 *
-	 * @param subscriptionPersistence the subscription persistence
-	 */
-	public void setSubscriptionPersistence(
-		SubscriptionPersistence subscriptionPersistence) {
-		this.subscriptionPersistence = subscriptionPersistence;
 	}
 
 	/**
@@ -461,7 +522,9 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 *
 	 * @return the user local service
 	 */
-	public com.liferay.portal.kernel.service.UserLocalService getUserLocalService() {
+	public com.liferay.portal.kernel.service.UserLocalService
+		getUserLocalService() {
+
 		return userLocalService;
 	}
 
@@ -472,6 +535,7 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	public void setUserLocalService(
 		com.liferay.portal.kernel.service.UserLocalService userLocalService) {
+
 		this.userLocalService = userLocalService;
 	}
 
@@ -512,13 +576,18 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	}
 
 	public void afterPropertiesSet() {
-		persistedModelLocalServiceRegistry.register("com.liferay.portal.kernel.model.WorkflowInstanceLink",
+		persistedModelLocalServiceRegistry.register(
+			"com.liferay.portal.kernel.model.WorkflowInstanceLink",
 			workflowInstanceLinkLocalService);
+
+		_setLocalServiceUtilService(workflowInstanceLinkLocalService);
 	}
 
 	public void destroy() {
 		persistedModelLocalServiceRegistry.unregister(
 			"com.liferay.portal.kernel.model.WorkflowInstanceLink");
+
+		_setLocalServiceUtilService(null);
 	}
 
 	/**
@@ -531,8 +600,23 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 		return WorkflowInstanceLinkLocalService.class.getName();
 	}
 
-	protected Class<?> getModelClass() {
+	@Override
+	public CTPersistence<WorkflowInstanceLink> getCTPersistence() {
+		return workflowInstanceLinkPersistence;
+	}
+
+	@Override
+	public Class<WorkflowInstanceLink> getModelClass() {
 		return WorkflowInstanceLink.class;
+	}
+
+	@Override
+	public <R, E extends Throwable> R updateWithUnsafeFunction(
+			UnsafeFunction<CTPersistence<WorkflowInstanceLink>, R, E>
+				updateUnsafeFunction)
+		throws E {
+
+		return updateUnsafeFunction.apply(workflowInstanceLinkPersistence);
 	}
 
 	protected String getModelClassName() {
@@ -546,43 +630,76 @@ public abstract class WorkflowInstanceLinkLocalServiceBaseImpl
 	 */
 	protected void runSQL(String sql) {
 		try {
-			DataSource dataSource = workflowInstanceLinkPersistence.getDataSource();
+			DataSource dataSource =
+				workflowInstanceLinkPersistence.getDataSource();
 
 			DB db = DBManagerUtil.getDB();
 
 			sql = db.buildSQL(sql);
 			sql = PortalUtil.transformSQL(sql);
 
-			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(dataSource,
-					sql);
+			SqlUpdate sqlUpdate = SqlUpdateFactoryUtil.getSqlUpdate(
+				dataSource, sql);
 
 			sqlUpdate.update();
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
+		}
+	}
+
+	private void _setLocalServiceUtilService(
+		WorkflowInstanceLinkLocalService workflowInstanceLinkLocalService) {
+
+		try {
+			Field field =
+				WorkflowInstanceLinkLocalServiceUtil.class.getDeclaredField(
+					"_service");
+
+			field.setAccessible(true);
+
+			field.set(null, workflowInstanceLinkLocalService);
+		}
+		catch (ReflectiveOperationException reflectiveOperationException) {
+			throw new RuntimeException(reflectiveOperationException);
 		}
 	}
 
 	@BeanReference(type = WorkflowInstanceLinkLocalService.class)
 	protected WorkflowInstanceLinkLocalService workflowInstanceLinkLocalService;
+
 	@BeanReference(type = WorkflowInstanceLinkPersistence.class)
 	protected WorkflowInstanceLinkPersistence workflowInstanceLinkPersistence;
-	@BeanReference(type = com.liferay.counter.kernel.service.CounterLocalService.class)
-	protected com.liferay.counter.kernel.service.CounterLocalService counterLocalService;
-	@BeanReference(type = com.liferay.portal.kernel.service.ClassNameLocalService.class)
-	protected com.liferay.portal.kernel.service.ClassNameLocalService classNameLocalService;
+
+	@BeanReference(
+		type = com.liferay.counter.kernel.service.CounterLocalService.class
+	)
+	protected com.liferay.counter.kernel.service.CounterLocalService
+		counterLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.ClassNameLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.ClassNameLocalService
+		classNameLocalService;
+
 	@BeanReference(type = ClassNamePersistence.class)
 	protected ClassNamePersistence classNamePersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.SubscriptionLocalService.class)
-	protected com.liferay.portal.kernel.service.SubscriptionLocalService subscriptionLocalService;
-	@BeanReference(type = SubscriptionPersistence.class)
-	protected SubscriptionPersistence subscriptionPersistence;
-	@BeanReference(type = com.liferay.portal.kernel.service.UserLocalService.class)
-	protected com.liferay.portal.kernel.service.UserLocalService userLocalService;
+
+	@BeanReference(
+		type = com.liferay.portal.kernel.service.UserLocalService.class
+	)
+	protected com.liferay.portal.kernel.service.UserLocalService
+		userLocalService;
+
 	@BeanReference(type = UserPersistence.class)
 	protected UserPersistence userPersistence;
+
 	@BeanReference(type = UserFinder.class)
 	protected UserFinder userFinder;
+
 	@BeanReference(type = PersistedModelLocalServiceRegistry.class)
-	protected PersistedModelLocalServiceRegistry persistedModelLocalServiceRegistry;
+	protected PersistedModelLocalServiceRegistry
+		persistedModelLocalServiceRegistry;
+
 }

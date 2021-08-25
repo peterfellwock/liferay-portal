@@ -26,12 +26,14 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ConfigurationContainer;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.process.JavaExecSpec;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public abstract class BasePortalToolsTask extends JavaExec {
 
 	public BasePortalToolsTask() {
@@ -92,7 +94,7 @@ public abstract class BasePortalToolsTask extends JavaExec {
 		addDependency(
 			"com.liferay.portal", "com.liferay.portal.kernel", "default");
 		addDependency("com.liferay.portal", "com.liferay.util.java", "default");
-		addDependency("com.thoughtworks.xstream", "xstream", "1.4.3");
+		addDependency("com.thoughtworks.xstream", "xstream", "1.4.17");
 		addDependency("commons-configuration", "commons-configuration", "1.6");
 		addDependency("commons-io", "commons-io", "2.1");
 		addDependency("commons-lang", "commons-lang", "2.6");

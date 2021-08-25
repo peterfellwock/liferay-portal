@@ -1,0 +1,26 @@
+{
+	"gutters": true,
+	"landscapeMobile": {
+		"styles": {
+		}
+	},
+	"modulesPerRow": 6,
+	"numberOfColumns": 6,
+	"portraitMobile": {
+		"modulesPerRow": 3,
+		"reverseOrder": true,
+		"styles": {
+		},
+		"verticalAlignment": "bottom"
+	},
+	"reverseOrder": false,
+	"styles": {
+	},
+	"tablet": {
+		"modulesPerRow": 2,
+		"reverseOrder": true,
+		"styles": {
+		},
+		"verticalAlignment": "middle"
+	}
+}

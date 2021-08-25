@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.model.UserGroupGroupRole;
 import com.liferay.portal.kernel.service.persistence.UserGroupGroupRoleFinder;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.model.impl.UserGroupGroupRoleImpl;
 import com.liferay.util.dao.orm.CustomSQLUtil;
 
@@ -50,19 +51,20 @@ public class UserGroupGroupRoleFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_BY_GROUP_ROLE_TYPE);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			q.addEntity("UserGroupGroupRole", UserGroupGroupRoleImpl.class);
+			sqlQuery.addEntity(
+				"UserGroupGroupRole", UserGroupGroupRoleImpl.class);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			qPos.add(groupId);
-			qPos.add(roleType);
+			queryPos.add(groupId);
+			queryPos.add(roleType);
 
-			return q.list(true);
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -78,18 +80,55 @@ public class UserGroupGroupRoleFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_BY_USER_GROUPS_USERS);
 
-			SQLQuery q = session.createSynchronizedSQLQuery(sql);
+			sql = StringUtil.removeSubstring(sql, "[$WHERE$]");
 
-			q.addEntity("UserGroupGroupRole", UserGroupGroupRoleImpl.class);
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
 
-			QueryPos qPos = QueryPos.getInstance(q);
+			sqlQuery.addEntity(
+				"UserGroupGroupRole", UserGroupGroupRoleImpl.class);
 
-			qPos.add(userId);
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
 
-			return q.list(true);
+			queryPos.add(userId);
+
+			return sqlQuery.list(true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
+	@Override
+	public List<UserGroupGroupRole> findByUserGroupsUsers(
+		long userId, long groupId) {
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(FIND_BY_USER_GROUPS_USERS);
+
+			sql = StringUtil.replace(
+				sql, "[$WHERE$]", "(UserGroupGroupRole.groupId = ?) AND ");
+
+			SQLQuery sqlQuery = session.createSynchronizedSQLQuery(sql);
+
+			sqlQuery.addEntity(
+				"UserGroupGroupRole", UserGroupGroupRoleImpl.class);
+
+			QueryPos queryPos = QueryPos.getInstance(sqlQuery);
+
+			queryPos.add(groupId);
+			queryPos.add(userId);
+
+			return sqlQuery.list(true);
+		}
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 		finally {
 			closeSession(session);

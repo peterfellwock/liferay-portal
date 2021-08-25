@@ -14,15 +14,12 @@
 
 package com.liferay.portal.kernel.dao.search;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 /**
  * @author Chema Balsas
  */
 public class RowMoverDropTarget {
-
-	public RowMoverDropTarget() {
-	}
 
 	public String getAction() {
 		return _action;

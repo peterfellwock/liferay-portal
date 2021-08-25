@@ -14,9 +14,9 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.Projection;
 import com.liferay.portal.kernel.dao.orm.ProjectionList;
-import com.liferay.portal.kernel.util.StringBundler;
 
 /**
  * @author Brian Wing Shun Chan
@@ -56,13 +56,7 @@ public class ProjectionListImpl
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(3);
-
-		sb.append("{_projectionList=");
-		sb.append(String.valueOf(_projectionList));
-		sb.append("}");
-
-		return sb.toString();
+		return StringBundler.concat("{_projectionList=", _projectionList, "}");
 	}
 
 	private final org.hibernate.criterion.ProjectionList _projectionList;

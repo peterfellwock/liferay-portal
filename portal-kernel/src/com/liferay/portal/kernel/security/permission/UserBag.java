@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.security.permission;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
@@ -24,6 +22,8 @@ import com.liferay.portal.kernel.model.Role;
 import java.io.Serializable;
 
 import java.util.Collection;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author László Csontos
@@ -53,6 +53,8 @@ public interface UserBag extends Serializable {
 	public Collection<Organization> getUserOrgs() throws PortalException;
 
 	public Collection<Group> getUserUserGroupGroups() throws PortalException;
+
+	public long[] getUserUserGroupsIds();
 
 	public boolean hasRole(Role role);
 

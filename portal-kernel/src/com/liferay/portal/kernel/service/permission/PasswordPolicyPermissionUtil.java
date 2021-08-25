@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.service.permission;
 
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -28,7 +27,7 @@ public class PasswordPolicyPermissionUtil {
 			String actionId)
 		throws PrincipalException {
 
-		getPasswordPolicyPermission().check(
+		_passwordPolicyPermission.check(
 			permissionChecker, passwordPolicyId, actionId);
 	}
 
@@ -36,21 +35,16 @@ public class PasswordPolicyPermissionUtil {
 		PermissionChecker permissionChecker, long passwordPolicyId,
 		String actionId) {
 
-		return getPasswordPolicyPermission().contains(
+		return _passwordPolicyPermission.contains(
 			permissionChecker, passwordPolicyId, actionId);
 	}
 
 	public static PasswordPolicyPermission getPasswordPolicyPermission() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PasswordPolicyPermissionUtil.class);
-
 		return _passwordPolicyPermission;
 	}
 
 	public void setPasswordPolicyPermission(
 		PasswordPolicyPermission passwordPolicyPermission) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_passwordPolicyPermission = passwordPolicyPermission;
 	}

@@ -70,7 +70,8 @@ public class ExpandoColumnPermissionImpl implements ExpandoColumnPermission {
 		String actionId) {
 
 		return permissionChecker.hasPermission(
-			0, ExpandoColumn.class.getName(), column.getColumnId(), actionId);
+			null, ExpandoColumn.class.getName(), column.getColumnId(),
+			actionId);
 	}
 
 	@Override
@@ -78,10 +79,9 @@ public class ExpandoColumnPermissionImpl implements ExpandoColumnPermission {
 			PermissionChecker permissionChecker, long columnId, String actionId)
 		throws PortalException {
 
-		ExpandoColumn column = ExpandoColumnLocalServiceUtil.getColumn(
-			columnId);
-
-		return contains(permissionChecker, column, actionId);
+		return contains(
+			permissionChecker,
+			ExpandoColumnLocalServiceUtil.getColumn(columnId), actionId);
 	}
 
 	@Override

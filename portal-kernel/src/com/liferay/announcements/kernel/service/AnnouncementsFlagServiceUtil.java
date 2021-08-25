@@ -14,67 +14,55 @@
 
 package com.liferay.announcements.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.bean.PortalBeanLocatorUtil;
-import com.liferay.portal.kernel.util.ReferenceRegistry;
+import com.liferay.announcements.kernel.model.AnnouncementsFlag;
+import com.liferay.portal.kernel.exception.PortalException;
 
 /**
  * Provides the remote service utility for AnnouncementsFlag. This utility wraps
- * {@link com.liferay.portlet.announcements.service.impl.AnnouncementsFlagServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.portlet.announcements.service.impl.AnnouncementsFlagServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Brian Wing Shun Chan
  * @see AnnouncementsFlagService
- * @see com.liferay.portlet.announcements.service.base.AnnouncementsFlagServiceBaseImpl
- * @see com.liferay.portlet.announcements.service.impl.AnnouncementsFlagServiceImpl
  * @generated
  */
-@ProviderType
 public class AnnouncementsFlagServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.portlet.announcements.service.impl.AnnouncementsFlagServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.portlet.announcements.service.impl.AnnouncementsFlagServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.announcements.kernel.model.AnnouncementsFlag getFlag(
-		long entryId, int value)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static void addFlag(long entryId, int value) throws PortalException {
+		getService().addFlag(entryId, value);
+	}
+
+	public static void deleteFlag(long flagId) throws PortalException {
+		getService().deleteFlag(flagId);
+	}
+
+	public static AnnouncementsFlag getFlag(long entryId, int value)
+		throws PortalException {
+
 		return getService().getFlag(entryId, value);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static void addFlag(long entryId, int value)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().addFlag(entryId, value);
-	}
-
-	public static void deleteFlag(long flagId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().deleteFlag(flagId);
-	}
-
 	public static AnnouncementsFlagService getService() {
-		if (_service == null) {
-			_service = (AnnouncementsFlagService)PortalBeanLocatorUtil.locate(AnnouncementsFlagService.class.getName());
-
-			ReferenceRegistry.registerReference(AnnouncementsFlagServiceUtil.class,
-				"_service");
-		}
-
 		return _service;
 	}
 
-	private static AnnouncementsFlagService _service;
+	private static volatile AnnouncementsFlagService _service;
+
 }

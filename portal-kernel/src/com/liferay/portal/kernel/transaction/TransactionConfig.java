@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.transaction;
 
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 
 import java.util.Arrays;
 
@@ -26,16 +26,16 @@ import java.util.Arrays;
 public class TransactionConfig {
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof TransactionConfig)) {
+		if (!(object instanceof TransactionConfig)) {
 			return false;
 		}
 
-		TransactionConfig transactionConfig = (TransactionConfig)obj;
+		TransactionConfig transactionConfig = (TransactionConfig)object;
 
 		if ((_isolation == transactionConfig._isolation) &&
 			Arrays.equals(
@@ -131,13 +131,15 @@ public class TransactionConfig {
 			}
 		}
 
-		hash = HashUtil.hash(hash, _timeout);
-
-		return hash;
+		return HashUtil.hash(hash, _timeout);
 	}
 
 	public boolean isReadOnly() {
 		return _readOnly;
+	}
+
+	public boolean isStrictReadOnly() {
+		return _strictReadOnly;
 	}
 
 	@Override
@@ -219,21 +221,32 @@ public class TransactionConfig {
 			return this;
 		}
 
+		public Builder setStrictReadOnly(boolean strictReadOnly) {
+			if (strictReadOnly) {
+				_readOnly = true;
+			}
+
+			_strictReadOnly = strictReadOnly;
+
+			return this;
+		}
+
 		public Builder setTimeout(int timeout) {
 			_timeout = timeout;
 
 			return this;
 		}
 
-		private static final Class<?>[] _emptyClassArray = new Class<?>[0];
+		private static final Class<?>[] _EMPTY_CLASS_ARRAY = new Class<?>[0];
 
 		private Isolation _isolation = Isolation.DEFAULT;
-		private Class<?>[] _noRollbackForClasses = _emptyClassArray;
+		private Class<?>[] _noRollbackForClasses = _EMPTY_CLASS_ARRAY;
 		private String[] _noRollbackForClassNames = StringPool.EMPTY_ARRAY;
 		private Propagation _propagation = Propagation.REQUIRED;
 		private boolean _readOnly;
-		private Class<?>[] _rollbackForClasses = _emptyClassArray;
+		private Class<?>[] _rollbackForClasses = _EMPTY_CLASS_ARRAY;
 		private String[] _rollbackForClassNames = StringPool.EMPTY_ARRAY;
+		private boolean _strictReadOnly;
 		private int _timeout = TransactionDefinition.TIMEOUT_DEFAULT;
 
 	}
@@ -279,6 +292,7 @@ public class TransactionConfig {
 		_readOnly = builder._readOnly;
 		_rollbackForClassNames = builder._rollbackForClassNames;
 		_rollbackForClasses = builder._rollbackForClasses;
+		_strictReadOnly = builder._strictReadOnly;
 		_timeout = builder._timeout;
 	}
 
@@ -289,6 +303,7 @@ public class TransactionConfig {
 	private final boolean _readOnly;
 	private final Class<?>[] _rollbackForClasses;
 	private final String[] _rollbackForClassNames;
+	private final boolean _strictReadOnly;
 	private final int _timeout;
 
 }

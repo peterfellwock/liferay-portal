@@ -29,7 +29,6 @@ import aQute.lib.json.JSONCodec;
 import java.io.InputStream;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -89,7 +88,6 @@ public class NpmAnalyzerPlugin implements AnalyzerPlugin {
 		major = matcher.group("major");
 		minor = matcher.group("minor");
 		micro = matcher.group("micro");
-		qualifier = matcher.group("qualifier");
 
 		if (minor == null) {
 			major = Integer.parseInt(major) + 1 + "";
@@ -107,6 +105,9 @@ public class NpmAnalyzerPlugin implements AnalyzerPlugin {
 		}
 		else {
 			sb.append(")(version<=");
+
+			qualifier = matcher.group("qualifier");
+
 			sb.append(toVersion(major, minor, micro, qualifier));
 		}
 
@@ -325,7 +326,7 @@ public class NpmAnalyzerPlugin implements AnalyzerPlugin {
 
 		Parameters parameters = new Parameters();
 
-		for (Entry<String, String> entry : npmModule.runtime.entrySet()) {
+		for (Map.Entry<String, String> entry : npmModule.runtime.entrySet()) {
 			Attrs attrs = new Attrs();
 
 			StringBuilder sb = new StringBuilder();
@@ -368,7 +369,7 @@ public class NpmAnalyzerPlugin implements AnalyzerPlugin {
 			try {
 				version = new Version(npmModule.version);
 			}
-			catch (IllegalArgumentException iae) {
+			catch (IllegalArgumentException illegalArgumentException) {
 				String sanitizedQualifier = npmModule.version.replaceAll(
 					"[^-_\\da-zA-Z]", "");
 

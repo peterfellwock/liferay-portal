@@ -16,12 +16,11 @@ package com.liferay.knowledge.base.web.internal.upgrade;
 
 import com.liferay.knowledge.base.web.internal.upgrade.v1_0_0.UpgradePortletId;
 import com.liferay.knowledge.base.web.internal.upgrade.v1_0_0.UpgradePortletSettings;
+import com.liferay.knowledge.base.web.internal.upgrade.v1_1_0.UpgradePortletPreferences;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.settings.SettingsFactory;
 import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
-import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
-import com.liferay.portal.upgrade.release.BaseUpgradeWebModuleRelease;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -35,42 +34,18 @@ public class KnowledgeBaseWebUpgrade implements UpgradeStepRegistrator {
 
 	@Override
 	public void register(Registry registry) {
-		BaseUpgradeWebModuleRelease upgradeWebModuleRelease =
-			new BaseUpgradeWebModuleRelease() {
-
-				@Override
-				protected String getBundleSymbolicName() {
-					return "com.liferay.knowledge.base.web";
-				}
-
-				@Override
-				protected String[] getPortletIds() {
-					return new String[] {
-						"1_WAR_knowledgebaseportlet",
-						"2_WAR_knowledgebaseportlet",
-						"3_WAR_knowledgebaseportlet",
-						"4_WAR_knowledgebaseportlet",
-						"5_WAR_knowledgebaseportlet"
-					};
-				}
-
-			};
-
-		try {
-			upgradeWebModuleRelease.upgrade();
-		}
-		catch (UpgradeException ue) {
-			throw new RuntimeException(ue);
-		}
+		registry.register("0.0.0", "1.2.0", new DummyUpgradeStep());
 
 		registry.register(
-			"com.liferay.knowledge.base.web", "0.0.0", "1.0.0",
-			new DummyUpgradeStep());
-
-		registry.register(
-			"com.liferay.knowledge.base.web", "0.0.1", "1.0.0",
-			new UpgradePortletId(),
+			"0.0.1", "1.0.0", new UpgradePortletId(),
 			new UpgradePortletSettings(_settingsFactory));
+
+		registry.register("1.0.0", "1.1.0", new UpgradePortletPreferences());
+
+		registry.register(
+			"1.1.0", "1.2.0",
+			new com.liferay.knowledge.base.web.internal.upgrade.v1_2_0.
+				UpgradePortletPreferences());
 	}
 
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")

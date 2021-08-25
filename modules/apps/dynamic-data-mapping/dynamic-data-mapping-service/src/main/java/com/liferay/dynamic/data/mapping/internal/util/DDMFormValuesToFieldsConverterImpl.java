@@ -1,0 +1,285 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+package com.liferay.dynamic.data.mapping.internal.util;
+
+import com.liferay.dynamic.data.mapping.model.DDMFormField;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.model.Value;
+import com.liferay.dynamic.data.mapping.storage.DDMFormFieldValue;
+import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
+import com.liferay.dynamic.data.mapping.storage.Field;
+import com.liferay.dynamic.data.mapping.storage.Fields;
+import com.liferay.dynamic.data.mapping.storage.constants.FieldConstants;
+import com.liferay.dynamic.data.mapping.util.DDM;
+import com.liferay.dynamic.data.mapping.util.DDMFormValuesToFieldsConverter;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+
+import java.io.Serializable;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.osgi.service.component.annotations.Component;
+
+/**
+ * @author Marcellus Tavares
+ */
+@Component(immediate = true, service = DDMFormValuesToFieldsConverter.class)
+public class DDMFormValuesToFieldsConverterImpl
+	implements DDMFormValuesToFieldsConverter {
+
+	@Override
+	public Fields convert(
+			DDMStructure ddmStructure, DDMFormValues ddmFormValues)
+		throws PortalException {
+
+		Map<String, DDMFormField> ddmFormFieldsMap =
+			ddmStructure.getFullHierarchyDDMFormFieldsMap(true);
+
+		List<DDMFormFieldValue> ddmFormFieldValues = _filterDDMFormFieldValues(
+			ddmFormFieldsMap, ddmFormValues.getDDMFormFieldValues());
+
+		Fields ddmFields = createDDMFields(ddmStructure);
+
+		for (DDMFormFieldValue ddmFormFieldValue : ddmFormFieldValues) {
+			_addMissingRepeatedDDMFormFieldValues(
+				ddmFormFieldValue.getDDMFormField(),
+				ddmFormValues.getDefaultLocale(),
+				ddmFormValues.getAvailableLocales(), ddmFormFieldValue, false);
+
+			addDDMFields(
+				ddmStructure.getStructureId(), ddmFormFieldsMap,
+				ddmFormFieldValue, ddmFields, ddmFormValues.getDefaultLocale());
+		}
+
+		return ddmFields;
+	}
+
+	protected void addDDMField(
+			long ddmStructureId, DDMFormField ddmFormField,
+			DDMFormFieldValue ddmFormFieldValue, Fields ddmFields,
+			Locale defaultLocale)
+		throws PortalException {
+
+		if ((ddmFormField == null) || ddmFormField.isTransient() ||
+			(ddmFormFieldValue.getValue() == null)) {
+
+			return;
+		}
+
+		Field ddmField = createDDMField(
+			ddmStructureId, ddmFormField, ddmFormFieldValue, defaultLocale);
+
+		Field existingDDMField = ddmFields.get(ddmField.getName());
+
+		if (existingDDMField == null) {
+			ddmFields.put(ddmField);
+		}
+		else {
+			addDDMFieldValues(existingDDMField, ddmField);
+		}
+	}
+
+	protected void addDDMFields(
+			long ddmStructureId, Map<String, DDMFormField> ddmFormFieldsMap,
+			DDMFormFieldValue ddmFormFieldValue, Fields ddmFields,
+			Locale defaultLocale)
+		throws PortalException {
+
+		DDMFormField ddmFormField = ddmFormFieldsMap.get(
+			ddmFormFieldValue.getName());
+
+		addDDMField(
+			ddmStructureId, ddmFormField, ddmFormFieldValue, ddmFields,
+			defaultLocale);
+
+		addFieldDisplayValue(
+			ddmFields.get(DDMImpl.FIELDS_DISPLAY_NAME),
+			getFieldDisplayValue(ddmFormFieldValue));
+
+		for (DDMFormFieldValue nestedDDMFormFieldValue :
+				ddmFormFieldValue.getNestedDDMFormFieldValues()) {
+
+			addDDMFields(
+				ddmStructureId, ddmFormFieldsMap, nestedDDMFormFieldValue,
+				ddmFields, defaultLocale);
+		}
+	}
+
+	protected void addDDMFieldValues(
+		Field existingDDMField, Field newDDMField) {
+
+		for (Locale availableLocale : newDDMField.getAvailableLocales()) {
+			existingDDMField.addValues(
+				availableLocale, newDDMField.getValues(availableLocale));
+		}
+	}
+
+	protected void addFieldDisplayValue(
+		Field ddmFieldsDisplayField, String fieldDisplayValue) {
+
+		String[] fieldsDisplayValues = StringUtil.split(
+			(String)ddmFieldsDisplayField.getValue());
+
+		fieldsDisplayValues = ArrayUtil.append(
+			fieldsDisplayValues, fieldDisplayValue);
+
+		ddmFieldsDisplayField.setValue(StringUtil.merge(fieldsDisplayValues));
+	}
+
+	protected Field createDDMField(
+			long ddmStructureId, DDMFormField ddmFormField,
+			DDMFormFieldValue ddmFormFieldValue, Locale defaultLocale)
+		throws PortalException {
+
+		Field ddmField = new Field();
+
+		ddmField.setDDMStructureId(ddmStructureId);
+		ddmField.setDefaultLocale(defaultLocale);
+		ddmField.setName(ddmFormFieldValue.getName());
+
+		String type = ddmFormField.getDataType();
+
+		setDDMFieldValue(
+			ddmField, type, ddmFormFieldValue.getValue(), defaultLocale);
+
+		return ddmField;
+	}
+
+	protected Fields createDDMFields(DDMStructure ddmStructure) {
+		Fields ddmFields = new Fields();
+
+		Field fieldsDisplayField = new Field(
+			ddmStructure.getStructureId(), DDMImpl.FIELDS_DISPLAY_NAME,
+			StringPool.BLANK);
+
+		ddmFields.put(fieldsDisplayField);
+
+		return ddmFields;
+	}
+
+	protected String getFieldDisplayValue(DDMFormFieldValue ddmFormFieldValue) {
+		String fieldName = ddmFormFieldValue.getName();
+
+		return StringBundler.concat(
+			fieldName, DDMImpl.INSTANCE_SEPARATOR,
+			ddmFormFieldValue.getInstanceId());
+	}
+
+	protected void setDDMFieldLocalizedValue(
+		Field ddmField, String type, Value value) {
+
+		for (Locale availableLocale : value.getAvailableLocales()) {
+			Serializable serializable = FieldConstants.getSerializable(
+				availableLocale, availableLocale, type,
+				value.getString(availableLocale));
+
+			ddmField.addValue(availableLocale, serializable);
+		}
+	}
+
+	protected void setDDMFieldUnlocalizedValue(
+		Field ddmField, String type, Value value, Locale defaultLocale) {
+
+		Serializable serializable = FieldConstants.getSerializable(
+			defaultLocale, LocaleUtil.ROOT, type,
+			value.getString(LocaleUtil.ROOT));
+
+		ddmField.addValue(defaultLocale, serializable);
+	}
+
+	protected void setDDMFieldValue(
+		Field ddmField, String type, Value value, Locale defaultLocale) {
+
+		if (value.isLocalized()) {
+			setDDMFieldLocalizedValue(ddmField, type, value);
+		}
+		else {
+			setDDMFieldUnlocalizedValue(ddmField, type, value, defaultLocale);
+		}
+	}
+
+	private void _addMissingRepeatedDDMFormFieldValues(
+			DDMFormField ddmFormField, Locale locale,
+			Set<Locale> availableLocales, DDMFormFieldValue ddmFormFieldValue,
+			boolean repeatableAncestor)
+		throws PortalException {
+
+		if (ddmFormField.isLocalizable() &&
+			(ddmFormField.isRepeatable() || repeatableAncestor) &&
+			!StringUtil.equals(ddmFormField.getType(), "fieldset")) {
+
+			availableLocales.forEach(
+				availableLocale -> {
+					if (!locale.equals(availableLocale)) {
+						Value value = ddmFormFieldValue.getValue();
+
+						if (value != null) {
+							Map<Locale, String> values = value.getValues();
+
+							if (values.get(availableLocale) == null) {
+								value.addString(
+									availableLocale, DDM.FIELD_EMPTY_VALUE);
+							}
+						}
+					}
+				});
+		}
+
+		for (DDMFormFieldValue nestedDDMFormFieldValue :
+				ddmFormFieldValue.getNestedDDMFormFieldValues()) {
+
+			_addMissingRepeatedDDMFormFieldValues(
+				nestedDDMFormFieldValue.getDDMFormField(), locale,
+				availableLocales, nestedDDMFormFieldValue,
+				repeatableAncestor || ddmFormField.isRepeatable());
+		}
+	}
+
+	private List<DDMFormFieldValue> _filterDDMFormFieldValues(
+		Map<String, DDMFormField> ddmFormFieldsMap,
+		List<DDMFormFieldValue> ddmFormFieldValues) {
+
+		Stream<DDMFormFieldValue> stream = ddmFormFieldValues.stream();
+
+		return stream.filter(
+			ddmFormFieldValue -> ddmFormFieldsMap.containsKey(
+				ddmFormFieldValue.getName())
+		).peek(
+			ddmFormFieldValue -> {
+				List<DDMFormFieldValue> nestedDDMFormFieldValues =
+					ddmFormFieldValue.getNestedDDMFormFieldValues();
+
+				if (!nestedDDMFormFieldValues.isEmpty()) {
+					ddmFormFieldValue.setNestedDDMFormFields(
+						_filterDDMFormFieldValues(
+							ddmFormFieldsMap, nestedDDMFormFieldValues));
+				}
+			}
+		).collect(
+			Collectors.toList()
+		);
+	}
+
+}

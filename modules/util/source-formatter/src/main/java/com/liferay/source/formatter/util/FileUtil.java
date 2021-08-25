@@ -14,7 +14,9 @@
 
 package com.liferay.source.formatter.util;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.io.File;
@@ -28,18 +30,38 @@ import org.apache.commons.io.FileUtils;
  */
 public class FileUtil {
 
+	public static boolean exists(String fileName) {
+		File file = new File(fileName);
+
+		return file.exists();
+	}
+
 	public static byte[] getBytes(File file) throws IOException {
 		return FileUtils.readFileToByteArray(file);
 	}
 
 	public static String read(File file) throws IOException {
+		return read(file, true);
+	}
+
+	public static String read(File file, boolean escapeReturnCharacter)
+		throws IOException {
+
 		try {
 			String s = FileUtils.readFileToString(file, StringPool.UTF8);
+
+			if (!escapeReturnCharacter) {
+				return s;
+			}
 
 			return StringUtil.replace(
 				s, StringPool.RETURN_NEW_LINE, StringPool.NEW_LINE);
 		}
-		catch (FileNotFoundException fnfe) {
+		catch (FileNotFoundException fileNotFoundException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(fileNotFoundException, fileNotFoundException);
+			}
+
 			return null;
 		}
 	}
@@ -47,5 +69,7 @@ public class FileUtil {
 	public static void write(File file, String s) throws IOException {
 		FileUtils.writeStringToFile(file, s, StringPool.UTF8);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(FileUtil.class);
 
 }

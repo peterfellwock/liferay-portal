@@ -14,11 +14,13 @@
 
 package com.liferay.portal.kernel.security.permission;
 
-import aQute.bnd.annotation.ProviderType;
-
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.permission.contributor.RoleContributor;
 
-import java.util.List;
+import java.util.Map;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -37,8 +39,7 @@ public interface PermissionChecker extends Cloneable {
 	 */
 	public long getCompanyId();
 
-	public List<Long> getOwnerResourceBlockIds(
-		long companyId, long groupId, String name, String actionId);
+	public long[] getGuestUserRoleIds();
 
 	/**
 	 * Returns the primary key of the owner role. This role is automatically
@@ -48,9 +49,7 @@ public interface PermissionChecker extends Cloneable {
 	 */
 	public long getOwnerRoleId();
 
-	public List<Long> getResourceBlockIds(
-		long companyId, long groupId, long userId, String name,
-		String actionId);
+	public Map<Object, Object> getPermissionChecksMap();
 
 	/**
 	 * Returns the primary keys of the roles the user has within the group.
@@ -108,6 +107,12 @@ public interface PermissionChecker extends Cloneable {
 		long companyId, String name, String primKey, long ownerId,
 		String actionId);
 
+	public boolean hasPermission(
+		Group group, String name, long primKey, String actionId);
+
+	public boolean hasPermission(
+		Group group, String name, String primKey, String actionId);
+
 	/**
 	 * Returns <code>true</code> if the user has permission to perform the
 	 * action on the resource.
@@ -144,6 +149,10 @@ public interface PermissionChecker extends Cloneable {
 	 * @param user the current user
 	 */
 	public void init(User user);
+
+	public default void init(User user, RoleContributor[] roleContributors) {
+		init(user);
+	}
 
 	/**
 	 * Returns <code>true</code> if guest permissions will be used in permission

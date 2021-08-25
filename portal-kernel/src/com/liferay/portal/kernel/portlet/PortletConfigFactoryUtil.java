@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.portlet;
 
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import javax.portlet.PortletConfig;
 
@@ -29,36 +28,31 @@ public class PortletConfigFactoryUtil {
 	public static PortletConfig create(
 		Portlet portlet, ServletContext servletContext) {
 
-		return getPortletConfigFactory().create(portlet, servletContext);
+		return _portletConfigFactory.create(portlet, servletContext);
 	}
 
 	public static void destroy(Portlet portlet) {
-		getPortletConfigFactory().destroy(portlet);
+		_portletConfigFactory.destroy(portlet);
 	}
 
 	public static PortletConfig get(Portlet portlet) {
-		return getPortletConfigFactory().get(portlet);
+		return _portletConfigFactory.get(portlet);
 	}
 
 	public static PortletConfig get(String portletId) {
-		return getPortletConfigFactory().get(portletId);
+		return _portletConfigFactory.get(portletId);
 	}
 
 	public static PortletConfigFactory getPortletConfigFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortletConfigFactoryUtil.class);
-
 		return _portletConfigFactory;
 	}
 
 	public static PortletConfig update(Portlet portlet) {
-		return getPortletConfigFactory().update(portlet);
+		return _portletConfigFactory.update(portlet);
 	}
 
 	public void setPortletConfigFactory(
 		PortletConfigFactory portletConfigFactory) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_portletConfigFactory = portletConfigFactory;
 	}

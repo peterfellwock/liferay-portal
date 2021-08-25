@@ -14,23 +14,22 @@
 
 package com.liferay.portal.kernel.nio.intraband.blocking;
 
-import static java.lang.Thread.sleep;
-
 import com.liferay.portal.kernel.nio.intraband.BaseIntraband;
 import com.liferay.portal.kernel.nio.intraband.ChannelContext;
 import com.liferay.portal.kernel.nio.intraband.CompletionHandler;
 import com.liferay.portal.kernel.nio.intraband.Datagram;
-import com.liferay.portal.kernel.nio.intraband.DatagramHelper;
+import com.liferay.portal.kernel.nio.intraband.DatagramUtil;
 import com.liferay.portal.kernel.nio.intraband.IntrabandTestUtil;
 import com.liferay.portal.kernel.nio.intraband.RecordCompletionHandler;
 import com.liferay.portal.kernel.nio.intraband.blocking.ExecutorIntraband.ReadingCallable;
 import com.liferay.portal.kernel.nio.intraband.blocking.ExecutorIntraband.WritingCallable;
 import com.liferay.portal.kernel.nio.intraband.test.MockRegistrationReference;
-import com.liferay.portal.kernel.test.CaptureHandler;
-import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.test.SyncThrowableThread;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,8 +41,6 @@ import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.Pipe;
-import java.nio.channels.Pipe.SinkChannel;
-import java.nio.channels.Pipe.SourceChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
@@ -59,7 +56,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -109,15 +105,15 @@ public class ExecutorIntrabandTest {
 
 			};
 
-		Datagram datagram1 = Datagram.createRequestDatagram(_TYPE, _data);
+		Datagram datagram1 = Datagram.createRequestDatagram(_TYPE, _DATA);
 
 		_executorIntraband.sendDatagram(futureRegistrationReference, datagram1);
 
-		Datagram datagram2 = Datagram.createRequestDatagram(_TYPE, _data);
+		Datagram datagram2 = Datagram.createRequestDatagram(_TYPE, _DATA);
 
 		_executorIntraband.sendDatagram(futureRegistrationReference, datagram2);
 
-		Datagram datagram3 = Datagram.createRequestDatagram(_TYPE, _data);
+		Datagram datagram3 = Datagram.createRequestDatagram(_TYPE, _DATA);
 
 		_executorIntraband.sendDatagram(futureRegistrationReference, datagram3);
 
@@ -134,8 +130,8 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		final SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		final Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		try {
 			MockRegistrationReference mockRegistrationReference =
@@ -156,7 +152,7 @@ public class ExecutorIntrabandTest {
 
 						@Override
 						public Void call() throws Exception {
-							sleep(100);
+							Thread.sleep(100);
 
 							sourceChannel.close();
 
@@ -192,8 +188,9 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Channel is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Channel is null", nullPointerException.getMessage());
 		}
 
 		// Channel is not of type GatheringByteChannel
@@ -204,10 +201,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Channel is not of type GatheringByteChannel",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 
 		// Channel is not of type ScatteringByteChannel
@@ -219,10 +216,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Channel is not of type ScatteringByteChannel",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 
 		// Channel is of type SelectableChannel and configured in nonblocking
@@ -240,16 +237,16 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Channel is of type SelectableChannel and configured in " +
 					"nonblocking mode",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 	}
 
 	@Test
-	public void testRegisterChannelDuplexWithNonSelectableChannel()
+	public void testRegisterChannelDuplexWithNonselectableChannel()
 		throws Exception {
 
 		// Normal register, with unselectable channel
@@ -323,9 +320,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Gathering byte channel is null", npe.getMessage());
+				"Gathering byte channel is null",
+				nullPointerException.getMessage());
 		}
 
 		// Scattering byte channel is null
@@ -338,9 +336,10 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 			Assert.assertEquals(
-				"Scattering byte channel is null", npe.getMessage());
+				"Scattering byte channel is null",
+				nullPointerException.getMessage());
 		}
 
 		// Scattering byte channel is of type SelectableChannel and configured
@@ -348,19 +347,19 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		sourceChannel.configureBlocking(false);
 
 		try {
 			_executorIntraband.registerChannel(sourceChannel, sinkChannel);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Scattering byte channel is of type SelectableChannel and " +
 					"configured in nonblocking mode",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 
 		// Gathering byte channel is of type SelectableChannel and configured in
@@ -372,16 +371,16 @@ public class ExecutorIntrabandTest {
 		try {
 			_executorIntraband.registerChannel(sourceChannel, sinkChannel);
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
 				"Gathering byte channel is of type SelectableChannel and " +
 					"configured in nonblocking mode",
-				iae.getMessage());
+				illegalArgumentException.getMessage());
 		}
 	}
 
 	@Test
-	public void testRegisterChannelReadWriteWithNonSelectableChannel()
+	public void testRegisterChannelReadWriteWithNonselectableChannel()
 		throws Exception {
 
 		// Normal register, with unselectable channel
@@ -434,8 +433,8 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		sourceChannel.configureBlocking(true);
 		sinkChannel.configureBlocking(true);
@@ -469,11 +468,12 @@ public class ExecutorIntrabandTest {
 		// Submitted callback
 
 		Pipe readPipe = Pipe.open();
+
+		ScatteringByteChannel scatteringByteChannel = readPipe.source();
+
 		Pipe writePipe = Pipe.open();
 
 		GatheringByteChannel gatheringByteChannel = writePipe.sink();
-
-		ScatteringByteChannel scatteringByteChannel = readPipe.source();
 
 		FutureRegistrationReference futureRegistrationReference =
 			(FutureRegistrationReference)_executorIntraband.registerChannel(
@@ -486,7 +486,7 @@ public class ExecutorIntrabandTest {
 
 		_executorIntraband.sendDatagram(
 			futureRegistrationReference,
-			Datagram.createRequestDatagram(_TYPE, _data), attachment,
+			Datagram.createRequestDatagram(_TYPE, _DATA), attachment,
 			EnumSet.of(CompletionHandler.CompletionType.SUBMITTED),
 			recordCompletionHandler);
 
@@ -500,21 +500,20 @@ public class ExecutorIntrabandTest {
 
 		ByteBuffer dataByteBuffer = receiveDatagram.getDataByteBuffer();
 
-		Assert.assertArrayEquals(_data, dataByteBuffer.array());
+		Assert.assertArrayEquals(_DATA, dataByteBuffer.array());
 
 		// Callback timeout, with log
 
-		try (CaptureHandler captureHandler =
-				JDKLoggerTestUtil.configureJDKLogger(
-					BaseIntraband.class.getName(), Level.WARNING)) {
+		try (LogCapture logCapture = LoggerTestUtil.configureJDKLogger(
+				BaseIntraband.class.getName(), Level.WARNING)) {
 
-			List<LogRecord> logRecords = captureHandler.getLogRecords();
+			List<LogEntry> logEntries = logCapture.getLogEntries();
 
 			recordCompletionHandler = new RecordCompletionHandler<>();
 
 			_executorIntraband.sendDatagram(
 				futureRegistrationReference,
-				Datagram.createRequestDatagram(_TYPE, _data), attachment,
+				Datagram.createRequestDatagram(_TYPE, _DATA), attachment,
 				EnumSet.of(CompletionHandler.CompletionType.REPLIED),
 				recordCompletionHandler, 10, TimeUnit.MILLISECONDS);
 
@@ -522,14 +521,14 @@ public class ExecutorIntrabandTest {
 
 			_executorIntraband.sendDatagram(
 				futureRegistrationReference,
-				Datagram.createRequestDatagram(_TYPE, _data), attachment,
+				Datagram.createRequestDatagram(_TYPE, _DATA), attachment,
 				EnumSet.of(CompletionHandler.CompletionType.DELIVERED),
 				recordCompletionHandler, 10, TimeUnit.MILLISECONDS);
 
-			while (logRecords.isEmpty());
+			while (logEntries.isEmpty());
 
 			IntrabandTestUtil.assertMessageStartWith(
-				logRecords.get(0), "Removed timeout response waiting datagram");
+				logEntries.get(0), "Removed timeout response waiting datagram");
 
 			gatheringByteChannel.close();
 			scatteringByteChannel.close();
@@ -543,8 +542,8 @@ public class ExecutorIntrabandTest {
 
 		Pipe pipe = Pipe.open();
 
-		SourceChannel sourceChannel = pipe.source();
-		SinkChannel sinkChannel = pipe.sink();
+		Pipe.SourceChannel sourceChannel = pipe.source();
+		Pipe.SinkChannel sinkChannel = pipe.sink();
 
 		BlockingQueue<Datagram> sendingQueue = new SynchronousQueue<>();
 
@@ -564,21 +563,21 @@ public class ExecutorIntrabandTest {
 
 		writingThread.start();
 
-		Datagram datagram1 = Datagram.createRequestDatagram(_TYPE, _data);
+		Datagram datagram1 = Datagram.createRequestDatagram(_TYPE, _DATA);
 
 		sendingQueue.put(datagram1);
 
-		Datagram datagram2 = Datagram.createRequestDatagram(_TYPE, _data);
+		Datagram datagram2 = Datagram.createRequestDatagram(_TYPE, _DATA);
 
 		sendingQueue.put(datagram2);
 
 		Assert.assertTrue(
-			DatagramHelper.readFrom(
-				DatagramHelper.createReceiveDatagram(), sourceChannel));
+			DatagramUtil.readFrom(
+				DatagramUtil.createReceiveDatagram(), sourceChannel));
 
 		Assert.assertTrue(
-			DatagramHelper.readFrom(
-				DatagramHelper.createReceiveDatagram(), sourceChannel));
+			DatagramUtil.readFrom(
+				DatagramUtil.createReceiveDatagram(), sourceChannel));
 
 		// Interrupt on blocking take
 
@@ -600,6 +599,7 @@ public class ExecutorIntrabandTest {
 		pipe = Pipe.open();
 
 		sourceChannel = pipe.source();
+
 		sinkChannel = pipe.sink();
 
 		writingCallable = _executorIntraband.new WritingCallable(
@@ -616,7 +616,7 @@ public class ExecutorIntrabandTest {
 		int counter = 0;
 
 		while (sendingQueue.offer(
-					Datagram.createRequestDatagram(_TYPE, _data), 1,
+					Datagram.createRequestDatagram(_TYPE, _DATA), 1,
 					TimeUnit.SECONDS)) {
 
 			counter++;
@@ -640,6 +640,7 @@ public class ExecutorIntrabandTest {
 		pipe = Pipe.open();
 
 		sourceChannel = pipe.source();
+
 		sinkChannel = pipe.sink();
 
 		writingCallable = _executorIntraband.new WritingCallable(
@@ -656,7 +657,7 @@ public class ExecutorIntrabandTest {
 		counter = 0;
 
 		while (sendingQueue.offer(
-					Datagram.createRequestDatagram(_TYPE, _data), 1,
+					Datagram.createRequestDatagram(_TYPE, _DATA), 1,
 					TimeUnit.SECONDS)) {
 
 			counter++;
@@ -680,6 +681,7 @@ public class ExecutorIntrabandTest {
 		pipe = Pipe.open();
 
 		sourceChannel = pipe.source();
+
 		sinkChannel = pipe.sink();
 
 		sinkChannel.configureBlocking(false);
@@ -698,7 +700,7 @@ public class ExecutorIntrabandTest {
 		counter = 0;
 
 		while (sendingQueue.offer(
-					Datagram.createRequestDatagram(_TYPE, _data), 1,
+					Datagram.createRequestDatagram(_TYPE, _DATA), 1,
 					TimeUnit.SECONDS) ||
 			   writingThread.isAlive()) {
 
@@ -712,9 +714,11 @@ public class ExecutorIntrabandTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
+
 			Assert.assertEquals(
-				IllegalStateException.class, ee.getCause().getClass());
+				IllegalStateException.class, throwable.getClass());
 		}
 
 		writingThread.join();
@@ -723,15 +727,18 @@ public class ExecutorIntrabandTest {
 		sinkChannel.close();
 	}
 
-	private static final String _DATA_STRING =
-		ExecutorIntrabandTest.class.getName();
+	private static final byte[] _DATA;
 
 	private static final long _DEFAULT_TIMEOUT = Time.SECOND;
 
 	private static final byte _TYPE = 1;
 
-	private final byte[] _data = _DATA_STRING.getBytes(
-		Charset.defaultCharset());
+	static {
+		String dataString = ExecutorIntrabandTest.class.getName();
+
+		_DATA = dataString.getBytes(Charset.defaultCharset());
+	}
+
 	private ExecutorIntraband _executorIntraband;
 
 }

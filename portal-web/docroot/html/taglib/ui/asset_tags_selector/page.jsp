@@ -16,8 +16,6 @@
 
 <%@ include file="/html/taglib/init.jsp" %>
 
-<portlet:defineObjects />
-
 <%
 String addCallback = GetterUtil.getString((String)request.getAttribute("liferay-ui:asset-tags-selector:addCallback"));
 boolean allowAddEntry = GetterUtil.getBoolean((String)request.getAttribute("liferay-ui:asset-tags-selector:allowAddEntry"));
@@ -32,9 +30,7 @@ boolean ignoreRequestValue = GetterUtil.getBoolean(request.getAttribute("liferay
 String removeCallback = GetterUtil.getString((String)request.getAttribute("liferay-ui:asset-tags-selector:removeCallback"));
 
 if (Validator.isNotNull(className) && (classPK > 0)) {
-	List<AssetTag> tags = AssetTagServiceUtil.getTags(className, classPK);
-
-	curTags = ListUtil.toString(tags, AssetTag.NAME_ACCESSOR);
+	curTags = ListUtil.toString(AssetTagServiceUtil.getTags(className, classPK), AssetTag.NAME_ACCESSOR);
 }
 
 if (!ignoreRequestValue) {

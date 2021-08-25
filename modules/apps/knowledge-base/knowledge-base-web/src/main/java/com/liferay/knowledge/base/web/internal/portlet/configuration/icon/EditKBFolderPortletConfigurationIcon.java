@@ -17,21 +17,25 @@ package com.liferay.knowledge.base.web.internal.portlet.configuration.icon;
 import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBFolder;
-import com.liferay.knowledge.base.service.permission.KBFolderPermission;
 import com.liferay.knowledge.base.web.internal.constants.KBWebKeys;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
-import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Roberto Díaz
@@ -57,21 +61,23 @@ public class EditKBFolderPortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
-			portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
-			PortletRequest.RENDER_PHASE);
+		return PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
+				PortletRequest.RENDER_PHASE)
+		).setMVCPath(
+			"/admin/common/edit_folder.jsp"
+		).setRedirect(
+			_portal.getCurrentURL(portletRequest)
+		).setParameter(
+			"kbFolderId",
+			() -> {
+				KBFolder kbFolder = (KBFolder)portletRequest.getAttribute(
+					KBWebKeys.KNOWLEDGE_BASE_PARENT_KB_FOLDER);
 
-		portletURL.setParameter("mvcPath", "/admin/common/edit_folder.jsp");
-		portletURL.setParameter(
-			"redirect", PortalUtil.getCurrentURL(portletRequest));
-
-		KBFolder kbFolder = (KBFolder)portletRequest.getAttribute(
-			KBWebKeys.KNOWLEDGE_BASE_PARENT_KB_FOLDER);
-
-		portletURL.setParameter(
-			"kbFolderId", String.valueOf(kbFolder.getKbFolderId()));
-
-		return portletURL.toString();
+				return kbFolder.getKbFolderId();
+			}
+		).buildString();
 	}
 
 	@Override
@@ -90,13 +96,28 @@ public class EditKBFolderPortletConfigurationIcon
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
 
-		if (KBFolderPermission.contains(
-				permissionChecker, kbFolder, KBActionKeys.UPDATE)) {
-
-			return true;
+		try {
+			return _kbFolderModelResourcePermission.contains(
+				permissionChecker, kbFolder, KBActionKeys.UPDATE);
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException, portalException);
+			}
 		}
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		EditKBFolderPortletConfigurationIcon.class);
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBFolder)"
+	)
+	private ModelResourcePermission<KBFolder> _kbFolderModelResourcePermission;
+
+	@Reference
+	private Portal _portal;
 
 }

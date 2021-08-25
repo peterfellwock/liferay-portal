@@ -3,6 +3,8 @@
 The Deployment Helper Gradle plugin lets you run the [Liferay Deployment Helper](https://github.com/liferay/liferay-portal/tree/master/modules/util/deployment-helper)
 tool to create a cluster deployable WAR from your OSGi artifacts.
 
+The plugin has been successfully tested with Gradle 5.6.4 and 6.6.1.
+
 ## Usage
 
 To use the plugin, include it in your build script:
@@ -10,12 +12,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.deployment.helper", version: "1.0.3"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.deployment.helper", version: "1.0.7"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -30,7 +32,7 @@ transitive dependencies. The Liferay CDN repository hosts them all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```
@@ -90,6 +92,6 @@ configuration:
 
 ```gradle
 dependencies {
-	deploymentHelper group: "com.liferay", name: "com.liferay.deployment.helper", version: "1.0.3"
+	deploymentHelper group: "com.liferay", name: "com.liferay.deployment.helper", version: "1.0.4"
 }
 ```

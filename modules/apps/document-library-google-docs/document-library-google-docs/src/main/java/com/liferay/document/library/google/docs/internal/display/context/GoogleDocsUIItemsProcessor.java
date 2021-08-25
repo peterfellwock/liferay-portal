@@ -15,9 +15,8 @@
 package com.liferay.document.library.google.docs.internal.display.context;
 
 import com.liferay.document.library.display.context.DLUIItemKeys;
-import com.liferay.document.library.google.docs.internal.util.GoogleDocsConstants;
 import com.liferay.document.library.google.docs.internal.util.GoogleDocsMetadataHelper;
-import com.liferay.document.library.google.docs.internal.util.ResourceUtil;
+import com.liferay.document.library.google.docs.internal.util.constants.GoogleDocsConstants;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.servlet.taglib.ui.MenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.ToolbarItem;
@@ -26,6 +25,7 @@ import com.liferay.portal.kernel.servlet.taglib.ui.URLMenuItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLToolbarItem;
 import com.liferay.portal.kernel.servlet.taglib.ui.URLUIItem;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.List;
@@ -39,10 +39,10 @@ import javax.servlet.http.HttpServletRequest;
 public class GoogleDocsUIItemsProcessor {
 
 	public GoogleDocsUIItemsProcessor(
-		HttpServletRequest request,
+		HttpServletRequest httpServletRequest,
 		GoogleDocsMetadataHelper googleDocsMetadataHelper) {
 
-		_request = request;
+		_httpServletRequest = httpServletRequest;
 		_googleDocsMetadataHelper = googleDocsMetadataHelper;
 	}
 
@@ -89,17 +89,17 @@ public class GoogleDocsUIItemsProcessor {
 			index = 0;
 		}
 
-		urlUIItem.setIcon("icon-edit");
 		urlUIItem.setKey(GoogleDocsUIItemKeys.EDIT_IN_GOOGLE);
 
-		ThemeDisplay themeDisplay = (ThemeDisplay)_request.getAttribute(
-			WebKeys.THEME_DISPLAY);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-		ResourceBundle resourceBundle = ResourceUtil.getResourceBundle(
-			themeDisplay.getLocale());
+		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
+			"content.Language", themeDisplay.getLocale(), getClass());
 
 		String message = LanguageUtil.get(
-			resourceBundle, "edit-in-google-docs");
+			resourceBundle, "edit-in-google-drive");
 
 		urlUIItem.setLabel(message);
 
@@ -129,9 +129,10 @@ public class GoogleDocsUIItemsProcessor {
 		_removeUIItem(uiItems, DLUIItemKeys.CHECKOUT);
 		_removeUIItem(uiItems, DLUIItemKeys.DOWNLOAD);
 		_removeUIItem(uiItems, DLUIItemKeys.OPEN_IN_MS_OFFICE);
+		_removeUIItem(uiItems, "#edit-in-google-drive");
 	}
 
 	private final GoogleDocsMetadataHelper _googleDocsMetadataHelper;
-	private final HttpServletRequest _request;
+	private final HttpServletRequest _httpServletRequest;
 
 }

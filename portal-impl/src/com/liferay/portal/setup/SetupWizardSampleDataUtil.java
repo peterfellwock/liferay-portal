@@ -14,6 +14,8 @@
 
 package com.liferay.portal.setup;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -21,28 +23,30 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Account;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Contact;
+import com.liferay.portal.kernel.model.Country;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.ListTypeConstants;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.OrganizationConstants;
+import com.liferay.portal.kernel.model.Region;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.FullNameGenerator;
 import com.liferay.portal.kernel.security.auth.FullNameGeneratorFactory;
 import com.liferay.portal.kernel.security.auth.ScreenNameGenerator;
 import com.liferay.portal.kernel.service.AccountLocalServiceUtil;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
+import com.liferay.portal.kernel.service.CountryServiceUtil;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
+import com.liferay.portal.kernel.service.RegionServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.security.auth.ScreenNameGeneratorFactory;
 import com.liferay.portal.util.PropsValues;
@@ -79,17 +83,20 @@ public class SetupWizardSampleDataUtil {
 			_log.info("Adding sample data");
 		}
 
-		Company company = updateCompany(
-			CompanyLocalServiceUtil.getCompanyById(companyId), companyName,
-			LocaleUtil.toLanguageId(LocaleUtil.getDefault()));
+		Company company = CompanyLocalServiceUtil.getCompanyById(companyId);
+
+		User defaultUser = company.getDefaultUser();
+
+		company = updateCompany(
+			company, companyName,
+			LocaleUtil.toLanguageId(LocaleUtil.getDefault()),
+			defaultUser.getTimeZoneId());
 
 		User adminUser = updateAdminUser(
 			company, LocaleUtil.getDefault(),
 			LocaleUtil.toLanguageId(LocaleUtil.getDefault()),
 			adminUserEmailAddress, adminUserFirstName, adminUserLastName,
 			resetPassword);
-
-		User defaultUser = company.getDefaultUser();
 
 		Account account = company.getAccount();
 
@@ -149,7 +156,10 @@ public class SetupWizardSampleDataUtil {
 		try {
 			screenName = screenNameGenerator.generate(0, 0, emailAddress);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 
 		User adminUser = UserLocalServiceUtil.fetchUserByEmailAddress(
@@ -218,7 +228,8 @@ public class SetupWizardSampleDataUtil {
 	}
 
 	public static Company updateCompany(
-			Company company, String companyName, String languageId)
+			Company company, String companyName, String languageId,
+			String timeZoneId)
 		throws Exception {
 
 		Account account = company.getAccount();
@@ -228,11 +239,8 @@ public class SetupWizardSampleDataUtil {
 
 		AccountLocalServiceUtil.updateAccount(account);
 
-		User defaultUser = company.getDefaultUser();
-
-		defaultUser.setLanguageId(languageId);
-
-		UserLocalServiceUtil.updateUser(defaultUser);
+		CompanyLocalServiceUtil.updateDisplay(
+			company.getCompanyId(), languageId, timeZoneId);
 
 		return company;
 	}
@@ -244,8 +252,22 @@ public class SetupWizardSampleDataUtil {
 
 		for (Object[] organizationArray : _ORGANIZATION_ARRAYS) {
 			String name = companyName + organizationArray[0];
-			long regionId = (Long)organizationArray[1];
-			long countryId = (Long)organizationArray[2];
+			String a3 = (String)organizationArray[1];
+			String regionCode = (String)organizationArray[2];
+
+			Country country = CountryServiceUtil.getCountryByA3(a3);
+
+			long countryId = country.getCountryId();
+
+			long regionId = 0;
+
+			if (regionCode != null) {
+				Region region = RegionServiceUtil.getRegion(
+					countryId, regionCode);
+
+				regionId = region.getRegionId();
+			}
+
 			String type = (String)organizationArray[3];
 
 			Organization organization =
@@ -313,38 +335,44 @@ public class SetupWizardSampleDataUtil {
 
 	private static final Object[][] _ORGANIZATION_ARRAYS = {
 		{
-			"Chicago", 19014L, 19L, OrganizationConstants.TYPE_ORGANIZATION,
+			"Chicago", "USA", "IL", OrganizationConstants.TYPE_ORGANIZATION,
 			"ORD"
 		},
-		{"Consulting", 19005L, 19L, OrganizationConstants.TYPE_ORGANIZATION},
-		{"Dalian", 0L, 2L, OrganizationConstants.TYPE_ORGANIZATION, "DLC"},
-		{"Engineering", 19005L, 19L, OrganizationConstants.TYPE_ORGANIZATION},
-		{"Frankfurt", 0L, 4L, OrganizationConstants.TYPE_ORGANIZATION, "FRA"},
-		{"Hong Kong", 0L, 2L, OrganizationConstants.TYPE_ORGANIZATION, "HKG"},
+		{"Consulting", "USA", "CA", OrganizationConstants.TYPE_ORGANIZATION},
+		{"Dalian", "CHN", null, OrganizationConstants.TYPE_ORGANIZATION, "DLC"},
+		{"Engineering", "USA", "CA", OrganizationConstants.TYPE_ORGANIZATION},
 		{
-			"Kuala Lumpur", 0L, 135L, OrganizationConstants.TYPE_ORGANIZATION,
-			"KUL"
+			"Frankfurt", "DEU", null, OrganizationConstants.TYPE_ORGANIZATION,
+			"FRA"
 		},
 		{
-			"Los Angeles", 19005L, 19L, OrganizationConstants.TYPE_ORGANIZATION,
+			"Hong Kong", "CHN", null, OrganizationConstants.TYPE_ORGANIZATION,
+			"HKG"
+		},
+		{
+			"Kuala Lumpur", "MYS", null,
+			OrganizationConstants.TYPE_ORGANIZATION, "KUL"
+		},
+		{
+			"Los Angeles", "USA", "CA", OrganizationConstants.TYPE_ORGANIZATION,
 			"LAX"
 		},
-		{"Madrid", 0L, 15L, OrganizationConstants.TYPE_ORGANIZATION, "MAD"},
-		{"Marketing", 19005L, 19L, OrganizationConstants.TYPE_ORGANIZATION},
+		{"Madrid", "ESP", null, OrganizationConstants.TYPE_ORGANIZATION, "MAD"},
+		{"Marketing", "USA", "CA", OrganizationConstants.TYPE_ORGANIZATION},
 		{
-			"New York", 19033L, 19L, OrganizationConstants.TYPE_ORGANIZATION,
+			"New York", "USA", "NY", OrganizationConstants.TYPE_ORGANIZATION,
 			"NYC"
 		},
 		{
-			"Saint Paulo", 0L, 48L, OrganizationConstants.TYPE_ORGANIZATION,
+			"Saint Paulo", "BRA", null, OrganizationConstants.TYPE_ORGANIZATION,
 			"GRU"
 		},
-		{"Sales", 19005L, 19L, OrganizationConstants.TYPE_ORGANIZATION},
+		{"Sales", "USA", "CA", OrganizationConstants.TYPE_ORGANIZATION},
 		{
-			"San Francisco", 19005L, 19L,
+			"San Francisco", "USA", "CA",
 			OrganizationConstants.TYPE_ORGANIZATION, "SFO"
 		},
-		{"Support", 19005L, 19L, OrganizationConstants.TYPE_ORGANIZATION}
+		{"Support", "USA", "CA", OrganizationConstants.TYPE_ORGANIZATION}
 	};
 
 	private static final Log _log = LogFactoryUtil.getLog(

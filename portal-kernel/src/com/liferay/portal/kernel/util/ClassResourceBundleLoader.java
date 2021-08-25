@@ -14,12 +14,17 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.portal.kernel.language.UTF8Control;
+
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
- * @author Adolfo Pérez
+ * @author     Adolfo Pérez
+ * @deprecated As of Athanasius (7.3.x), replaced by {@link
+ *             com.liferay.portal.kernel.resource.bundle.ClassResourceBundleLoader}
  */
+@Deprecated
 public class ClassResourceBundleLoader implements ResourceBundleLoader {
 
 	public ClassResourceBundleLoader(String baseName, Class<?> clazz) {
@@ -32,10 +37,9 @@ public class ClassResourceBundleLoader implements ResourceBundleLoader {
 	}
 
 	@Override
-	public ResourceBundle loadResourceBundle(String languageId) {
-		Locale locale = LocaleUtil.fromLanguageId(languageId);
-
-		return ResourceBundleUtil.getBundle(_baseName, locale, _classLoader);
+	public ResourceBundle loadResourceBundle(Locale locale) {
+		return ResourceBundle.getBundle(
+			_baseName, locale, _classLoader, UTF8Control.INSTANCE);
 	}
 
 	private final String _baseName;

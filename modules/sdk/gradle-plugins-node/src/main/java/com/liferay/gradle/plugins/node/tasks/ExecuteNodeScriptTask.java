@@ -22,23 +22,35 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class ExecuteNodeScriptTask extends ExecuteNodeTask {
 
 	@Override
 	public void executeNode() throws Exception {
-		setArgs(getCompleteArgs());
+		List<Object> args = getArgs();
 
-		super.executeNode();
+		try {
+			setArgs(getCompleteArgs());
+
+			super.executeNode();
+		}
+		finally {
+			setArgs(args);
+		}
 	}
 
 	@Input
 	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getScriptFile() {
 		return GradleUtil.toFile(getProject(), _scriptFile);
 	}
@@ -50,15 +62,17 @@ public class ExecuteNodeScriptTask extends ExecuteNodeTask {
 	protected List<String> getCompleteArgs() {
 		File scriptFile = getScriptFile();
 
+		List<String> args = GradleUtil.toStringList(getArgs());
+
 		if (scriptFile == null) {
-			return getArgs();
+			return args;
 		}
 
 		List<String> completeArgs = new ArrayList<>();
 
 		completeArgs.add(FileUtil.getAbsolutePath(scriptFile));
 
-		completeArgs.addAll(getArgs());
+		completeArgs.addAll(args);
 
 		return completeArgs;
 	}

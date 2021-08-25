@@ -14,9 +14,12 @@
 
 package com.liferay.portal.osgi.web.wab.extender.internal;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.osgi.web.wab.extender.internal.event.EventUtil;
+import com.liferay.portal.osgi.web.servlet.JSPServletFactory;
+import com.liferay.portal.osgi.web.servlet.JSPTaglibHelper;
 import com.liferay.portal.profile.PortalProfile;
 
 import java.io.IOException;
@@ -31,8 +34,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.felix.utils.log.Logger;
-
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -45,14 +46,14 @@ import org.osgi.framework.wiring.BundleRevision;
 public class WebBundleDeployer {
 
 	public WebBundleDeployer(
-			BundleContext bundleContext, Dictionary<String, Object> properties,
-			EventUtil eventUtil, Logger logger)
-		throws Exception {
+		BundleContext bundleContext, JSPServletFactory jspServletFactory,
+		JSPTaglibHelper jspTaglibHelper,
+		Dictionary<String, Object> properties) {
 
 		_bundleContext = bundleContext;
+		_jspServletFactory = jspServletFactory;
+		_jspTaglibHelper = jspTaglibHelper;
 		_properties = properties;
-		_eventUtil = eventUtil;
-		_logger = logger;
 	}
 
 	public void close() {
@@ -62,22 +63,6 @@ public class WebBundleDeployer {
 	}
 
 	public ServiceRegistration<PortalProfile> doStart(Bundle bundle) {
-		_eventUtil.sendEvent(bundle, EventUtil.DEPLOYING, null, false);
-
-		String contextPath = WabUtil.getWebContextPath(bundle);
-
-		if (contextPath == null) {
-			return null;
-		}
-
-		BundleContext bundleContext = bundle.getBundleContext();
-
-		if (bundleContext == null) {
-			_eventUtil.sendEvent(bundle, EventUtil.FAILED, null, false);
-
-			return null;
-		}
-
 		Enumeration<URL> enumeration = bundle.findEntries(
 			"/WEB-INF", "liferay-plugin-package.properties", false);
 
@@ -94,8 +79,10 @@ public class WebBundleDeployer {
 		try (InputStream inputStream = url.openStream()) {
 			properties.load(inputStream);
 		}
-		catch (IOException ioe) {
-			_eventUtil.sendEvent(bundle, EventUtil.FAILED, ioe, false);
+		catch (IOException ioException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(ioException, ioException);
+			}
 		}
 
 		Set<String> portalProfileNames = SetUtil.fromArray(
@@ -123,26 +110,22 @@ public class WebBundleDeployer {
 			return;
 		}
 
-		_eventUtil.sendEvent(bundle, EventUtil.UNDEPLOYING, null, false);
-
 		try {
 			wabBundleProcessor.destroy();
 
-			_eventUtil.sendEvent(bundle, EventUtil.UNDEPLOYED, null, false);
-
 			handleCollidedWABs(bundle);
 		}
-		catch (Exception e) {
-			_eventUtil.sendEvent(bundle, EventUtil.FAILED, e, false);
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 	}
 
 	public boolean isFragmentBundle(Bundle bundle) {
 		BundleRevision bundleRevision = bundle.adapt(BundleRevision.class);
 
-		if ((bundleRevision.getTypes() & BundleRevision.TYPE_FRAGMENT) ==
-				BundleRevision.TYPE_FRAGMENT) {
-
+		if ((bundleRevision.getTypes() & BundleRevision.TYPE_FRAGMENT) == 0) {
 			return false;
 		}
 
@@ -172,27 +155,30 @@ public class WebBundleDeployer {
 	private void _initWabBundle(Bundle bundle) {
 		try {
 			WabBundleProcessor newWabBundleProcessor = new WabBundleProcessor(
-				bundle, _logger);
+				bundle, _jspServletFactory, _jspTaglibHelper);
 
 			WabBundleProcessor oldWabBundleProcessor =
 				_wabBundleProcessors.putIfAbsent(bundle, newWabBundleProcessor);
 
 			if (oldWabBundleProcessor != null) {
-				_eventUtil.sendEvent(bundle, EventUtil.FAILED, null, false);
-
 				return;
 			}
 
 			newWabBundleProcessor.init(_properties);
 		}
-		catch (Exception e) {
-			_eventUtil.sendEvent(bundle, EventUtil.FAILED, e, false);
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
 		}
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		WebBundleDeployer.class);
+
 	private final BundleContext _bundleContext;
-	private final EventUtil _eventUtil;
-	private final Logger _logger;
+	private final JSPServletFactory _jspServletFactory;
+	private final JSPTaglibHelper _jspTaglibHelper;
 	private final Dictionary<String, Object> _properties;
 	private final ConcurrentMap<Bundle, WabBundleProcessor>
 		_wabBundleProcessors = new ConcurrentHashMap<>();

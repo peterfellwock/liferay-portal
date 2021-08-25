@@ -24,8 +24,11 @@ import java.util.concurrent.Callable;
 
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.InputDirectory;
 import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.SkipWhenEmpty;
 import org.gradle.api.tasks.bundling.Jar;
 import org.gradle.api.tasks.bundling.Zip;
@@ -33,12 +36,13 @@ import org.gradle.api.tasks.bundling.Zip;
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class BuildXSDTask extends Zip {
 
 	public BuildXSDTask() {
 		setAppendix("xbean");
 		setExtension(Jar.DEFAULT_EXTENSION);
-		setVersion(null);
+		setVersion("");
 	}
 
 	@Override
@@ -51,11 +55,13 @@ public class BuildXSDTask extends Zip {
 	}
 
 	@InputDirectory
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getInputDir() {
 		return GradleUtil.toFile(getProject(), _inputDir);
 	}
 
 	@InputFiles
+	@PathSensitive(PathSensitivity.RELATIVE)
 	@SkipWhenEmpty
 	public FileCollection getInputFiles() {
 		Project project = getProject();

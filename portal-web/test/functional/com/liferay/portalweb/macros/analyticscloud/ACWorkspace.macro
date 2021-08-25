@@ -1,0 +1,33 @@
+definition {
+
+	macro openWorkspace {
+		if (isSet(workspaceName)) {
+			var key_WorkspaceName = "${workspaceName}";
+
+			Click(locator1 = "ACWorkspace#WORKSPACE_NAME");
+		}
+
+		if (!(isSet(workspaceName))) {
+			Click(locator1 = "ACWorkspace#FARO_DEMO_WORKSPACE");
+		}
+	}
+
+	macro signOut {
+		if (IsElementPresent(locator1 = "ACSettings#SETTINGS_PAGE")) {
+			Click(locator1 = "ACSettings#EXIT_SETTINGS_BUTTON");
+		}
+
+		Click(locator1 = "ACWorkspace#USER_MENU_OPTION");
+
+		Click(locator1 = "ACWorkspace#LOGOUT_WORKSPACE_OPTION");
+	}
+
+	macro switchWorkspace {
+		Click(locator1 = "ACWorkspace#USER_MENU_OPTION");
+
+		Click(locator1 = "ACWorkspace#SWITCH_WORKSPACE_OPTION");
+
+		ACWorkspace.openWorkspace(workspaceName = "${workspaceName}");
+	}
+
+}

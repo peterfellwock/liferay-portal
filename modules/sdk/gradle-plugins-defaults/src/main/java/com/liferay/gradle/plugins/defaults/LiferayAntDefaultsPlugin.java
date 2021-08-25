@@ -16,10 +16,14 @@ package com.liferay.gradle.plugins.defaults;
 
 import com.liferay.gradle.plugins.LiferayAntPlugin;
 import com.liferay.gradle.plugins.defaults.internal.LiferayRelengPlugin;
+import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.defaults.tasks.CopyIvyDependenciesTask;
 import com.liferay.gradle.plugins.defaults.tasks.ReplaceRegexTask;
 
 import groovy.lang.Closure;
+
+import java.io.File;
 
 import org.gradle.api.Action;
 import org.gradle.api.Plugin;
@@ -29,15 +33,35 @@ import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.Dependency;
 import org.gradle.api.plugins.BasePlugin;
 import org.gradle.api.plugins.MavenPlugin;
+import org.gradle.api.tasks.TaskContainer;
 import org.gradle.api.tasks.Upload;
+import org.gradle.api.tasks.ant.AntTarget;
 
 /**
  * @author Andrea Di Giorgi
  */
 public class LiferayAntDefaultsPlugin implements Plugin<Project> {
 
+	public static final String COPY_IVY_DEPENDENCIES_TASK_NAME =
+		"copyIvyDependencies";
+
 	@Override
 	public void apply(Project project) {
+		File ivyXmlFile = project.file("ivy.xml");
+
+		if (ivyXmlFile.exists()) {
+			File portalRootDir = GradleUtil.getRootDir(
+				project.getRootProject(), "portal-impl");
+
+			GradlePluginsDefaultsUtil.configureRepositories(
+				project, portalRootDir);
+
+			CopyIvyDependenciesTask copyIvyDependenciesTask =
+				_addTaskCopyIvyDependencies(project, ivyXmlFile);
+
+			copyIvyDependenciesTask.writeChecksumFile();
+		}
+
 		GradleUtil.applyPlugin(project, LiferayAntPlugin.class);
 
 		_applyPlugins(project);
@@ -53,12 +77,18 @@ public class LiferayAntDefaultsPlugin implements Plugin<Project> {
 
 		_configureProject(project);
 
+		GradleUtil.excludeTasksWithProperty(
+			project, LiferayOSGiDefaultsPlugin.SNAPSHOT_IF_STALE_PROPERTY_NAME,
+			true, MavenPlugin.INSTALL_TASK_NAME,
+			BasePlugin.UPLOAD_ARCHIVES_TASK_NAME);
+
 		project.afterEvaluate(
 			new Action<Project>() {
 
 				@Override
 				public void execute(Project project) {
-					GradleUtil.setProjectSnapshotVersion(project);
+					GradlePluginsDefaultsUtil.setProjectSnapshotVersion(
+						project);
 
 					// setProjectSnapshotVersion must be called before
 					// configureTaskUploadArchives, because the latter one needs
@@ -70,9 +100,49 @@ public class LiferayAntDefaultsPlugin implements Plugin<Project> {
 			});
 	}
 
+	private CopyIvyDependenciesTask _addTaskCopyIvyDependencies(
+		Project project, File inputFile) {
+
+		final CopyIvyDependenciesTask copyIvyDependenciesTask =
+			GradleUtil.addTask(
+				project, COPY_IVY_DEPENDENCIES_TASK_NAME,
+				CopyIvyDependenciesTask.class);
+
+		copyIvyDependenciesTask.setDescription(
+			"Copies the dependencies declared in the ivy.xml file.");
+
+		File destinationDir = project.file("docroot");
+
+		if (destinationDir.exists()) {
+			destinationDir = new File(destinationDir, "WEB-INF/lib");
+		}
+		else {
+			destinationDir = project.file("lib");
+		}
+
+		copyIvyDependenciesTask.setDestinationDir(destinationDir);
+
+		copyIvyDependenciesTask.setInputFile(inputFile);
+
+		TaskContainer taskContainer = project.getTasks();
+
+		taskContainer.withType(
+			AntTarget.class,
+			new Action<AntTarget>() {
+
+				@Override
+				public void execute(AntTarget antTarget) {
+					antTarget.dependsOn(copyIvyDependenciesTask);
+				}
+
+			});
+
+		return copyIvyDependenciesTask;
+	}
+
 	private Upload _addTaskInstall(Project project) {
 		Upload upload = GradleUtil.addTask(
-			project, MavenPlugin.INSTALL_TASK_NAME, Upload.class, true);
+			project, MavenPlugin.INSTALL_TASK_NAME, Upload.class);
 
 		Configuration configuration = GradleUtil.getConfiguration(
 			project, Dependency.ARCHIVES_CONFIGURATION);
@@ -85,7 +155,8 @@ public class LiferayAntDefaultsPlugin implements Plugin<Project> {
 		return upload;
 	}
 
-	private ReplaceRegexTask _addTaskUpdateVersion(final Project project) {
+	@SuppressWarnings("serial")
+	private ReplaceRegexTask _addTaskUpdateVersion(Project project) {
 		ReplaceRegexTask replaceRegexTask = GradleUtil.addTask(
 			project, LiferayRelengPlugin.UPDATE_VERSION_TASK_NAME,
 			ReplaceRegexTask.class);
@@ -126,13 +197,13 @@ public class LiferayAntDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureProject(Project project) {
-		project.setGroup(_GROUP);
+		project.setGroup(GradleUtil.getProjectGroup(project, _GROUP));
 	}
 
 	private void _configureTaskUploadArchives(
 		Project project, Task updatePluginVersionTask) {
 
-		if (GradleUtil.isSnapshot(project)) {
+		if (GradlePluginsDefaultsUtil.isSnapshot(project)) {
 			return;
 		}
 

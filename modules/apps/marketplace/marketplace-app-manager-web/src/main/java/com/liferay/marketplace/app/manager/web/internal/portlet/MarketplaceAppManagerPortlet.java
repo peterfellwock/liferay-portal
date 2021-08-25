@@ -20,9 +20,12 @@ import com.liferay.application.list.constants.ApplicationListWebKeys;
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
 import com.liferay.marketplace.app.manager.web.internal.constants.MarketplaceAppManagerPortletKeys;
 import com.liferay.marketplace.app.manager.web.internal.util.BundleUtil;
-import com.liferay.marketplace.bundle.BundleManagerUtil;
+import com.liferay.marketplace.bundle.BundleManager;
 import com.liferay.marketplace.exception.FileExtensionException;
 import com.liferay.marketplace.service.AppService;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.bundle.blacklist.BundleBlacklistManager;
 import com.liferay.portal.kernel.deploy.DeployManagerUtil;
 import com.liferay.portal.kernel.model.LayoutTemplate;
 import com.liferay.portal.kernel.model.Plugin;
@@ -30,6 +33,9 @@ import com.liferay.portal.kernel.model.PluginSetting;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.PluginSettingLocalService;
 import com.liferay.portal.kernel.service.PluginSettingService;
 import com.liferay.portal.kernel.service.PortletService;
@@ -40,17 +46,13 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadException;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
-import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.PrefsPropsUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -60,6 +62,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -68,6 +71,8 @@ import javax.portlet.ActionResponse;
 import javax.portlet.PortletException;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
+import javax.portlet.ResourceRequest;
+import javax.portlet.ResourceResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
@@ -93,14 +98,13 @@ import org.osgi.service.component.annotations.Reference;
 		"com.liferay.portlet.render-weight=50",
 		"com.liferay.portlet.use-default-template=true",
 		"javax.portlet.description=", "javax.portlet.display-name=App Manager",
-		"javax.portlet.init-param.template-path=/",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
 		"javax.portlet.init-param.view-template=/view.jsp",
 		"javax.portlet.name=" + MarketplaceAppManagerPortletKeys.MARKETPLACE_APP_MANAGER,
 		"javax.portlet.resource-bundle=content.Language",
-		"javax.portlet.security-role-ref=administrator,guest,power-user,user",
-		"javax.portlet.supports.mime-type=text/html"
+		"javax.portlet.security-role-ref=administrator"
 	},
-	service = {javax.portlet.Portlet.class}
+	service = javax.portlet.Portlet.class
 )
 public class MarketplaceAppManagerPortlet extends MVCPortlet {
 
@@ -111,7 +115,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		long[] bundleIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "bundleIds"), 0L);
 
-		List<Bundle> bundles = BundleManagerUtil.getInstalledBundles();
+		List<Bundle> bundles = _bundleManager.getInstalledBundles();
 
 		for (Bundle bundle : bundles) {
 			if (BundleUtil.isFragment(bundle)) {
@@ -131,7 +135,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		long[] bundleIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "bundleIds"), 0L);
 
-		List<Bundle> bundles = BundleManagerUtil.getInstalledBundles();
+		List<Bundle> bundles = _bundleManager.getInstalledBundles();
 
 		for (Bundle bundle : bundles) {
 			if (BundleUtil.isFragment(bundle)) {
@@ -149,16 +153,14 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		throws Exception {
 
 		UploadPortletRequest uploadPortletRequest =
-			PortalUtil.getUploadPortletRequest(actionRequest);
+			_portal.getUploadPortletRequest(actionRequest);
 
 		String fileName = GetterUtil.getString(
 			uploadPortletRequest.getFileName("file"));
 
 		File file = uploadPortletRequest.getFile("file");
 
-		byte[] bytes = FileUtil.getBytes(file);
-
-		if (ArrayUtil.isEmpty(bytes)) {
+		if (ArrayUtil.isEmpty(FileUtil.getBytes(file))) {
 			SessionErrors.add(actionRequest, UploadException.class.getName());
 		}
 		else if (!fileName.endsWith(".jar") && !fileName.endsWith(".lpkg") &&
@@ -167,8 +169,7 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 			throw new FileExtensionException();
 		}
 		else {
-			String deployDir = PrefsPropsUtil.getString(
-				PropsKeys.AUTO_DEPLOY_DEPLOY_DIR);
+			String deployDir = PropsUtil.get(PropsKeys.AUTO_DEPLOY_DEPLOY_DIR);
 
 			FileUtil.copyFile(
 				file.toString(), deployDir + StringPool.SLASH + fileName);
@@ -197,9 +198,40 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 				doInstallRemoteApp(url, actionRequest, true);
 			}
 		}
-		catch (MalformedURLException murle) {
-			SessionErrors.add(actionRequest, "invalidURL", murle);
+		catch (MalformedURLException malformedURLException) {
+			SessionErrors.add(
+				actionRequest, "invalidURL", malformedURLException);
 		}
+	}
+
+	@Override
+	public void processAction(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws IOException, PortletException {
+
+		checkOmniAdmin();
+
+		super.processAction(actionRequest, actionResponse);
+	}
+
+	@Override
+	public void render(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		checkOmniAdmin();
+
+		super.render(renderRequest, renderResponse);
+	}
+
+	@Override
+	public void serveResource(
+			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
+		throws IOException, PortletException {
+
+		checkOmniAdmin();
+
+		super.serveResource(resourceRequest, resourceResponse);
 	}
 
 	public void uninstallApp(
@@ -230,13 +262,18 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		long[] bundleIds = StringUtil.split(
 			ParamUtil.getString(actionRequest, "bundleIds"), 0L);
 
-		List<Bundle> bundles = BundleManagerUtil.getInstalledBundles();
+		List<Bundle> bundles = _bundleManager.getInstalledBundles();
+
+		List<String> symbolicNames = new ArrayList<>(bundleIds.length);
 
 		for (Bundle bundle : bundles) {
 			if (ArrayUtil.contains(bundleIds, bundle.getBundleId())) {
-				bundle.uninstall();
+				symbolicNames.add(bundle.getSymbolicName());
 			}
 		}
+
+		_bundleBlacklistManager.addToBlacklistAndUninstall(
+			symbolicNames.toArray(new String[0]));
 	}
 
 	public void updatePluginSetting(
@@ -340,6 +377,19 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		}
 	}
 
+	protected void checkOmniAdmin() throws PortletException {
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		if (!permissionChecker.isOmniadmin()) {
+			PrincipalException principalException =
+				new PrincipalException.MustBeCompanyAdmin(
+					permissionChecker.getUserId());
+
+			throw new PortletException(principalException);
+		}
+	}
+
 	@Override
 	protected void doDispatch(
 			RenderRequest renderRequest, RenderResponse renderResponse)
@@ -368,15 +418,13 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		int responseCode = HttpServletResponse.SC_OK;
 
 		try {
-			String fileName = null;
-
 			Http.Options options = new Http.Options();
 
 			options.setFollowRedirects(false);
 			options.setLocation(url);
 			options.setPost(false);
 
-			byte[] bytes = HttpUtil.URLtoByteArray(options);
+			byte[] bytes = _http.URLtoByteArray(options);
 
 			Http.Response response = options.getResponse();
 
@@ -385,10 +433,12 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 			if ((responseCode == HttpServletResponse.SC_OK) &&
 				(bytes.length > 0)) {
 
-				String deployDir = PrefsPropsUtil.getString(
+				String deployDir = PropsUtil.get(
 					PropsKeys.AUTO_DEPLOY_DEPLOY_DIR);
 
-				String destination = deployDir + StringPool.SLASH + fileName;
+				String destination =
+					deployDir + StringPool.SLASH +
+						url.substring(url.lastIndexOf(CharPool.SLASH) + 1);
 
 				File destinationFile = new File(destination);
 
@@ -405,11 +455,13 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 				responseCode = HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 			}
 		}
-		catch (MalformedURLException murle) {
-			SessionErrors.add(actionRequest, "invalidUrl", murle);
+		catch (MalformedURLException malformedURLException) {
+			SessionErrors.add(
+				actionRequest, "invalidUrl", malformedURLException);
 		}
-		catch (IOException ioe) {
-			SessionErrors.add(actionRequest, "errorConnectingToUrl", ioe);
+		catch (IOException ioException) {
+			SessionErrors.add(
+				actionRequest, "errorConnectingToUrl", ioException);
 		}
 
 		return responseCode;
@@ -439,8 +491,9 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 					return;
 				}
 			}
-			catch (MalformedURLException murle) {
-				SessionErrors.add(actionRequest, "invalidUrl", murle);
+			catch (MalformedURLException malformedURLException) {
+				SessionErrors.add(
+					actionRequest, "invalidUrl", malformedURLException);
 			}
 		}
 	}
@@ -481,13 +534,25 @@ public class MarketplaceAppManagerPortlet extends MVCPortlet {
 		_portletService = portletService;
 	}
 
-	private static final String _DEPLOY_TO_PREFIX = "DEPLOY_TO__";
-
 	private AppService _appService;
+
+	@Reference
+	private BundleBlacklistManager _bundleBlacklistManager;
+
+	@Reference
+	private BundleManager _bundleManager;
+
+	@Reference
+	private Http _http;
+
 	private PanelAppRegistry _panelAppRegistry;
 	private PanelCategoryRegistry _panelCategoryRegistry;
 	private PluginSettingLocalService _pluginSettingLocalService;
 	private PluginSettingService _pluginSettingService;
+
+	@Reference
+	private Portal _portal;
+
 	private PortletService _portletService;
 
 }

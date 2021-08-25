@@ -14,17 +14,20 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletSession;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.portlet.PortletRequest;
@@ -70,24 +73,26 @@ public class SessionMessages {
 	public static final String KEY_SUFFIX_UPDATED_PREFERENCES =
 		".updatedPreferences";
 
-	public static void add(HttpServletRequest request, Class<?> clazz) {
-		add(_getPortalSession(request), clazz.getName());
+	public static void add(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		add(_getPortalSession(httpServletRequest), clazz.getName());
 	}
 
 	public static void add(
-		HttpServletRequest request, Class<?> clazz, Object value) {
+		HttpServletRequest httpServletRequest, Class<?> clazz, Object value) {
 
-		add(_getPortalSession(request), clazz.getName(), value);
+		add(_getPortalSession(httpServletRequest), clazz.getName(), value);
 	}
 
-	public static void add(HttpServletRequest request, String key) {
-		add(_getPortalSession(request), key);
+	public static void add(HttpServletRequest httpServletRequest, String key) {
+		add(_getPortalSession(httpServletRequest), key);
 	}
 
 	public static void add(
-		HttpServletRequest request, String key, Object value) {
+		HttpServletRequest httpServletRequest, String key, Object value) {
 
-		add(_getPortalSession(request), key, value);
+		add(_getPortalSession(httpServletRequest), key, value);
 	}
 
 	public static void add(HttpSession session, Class<?> clazz) {
@@ -105,6 +110,10 @@ public class SessionMessages {
 			return;
 		}
 
+		if (_log.isDebugEnabled()) {
+			_log.debug("Adding key " + key);
+		}
+
 		map.put(key, key);
 	}
 
@@ -113,6 +122,18 @@ public class SessionMessages {
 
 		if (map == null) {
 			return;
+		}
+
+		if (_log.isDebugEnabled()) {
+			Exception exception = null;
+
+			if (value instanceof Exception) {
+				exception = (Exception)value;
+			}
+
+			_log.debug(
+				StringBundler.concat("Adding key ", key, " with value ", value),
+				exception);
 		}
 
 		map.put(key, value);
@@ -135,6 +156,13 @@ public class SessionMessages {
 			return;
 		}
 
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				StringBundler.concat(
+					"Adding key ", key, " to portlet ",
+					portletRequest.getWindowID()));
+		}
+
 		map.put(key, key);
 	}
 
@@ -147,11 +175,25 @@ public class SessionMessages {
 			return;
 		}
 
+		if (_log.isDebugEnabled()) {
+			Exception exception = null;
+
+			if (value instanceof Exception) {
+				exception = (Exception)value;
+			}
+
+			_log.debug(
+				StringBundler.concat(
+					"Adding key ", key, " to portlet ",
+					portletRequest.getWindowID(), " with value ", value),
+				exception);
+		}
+
 		map.put(key, value);
 	}
 
-	public static void clear(HttpServletRequest request) {
-		clear(_getPortalSession(request));
+	public static void clear(HttpServletRequest httpServletRequest) {
+		clear(_getPortalSession(httpServletRequest));
 	}
 
 	public static void clear(HttpSession session) {
@@ -170,16 +212,36 @@ public class SessionMessages {
 		}
 	}
 
-	public static boolean contains(HttpServletRequest request, Class<?> clazz) {
-		return contains(_getPortalSession(request), clazz.getName());
+	public static boolean contains(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		return contains(_getPortalSession(httpServletRequest), clazz.getName());
 	}
 
-	public static boolean contains(HttpServletRequest request, String key) {
-		return contains(_getPortalSession(request), key);
+	public static boolean contains(
+		HttpServletRequest httpServletRequest, Class<?>[] classes) {
+
+		return contains(_getPortalSession(httpServletRequest), classes);
+	}
+
+	public static boolean contains(
+		HttpServletRequest httpServletRequest, String key) {
+
+		return contains(_getPortalSession(httpServletRequest), key);
 	}
 
 	public static boolean contains(HttpSession session, Class<?> clazz) {
 		return contains(session, clazz.getName());
+	}
+
+	public static boolean contains(HttpSession session, Class<?>[] classes) {
+		for (Class<?> clazz : classes) {
+			if (contains(session, clazz.getName())) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	public static boolean contains(HttpSession session, String key) {
@@ -198,6 +260,18 @@ public class SessionMessages {
 		return contains(portletRequest, clazz.getName());
 	}
 
+	public static boolean contains(
+		PortletRequest portletRequest, Class<?>[] classes) {
+
+		for (Class<?> clazz : classes) {
+			if (contains(portletRequest, clazz.getName())) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public static boolean contains(PortletRequest portletRequest, String key) {
 		Map<String, Object> map = _getMap(portletRequest, false);
 
@@ -208,12 +282,16 @@ public class SessionMessages {
 		return map.containsKey(key);
 	}
 
-	public static Object get(HttpServletRequest request, Class<?> clazz) {
-		return get(_getPortalSession(request), clazz.getName());
+	public static Object get(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		return get(_getPortalSession(httpServletRequest), clazz.getName());
 	}
 
-	public static Object get(HttpServletRequest request, String key) {
-		return get(_getPortalSession(request), key);
+	public static Object get(
+		HttpServletRequest httpServletRequest, String key) {
+
+		return get(_getPortalSession(httpServletRequest), key);
 	}
 
 	public static Object get(HttpSession session, Class<?> clazz) {
@@ -244,8 +322,8 @@ public class SessionMessages {
 		return map.get(key);
 	}
 
-	public static boolean isEmpty(HttpServletRequest request) {
-		return isEmpty(_getPortalSession(request));
+	public static boolean isEmpty(HttpServletRequest httpServletRequest) {
+		return isEmpty(_getPortalSession(httpServletRequest));
 	}
 
 	public static boolean isEmpty(HttpSession session) {
@@ -268,8 +346,10 @@ public class SessionMessages {
 		return map.isEmpty();
 	}
 
-	public static Iterator<String> iterator(HttpServletRequest request) {
-		return iterator(_getPortalSession(request));
+	public static Iterator<String> iterator(
+		HttpServletRequest httpServletRequest) {
+
+		return iterator(_getPortalSession(httpServletRequest));
 	}
 
 	public static Iterator<String> iterator(HttpSession session) {
@@ -300,8 +380,8 @@ public class SessionMessages {
 		return set.iterator();
 	}
 
-	public static Set<String> keySet(HttpServletRequest request) {
-		return keySet(_getPortalSession(request));
+	public static Set<String> keySet(HttpServletRequest httpServletRequest) {
+		return keySet(_getPortalSession(httpServletRequest));
 	}
 
 	public static Set<String> keySet(HttpSession session) {
@@ -324,28 +404,41 @@ public class SessionMessages {
 		return Collections.unmodifiableSet(map.keySet());
 	}
 
-	public static void print(HttpServletRequest request) {
-		print(_getPortalSession(request));
+	public static void print(HttpServletRequest httpServletRequest) {
+		print(_getPortalSession(httpServletRequest));
 	}
 
 	public static void print(HttpSession session) {
-		Iterator<String> itr = iterator(session);
+		Iterator<String> iterator = iterator(session);
 
-		while (itr.hasNext()) {
-			System.out.println(itr.next());
+		while (iterator.hasNext()) {
+			System.out.println(iterator.next());
 		}
 	}
 
 	public static void print(PortletRequest portletRequest) {
-		Iterator<String> itr = iterator(portletRequest);
+		Iterator<String> iterator = iterator(portletRequest);
 
-		while (itr.hasNext()) {
-			System.out.println(itr.next());
+		while (iterator.hasNext()) {
+			System.out.println(iterator.next());
 		}
 	}
 
-	public static int size(HttpServletRequest request) {
-		return size(_getPortalSession(request));
+	public static void remove(
+		HttpServletRequest httpServletRequest, Class<?> clazz) {
+
+		Map<String, Object> map = _getMap(
+			_getPortalSession(httpServletRequest), _CLASS_NAME, true);
+
+		if (map == null) {
+			return;
+		}
+
+		map.remove(clazz.getName());
+	}
+
+	public static int size(HttpServletRequest httpServletRequest) {
+		return size(_getPortalSession(httpServletRequest));
 	}
 
 	public static int size(HttpSession session) {
@@ -403,7 +496,10 @@ public class SessionMessages {
 
 			return map;
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(illegalStateException, illegalStateException);
+			}
 
 			// Session is already invalidated, just return a null map
 
@@ -419,23 +515,26 @@ public class SessionMessages {
 			createIfAbsent);
 	}
 
-	private static HttpSession _getPortalSession(HttpServletRequest request) {
-		HttpServletRequest originalRequest =
-			PortalUtil.getOriginalServletRequest(request);
+	private static HttpSession _getPortalSession(
+		HttpServletRequest httpServletRequest) {
 
-		return originalRequest.getSession();
+		HttpServletRequest originalHttpServletRequest =
+			PortalUtil.getOriginalServletRequest(httpServletRequest);
+
+		return originalHttpServletRequest.getSession();
 	}
 
 	private static HttpSession _getPortalSession(
 		PortletRequest portletRequest) {
 
-		HttpServletRequest request = PortalUtil.getHttpServletRequest(
-			portletRequest);
-
-		return _getPortalSession(request);
+		return _getPortalSession(
+			PortalUtil.getHttpServletRequest(portletRequest));
 	}
 
 	private static final String _CLASS_NAME = SessionMessages.class.getName();
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SessionMessages.class);
 
 	private static class SessionMessagesMap extends HashMap<String, Object> {
 
@@ -455,7 +554,7 @@ public class SessionMessages {
 		}
 
 		private String _transformKey(String key) {
-			if ("request_processed".equals(key)) {
+			if (Objects.equals(key, "request_processed")) {
 				key = "requestProcessed";
 			}
 

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -94,8 +93,8 @@ public class SystemProperties {
 				}
 			}
 		}
-		catch (IOException ioe) {
-			throw new ExceptionInInitializerError(ioe);
+		catch (IOException ioException) {
+			throw new ExceptionInInitializerError(ioException);
 		}
 
 		// system-ext.properties
@@ -116,8 +115,8 @@ public class SystemProperties {
 				}
 			}
 		}
-		catch (IOException ioe) {
-			throw new ExceptionInInitializerError(ioe);
+		catch (IOException ioException) {
+			throw new ExceptionInInitializerError(ioException);
 		}
 
 		// Set environment properties
@@ -132,13 +131,27 @@ public class SystemProperties {
 			boolean systemPropertiesSetOverride = GetterUtil.getBoolean(
 				System.getProperty(SYSTEM_PROPERTIES_SET_OVERRIDE), true);
 
-			for (Entry<Object, Object> entry : properties.entrySet()) {
+			for (Map.Entry<Object, Object> entry : properties.entrySet()) {
 				String key = String.valueOf(entry.getKey());
 
 				if (systemPropertiesSetOverride ||
 					Validator.isNull(System.getProperty(key))) {
 
 					System.setProperty(key, String.valueOf(entry.getValue()));
+				}
+			}
+
+			if (!systemPropertiesSetOverride) {
+				Properties systemProperties = System.getProperties();
+
+				for (Map.Entry<Object, Object> entry :
+						systemProperties.entrySet()) {
+
+					String key = String.valueOf(entry.getKey());
+
+					if (Validator.isNotNull(properties.get(key))) {
+						properties.put(key, entry.getValue());
+					}
 				}
 			}
 		}

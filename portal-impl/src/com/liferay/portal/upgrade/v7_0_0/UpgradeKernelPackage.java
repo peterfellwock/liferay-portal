@@ -14,16 +14,18 @@
 
 package com.liferay.portal.upgrade.v7_0_0;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.db.DB;
+import com.liferay.portal.kernel.dao.db.DBInspector;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.AutoBatchPreparedStatementUtil;
 import com.liferay.portal.kernel.dao.orm.WildcardMode;
 import com.liferay.portal.kernel.upgrade.UpgradeException;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.sql.PreparedStatement;
@@ -39,41 +41,48 @@ public class UpgradeKernelPackage extends UpgradeProcess {
 	protected void doUpgrade() throws UpgradeException {
 		try {
 			upgradeTable(
-				"Counter", "name", getClassNames(), WildcardMode.SURROUND);
+				"ClassName_", "value", getClassNames(), WildcardMode.SURROUND,
+				true);
 			upgradeTable(
-				"ClassName_", "value", getClassNames(), WildcardMode.SURROUND);
+				"Counter", "name", getClassNames(), WildcardMode.SURROUND);
 			upgradeTable(
 				"Lock_", "className", getClassNames(), WildcardMode.SURROUND);
 			upgradeTable(
 				"ResourceAction", "name", getClassNames(),
-				WildcardMode.SURROUND);
-			upgradeTable(
-				"ResourceBlock", "name", getClassNames(),
-				WildcardMode.SURROUND);
+				WildcardMode.SURROUND, true);
 			upgradeTable(
 				"ResourcePermission", "name", getClassNames(),
 				WildcardMode.SURROUND);
 			upgradeLongTextTable(
-				"UserNotificationEvent", "payload", getClassNames(),
-				WildcardMode.SURROUND);
+				"UserNotificationEvent", "payload", "userNotificationEventId",
+				getClassNames(), WildcardMode.SURROUND);
 
 			upgradeTable(
 				"ListType", "type_", getClassNames(), WildcardMode.TRAILING);
 			upgradeTable(
 				"ResourceAction", "name", getResourceNames(),
-				WildcardMode.LEADING);
-			upgradeTable(
-				"ResourceBlock", "name", getResourceNames(),
-				WildcardMode.LEADING);
+				WildcardMode.LEADING, true);
 			upgradeTable(
 				"ResourcePermission", "name", getResourceNames(),
 				WildcardMode.LEADING);
 			upgradeLongTextTable(
-				"UserNotificationEvent", "payload", getResourceNames(),
-				WildcardMode.LEADING);
+				"UserNotificationEvent", "payload", "userNotificationEventId",
+				getResourceNames(), WildcardMode.LEADING);
+
+			DBInspector dbInspector = new DBInspector(connection);
+
+			if (dbInspector.hasTable("ResourceBlock")) {
+				upgradeTable(
+					"ResourceBlock", "name", getClassNames(),
+					WildcardMode.SURROUND);
+
+				upgradeTable(
+					"ResourceBlock", "name", getResourceNames(),
+					WildcardMode.LEADING);
+			}
 		}
-		catch (Exception e) {
-			throw new UpgradeException(e);
+		catch (Exception exception) {
+			throw new UpgradeException(exception);
 		}
 	}
 
@@ -86,35 +95,36 @@ public class UpgradeKernelPackage extends UpgradeProcess {
 	}
 
 	protected void upgradeLongTextTable(
-			String columnName, String selectSQL, String updateSQL,
-			String[] name)
+			String columnName, String primaryKeyColumnName, String selectSQL,
+			String updateSQL, String[] name)
 		throws SQLException {
 
-		try (PreparedStatement ps1 = connection.prepareStatement(selectSQL);
-			ResultSet rs = ps1.executeQuery();
-			PreparedStatement ps2 = AutoBatchPreparedStatementUtil.autoBatch(
-				connection.prepareStatement(updateSQL))) {
+		try (PreparedStatement preparedStatement1 = connection.prepareStatement(
+				selectSQL);
+			ResultSet resultSet = preparedStatement1.executeQuery();
+			PreparedStatement preparedStatement2 =
+				AutoBatchPreparedStatementUtil.autoBatch(
+					connection.prepareStatement(updateSQL))) {
 
-			while (rs.next()) {
-				String oldValue = rs.getString(columnName);
+			while (resultSet.next()) {
+				preparedStatement2.setString(
+					1,
+					StringUtil.replace(
+						resultSet.getString(columnName), name[0], name[1]));
 
-				String newValue = StringUtil.replace(
-					oldValue, name[0], name[1]);
+				preparedStatement2.setLong(
+					2, resultSet.getLong(primaryKeyColumnName));
 
-				ps2.setString(1, newValue);
-
-				ps2.setString(2, oldValue);
-
-				ps2.addBatch();
+				preparedStatement2.addBatch();
 			}
 
-			ps2.executeBatch();
+			preparedStatement2.executeBatch();
 		}
 	}
 
 	protected void upgradeLongTextTable(
-			String tableName, String columnName, String[][] names,
-			WildcardMode wildcardMode)
+			String tableName, String columnName, String primaryKeyColumnName,
+			String[][] names, WildcardMode wildcardMode)
 		throws Exception {
 
 		DB db = DBManagerUtil.getDB();
@@ -125,52 +135,26 @@ public class UpgradeKernelPackage extends UpgradeProcess {
 			return;
 		}
 
-		try (LoggingTimer loggingTimer = new LoggingTimer(tableName)) {
-			StringBundler updateSB = new StringBundler(7);
+		try (LoggingTimer loggingTimer = new LoggingTimer(
+				getClass(), tableName)) {
 
-			updateSB.append("update ");
-			updateSB.append(tableName);
-			updateSB.append(" set ");
-			updateSB.append(columnName);
-			updateSB.append(" = ? where ");
-			updateSB.append(columnName);
-			updateSB.append(" = ?");
+			String updateSQL = StringBundler.concat(
+				"update ", tableName, " set ", columnName, " = ? where ",
+				primaryKeyColumnName, " = ?");
 
-			String updateSQL = updateSB.toString();
+			String selectPrefix = StringBundler.concat(
+				"select ", columnName, ", ", primaryKeyColumnName, " from ",
+				tableName, " where ", columnName, " like '",
+				wildcardMode.getLeadingWildcard());
 
-			StringBundler selectPrefixSB = new StringBundler(7);
-
-			selectPrefixSB.append("select ");
-			selectPrefixSB.append(columnName);
-			selectPrefixSB.append(" from ");
-			selectPrefixSB.append(tableName);
-			selectPrefixSB.append(" where ");
-			selectPrefixSB.append(columnName);
-
-			if (wildcardMode.equals(WildcardMode.LEADING) ||
-				wildcardMode.equals(WildcardMode.SURROUND)) {
-
-				selectPrefixSB.append(" like '%");
-			}
-			else {
-				selectPrefixSB.append(" like '");
-			}
-
-			String selectPrefix = selectPrefixSB.toString();
-
-			String selectPostfix = StringPool.APOSTROPHE;
-
-			if (wildcardMode.equals(WildcardMode.SURROUND) ||
-				wildcardMode.equals(WildcardMode.TRAILING)) {
-
-				selectPostfix = "%'";
-			}
+			String selectPostfix =
+				wildcardMode.getTrailingWildcard() + StringPool.APOSTROPHE;
 
 			for (String[] name : names) {
-				String selectSQL = selectPrefix.concat(name[0]).concat(
-					selectPostfix);
-
-				upgradeLongTextTable(columnName, selectSQL, updateSQL, name);
+				upgradeLongTextTable(
+					columnName, primaryKeyColumnName,
+					StringBundler.concat(selectPrefix, name[0], selectPostfix),
+					updateSQL, name);
 			}
 		}
 	}
@@ -180,57 +164,103 @@ public class UpgradeKernelPackage extends UpgradeProcess {
 			WildcardMode wildcardMode)
 		throws Exception {
 
-		try (LoggingTimer loggingTimer = new LoggingTimer(tableName)) {
-			StringBundler sb1 = new StringBundler(7);
+		upgradeTable(tableName, columnName, names, wildcardMode, false);
+	}
 
-			sb1.append("update ");
-			sb1.append(tableName);
-			sb1.append(" set ");
-			sb1.append(columnName);
-			sb1.append(" = replace(");
-			sb1.append(columnName);
-			sb1.append(", '");
+	protected void upgradeTable(
+			String tableName, String columnName, String[][] names,
+			WildcardMode wildcardMode, boolean preventDuplicates)
+		throws Exception {
 
-			String tableSQL = sb1.toString();
+		try (LoggingTimer loggingTimer = new LoggingTimer(
+				getClass(), tableName)) {
 
-			StringBundler sb2 = new StringBundler(9);
-
-			for (String[] name : names) {
-				sb2.append(tableSQL);
-				sb2.append(name[0]);
-				sb2.append("', '");
-				sb2.append(name[1]);
-				sb2.append("') where ");
-				sb2.append(columnName);
-
-				if (wildcardMode.equals(WildcardMode.LEADING) ||
-					wildcardMode.equals(WildcardMode.SURROUND)) {
-
-					sb2.append(" like '%");
-				}
-				else {
-					sb2.append(" like '");
-				}
-
-				sb2.append(name[0]);
-
-				if (wildcardMode.equals(WildcardMode.SURROUND) ||
-					wildcardMode.equals(WildcardMode.TRAILING)) {
-
-					sb2.append("%'");
-				}
-				else {
-					sb2.append("'");
-				}
-
-				runSQL(sb2.toString());
-
-				sb2.setIndex(0);
+			if (preventDuplicates) {
+				_executeDelete(tableName, columnName, names, wildcardMode);
 			}
+
+			_executeUpdate(tableName, columnName, names, wildcardMode);
 		}
 	}
 
-	private static final String[][] _CLASS_NAMES = new String[][] {
+	private void _executeDelete(
+			String tableName, String columnName, String[][] names,
+			WildcardMode wildcardMode)
+		throws Exception {
+
+		for (String[] name : names) {
+			runSQL(
+				StringBundler.concat(
+					"delete from ", tableName,
+					_getWhereClause(columnName, name[1], wildcardMode),
+					_getNotLikeClause(
+						columnName, (String)ArrayUtil.getValue(name, 2),
+						wildcardMode)));
+		}
+	}
+
+	private void _executeUpdate(
+			String tableName, String columnName, String[][] names,
+			WildcardMode wildcardMode)
+		throws Exception {
+
+		String tableSQL = StringBundler.concat(
+			"update ", tableName, " set ", columnName, " = replace(",
+			_transformColumnName(columnName), ", '");
+
+		StringBundler sb2 = new StringBundler(6);
+
+		for (String[] name : names) {
+			sb2.append(tableSQL);
+			sb2.append(name[0]);
+			sb2.append("', '");
+			sb2.append(name[1]);
+			sb2.append("') ");
+
+			String whereClause = _getWhereClause(
+				columnName, name[0], wildcardMode);
+
+			sb2.append(whereClause);
+
+			runSQL(sb2.toString());
+
+			sb2.setIndex(0);
+		}
+	}
+
+	private String _getNotLikeClause(
+		String columnName, String value, WildcardMode wildcardMode) {
+
+		if (value == null) {
+			return StringPool.BLANK;
+		}
+
+		return StringBundler.concat(
+			" and ", columnName, " not like '",
+			wildcardMode.getLeadingWildcard(), value,
+			wildcardMode.getTrailingWildcard(), StringPool.APOSTROPHE);
+	}
+
+	private String _getWhereClause(
+		String columnName, String columnValue, WildcardMode wildcardMode) {
+
+		return StringBundler.concat(
+			" where ", columnName, " like '", wildcardMode.getLeadingWildcard(),
+			columnValue, wildcardMode.getTrailingWildcard(),
+			StringPool.APOSTROPHE);
+	}
+
+	private String _transformColumnName(String columnName) {
+		DB db = DBManagerUtil.getDB();
+
+		if (db.getDBType() == DBType.SQLSERVER) {
+			return "CAST_TEXT(" + columnName + ")";
+		}
+
+		return columnName;
+	}
+
+	private static final String[][] _CLASS_NAMES = {
 		{
 			"com.liferay.counter.model.Counter",
 			"com.liferay.counter.kernel.model.Counter"
@@ -243,23 +273,14 @@ public class UpgradeKernelPackage extends UpgradeProcess {
 			"com.liferay.portal.model.BackgroundTask",
 			"com.liferay.portal.background.task.model.BackgroundTask"
 		},
-		{
-			"com.liferay.portal.model.Lock",
-			"com.liferay.portal.lock.model.Lock"
-		},
+		{"com.liferay.portal.model.Lock", "com.liferay.portal.lock.model.Lock"},
 		{"com.liferay.portal.model.", "com.liferay.portal.kernel.model."},
 		{
 			"com.liferay.portlet.announcements.model.",
 			"com.liferay.announcements.kernel.model."
 		},
-		{
-			"com.liferay.portlet.asset.model.",
-			"com.liferay.asset.kernel.model."
-		},
-		{
-			"com.liferay.portlet.blogs.model.",
-			"com.liferay.blogs.kernel.model."
-		},
+		{"com.liferay.portlet.asset.model.", "com.liferay.asset.kernel.model."},
+		{"com.liferay.portlet.blogs.model.", "com.liferay.blogs.kernel.model."},
 		{
 			"com.liferay.portlet.documentlibrary.model.",
 			"com.liferay.document.library.kernel.model."
@@ -272,6 +293,7 @@ public class UpgradeKernelPackage extends UpgradeProcess {
 			"com.liferay.portlet.expando.model.",
 			"com.liferay.expando.kernel.model."
 		},
+		{"com.liferay.portlet.journal.model.", "com.liferay.journal.model."},
 		{
 			"com.liferay.portlet.messageboards.model.",
 			"com.liferay.message.boards.kernel.model."
@@ -288,23 +310,18 @@ public class UpgradeKernelPackage extends UpgradeProcess {
 			"com.liferay.portlet.social.model.",
 			"com.liferay.social.kernel.model."
 		},
-		{
-			"com.liferay.portlet.trash.model.",
-			"com.liferay.trash.kernel.model."
-		},
+		{"com.liferay.portlet.trash.model.", "com.liferay.trash.kernel.model."},
 		{
 			"com.liferay.socialnetworking.model.",
 			"com.liferay.social.networking.model."
 		}
 	};
 
-	private static final String[][] _RESOURCE_NAMES = new String[][] {
+	private static final String[][] _RESOURCE_NAMES = {
 		{"com.liferay.portlet.asset", "com.liferay.asset"},
 		{"com.liferay.portlet.blogs", "com.liferay.blogs"},
-		{
-			"com.liferay.portlet.documentlibrary",
-			"com.liferay.document.library"
-		},
+		{"com.liferay.portlet.documentlibrary", "com.liferay.document.library"},
+		{"com.liferay.portlet.journal", "com.liferay.journal"},
 		{"com.liferay.portlet.messageboards", "com.liferay.message.boards"}
 	};
 

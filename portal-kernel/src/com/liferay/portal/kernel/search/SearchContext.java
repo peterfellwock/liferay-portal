@@ -132,8 +132,7 @@ public class SearchContext implements Serializable {
 			return new String[0];
 		}
 
-		return _fullQueryEntryClassNames.toArray(
-			new String[_fullQueryEntryClassNames.size()]);
+		return _fullQueryEntryClassNames.toArray(new String[0]);
 	}
 
 	public GroupBy getGroupBy() {
@@ -240,6 +239,10 @@ public class SearchContext implements Serializable {
 		return _includeFolders;
 	}
 
+	public boolean isIncludeInternalAssetCategories() {
+		return _includeInternalAssetCategories;
+	}
+
 	public boolean isIncludeLiveGroups() {
 		return _includeLiveGroups;
 	}
@@ -321,8 +324,7 @@ public class SearchContext implements Serializable {
 	}
 
 	public void setFolderIds(List<Long> folderIds) {
-		_folderIds = ArrayUtil.toArray(
-			folderIds.toArray(new Long[folderIds.size()]));
+		_folderIds = ArrayUtil.toArray(folderIds.toArray(new Long[0]));
 	}
 
 	public void setFolderIds(long[] folderIds) {
@@ -347,6 +349,12 @@ public class SearchContext implements Serializable {
 
 	public void setIncludeFolders(boolean includeFolders) {
 		_includeFolders = includeFolders;
+	}
+
+	public void setIncludeInternalAssetCategories(
+		boolean includeInternalAssetCategories) {
+
+		_includeInternalAssetCategories = includeInternalAssetCategories;
 	}
 
 	public void setIncludeLiveGroups(boolean includeLiveGroups) {
@@ -387,10 +395,6 @@ public class SearchContext implements Serializable {
 		_portletIds = portletIds;
 	}
 
-	public void setQueryConfig(QueryConfig queryConfig) {
-		_queryConfig = queryConfig;
-	}
-
 	public void setScopeStrict(boolean scopeStrict) {
 		_scopeStrict = scopeStrict;
 	}
@@ -419,6 +423,10 @@ public class SearchContext implements Serializable {
 
 	public void setUserId(long userId) {
 		_userId = userId;
+
+		if (_attributes != null) {
+			_attributes.remove("searchPermissionContext");
+		}
 	}
 
 	private boolean _andSearch;
@@ -440,6 +448,7 @@ public class SearchContext implements Serializable {
 	private boolean _includeAttachments;
 	private boolean _includeDiscussions;
 	private boolean _includeFolders = true;
+	private boolean _includeInternalAssetCategories;
 	private boolean _includeLiveGroups = true;
 	private boolean _includeStagingGroups = true;
 	private String _keywords;

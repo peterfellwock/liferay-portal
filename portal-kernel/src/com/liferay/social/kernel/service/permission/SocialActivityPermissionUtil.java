@@ -15,7 +15,6 @@
 package com.liferay.social.kernel.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -27,14 +26,13 @@ public class SocialActivityPermissionUtil {
 			PermissionChecker permissionChecker, long groupId, String actionId)
 		throws PortalException {
 
-		getSocialActivityPermission().check(
-			permissionChecker, groupId, actionId);
+		_socialActivityPermission.check(permissionChecker, groupId, actionId);
 	}
 
 	public static boolean contains(
 		PermissionChecker permissionChecker, long groupId, String actionId) {
 
-		return getSocialActivityPermission().contains(
+		return _socialActivityPermission.contains(
 			permissionChecker, groupId, actionId);
 	}
 
@@ -44,8 +42,6 @@ public class SocialActivityPermissionUtil {
 
 	public void setSocialActivityPermission(
 		SocialActivityPermission socialActivityPermission) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_socialActivityPermission = socialActivityPermission;
 	}

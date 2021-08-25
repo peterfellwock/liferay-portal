@@ -30,14 +30,14 @@ import java.lang.reflect.Method;
  */
 public class ClassLoaderProxy {
 
-	public ClassLoaderProxy(Object obj, ClassLoader classLoader) {
-		this(obj, obj.getClass().getName(), classLoader);
+	public ClassLoaderProxy(Object object, ClassLoader classLoader) {
+		this(object, object.getClass().getName(), classLoader);
 	}
 
 	public ClassLoaderProxy(
-		Object obj, String className, ClassLoader classLoader) {
+		Object object, String className, ClassLoader classLoader) {
 
-		_obj = obj;
+		_object = object;
 		_className = className;
 		_classLoader = classLoader;
 	}
@@ -60,13 +60,14 @@ public class ClassLoaderProxy {
 
 			return _invoke(methodHandler);
 		}
-		catch (InvocationTargetException ite) {
-			throw translateThrowable(ite.getCause(), contextClassLoader);
+		catch (InvocationTargetException invocationTargetException) {
+			throw translateThrowable(
+				invocationTargetException.getCause(), contextClassLoader);
 		}
-		catch (Throwable t) {
-			_log.error(t, t);
+		catch (Throwable throwable) {
+			_log.error(throwable, throwable);
 
-			throw t;
+			throw throwable;
 		}
 		finally {
 			currentThread.setContextClassLoader(contextClassLoader);
@@ -109,9 +110,9 @@ public class ClassLoaderProxy {
 
 	private Object _invoke(MethodHandler methodHandler) throws Exception {
 		try {
-			return methodHandler.invoke(_obj);
+			return methodHandler.invoke(_object);
 		}
-		catch (NoSuchMethodException nsme) {
+		catch (NoSuchMethodException noSuchMethodException) {
 			MethodKey methodKey = methodHandler.getMethodKey();
 
 			String name = methodKey.getMethodName();
@@ -144,11 +145,11 @@ public class ClassLoaderProxy {
 				}
 
 				if (correctParams) {
-					return method.invoke(_obj, methodHandler.getArguments());
+					return method.invoke(_object, methodHandler.getArguments());
 				}
 			}
 
-			throw nsme;
+			throw noSuchMethodException;
 		}
 	}
 
@@ -157,6 +158,6 @@ public class ClassLoaderProxy {
 
 	private final ClassLoader _classLoader;
 	private final String _className;
-	private final Object _obj;
+	private final Object _object;
 
 }

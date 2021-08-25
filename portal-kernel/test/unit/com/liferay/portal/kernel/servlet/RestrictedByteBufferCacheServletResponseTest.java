@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.servlet;
 
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.kernel.io.DummyOutputStream;
 import com.liferay.portal.kernel.io.unsync.UnsyncByteArrayOutputStream;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
@@ -144,8 +146,9 @@ public class RestrictedByteBufferCacheServletResponseTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
-			Assert.assertEquals("Cache overflowed", ise.getMessage());
+		catch (IllegalStateException illegalStateException) {
+			Assert.assertEquals(
+				"Cache overflowed", illegalStateException.getMessage());
 		}
 
 		Assert.assertTrue(
@@ -191,7 +194,7 @@ public class RestrictedByteBufferCacheServletResponseTest {
 		try {
 			restrictedByteBufferCacheServletResponse.getOutputStream();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 		}
 	}
 
@@ -234,7 +237,7 @@ public class RestrictedByteBufferCacheServletResponseTest {
 		try {
 			restrictedByteBufferCacheServletResponse.getWriter();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 		}
 	}
 
@@ -344,22 +347,34 @@ public class RestrictedByteBufferCacheServletResponseTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
 		}
 	}
 
 	@Test
 	public void testSetBufferSize() throws IOException {
 
-		// Normal
+		// Setting smaller buffer size has no affect
 
 		StubHttpServletResponse stubHttpServletResponse =
 			new StubHttpServletResponse() {
 
 				@Override
+				public int getBufferSize() {
+					return _bufferSize;
+				}
+
+				@Override
 				public boolean isCommitted() {
 					return false;
 				}
+
+				@Override
+				public void setBufferSize(int bufferSize) {
+					_bufferSize = bufferSize;
+				}
+
+				private int _bufferSize;
 
 			};
 
@@ -368,7 +383,21 @@ public class RestrictedByteBufferCacheServletResponseTest {
 				new RestrictedByteBufferCacheServletResponse(
 					stubHttpServletResponse, 1024);
 
+		restrictedByteBufferCacheServletResponse.setBufferSize(512);
+
+		Assert.assertFalse(
+			restrictedByteBufferCacheServletResponse.isOverflowed());
+		Assert.assertEquals(
+			1024, restrictedByteBufferCacheServletResponse.getBufferSize());
+
+		// Setting a larger buffer size causes overflow
+
 		restrictedByteBufferCacheServletResponse.setBufferSize(2048);
+
+		Assert.assertTrue(
+			restrictedByteBufferCacheServletResponse.isOverflowed());
+		Assert.assertEquals(
+			2048, restrictedByteBufferCacheServletResponse.getBufferSize());
 
 		// Set after commit
 
@@ -379,7 +408,64 @@ public class RestrictedByteBufferCacheServletResponseTest {
 
 			Assert.fail();
 		}
-		catch (IllegalStateException ise) {
+		catch (IllegalStateException illegalStateException) {
+		}
+
+		// Setting a larger buffer size causes overflow with a failure in
+		// flushing
+
+		IOException ioException = new IOException();
+
+		stubHttpServletResponse = new StubHttpServletResponse() {
+
+			@Override
+			public int getBufferSize() {
+				return _bufferSize;
+			}
+
+			@Override
+			public ServletOutputStream getOutputStream() {
+				return new ServletOutputStreamAdapter(
+					new DummyOutputStream() {
+
+						@Override
+						public void write(
+							byte[] bytes, int offset, int length) {
+
+							ReflectionUtil.throwException(ioException);
+						}
+
+					});
+			}
+
+			@Override
+			public boolean isCommitted() {
+				return false;
+			}
+
+			@Override
+			public void setBufferSize(int bufferSize) {
+				_bufferSize = bufferSize;
+			}
+
+			private int _bufferSize;
+
+		};
+
+		restrictedByteBufferCacheServletResponse =
+			new RestrictedByteBufferCacheServletResponse(
+				stubHttpServletResponse, 1024);
+
+		Assert.assertNotNull(
+			restrictedByteBufferCacheServletResponse.getOutputStream());
+
+		try {
+			restrictedByteBufferCacheServletResponse.setBufferSize(2048);
+
+			Assert.fail();
+		}
+		catch (IllegalStateException illegalStateException) {
+			Assert.assertSame(ioException, illegalStateException.getCause());
 		}
 	}
 

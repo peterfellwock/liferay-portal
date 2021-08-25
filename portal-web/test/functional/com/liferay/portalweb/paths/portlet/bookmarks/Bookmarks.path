@@ -2,21 +2,23 @@
 <head>
 <title>Bookmarks</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Bookmarks</td></tr>
 </thead>
+
 <tbody>
 <!--BOOKMARKS_TABLE-->
 <tr>
 	<td>BOOKMARKS_TABLE_NAME</td>
-	<td>//table[contains(@class,'table-list')]//td[2]//a[contains(.,'${key_bookmarkName}')]</td>
+	<td>//table[contains(@class,'table-autofit')]//td[2]//a[contains(.,'${key_bookmarkName}')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>BOOKMARKS_TABLE_URL</td>
-	<td>//table[contains(@class,'table-list')]//td[3][contains(.,'${key_bookmarkURL}')]</td>
+	<td>//table[contains(@class,'table-autofit')]//td[3][contains(.,'${key_bookmarkURL}')]</td>
 	<td></td>
 </tr>
 <tr>

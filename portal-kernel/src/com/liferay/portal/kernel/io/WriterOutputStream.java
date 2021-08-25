@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.io;
 
-import com.liferay.portal.kernel.nio.charset.CharsetDecoderUtil;
-import com.liferay.portal.kernel.nio.charset.CharsetEncoderUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.nio.CharsetDecoderUtil;
+import com.liferay.petra.nio.CharsetEncoderUtil;
+import com.liferay.petra.string.StringPool;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -76,6 +76,7 @@ public class WriterOutputStream extends OutputStream {
 
 		_writer = writer;
 		_charsetName = charsetName;
+
 		_charsetDecoder = CharsetDecoderUtil.getCharsetDecoder(charsetName);
 
 		CharsetEncoder charsetEncoder = CharsetEncoderUtil.getCharsetEncoder(
@@ -86,8 +87,9 @@ public class WriterOutputStream extends OutputStream {
 
 		_inputByteBuffer.limit(0);
 
-		_outputCharBuffer = CharBuffer.allocate(outputBufferSize);
 		_autoFlush = autoFlush;
+
+		_outputCharBuffer = CharBuffer.allocate(outputBufferSize);
 	}
 
 	@Override

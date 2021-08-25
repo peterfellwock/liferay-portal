@@ -2,6 +2,7 @@
 
 <model-hints>
 	<model name="com.liferay.knowledge.base.model.KBArticle">
+		<field name="mvccVersion" type="long" />
 		<field name="uuid" type="String" />
 		<field name="kbArticleId" type="long" />
 		<field name="resourcePrimKey" type="long" />
@@ -11,6 +12,7 @@
 		<field name="userName" type="String" />
 		<field name="createDate" type="Date" />
 		<field name="modifiedDate" type="Date" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="rootResourcePrimKey" type="long" />
 		<field name="parentResourceClassNameId" type="long" />
 		<field name="parentResourcePrimKey" type="long" />
@@ -22,6 +24,7 @@
 		<field name="urlTitle" type="String" />
 		<field name="content" type="String">
 			<hint-collection name="CLOB" />
+			<sanitize content-type="text/html" modes="ALL" />
 		</field>
 		<field name="description" type="String">
 			<hint-collection name="TEXTAREA" />
@@ -30,7 +33,6 @@
 		<field name="sections" type="String">
 			<hint name="max-length">4000</hint>
 		</field>
-		<field name="viewCount" type="int" />
 		<field name="latest" type="boolean" />
 		<field name="main" type="boolean" />
 		<field name="sourceURL" type="String">
@@ -43,6 +45,7 @@
 		<field name="statusDate" type="Date" />
 	</model>
 	<model name="com.liferay.knowledge.base.model.KBComment">
+		<field name="mvccVersion" type="long" />
 		<field name="uuid" type="String" />
 		<field name="kbCommentId" type="long" />
 		<field name="groupId" type="long" />
@@ -61,7 +64,9 @@
 		<field name="status" type="int" />
 	</model>
 	<model name="com.liferay.knowledge.base.model.KBFolder">
+		<field name="mvccVersion" type="long" />
 		<field name="uuid" type="String" />
+		<field name="externalReferenceCode" type="String" />
 		<field name="kbFolderId" type="long" />
 		<field name="groupId" type="long" />
 		<field name="companyId" type="long" />
@@ -80,6 +85,7 @@
 		<field name="lastPublishDate" type="Date" />
 	</model>
 	<model name="com.liferay.knowledge.base.model.KBTemplate">
+		<field name="mvccVersion" type="long" />
 		<field name="uuid" type="String" />
 		<field name="kbTemplateId" type="long" />
 		<field name="groupId" type="long" />
@@ -93,6 +99,7 @@
 		</field>
 		<field name="content" type="String">
 			<hint-collection name="CLOB" />
+			<sanitize content-type="text/html" modes="ALL" />
 		</field>
 		<field name="lastPublishDate" type="Date" />
 	</model>

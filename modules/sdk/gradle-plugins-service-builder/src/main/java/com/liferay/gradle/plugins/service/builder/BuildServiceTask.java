@@ -15,6 +15,7 @@
 package com.liferay.gradle.plugins.service.builder;
 
 import com.liferay.gradle.util.FileUtil;
+import com.liferay.gradle.util.GUtil;
 import com.liferay.gradle.util.GradleUtil;
 import com.liferay.gradle.util.Validator;
 import com.liferay.portal.tools.service.builder.ServiceBuilderArgs;
@@ -30,17 +31,21 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.JavaExec;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.util.CollectionUtils;
-import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class BuildServiceTask extends JavaExec {
 
 	public BuildServiceTask() {
@@ -61,6 +66,7 @@ public class BuildServiceTask extends JavaExec {
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getApiDir() {
 		return GradleUtil.toFile(getProject(), _apiDir);
 	}
@@ -76,18 +82,45 @@ public class BuildServiceTask extends JavaExec {
 	}
 
 	@Input
+	public int getDatabaseNameMaxLength() {
+		return _databaseNameMaxLength;
+	}
+
+	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getHbmFile() {
 		return GradleUtil.toFile(getProject(), _hbmFile);
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getImplDir() {
 		return GradleUtil.toFile(getProject(), _implDir);
 	}
 
+	@Input
+	@Optional
+	public Set<String> getIncubationFeatures() {
+		return _incubationFeatures;
+	}
+
 	@InputFile
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getInputFile() {
 		return GradleUtil.toFile(getProject(), _inputFile);
+	}
+
+	@Override
+	public List<String> getJvmArgs() {
+		List<String> jvmArgs = new ArrayList<>();
+
+		JavaVersion javaVersion = getJavaVersion();
+
+		if (javaVersion.isJava9Compatible()) {
+			jvmArgs.add("--illegal-access=permit");
+		}
+
+		return jvmArgs;
 	}
 
 	@Input
@@ -96,6 +129,7 @@ public class BuildServiceTask extends JavaExec {
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getModelHintsFile() {
 		return GradleUtil.toFile(getProject(), _modelHintsFile);
 	}
@@ -121,11 +155,13 @@ public class BuildServiceTask extends JavaExec {
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getResourcesDir() {
 		return GradleUtil.toFile(getProject(), _resourcesDir);
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getSpringFile() {
 		return GradleUtil.toFile(getProject(), _springFile);
 	}
@@ -136,6 +172,7 @@ public class BuildServiceTask extends JavaExec {
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getSqlDir() {
 		return GradleUtil.toFile(getProject(), _sqlDir);
 	}
@@ -163,8 +200,35 @@ public class BuildServiceTask extends JavaExec {
 
 	@Input
 	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getTestDir() {
 		return GradleUtil.toFile(getProject(), _testDir);
+	}
+
+	@Input
+	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
+	public File getUADDir() {
+		return GradleUtil.toFile(getProject(), _uadDir);
+	}
+
+	@Input
+	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
+	public File getUADTestIntegrationDir() {
+		return GradleUtil.toFile(getProject(), _uadTestIntegrationDir);
+	}
+
+	public BuildServiceTask incubationFeatures(
+		Iterable<String> incubationFeatures) {
+
+		GUtil.addToCollection(_incubationFeatures, incubationFeatures);
+
+		return this;
+	}
+
+	public BuildServiceTask incubationFeatures(String... incubationFeatures) {
+		return incubationFeatures(Arrays.asList(incubationFeatures));
 	}
 
 	@Input
@@ -251,12 +315,26 @@ public class BuildServiceTask extends JavaExec {
 		_buildNumberIncrement = buildNumberIncrement;
 	}
 
+	public void setDatabaseNameMaxLength(int databaseNameMaxLength) {
+		_databaseNameMaxLength = databaseNameMaxLength;
+	}
+
 	public void setHbmFile(Object hbmFile) {
 		_hbmFile = hbmFile;
 	}
 
 	public void setImplDir(Object implDir) {
 		_implDir = implDir;
+	}
+
+	public void setIncubationFeatures(Iterable<String> incubationFeatures) {
+		_incubationFeatures.clear();
+
+		incubationFeatures(incubationFeatures);
+	}
+
+	public void setIncubationFeatures(String... incubationFeatures) {
+		setIncubationFeatures(Arrays.asList(incubationFeatures));
 	}
 
 	public void setInputFile(Object inputFile) {
@@ -353,6 +431,14 @@ public class BuildServiceTask extends JavaExec {
 		_testDir = testDir;
 	}
 
+	public void setUADDir(Object uadDir) {
+		_uadDir = uadDir;
+	}
+
+	public void setUADTestIntegrationDir(Object uadTestIntegrationDir) {
+		_uadTestIntegrationDir = uadTestIntegrationDir;
+	}
+
 	public BuildServiceTask springNamespaces(
 		Iterable<Object> springNamespaces) {
 
@@ -376,8 +462,13 @@ public class BuildServiceTask extends JavaExec {
 		args.add("service.bean.locator.util=" + getBeanLocatorUtil());
 		args.add("service.build.number.increment=" + isBuildNumberIncrement());
 		args.add("service.build.number=" + getBuildNumber());
+		args.add(
+			"service.database.name.max.length=" + getDatabaseNameMaxLength());
 		args.add("service.hbm.file=" + _relativize(getHbmFile()));
 		args.add("service.impl.dir=" + _relativize(getImplDir()));
+		args.add(
+			"service.incubation.features=" +
+				CollectionUtils.join(",", getIncubationFeatures()));
 		args.add("service.input.file=" + _relativize(getInputFile()));
 		args.add(
 			"service.model.hints.configs=" +
@@ -415,6 +506,20 @@ public class BuildServiceTask extends JavaExec {
 
 		if (testDir != null) {
 			args.add("service.test.dir=" + _relativize(testDir));
+		}
+
+		File uadDir = getUADDir();
+
+		if (uadDir != null) {
+			args.add("service.uad.dir=" + _relativize(uadDir));
+		}
+
+		File uadTestIntegrationDir = getUADTestIntegrationDir();
+
+		if (uadTestIntegrationDir != null) {
+			args.add(
+				"service.uad.test.integration.dir=" +
+					_relativize(uadTestIntegrationDir));
 		}
 
 		return args;
@@ -462,8 +567,10 @@ public class BuildServiceTask extends JavaExec {
 		"com.liferay.util.bean.PortletBeanLocatorUtil";
 	private long _buildNumber = 1;
 	private boolean _buildNumberIncrement = true;
+	private int _databaseNameMaxLength = 30;
 	private Object _hbmFile;
 	private Object _implDir;
+	private final Set<String> _incubationFeatures = new HashSet<>();
 	private Object _inputFile;
 	private final Set<Object> _modelHintsConfigs = new LinkedHashSet<>();
 	private Object _modelHintsFile;
@@ -481,5 +588,7 @@ public class BuildServiceTask extends JavaExec {
 	private Object _sqlSequencesFileName = "sequences.sql";
 	private Object _targetEntityName;
 	private Object _testDir;
+	private Object _uadDir;
+	private Object _uadTestIntegrationDir;
 
 }

@@ -22,6 +22,13 @@ import com.liferay.registry.collections.ServiceTrackerList;
  */
 public class SettingsLocatorHelperUtil {
 
+	public static Settings getCompanyConfigurationBeanSettings(
+		long companyId, String configurationPid, Settings parentSettings) {
+
+		return getSettingsLocatorHelper().getCompanyConfigurationBeanSettings(
+			companyId, configurationPid, parentSettings);
+	}
+
 	public static Settings getCompanyPortletPreferencesSettings(
 		long companyId, String settingsId, Settings parentSettings) {
 
@@ -29,15 +36,28 @@ public class SettingsLocatorHelperUtil {
 			companyId, settingsId, parentSettings);
 	}
 
+	public static Settings getGroupConfigurationBeanSettings(
+		long groupId, String configurationPid, Settings parentSettings) {
+
+		return getSettingsLocatorHelper().getGroupConfigurationBeanSettings(
+			groupId, configurationPid, parentSettings);
+	}
+
+	public static Settings getPortletInstanceConfigurationBeanSettings(
+		String portletId, String configurationPid, Settings parentSettings) {
+
+		return getSettingsLocatorHelper().
+			getPortletInstanceConfigurationBeanSettings(
+				portletId, configurationPid, parentSettings);
+	}
+
 	public static SettingsLocatorHelper getSettingsLocatorHelper() {
 		return _settingsLocatorHelpers.get(0);
 	}
 
-	public Settings getConfigurationBeanSettings(
-		String settingsId, Settings parentSettings) {
-
+	public Settings getConfigurationBeanSettings(String settingsId) {
 		return getSettingsLocatorHelper().getConfigurationBeanSettings(
-			settingsId, parentSettings);
+			settingsId);
 	}
 
 	public Settings getGroupPortletPreferencesSettings(
@@ -54,16 +74,16 @@ public class SettingsLocatorHelperUtil {
 			companyId, parentSettings);
 	}
 
-	public Settings getPortalPropertiesSettings() {
-		return getSettingsLocatorHelper().getPortalPropertiesSettings();
-	}
-
 	public Settings getPortletInstancePortletPreferencesSettings(
 		long companyId, long plid, String portletId, Settings parentSettings) {
 
 		return getSettingsLocatorHelper().
 			getPortletInstancePortletPreferencesSettings(
 				companyId, plid, portletId, parentSettings);
+	}
+
+	public Settings getServerSettings(String settingsId) {
+		return getSettingsLocatorHelper().getServerSettings(settingsId);
 	}
 
 	private static final ServiceTrackerList<SettingsLocatorHelper>

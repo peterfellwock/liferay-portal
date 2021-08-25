@@ -96,10 +96,11 @@ public class WordsImpl implements Words {
 		static {
 			List<String> dictionaryList = new ArrayList<>();
 
-			try (InputStream is = WordsImpl.class.getResourceAsStream(
+			try (InputStream inputStream = WordsImpl.class.getResourceAsStream(
 					"dependencies/words.txt");
 				UnsyncBufferedReader unsyncBufferedReader =
-					new UnsyncBufferedReader(new InputStreamReader(is))) {
+					new UnsyncBufferedReader(
+						new InputStreamReader(inputStream))) {
 
 				String line = null;
 
@@ -107,8 +108,8 @@ public class WordsImpl implements Words {
 					dictionaryList.add(line);
 				}
 			}
-			catch (IOException ioe) {
-				_log.error(ioe, ioe);
+			catch (IOException ioException) {
+				_log.error(ioException, ioException);
 			}
 
 			_dictionaryList = dictionaryList;
@@ -127,7 +128,7 @@ public class WordsImpl implements Words {
 			try {
 				spellDictionaryHashMap = new SpellDictionaryHashMap();
 
-				String[] dics = new String[] {
+				String[] dics = {
 					"center.dic", "centre.dic", "color.dic", "colour.dic",
 					"eng_com.dic", "english.0", "english.1", "ise.dic",
 					"ize.dic", "labeled.dic", "labelled.dic", "yse.dic",
@@ -135,22 +136,23 @@ public class WordsImpl implements Words {
 				};
 
 				for (String dic : dics) {
-					try (InputStream is = WordsImpl.class.getResourceAsStream(
-							"dependencies/" + dic);
+					try (InputStream inputStream =
+							WordsImpl.class.getResourceAsStream(
+								"dependencies/" + dic);
 						UnsyncBufferedReader unsyncBufferedReader =
 							new UnsyncBufferedReader(
-								new InputStreamReader(is))) {
+								new InputStreamReader(inputStream))) {
 
 						spellDictionaryHashMap.addDictionary(
 							unsyncBufferedReader);
 					}
-					catch (IOException ioe) {
-						_log.error(ioe, ioe);
+					catch (IOException ioException) {
+						_log.error(ioException, ioException);
 					}
 				}
 			}
-			catch (IOException ioe) {
-				_log.error(ioe);
+			catch (IOException ioException) {
+				_log.error("Unable to initialize dictionary", ioException);
 			}
 
 			_spellDictionaryHashMap = spellDictionaryHashMap;

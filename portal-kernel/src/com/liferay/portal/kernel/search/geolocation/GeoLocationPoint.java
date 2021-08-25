@@ -25,22 +25,21 @@ public class GeoLocationPoint {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof GeoLocationPoint)) {
+		if (!(object instanceof GeoLocationPoint)) {
 			return false;
 		}
 
-		GeoLocationPoint geoLocationPoint = (GeoLocationPoint)obj;
+		GeoLocationPoint geoLocationPoint = (GeoLocationPoint)object;
 
-		if (Double.compare(geoLocationPoint.getLatitude(), _latitude) != 0) {
-			return false;
-		}
+		if ((Double.compare(geoLocationPoint.getLatitude(), _latitude) != 0) ||
+			(Double.compare(geoLocationPoint.getLongitude(), _longitude) !=
+				0)) {
 
-		if (Double.compare(geoLocationPoint.getLongitude(), _longitude) != 0) {
 			return false;
 		}
 
@@ -63,9 +62,7 @@ public class GeoLocationPoint {
 
 		value = Double.doubleToLongBits(_longitude);
 
-		hashCode = 31 * hashCode + (int)(value ^ (value >>> 32));
-
-		return hashCode;
+		return (31 * hashCode) + (int)(value ^ (value >>> 32));
 	}
 
 	private final double _latitude;

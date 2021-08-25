@@ -14,62 +14,71 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.CharPool;
-import com.liferay.portal.kernel.util.StringPool;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-import com.liferay.source.formatter.util.ThreadSafeClassLibrary;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.source.formatter.checks.util.JavaSourceUtil;
+import com.liferay.source.formatter.util.ThreadSafeSortedClassLibraryBuilder;
 
-import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.FileText;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
-import com.thoughtworks.qdox.JavaDocBuilder;
-import com.thoughtworks.qdox.model.DefaultDocletTagFactory;
+import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
-import com.thoughtworks.qdox.model.JavaPackage;
 import com.thoughtworks.qdox.model.JavaSource;
+import com.thoughtworks.qdox.parser.ParseException;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
  * @author Hugo Huijser
  */
-public class UnprocessedExceptionCheck extends AbstractCheck {
-
-	public static final String MSG_UNPROCESSED_EXCEPTION =
-		"exception.unprocessed";
+public class UnprocessedExceptionCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
-		return new int[] {TokenTypes.LITERAL_CATCH};
+		return new int[] {TokenTypes.LITERAL_CATCH, TokenTypes.LITERAL_NEW};
 	}
 
 	@Override
-	public void visitToken(DetailAST detailAST) {
-		FileContents fileContents = getFileContents();
+	protected void doVisitToken(DetailAST detailAST) {
+		String absolutePath = getAbsolutePath();
 
-		String fileName = StringUtil.replace(
-			fileContents.getFileName(), CharPool.BACK_SLASH, CharPool.SLASH);
-
-		if (fileName.contains("/test/") ||
-			fileName.contains("/testIntegration/")) {
+		if (absolutePath.contains("/test/") ||
+			absolutePath.contains("/testIntegration/")) {
 
 			return;
 		}
 
-		DetailAST parameterDefAST = detailAST.findFirstToken(
+		if (detailAST.getType() == TokenTypes.LITERAL_CATCH) {
+			FileContents fileContents = getFileContents();
+
+			FileText fileText = fileContents.getText();
+
+			_checkUnprocessedException(
+				detailAST, (String)fileText.getFullText());
+		}
+		else {
+			_checkUnprocessedThrownException(detailAST);
+		}
+	}
+
+	private void _checkUnprocessedException(
+		DetailAST detailAST, String content) {
+
+		DetailAST parameterDefinitionDetailAST = detailAST.findFirstToken(
 			TokenTypes.PARAMETER_DEF);
 
-		String exceptionVariableName = _getName(parameterDefAST);
-
-		_checkUnthrownException(detailAST, exceptionVariableName);
+		String exceptionVariableName = _getName(parameterDefinitionDetailAST);
 
 		if (_containsVariable(
 				detailAST.findFirstToken(TokenTypes.SLIST),
@@ -78,19 +87,26 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 			return;
 		}
 
-		String exceptionClassName = _getExceptionClassName(parameterDefAST);
+		String exceptionClassName = _getExceptionClassName(
+			parameterDefinitionDetailAST);
 
-		if (exceptionClassName == null) {
+		if ((exceptionClassName == null) ||
+			exceptionClassName.equals("JSONException")) {
+
+			return;
+		}
+
+		JavaProjectBuilder javaProjectBuilder = _getJavaProjectBuilder(content);
+
+		if (javaProjectBuilder == null) {
 			return;
 		}
 
 		String originalExceptionClassName = exceptionClassName;
 
-		JavaDocBuilder javaDocBuilder = _getJavaDocBuilder();
-
 		if (!exceptionClassName.contains(StringPool.PERIOD)) {
 			for (String importedExceptionClassName :
-					_getImportedExceptionClassNames(javaDocBuilder)) {
+					_getImportedExceptionClassNames(javaProjectBuilder)) {
 
 				if (importedExceptionClassName.endsWith(
 						StringPool.PERIOD + exceptionClassName)) {
@@ -104,11 +120,11 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 
 		if (!exceptionClassName.contains(StringPool.PERIOD)) {
 			exceptionClassName =
-				_getPackagePath(javaDocBuilder) + StringPool.PERIOD +
+				JavaSourceUtil.getPackageName(content) + StringPool.PERIOD +
 					exceptionClassName;
 		}
 
-		JavaClass exceptionClass = javaDocBuilder.getClassByName(
+		JavaClass exceptionClass = javaProjectBuilder.getClassByName(
 			exceptionClassName);
 
 		if (exceptionClass == null) {
@@ -128,7 +144,7 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 				exceptionClassName.equals("SystemException")) {
 
 				log(
-					parameterDefAST.getLineNo(), MSG_UNPROCESSED_EXCEPTION,
+					parameterDefinitionDetailAST, _MSG_UNPROCESSED_EXCEPTION,
 					originalExceptionClassName);
 
 				break;
@@ -144,43 +160,69 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 		}
 	}
 
-	private void _checkUnthrownException(
-		DetailAST detailAST, String variableName) {
+	private void _checkUnprocessedThrownException(DetailAST detailAST) {
+		String name = _getName(detailAST);
 
-		List<DetailAST> literalNewASTList = DetailASTUtil.getAllChildTokens(
-			detailAST, true, TokenTypes.LITERAL_NEW);
+		if ((name == null) || !name.endsWith("Exception")) {
+			return;
+		}
 
-		for (DetailAST literalNewAST : literalNewASTList) {
-			String name = _getName(literalNewAST);
+		DetailAST parentDetailAST = detailAST.getParent();
 
-			if ((name == null) || !name.endsWith("Exception")) {
-				continue;
+		if (parentDetailAST.getType() != TokenTypes.EXPR) {
+			return;
+		}
+
+		DetailAST exprDetailAST = parentDetailAST;
+
+		while (true) {
+			if (parentDetailAST == null) {
+				return;
 			}
 
-			DetailAST parentAST = literalNewAST.getParent();
-
-			if (parentAST.getType() != TokenTypes.EXPR) {
-				continue;
+			if (parentDetailAST.getType() == TokenTypes.LITERAL_CATCH) {
+				break;
 			}
 
-			parentAST = parentAST.getParent();
+			parentDetailAST = parentDetailAST.getParent();
+		}
 
-			if (parentAST.getType() == TokenTypes.SLIST) {
-				log(
-					literalNewAST.getLineNo(), MSG_UNPROCESSED_EXCEPTION,
-					variableName);
-			}
+		DetailAST parameterDefinitionDetailAST = parentDetailAST.findFirstToken(
+			TokenTypes.PARAMETER_DEF);
+
+		String exceptionClassName = _getExceptionClassName(
+			parameterDefinitionDetailAST);
+
+		if (Objects.equals(exceptionClassName, "JSONException")) {
+			return;
+		}
+
+		String exceptionVariableName = _getName(parameterDefinitionDetailAST);
+
+		if (_containsVariable(
+				parentDetailAST.findFirstToken(TokenTypes.SLIST),
+				exceptionVariableName)) {
+
+			return;
+		}
+
+		parentDetailAST = exprDetailAST.getParent();
+
+		if ((parentDetailAST.getType() == TokenTypes.LITERAL_THROW) ||
+			(parentDetailAST.getType() == TokenTypes.SLIST)) {
+
+			log(detailAST, _MSG_UNPROCESSED_EXCEPTION, exceptionVariableName);
 		}
 	}
 
 	private boolean _containsVariable(
 		DetailAST detailAST, String variableName) {
 
-		List<DetailAST> nameASTList = DetailASTUtil.getAllChildTokens(
+		List<DetailAST> nameDetailASTList = getAllChildTokens(
 			detailAST, true, TokenTypes.IDENT);
 
-		for (DetailAST nameAST : nameASTList) {
-			String name = nameAST.getText();
+		for (DetailAST nameDetailAST : nameDetailASTList) {
+			String name = nameDetailAST.getText();
 
 			if (name.equals(variableName)) {
 				return true;
@@ -190,20 +232,27 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 		return false;
 	}
 
-	private String _getExceptionClassName(DetailAST parameterDefAST) {
-		DetailAST typeAST = parameterDefAST.findFirstToken(TokenTypes.TYPE);
+	private String _getExceptionClassName(
+		DetailAST parameterDefinitionDetailAST) {
 
-		FullIdent typeIdent = FullIdent.createFullIdentBelow(typeAST);
+		DetailAST typeDetailAST = parameterDefinitionDetailAST.findFirstToken(
+			TokenTypes.TYPE);
+
+		FullIdent typeIdent = FullIdent.createFullIdentBelow(typeDetailAST);
 
 		return typeIdent.getText();
 	}
 
 	private Set<String> _getImportedExceptionClassNames(
-		JavaDocBuilder javaDocBuilder) {
+		JavaProjectBuilder javaProjectBuilder) {
 
 		Set<String> exceptionClassNames = new HashSet<>();
 
-		JavaSource javaSource = javaDocBuilder.getSources()[0];
+		Collection<JavaSource> sources = javaProjectBuilder.getSources();
+
+		Iterator<JavaSource> iterator = sources.iterator();
+
+		JavaSource javaSource = iterator.next();
 
 		for (String importClassName : javaSource.getImports()) {
 			if (importClassName.endsWith("Exception")) {
@@ -214,42 +263,46 @@ public class UnprocessedExceptionCheck extends AbstractCheck {
 		return exceptionClassNames;
 	}
 
-	private JavaDocBuilder _getJavaDocBuilder() {
-		JavaDocBuilder javaDocBuilder = new JavaDocBuilder(
-			new DefaultDocletTagFactory(), new ThreadSafeClassLibrary());
+	private JavaProjectBuilder _getJavaProjectBuilder(String content) {
+		JavaProjectBuilder javaProjectBuilder = new JavaProjectBuilder(
+			new ThreadSafeSortedClassLibraryBuilder());
 
-		FileContents fileContents = getFileContents();
+		try {
+			javaProjectBuilder.addSource(new UnsyncStringReader(content));
+		}
+		catch (ParseException parseException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(parseException, parseException);
+			}
 
-		FileText fileText = fileContents.getText();
+			return null;
+		}
 
-		javaDocBuilder.addSource(
-			new UnsyncStringReader((String)fileText.getFullText()));
-
-		return javaDocBuilder;
+		return javaProjectBuilder;
 	}
 
 	private String _getName(DetailAST detailAST) {
-		DetailAST nameAST = detailAST.findFirstToken(TokenTypes.IDENT);
+		DetailAST nameDetailAST = detailAST.findFirstToken(TokenTypes.IDENT);
 
-		if (nameAST != null) {
-			return nameAST.getText();
+		if (nameDetailAST != null) {
+			return nameDetailAST.getText();
 		}
 
-		DetailAST dotAST = detailAST.findFirstToken(TokenTypes.DOT);
+		DetailAST dotDetailAST = detailAST.findFirstToken(TokenTypes.DOT);
 
-		if (dotAST != null) {
-			nameAST = dotAST.findFirstToken(TokenTypes.IDENT);
+		if (dotDetailAST != null) {
+			nameDetailAST = dotDetailAST.findFirstToken(TokenTypes.IDENT);
 
-			return nameAST.getText();
+			return nameDetailAST.getText();
 		}
 
 		return null;
 	}
 
-	private String _getPackagePath(JavaDocBuilder javaDocBuilder) {
-		JavaPackage javaPackage = javaDocBuilder.getPackages()[0];
+	private static final String _MSG_UNPROCESSED_EXCEPTION =
+		"exception.unprocessed";
 
-		return javaPackage.getName();
-	}
+	private static final Log _log = LogFactoryUtil.getLog(
+		UnprocessedExceptionCheck.class);
 
 }

@@ -17,21 +17,25 @@ package com.liferay.knowledge.base.web.internal.portlet.configuration.icon;
 import com.liferay.knowledge.base.constants.KBActionKeys;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBFolder;
-import com.liferay.knowledge.base.service.permission.KBFolderPermission;
 import com.liferay.knowledge.base.web.internal.constants.KBWebKeys;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
-import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Roberto Díaz
@@ -57,29 +61,26 @@ public class MoveKBFolderPortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
-			portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
-			PortletRequest.RENDER_PHASE);
-
-		portletURL.setParameter("mvcPath", "/admin/move_object.jsp");
-		portletURL.setParameter(
-			"redirect", PortalUtil.getCurrentURL(portletRequest));
-
 		KBFolder kbFolder = (KBFolder)portletRequest.getAttribute(
 			KBWebKeys.KNOWLEDGE_BASE_PARENT_KB_FOLDER);
 
-		portletURL.setParameter(
-			"resourceClassNameId", String.valueOf(kbFolder.getClassNameId()));
-		portletURL.setParameter(
-			"resourcePrimKey", String.valueOf(kbFolder.getKbFolderId()));
-		portletURL.setParameter(
-			"parentResourceClassNameId",
-			String.valueOf(kbFolder.getClassNameId()));
-		portletURL.setParameter(
-			"parentResourcePrimKey",
-			String.valueOf(kbFolder.getParentKBFolderId()));
-
-		return portletURL.toString();
+		return PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
+				PortletRequest.RENDER_PHASE)
+		).setMVCPath(
+			"/admin/move_object.jsp"
+		).setRedirect(
+			_portal.getCurrentURL(portletRequest)
+		).setParameter(
+			"parentResourceClassNameId", kbFolder.getClassNameId()
+		).setParameter(
+			"parentResourcePrimKey", kbFolder.getParentKBFolderId()
+		).setParameter(
+			"resourceClassNameId", kbFolder.getClassNameId()
+		).setParameter(
+			"resourcePrimKey", kbFolder.getKbFolderId()
+		).buildString();
 	}
 
 	@Override
@@ -98,13 +99,28 @@ public class MoveKBFolderPortletConfigurationIcon
 		PermissionChecker permissionChecker =
 			themeDisplay.getPermissionChecker();
 
-		if (KBFolderPermission.contains(
-				permissionChecker, kbFolder, KBActionKeys.MOVE_KB_FOLDER)) {
-
-			return true;
+		try {
+			return _kbFolderModelResourcePermission.contains(
+				permissionChecker, kbFolder, KBActionKeys.MOVE_KB_FOLDER);
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException, portalException);
+			}
 		}
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		MoveKBFolderPortletConfigurationIcon.class);
+
+	@Reference(
+		target = "(model.class.name=com.liferay.knowledge.base.model.KBFolder)"
+	)
+	private ModelResourcePermission<KBFolder> _kbFolderModelResourcePermission;
+
+	@Reference
+	private Portal _portal;
 
 }

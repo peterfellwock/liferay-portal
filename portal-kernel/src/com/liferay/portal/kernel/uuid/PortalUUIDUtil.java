@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.uuid;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
  * @author Brian Wing Shun Chan
  * @author Raymond Augé
@@ -23,30 +21,26 @@ import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermissio
 public class PortalUUIDUtil {
 
 	public static String fromJsSafeUuid(String jsSafeUuid) {
-		return getPortalUUID().fromJsSafeUuid(jsSafeUuid);
+		return _portalUUID.fromJsSafeUuid(jsSafeUuid);
 	}
 
 	public static String generate() {
-		return getPortalUUID().generate();
+		return _portalUUID.generate();
 	}
 
 	public static String generate(byte[] bytes) {
-		return getPortalUUID().generate(bytes);
+		return _portalUUID.generate(bytes);
 	}
 
 	public static PortalUUID getPortalUUID() {
-		PortalRuntimePermission.checkGetBeanProperty(PortalUUIDUtil.class);
-
 		return _portalUUID;
 	}
 
 	public static String toJsSafeUuid(String uuid) {
-		return getPortalUUID().toJsSafeUuid(uuid);
+		return _portalUUID.toJsSafeUuid(uuid);
 	}
 
 	public void setPortalUUID(PortalUUID portalUUID) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_portalUUID = portalUUID;
 	}
 

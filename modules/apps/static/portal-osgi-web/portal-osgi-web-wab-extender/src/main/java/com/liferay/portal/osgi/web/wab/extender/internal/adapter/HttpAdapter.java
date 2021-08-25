@@ -14,7 +14,9 @@
 
 package com.liferay.portal.osgi.web.wab.extender.internal.adapter;
 
+import com.liferay.portal.kernel.servlet.PortletSessionListenerManager;
 import com.liferay.portal.kernel.util.HashMapDictionary;
+import com.liferay.portal.osgi.web.wab.extender.internal.registration.ServletRegistrationImpl;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -24,14 +26,20 @@ import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
+import java.util.Objects;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.descriptor.JspConfigDescriptor;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 import org.eclipse.equinox.http.servlet.HttpServiceServlet;
+import org.eclipse.equinox.http.servlet.HttpSessionTrackerUtil;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -45,13 +53,11 @@ import org.osgi.service.http.runtime.HttpServiceRuntimeConstants;
 /**
  * @author Raymond Augé
  */
-@Component(immediate = true)
+@Component(immediate = true, service = {})
 public class HttpAdapter {
 
 	@Activate
 	protected void activate(ComponentContext componentContext) {
-		BundleContext bundleContext = componentContext.getBundleContext();
-
 		_httpServiceServlet = new HttpServiceServlet() {
 
 			@Override
@@ -102,11 +108,14 @@ public class HttpAdapter {
 		try {
 			_httpServiceServlet.init(servletConfig);
 		}
-		catch (ServletException se) {
-			_servletContext.log(se.getMessage(), se);
+		catch (ServletException servletException) {
+			_servletContext.log(
+				servletException.getMessage(), servletException);
 
 			return;
 		}
+
+		BundleContext bundleContext = componentContext.getBundleContext();
 
 		Dictionary<String, Object> properties = new HashMapDictionary<>();
 
@@ -118,10 +127,16 @@ public class HttpAdapter {
 				HttpServiceServlet.class.getName(), HttpServlet.class.getName()
 			},
 			_httpServiceServlet, properties);
+
+		PortletSessionListenerManager.addHttpSessionListener(
+			_INVALIDATEHTTPSESSION_LISTENER);
 	}
 
 	@Deactivate
 	protected void deactivate() {
+		PortletSessionListenerManager.removeHttpSessionListener(
+			_INVALIDATEHTTPSESSION_LISTENER);
+
 		_serviceRegistration.unregister();
 
 		_serviceRegistration = null;
@@ -144,6 +159,22 @@ public class HttpAdapter {
 		ServletContext.class
 	};
 
+	private static final HttpSessionListener _INVALIDATEHTTPSESSION_LISTENER =
+		new HttpSessionListener() {
+
+			@Override
+			public void sessionCreated(HttpSessionEvent httpSessionEvent) {
+			}
+
+			@Override
+			public void sessionDestroyed(HttpSessionEvent httpSessionEvent) {
+				HttpSession httpSession = httpSessionEvent.getSession();
+
+				HttpSessionTrackerUtil.invalidate(httpSession.getId());
+			}
+
+		};
+
 	private HttpServiceServlet _httpServiceServlet;
 	private ServiceRegistration<?> _serviceRegistration;
 	private ServletContext _servletContext;
@@ -158,33 +189,50 @@ public class HttpAdapter {
 		public Object invoke(Object proxy, Method method, Object[] args)
 			throws Throwable {
 
-			if (method.getName().equals("getInitParameter") &&
-				(args != null) && (args.length == 1)) {
+			String methodName = method.getName();
 
-				if ("osgi.http.endpoint".equals(args[0])) {
+			if (methodName.equals("getEffectiveMajorVersion")) {
+				return 3;
+			}
+			else if (methodName.equals("getInitParameter") && (args != null) &&
+					 (args.length == 1)) {
+
+				if (Objects.equals(args[0], "osgi.http.endpoint")) {
 					return _servletContext.getInitParameter((String)args[0]);
 				}
 
 				return null;
 			}
-			else if (method.getName().equals("getInitParameterNames") &&
+			else if (methodName.equals("getInitParameterNames") &&
 					 (args == null)) {
 
 				return Collections.enumeration(
 					Collections.singleton("osgi.http.endpoint"));
 			}
-			else if (method.getName().equals("getJspConfigDescriptor") &&
+			else if (methodName.equals("getJspConfigDescriptor") &&
 					 JspConfigDescriptor.class.isAssignableFrom(
 						 method.getReturnType())) {
 
 				return null;
 			}
+			else if (methodName.equals("getServletRegistration") &&
+					 (args != null) && (args.length == 1)) {
+
+				if (Objects.equals(args[0], "Module Framework Servlet")) {
+					ServletRegistration servletRegistration =
+						new ServletRegistrationImpl();
+
+					servletRegistration.addMapping("/o/*");
+
+					return servletRegistration;
+				}
+			}
 
 			try {
 				return method.invoke(_servletContext, args);
 			}
-			catch (InvocationTargetException ite) {
-				throw ite.getCause();
+			catch (InvocationTargetException invocationTargetException) {
+				throw invocationTargetException.getCause();
 			}
 		}
 

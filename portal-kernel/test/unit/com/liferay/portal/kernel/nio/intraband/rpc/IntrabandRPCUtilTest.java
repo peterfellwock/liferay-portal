@@ -14,17 +14,18 @@
 
 package com.liferay.portal.kernel.nio.intraband.rpc;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
 import com.liferay.portal.kernel.io.Deserializer;
 import com.liferay.portal.kernel.io.Serializer;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.nio.intraband.Datagram;
 import com.liferay.portal.kernel.nio.intraband.SystemDataType;
-import com.liferay.portal.kernel.nio.intraband.rpc.IntrabandRPCUtil.FutureCompletionHandler;
 import com.liferay.portal.kernel.nio.intraband.test.MockIntraband;
 import com.liferay.portal.kernel.nio.intraband.test.MockRegistrationReference;
 import com.liferay.portal.kernel.process.ProcessCallable;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.PortalClassLoaderUtil;
 
 import java.io.IOException;
@@ -82,7 +83,11 @@ public class IntrabandRPCUtilTest {
 					return Datagram.createResponseDatagram(
 						datagram, serializer.toByteBuffer());
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
+
 					throw new RuntimeException();
 				}
 			}
@@ -100,10 +105,10 @@ public class IntrabandRPCUtilTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable t = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
-			Assert.assertEquals(exception.getMessage(), t.getMessage());
+			Assert.assertEquals(exception.getMessage(), throwable.getMessage());
 		}
 	}
 
@@ -132,8 +137,8 @@ public class IntrabandRPCUtilTest {
 					return Datagram.createResponseDatagram(
 						datagram, serializer.toByteBuffer());
 				}
-				catch (Exception e) {
-					throw new RuntimeException(e);
+				catch (Exception exception) {
+					throw new RuntimeException(exception);
 				}
 			}
 
@@ -157,31 +162,34 @@ public class IntrabandRPCUtilTest {
 		DefaultNoticeableFuture<String> defaultNoticeableFuture =
 			new DefaultNoticeableFuture<>();
 
-		FutureCompletionHandler<String> futureCompletionHandler =
-			new FutureCompletionHandler<>(defaultNoticeableFuture);
+		IntrabandRPCUtil.FutureCompletionHandler<String>
+			futureCompletionHandler =
+				new IntrabandRPCUtil.FutureCompletionHandler<>(
+					defaultNoticeableFuture);
 
 		futureCompletionHandler.delivered(null);
 		futureCompletionHandler.submitted(null);
 
-		IOException ioe = new IOException();
+		IOException ioException = new IOException();
 
-		futureCompletionHandler.failed(null, ioe);
+		futureCompletionHandler.failed(null, ioException);
 
 		try {
 			defaultNoticeableFuture.get();
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertSame(ioe, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertSame(ioException, executionException.getCause());
 		}
 
 		// Class not found exception
 
 		defaultNoticeableFuture = new DefaultNoticeableFuture<>();
 
-		futureCompletionHandler = new FutureCompletionHandler<>(
-			defaultNoticeableFuture);
+		futureCompletionHandler =
+			new IntrabandRPCUtil.FutureCompletionHandler<>(
+				defaultNoticeableFuture);
 
 		Serializer serializer = new Serializer();
 
@@ -201,8 +209,8 @@ public class IntrabandRPCUtilTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Throwable throwable = ee.getCause();
+		catch (ExecutionException executionException) {
+			Throwable throwable = executionException.getCause();
 
 			Assert.assertSame(
 				ClassNotFoundException.class, throwable.getClass());
@@ -212,8 +220,9 @@ public class IntrabandRPCUtilTest {
 
 		defaultNoticeableFuture = new DefaultNoticeableFuture<>();
 
-		futureCompletionHandler = new FutureCompletionHandler<>(
-			defaultNoticeableFuture);
+		futureCompletionHandler =
+			new IntrabandRPCUtil.FutureCompletionHandler<>(
+				defaultNoticeableFuture);
 
 		futureCompletionHandler.timedOut(null);
 
@@ -222,9 +231,12 @@ public class IntrabandRPCUtilTest {
 
 			Assert.fail();
 		}
-		catch (CancellationException ce) {
+		catch (CancellationException cancellationException) {
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		IntrabandRPCUtilTest.class);
 
 	private static class TestProcessCallable
 		implements ProcessCallable<String> {

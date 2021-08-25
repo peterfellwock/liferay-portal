@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.workflow;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.List;
@@ -31,7 +30,7 @@ public class WorkflowLogManagerUtil {
 			long companyId, long workflowInstanceId, List<Integer> logTypes)
 		throws WorkflowException {
 
-		return getWorkflowLogManager().getWorkflowLogCountByWorkflowInstance(
+		return _workflowLogManager.getWorkflowLogCountByWorkflowInstance(
 			companyId, workflowInstanceId, logTypes);
 	}
 
@@ -39,14 +38,11 @@ public class WorkflowLogManagerUtil {
 			long companyId, long workflowTaskId, List<Integer> logTypes)
 		throws WorkflowException {
 
-		return getWorkflowLogManager().getWorkflowLogCountByWorkflowTask(
+		return _workflowLogManager.getWorkflowLogCountByWorkflowTask(
 			companyId, workflowTaskId, logTypes);
 	}
 
 	public static WorkflowLogManager getWorkflowLogManager() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			WorkflowLogManagerUtil.class);
-
 		return _workflowLogManager;
 	}
 
@@ -56,7 +52,7 @@ public class WorkflowLogManagerUtil {
 			OrderByComparator<WorkflowLog> orderByComparator)
 		throws WorkflowException {
 
-		return getWorkflowLogManager().getWorkflowLogsByWorkflowInstance(
+		return _workflowLogManager.getWorkflowLogsByWorkflowInstance(
 			companyId, workflowInstanceId, logTypes, start, end,
 			orderByComparator);
 	}
@@ -67,13 +63,11 @@ public class WorkflowLogManagerUtil {
 			OrderByComparator<WorkflowLog> orderByComparator)
 		throws WorkflowException {
 
-		return getWorkflowLogManager().getWorkflowLogsByWorkflowTask(
+		return _workflowLogManager.getWorkflowLogsByWorkflowTask(
 			companyId, workflowTaskId, logTypes, start, end, orderByComparator);
 	}
 
 	public void setWorkflowLogManager(WorkflowLogManager workflowLogManager) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_workflowLogManager = workflowLogManager;
 	}
 

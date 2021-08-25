@@ -1,9 +1,0 @@
-;
-; Do not manually edit this file.
-;
-[subrepo]
-	cmdver = liferay
-	commit = f35fb3f976950658198d7cc8ee6891cfde26b92d
-	mode = push
-	parent = e8a2e083af98f7ff7e8e198bf392044155e686ce
-	remote = git@github.com:liferay/com-liferay-frontend-theme.git

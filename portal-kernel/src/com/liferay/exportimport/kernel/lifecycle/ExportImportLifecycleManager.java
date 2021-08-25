@@ -14,9 +14,9 @@
 
 package com.liferay.exportimport.kernel.lifecycle;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Daniel Kocsis
@@ -25,6 +25,6 @@ import java.io.Serializable;
 public interface ExportImportLifecycleManager {
 
 	public void fireExportImportLifecycleEvent(
-		int code, int processFlag, Serializable... arguments);
+		int code, int processFlag, String processId, Serializable... arguments);
 
 }

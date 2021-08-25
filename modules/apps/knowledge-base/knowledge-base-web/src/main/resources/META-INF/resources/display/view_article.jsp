@@ -21,13 +21,7 @@ boolean exactMatch = GetterUtil.getBoolean(renderRequest.getAttribute(KBWebKeys.
 String[] searchKeywords = (String[])renderRequest.getAttribute(KBWebKeys.KNOWLEDGE_BASE_SEARCH_KEYWORDS);
 %>
 
-<div id="<portlet:namespace/>message-container"></div>
-
-<c:if test="<%= Objects.equals(portletDisplay.getId(), KBPortletKeys.KNOWLEDGE_BASE_ARTICLE_DEFAULT_INSTANCE) && PortletPermissionUtil.contains(permissionChecker, plid, portletDisplay.getId(), KBActionKeys.CONFIGURATION) %>">
-	<div class="alert alert-info portlet-configuration">
-		<aui:a href="<%= portletDisplay.getURLConfiguration() %>" label='<%= LanguageUtil.format(request, "portlet-configuration-page-x-instance-id-x", new String[] {layout.getName(locale), portletDisplay.getInstanceId()}, false) %>' onClick="<%= portletDisplay.getURLConfigurationJS() %>" />
-	</div>
-</c:if>
+<div id="<portlet:namespace />message-container"></div>
 
 <c:choose>
 	<c:when test="<%= searchKeywords == null %>">
@@ -47,17 +41,26 @@ String[] searchKeywords = (String[])renderRequest.getAttribute(KBWebKeys.KNOWLED
 
 			<%
 			String searchPortletId = PortletProviderUtil.getPortletId(PortalSearchApplicationType.Search.CLASS_NAME, PortletProvider.Action.VIEW);
-
-			PortletURL portletURL = liferayPortletResponse.createLiferayPortletURL(searchPortletId, PortletRequest.RENDER_PHASE);
-
-			portletURL.setParameter("struts_action", "/search/search");
-			portletURL.setParameter("redirect", currentURL);
-			portletURL.setParameter("keywords", StringUtil.merge(searchKeywords, StringPool.SPACE));
-			portletURL.setPortletMode(PortletMode.VIEW);
-			portletURL.setWindowState(WindowState.MAXIMIZED);
 			%>
 
-			<aui:a href="<%= portletURL.toString() %>" label='<%= LanguageUtil.get(request, "search-for-a-similar-article") %>' />
+			<aui:a
+				href='<%=
+					PortletURLBuilder.createLiferayPortletURL(
+						liferayPortletResponse, searchPortletId, PortletRequest.RENDER_PHASE
+					).setRedirect(
+						currentURL
+					).setKeywords(
+						StringUtil.merge(searchKeywords, StringPool.SPACE)
+					).setParameter(
+						"struts_action", "/search/search"
+					).setPortletMode(
+						PortletMode.VIEW
+					).setWindowState(
+						WindowState.MAXIMIZED
+					).buildString()
+				%>'
+				label='<%= LanguageUtil.get(request, "search-for-a-similar-article") %>'
+			/>
 		</div>
 	</c:otherwise>
 </c:choose>

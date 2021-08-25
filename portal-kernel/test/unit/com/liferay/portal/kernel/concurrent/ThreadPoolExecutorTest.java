@@ -17,8 +17,10 @@ package com.liferay.portal.kernel.concurrent;
 import com.liferay.portal.kernel.concurrent.test.MarkerBlockingJob;
 import com.liferay.portal.kernel.concurrent.test.TestUtil;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -147,7 +149,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		threadPoolExecutor = new ThreadPoolExecutor(
@@ -158,7 +160,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		threadPoolExecutor = new ThreadPoolExecutor(
@@ -169,7 +171,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		threadPoolExecutor = new ThreadPoolExecutor(
@@ -180,7 +182,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 	}
 
@@ -231,7 +233,7 @@ public class ThreadPoolExecutorTest {
 	}
 
 	@Test
-	public void testAdjustPoolSizeIncreaseCoreAndMaxPoolSizeWithNonEmptyTaskQueue()
+	public void testAdjustPoolSizeIncreaseCoreAndMaxPoolSizeWithNonemptyTaskQueue()
 		throws InterruptedException {
 
 		ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
@@ -317,7 +319,7 @@ public class ThreadPoolExecutorTest {
 
 					Assert.fail();
 				}
-				catch (RejectedExecutionException ree) {
+				catch (RejectedExecutionException rejectedExecutionException) {
 				}
 
 				Assert.assertEquals(10, threadPoolExecutor.getPoolSize());
@@ -424,7 +426,7 @@ public class ThreadPoolExecutorTest {
 
 					Assert.fail();
 				}
-				catch (RejectedExecutionException ree) {
+				catch (RejectedExecutionException rejectedExecutionException) {
 				}
 
 				Assert.assertEquals(10, threadPoolExecutor.getPoolSize());
@@ -654,7 +656,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -663,7 +665,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -672,7 +674,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -681,7 +683,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -689,7 +691,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -698,7 +700,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -707,7 +709,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -718,7 +720,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 
 		try {
@@ -728,7 +730,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 
 		try {
@@ -738,7 +740,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 	}
 
@@ -782,7 +784,7 @@ public class ThreadPoolExecutorTest {
 						takeLock.unlock();
 					}
 				}
-				catch (InterruptedException ie) {
+				catch (InterruptedException interruptedException) {
 				}
 			}
 
@@ -793,12 +795,12 @@ public class ThreadPoolExecutorTest {
 		executeLatch.await();
 
 		try {
-			MarkerBlockingJob markerBlockingJob = new MarkerBlockingJob();
+			threadPoolExecutor.execute(new MarkerBlockingJob());
 
-			threadPoolExecutor.execute(markerBlockingJob);
+			List<Runnable> rejectedList =
+				recordRejectedExecutionHandler.getRejectedList();
 
-			Assert.assertTrue(
-				recordRejectedExecutionHandler.getRejectedList().isEmpty());
+			Assert.assertTrue(rejectedList.isEmpty());
 		}
 		finally {
 			TestUtil.closePool(threadPoolExecutor);
@@ -826,7 +828,7 @@ public class ThreadPoolExecutorTest {
 		List<Runnable> rejectedList =
 			recordRejectedExecutionHandler.getRejectedList();
 
-		Assert.assertEquals(1, rejectedList.size());
+		Assert.assertEquals(rejectedList.toString(), 1, rejectedList.size());
 		Assert.assertSame(markerBlockingJob, rejectedList.get(0));
 	}
 
@@ -959,7 +961,7 @@ public class ThreadPoolExecutorTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 		finally {
 			TestUtil.closePool(threadPoolExecutor);
@@ -1004,7 +1006,7 @@ public class ThreadPoolExecutorTest {
 						putLock.unlock();
 					}
 				}
-				catch (InterruptedException ie) {
+				catch (InterruptedException interruptedException) {
 				}
 			}
 
@@ -1022,7 +1024,8 @@ public class ThreadPoolExecutorTest {
 			List<Runnable> rejectedList =
 				recordRejectedExecutionHandler.getRejectedList();
 
-			Assert.assertEquals(1, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 1, rejectedList.size());
 			Assert.assertSame(markerBlockingJob, rejectedList.get(0));
 
 			Assert.assertFalse(markerBlockingJob.isStarted());
@@ -1067,17 +1070,20 @@ public class ThreadPoolExecutorTest {
 
 			threadPoolExecutor.execute(new MarkerBlockingJob(true));
 
-			Assert.assertEquals(0, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 0, rejectedList.size());
 
 			threadPoolExecutor.execute(new MarkerBlockingJob(true));
 
-			Assert.assertEquals(0, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 0, rejectedList.size());
 
 			MarkerBlockingJob markerBlockingJob = new MarkerBlockingJob();
 
 			threadPoolExecutor.execute(markerBlockingJob);
 
-			Assert.assertEquals(1, rejectedList.size());
+			Assert.assertEquals(
+				rejectedList.toString(), 1, rejectedList.size());
 			Assert.assertSame(markerBlockingJob, rejectedList.get(0));
 			Assert.assertFalse(markerBlockingJob.isStarted());
 		}
@@ -1119,8 +1125,11 @@ public class ThreadPoolExecutorTest {
 		}
 
 		Assert.assertEquals(1, threadPoolExecutor.getLargestPoolSize());
-		Assert.assertEquals(
-			10, recordUncaughtExceptionHandler.getUncaughtMap().size());
+
+		Map<Thread, Throwable> uncaughtMap =
+			recordUncaughtExceptionHandler.getUncaughtMap();
+
+		Assert.assertEquals(uncaughtMap.toString(), 10, uncaughtMap.size());
 
 		for (MarkerBlockingJob markerBlockingJob : markerBlockingJobQueue) {
 			Assert.assertTrue(markerBlockingJob.isStarted());
@@ -1174,9 +1183,12 @@ public class ThreadPoolExecutorTest {
 			Set<? extends AbstractQueuedSynchronizer> workerTasks =
 				threadPoolExecutor.getWorkerTasks();
 
-			Assert.assertEquals(1, workerTasks.size());
+			Assert.assertEquals(workerTasks.toString(), 1, workerTasks.size());
 
-			headWorkerTask = workerTasks.iterator().next();
+			Iterator<? extends AbstractQueuedSynchronizer> iterator =
+				workerTasks.iterator();
+
+			headWorkerTask = iterator.next();
 
 			headWorkerTask.acquire(1);
 		}

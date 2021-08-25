@@ -87,10 +87,13 @@ public class FileVersionProxyBean
 
 	@Override
 	public ExpandoBridge getExpandoBridge() {
-		ExpandoBridge expandoBridge = _fileVersion.getExpandoBridge();
-
 		return (ExpandoBridge)newProxyInstance(
-			expandoBridge, ExpandoBridge.class);
+			_fileVersion.getExpandoBridge(), ExpandoBridge.class);
+	}
+
+	@Override
+	public Date getExpirationDate() {
+		return _fileVersion.getExpirationDate();
 	}
 
 	@Override
@@ -105,9 +108,7 @@ public class FileVersionProxyBean
 
 	@Override
 	public FileEntry getFileEntry() throws PortalException {
-		FileEntry fileEntry = _fileVersion.getFileEntry();
-
-		return newFileEntryProxyBean(fileEntry);
+		return newFileEntryProxyBean(_fileVersion.getFileEntry());
 	}
 
 	@Override
@@ -178,6 +179,11 @@ public class FileVersionProxyBean
 	@Override
 	public long getRepositoryId() {
 		return _fileVersion.getRepositoryId();
+	}
+
+	@Override
+	public Date getReviewDate() {
+		return _fileVersion.getReviewDate();
 	}
 
 	@Override

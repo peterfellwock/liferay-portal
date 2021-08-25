@@ -14,77 +14,78 @@
 
 package com.liferay.push.notifications.service;
 
-import aQute.bnd.annotation.ProviderType;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.push.notifications.model.PushNotificationsDevice;
 
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
-import org.osgi.util.tracker.ServiceTracker;
+import java.util.List;
 
 /**
  * Provides the remote service utility for PushNotificationsDevice. This utility wraps
- * {@link com.liferay.push.notifications.service.impl.PushNotificationsDeviceServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.push.notifications.service.impl.PushNotificationsDeviceServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author Bruno Farache
  * @see PushNotificationsDeviceService
- * @see com.liferay.push.notifications.service.base.PushNotificationsDeviceServiceBaseImpl
- * @see com.liferay.push.notifications.service.impl.PushNotificationsDeviceServiceImpl
  * @generated
  */
-@ProviderType
 public class PushNotificationsDeviceServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.push.notifications.service.impl.PushNotificationsDeviceServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.push.notifications.service.impl.PushNotificationsDeviceServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static com.liferay.push.notifications.model.PushNotificationsDevice addPushNotificationsDevice(
-		java.lang.String token, java.lang.String platform)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static PushNotificationsDevice addPushNotificationsDevice(
+			String token, String platform)
+		throws PortalException {
+
 		return getService().addPushNotificationsDevice(token, platform);
 	}
 
-	public static com.liferay.push.notifications.model.PushNotificationsDevice deletePushNotificationsDevice(
-		java.lang.String token)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static PushNotificationsDevice deletePushNotificationsDevice(
+			long pushNotificationsDeviceId)
+		throws PortalException {
+
+		return getService().deletePushNotificationsDevice(
+			pushNotificationsDeviceId);
+	}
+
+	public static PushNotificationsDevice deletePushNotificationsDevice(
+			String token)
+		throws PortalException {
+
 		return getService().deletePushNotificationsDevice(token);
 	}
 
-	public static com.liferay.push.notifications.model.PushNotificationsDevice deletePushNotificationsDevice(
-		long pushNotificationsDeviceId)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .deletePushNotificationsDevice(pushNotificationsDeviceId);
-	}
-
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
-	public static void sendPushNotification(java.lang.String platform,
-		java.util.List<java.lang.String> tokens, java.lang.String payload)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		getService().sendPushNotification(platform, tokens, payload);
-	}
+	public static void sendPushNotification(long[] toUserIds, String payload)
+		throws PortalException {
 
-	public static void sendPushNotification(long[] toUserIds,
-		java.lang.String payload)
-		throws com.liferay.portal.kernel.exception.PortalException {
 		getService().sendPushNotification(toUserIds, payload);
 	}
 
-	public static PushNotificationsDeviceService getService() {
-		return _serviceTracker.getService();
+	public static void sendPushNotification(
+			String platform, List<String> tokens, String payload)
+		throws PortalException {
+
+		getService().sendPushNotification(platform, tokens, payload);
 	}
 
-	private static ServiceTracker<PushNotificationsDeviceService, PushNotificationsDeviceService> _serviceTracker =
-		ServiceTrackerFactory.open(PushNotificationsDeviceService.class);
+	public static PushNotificationsDeviceService getService() {
+		return _service;
+	}
+
+	private static volatile PushNotificationsDeviceService _service;
+
 }

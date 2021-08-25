@@ -14,11 +14,12 @@
 
 package com.liferay.registry;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -37,7 +38,14 @@ public class ServiceTrackerFieldUpdaterCustomizer<S, T>
 		}
 
 		_serviceField = serviceField;
-		_serviceHolder = serviceHolder;
+
+		if (serviceHolder == null) {
+			_serviceHolderReference = null;
+		}
+		else {
+			_serviceHolderReference = new WeakReference<>(serviceHolder);
+		}
+
 		_dummyTrackedService = dummyTrackedService;
 	}
 
@@ -99,34 +107,44 @@ public class ServiceTrackerFieldUpdaterCustomizer<S, T>
 	}
 
 	protected void doServiceUpdate(T newService) {
+		Object serviceHolder = null;
+
+		if (_serviceHolderReference != null) {
+			serviceHolder = _serviceHolderReference.get();
+
+			if (serviceHolder == null) {
+				return;
+			}
+		}
+
 		try {
-			T oldService = (T)_serviceField.get(_serviceHolder);
+			T oldService = (T)_serviceField.get(serviceHolder);
 
 			if (newService != oldService) {
 				beforeServiceUpdate(oldService, newService);
 
-				_serviceField.set(_serviceHolder, newService);
+				_serviceField.set(serviceHolder, newService);
 
 				afterServiceUpdate(oldService, newService);
 			}
 		}
-		catch (IllegalAccessException iae) {
-			throw new RuntimeException(iae);
+		catch (IllegalAccessException illegalAccessException) {
+			throw new RuntimeException(illegalAccessException);
 		}
 	}
 
 	private void _updateService() {
-		Optional<Entry<ServiceReference<S>, T>> optionalEntry =
+		Optional<Map.Entry<ServiceReference<S>, T>> optionalEntry =
 			ServiceRankingUtil.getHighestRankingEntry(_trackedServices);
 
-		Optional<T> optionalService = optionalEntry.map(Entry::getValue);
+		Optional<T> optionalService = optionalEntry.map(Map.Entry::getValue);
 
 		doServiceUpdate(optionalService.orElse(_dummyTrackedService));
 	}
 
 	private final T _dummyTrackedService;
 	private final Field _serviceField;
-	private final Object _serviceHolder;
+	private final Reference<?> _serviceHolderReference;
 	private final Map<ServiceReference<S>, T> _trackedServices =
 		new ConcurrentHashMap<>();
 

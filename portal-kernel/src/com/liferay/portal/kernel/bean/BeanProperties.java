@@ -14,9 +14,9 @@
 
 package com.liferay.portal.kernel.bean;
 
-import aQute.bnd.annotation.ProviderType;
-
 import javax.servlet.http.HttpServletRequest;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Brian Wing Shun Chan
@@ -26,8 +26,16 @@ public interface BeanProperties {
 
 	public void copyProperties(Object source, Object target);
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	public void copyProperties(Object source, Object target, Class<?> editable);
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), with no direct replacement
+	 */
+	@Deprecated
 	public void copyProperties(
 		Object source, Object target, String[] ignoreProperties);
 
@@ -119,7 +127,12 @@ public interface BeanProperties {
 	public String getStringSilent(
 		Object bean, String param, String defaultValue);
 
-	public void setProperties(Object bean, HttpServletRequest request);
+	public void setProperties(
+		Object bean, HttpServletRequest httpServletRequest);
+
+	public void setProperties(
+		Object bean, HttpServletRequest httpServletRequest,
+		String[] ignoreProperties);
 
 	public void setProperty(Object bean, String param, Object value);
 

@@ -38,17 +38,15 @@ public class ServiceReferenceServiceTuple<S, T>
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (obj == null) {
-			return false;
-		}
+	public boolean equals(Object object) {
+		if ((object == null) ||
+			!(object instanceof ServiceReferenceServiceTuple)) {
 
-		if (!(obj instanceof ServiceReferenceServiceTuple)) {
 			return false;
 		}
 
 		ServiceReferenceServiceTuple<S, T> serviceReferenceServiceTuple =
-			(ServiceReferenceServiceTuple<S, T>)obj;
+			(ServiceReferenceServiceTuple<S, T>)object;
 
 		return _serviceReference.equals(
 			serviceReferenceServiceTuple.getServiceReference());

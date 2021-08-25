@@ -15,7 +15,7 @@
 package com.liferay.knowledge.base.internal.upgrade.v1_3_0;
 
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
-import com.liferay.portal.kernel.upgrade.BaseUpgradePortletPreferences;
+import com.liferay.portal.kernel.upgrade.BasePortletPreferencesUpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.rss.util.RSSUtil;
@@ -23,9 +23,10 @@ import com.liferay.rss.util.RSSUtil;
 import javax.portlet.PortletPreferences;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
-public class UpgradePortletPreferences extends BaseUpgradePortletPreferences {
+public class UpgradePortletPreferences
+	extends BasePortletPreferencesUpgradeProcess {
 
 	@Override
 	protected String[] getPortletIds() {
@@ -58,7 +59,7 @@ public class UpgradePortletPreferences extends BaseUpgradePortletPreferences {
 		return PortletPreferencesFactoryUtil.toXML(portletPreferences);
 	}
 
-	private static final String[] _PORTLET_IDS = new String[] {
+	private static final String[] _PORTLET_IDS = {
 		"2_WAR_knowledgebaseportlet", "3_WAR_knowledgebaseportlet_INSTANCE_%",
 		"4_WAR_knowledgebaseportlet_INSTANCE_%", "5_WAR_knowledgebaseportlet"
 	};

@@ -1,0 +1,614 @@
+definition {
+
+	macro assertDiscardIsUnavailableForInactivePublication {
+		if (isSet(changeOrder)) {
+			var changeOrder = "${changeOrder}";
+		}
+		else {
+			var changeOrder = "1";
+		}
+
+		Click(
+			key_publicationName = "${publicationName}",
+			locator1 = "Publications#PUBLISHED_PUBLICATION_NAME");
+
+		Pause(locator1 = "1000");
+
+		var key_changeCategory = "${changeCategory}";
+		var key_changeTitle = "${changeTitle}";
+
+		Click(locator1 = "PublicationsChanges#PUBLICATIONS_CHANGE_TITLE");
+
+		AssertElementNotPresent(locator1 = "PublicationsChanges#PUBLICATIONS_ELLIPSIS");
+	}
+
+	macro assertScheduledPublicationPublished {
+		Click(
+			key_navBarTitle = "History",
+			locator1 = "Publications#MANGE_PUBLICATIONS_NAVBAR_TITLE");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		var key_publicationName = "${publicationName}";
+
+		AssertTextEquals(
+			locator1 = "Publications#LIST_PUBLISHED_STATUS",
+			value1 = "Published");
+	}
+
+	macro cancelPublicationCreation {
+		ApplicationsMenu.gotoPortlet(
+			category = "Publications",
+			panel = "Applications",
+			portlet = "Publications");
+
+		Click(locator1 = "Button#PLUS");
+
+		Type(
+			locator1 = "Publications#PUBLICATION_NAME",
+			value1 = "${publicationName}");
+
+		Button.clickCancel();
+	}
+
+	macro changeDiffDisplayItem {
+		Click(locator1 = "Publications#CURRENT_DIFF_DISPLAY_ICON");
+
+		MenuItem.click(menuItem = "${displayItem}");
+	}
+
+	macro createNewPublication {
+		if ("${gotoManagePublications}" == "true") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Publications",
+				panel = "Applications",
+				portlet = "Publications");
+
+			Click(locator1 = "Button#PLUS");
+		}
+		else {
+			Click(locator1 = "Publications#PUBLICATIONS_INDICATOR_BUTTON");
+
+			MenuItem.click(menuItem = "Create New Publication");
+		}
+
+		if (isSet(publicationName)) {
+			Type(
+				locator1 = "Publications#PUBLICATION_NAME",
+				value1 = "${publicationName}");
+		}
+
+		if (isSet(publicationDescription)) {
+			Type(
+				locator1 = "Publications#PUBLICATION_DESCRIPTION",
+				value1 = "${publicationDescription}");
+		}
+
+		Button.click(button = "Create");
+
+		Pause(locator1 = "5000");
+	}
+
+	macro deletePublication {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		Click(
+			key_publicationName = "${publicationName}",
+			locator1 = "Publications#LIST_PUBLICATION_ELLIPSIS");
+
+		ClickNoError(
+			key_menuItem = "Delete",
+			locator1 = "MenuItem#ANY_MENU_ITEM");
+
+		AssertConfirm(value1 = "Are you sure you want to delete this publication? You will permanently lose the changes in this publication. You will not be able to undo this operation.");
+
+		AssertTextEquals(
+			locator1 = "Publications#MANGE_PUBLICATIONS_PAGE_TITLE",
+			value1 = "Publications");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro disablePublications {
+		Uncheck.uncheckToggleSwitch(locator1 = "PublicationsSettings#PUBLICATIONS_TOGGLE_SWITCH");
+
+		Click(locator1 = "Button#SAVE");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro discardChanges {
+		if (isSet(changeOrder)) {
+			var changeOrder = "${changeOrder}";
+		}
+		else {
+			var changeOrder = "1";
+		}
+
+		if ("${conflictingChanges}" == "true") {
+			Click(
+				key_entryTitle = "${entryTitle}",
+				locator1 = "Publications#CONFLICTING_CHANGES_DISCARD_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Discard Change");
+		}
+		else {
+			var key_changeCategory = "${changeCategory}";
+			var key_changeTitle = "${changeTitle}";
+
+			Click(locator1 = "PublicationsChanges#PUBLICATIONS_CHANGE_TITLE");
+
+			Click(locator1 = "PublicationsChanges#PUBLICATIONS_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Discard");
+		}
+
+		Pause(locator1 = "3000");
+
+		AssertElementPresent(locator1 = "Publications#DISCARDED_CHANGES_TITLE");
+
+		var key_changeCategory = "${changeCategory}";
+		var key_changeTitle = "${changeTitle}";
+
+		while (IsElementNotPresent(locator1 = "PublicationsChanges#CONTEXT_CHANGE_TITLE")) {
+			Click(locator1 = "Pagination#NEXT_LINK");
+		}
+
+		Click(
+			key_text = "Discard",
+			locator1 = "Button#ANY");
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro enablePublications {
+		Pause(locator1 = "2000");
+
+		Check.checkToggleSwitch(locator1 = "PublicationsSettings#PUBLICATIONS_TOGGLE_SWITCH");
+
+		if (isSet(gotoOverview)) {
+			Click(locator1 = "PublicationsSettings#SAVE_AND_GO_TO_OVERVIEW_BUTTON");
+		}
+		else {
+			Click(locator1 = "Button#SUBMIT");
+		}
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro gotoPublish {
+		if ("${gotoManagePublications}" == "true") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Publications",
+				panel = "Applications",
+				portlet = "Publications");
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+			Click(
+				key_publicationName = "${publicationName}",
+				locator1 = "Publications#LIST_PUBLICATION_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Publish");
+		}
+		else {
+			Publications.gotoReviewChanges();
+
+			Click(locator1 = "Publications#PUBLISH_NAV_BAR");
+		}
+	}
+
+	macro gotoReviewChanges {
+		if ("${gotoManagePublications}" == "true") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Publications",
+				panel = "Applications",
+				portlet = "Publications");
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+			Click(
+				key_publicationName = "${publicationName}",
+				locator1 = "Publications#LIST_PUBLICATION_ELLIPSIS");
+		}
+		else {
+			Click(locator1 = "Publications#PUBLICATIONS_INDICATOR_BUTTON");
+		}
+
+		MenuItem.click(menuItem = "Review Changes");
+
+		Pause(locator1 = "3000");
+	}
+
+	macro gotoScheduledPublications {
+		ApplicationsMenu.gotoPortlet(
+			category = "Publications",
+			panel = "Applications",
+			portlet = "Publications");
+
+		Click(
+			key_navBarTitle = "Scheduled",
+			locator1 = "Publications#MANGE_PUBLICATIONS_NAVBAR_TITLE");
+	}
+
+	macro gotoViewChangeDiff {
+		var key_changeCategory = "${changeCategory}";
+		var key_changeTitle = "${changeTitle}";
+
+		if (isSet(changeOrder)) {
+			var changeOrder = "${changeOrder}";
+		}
+		else {
+			var changeOrder = "1";
+		}
+
+		Click(
+			locator1 = "PublicationsChanges#PUBLICATIONS_CHANGE_TITLE",
+			value1 = "${changeTitle}");
+	}
+
+	macro gotoViewChangeDiffInConflictingPublications {
+		Click(
+			key_entryTitle = "${entryTitle}",
+			locator1 = "Publications#CONFLICTING_CHANGES_CONTENT_LINK");
+
+		Pause(locator1 = "1000");
+
+		SelectFrameTop(value1 = "relative=top");
+
+		AssertElementPresent(
+			key_iframeTitle = "${entryTitle}",
+			locator1 = "Publications#CONFLICTING_CHANGES_DIFF_IFRAME_TITLE");
+	}
+
+	macro publishPublication {
+		Click(locator1 = "Publications#PUBLISH_BUTTON");
+
+		Alert.viewSuccessMessage();
+
+		var key_navBarTitle = "History";
+
+		AssertTextEquals(
+			locator1 = "Publications#MANGE_PUBLICATIONS_NAVBAR_TITLE",
+			value1 = "History");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		// Workaround LPS-115320
+
+		Refresh();
+
+		var key_publicationName = "${publicationName}";
+
+		AssertTextEquals(
+			locator1 = "Publications#LIST_PUBLISHED_STATUS",
+			value1 = "Published");
+	}
+
+	macro revertPublication {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		var key_publicationName = "${publicationName}";
+
+		Click(locator1 = "Publications#LIST_REVERT_BUTTON");
+
+		AssertTextEquals(
+			locator1 = "Publications#PUBLICATION_NAME",
+			value1 = "Revert &quot;${publicationName}&quot;");
+
+		if ("${publishNow}" == "true") {
+			Click(
+				key_radioName = "Now",
+				locator1 = "Publications#REVERT_SCREEN_RADIO_OPTION",
+				value1 = "Now");
+
+			AssertTextEquals.assertPartialText(
+				key_radioHelpMessage = "Revert your changes to production immediately",
+				locator1 = "Publications#REVERT_SCREEN_RADIO_HELP",
+				value1 = "Revert your changes to production immediately");
+		}
+		else {
+			Click(
+				key_radioName = "Later",
+				locator1 = "Publications#REVERT_SCREEN_RADIO_OPTION",
+				value1 = "Later");
+
+			AssertTextEquals.assertPartialText(
+				key_radioHelpMessage = "Make additional changes and publish them when you are ready",
+				locator1 = "Publications#REVERT_SCREEN_RADIO_HELP",
+				value1 = "Make additional changes and publish them when you are ready");
+		}
+
+		Button.click(button = "Revert and Create Publication");
+
+		Alert.viewSuccessMessage();
+
+		AssertTextPresent(
+			key_publicationName = "Revert &quot;${publicationName}&quot;",
+			locator1 = "Publications#PUBLICATIONS_INDICATOR_TITLE",
+			value1 = "Revert &quot;${publicationName}&quot;");
+	}
+
+	macro schedulePublication {
+		if ("${gotoManagePublications}" == "true") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Publications",
+				panel = "Applications",
+				portlet = "Publications");
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+			Click(
+				key_publicationName = "${publicationName}",
+				locator1 = "Publications#LIST_PUBLICATION_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Schedule");
+		}
+		else if ("${reschedule}" == "true") {
+			Publications.gotoScheduledPublications();
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+			Click(
+				key_publicationName = "${publicationName}",
+				locator1 = "Publications#LIST_PUBLICATION_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Reschedule");
+
+			// Workaround LPS-123416
+
+			Pause(locator1 = "1000");
+
+			Click.mouseOverClick(locator1 = "Publications#DELETE_THE_ENTERED_TIME_BUTTON");
+		}
+		else {
+			Publications.gotoReviewChanges();
+
+			Click(locator1 = "Publications#SCHEDULE_NAV_BAR");
+		}
+
+		var publishDateDay = Time.getUTCDay();
+		var publishDateMonth = Time.getUTCMonth();
+		var publishDateYear = Time.getUTCYear();
+		var publishDate = "${publishDateYear}-${publishDateMonth}-${publishDateDay}";
+
+		Type(
+			locator1 = "Publications#PUBLISH_DATE",
+			value1 = "${publishDate}");
+
+		var publishTimeHours = Time.getUTCHours();
+		var publishTimeMinutes = Time.getUTCMinutes();
+
+		if ("${utcMinutes}" == "58") {
+			publishTimeHours = MathUtil.sum("${publishTimeHours}", "1");
+
+			publishTimeMinutes = "00";
+		}
+		else if ("${utcMinutes}" == "59") {
+			publishTimeHours = MathUtil.sum("${publishTimeHours}", "1");
+
+			publishTimeMinutes = "01";
+		}
+		else {
+			publishTimeMinutes = MathUtil.sum("${publishTimeMinutes}", "2");
+		}
+
+		Click(locator1 = "Publications#PUBLISH_TIME_HOURS");
+
+		DoubleClick.javaScriptDoubleClick(locator1 = "Publications#PUBLISH_TIME_HOURS");
+
+		Type.sendKeys(
+			locator1 = "Publications#PUBLISH_TIME_HOURS",
+			value1 = "${publishTimeHours}");
+
+		Click(locator1 = "Publications#PUBLISH_TIME_MINUTES");
+
+		DoubleClick.javaScriptDoubleClick(locator1 = "Publications#PUBLISH_TIME_MINUTES");
+
+		Type.sendKeys(
+			locator1 = "Publications#PUBLISH_TIME_MINUTES",
+			value1 = "${publishTimeMinutes}");
+
+		if ("${reschedule}" == "true") {
+			Click(locator1 = "Publications#RESCHEDULE_BUTTON");
+		}
+		else {
+			Click(locator1 = "Publications#SCHEDULE_BUTTON");
+		}
+
+		Alert.viewSuccessMessage();
+	}
+
+	macro search {
+		Search.searchCP(searchTerm = "${publicationName}");
+
+		var key_publicationName = "${publicationName}";
+
+		AssertTextEquals(
+			locator1 = "Publications#PUBLISHED_PUBLICATION_NAME",
+			value1 = "${publicationName}");
+	}
+
+	macro selectPublication {
+		if ("${gotoManagePublications}" == "true") {
+			ApplicationsMenu.gotoPortlet(
+				category = "Publications",
+				panel = "Applications",
+				portlet = "Publications");
+
+			LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+			Click(
+				key_publicationName = "${publicationName}",
+				locator1 = "Publications#LIST_PUBLICATION_ELLIPSIS");
+
+			MenuItem.click(menuItem = "Work on Publication");
+		}
+		else {
+			Click(locator1 = "Publications#PUBLICATIONS_INDICATOR_BUTTON");
+
+			MenuItem.click(menuItem = "Select a Publication");
+
+			SelectFrameTop(value1 = "relative=top");
+
+			var key_publicationName = "${publicationName}";
+
+			Click(
+				locator1 = "Publications#SELECT_PUBLICATION_NAME",
+				value1 = "${publicationName}");
+		}
+
+		AssertTextPresent(
+			locator1 = "Publications#PUBLICATIONS_INDICATOR_TITLE",
+			value1 = "${publicationName}");
+	}
+
+	macro unschedulePublication {
+		Publications.gotoScheduledPublications();
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		Click(
+			key_publicationName = "${publicationName}",
+			locator1 = "Publications#LIST_PUBLICATION_ELLIPSIS");
+
+		MenuItem.click(menuItem = "Unschedule");
+	}
+
+	macro viewAutomaticallyResolved {
+		AssertElementPresent(locator1 = "Publications#AUTOMATICALLY_RESOLVED_TABLE");
+
+		AssertElementPresent(
+			key_entryTitle = "${entryTitle}",
+			key_successMessage = "${successMessage}",
+			locator1 = "Publications#CONFLICTING_CHANGES_SUCCESS_CONTENT");
+	}
+
+	macro viewChangeDiff {
+		if ("${entryDeletedInProduction}" == "true") {
+			AssertTextEquals(
+				key_displayItem = "Split View",
+				locator1 = "Publications#CURRENT_DIFF_DISPLAY_ITEM",
+				value1 = "Split View");
+		}
+		else {
+			AssertTextEquals(
+				key_displayItem = "Unified View",
+				locator1 = "Publications#CURRENT_DIFF_DISPLAY_ITEM",
+				value1 = "Unified View");
+		}
+
+		var key_columnName = "${columnName}";
+
+		if (isSet(diffAddedValue)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Publications#DIFF_ADDED_VALUE",
+				value1 = "${diffAddedValue}");
+		}
+
+		if (isSet(diffRemovedValue)) {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Publications#DIFF_REMOVED_VALUE",
+				value1 = "${diffRemovedValue}");
+		}
+
+		Publications.changeDiffDisplayItem(displayItem = "Production");
+
+		if ("${entryDeletedInProduction}" == "true") {
+			Alert.viewErrorMessage(errorMessage = "This item is missing or is deleted.");
+		}
+		else {
+			AssertTextEquals(
+				key_displayItem = "Production",
+				locator1 = "Publications#CURRENT_DIFF_DISPLAY_ITEM",
+				value1 = "Production");
+
+			if (isSet(columnValueInProduction)) {
+				key_columnValueInProduction = "${columnValueInProduction}";
+
+				AssertTextEquals.assertPartialText(
+					locator1 = "Publications#COLUMN_VALUE_IN_PRODUCTION",
+					value1 = "${columnValueInProduction}");
+			}
+		}
+
+		Publications.changeDiffDisplayItem(displayItem = "Publication");
+
+		if (isSet(columnValueInPublication)) {
+			key_columnValueInPublication = "${columnValueInPublication}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Publications#COLUMN_VALUE_IN_PUBLICATION",
+				value1 = "${columnValueInPublication}");
+		}
+	}
+
+	macro viewNeedsManualResolution {
+		AssertElementPresent(locator1 = "Publications#NEEDS_MANUAL_RESOLUTION_TABLE");
+
+		AssertElementPresent(
+			key_entryTitle = "${entryTitle}",
+			key_warningMessage = "${warningMessage}",
+			locator1 = "Publications#CONFLICTING_CHANGES_WARNING_CONTENT");
+
+		AssertVisible(locator1 = "Publications#DISABLED_PUBLISH_BUTTON");
+	}
+
+	macro viewPublicationOrderInHistory {
+		ApplicationsMenu.gotoPortlet(
+			category = "Publications",
+			panel = "Applications",
+			portlet = "Publications");
+
+		var key_navBarTitle = "History";
+
+		Click(
+			locator1 = "Publications#MANGE_PUBLICATIONS_NAVBAR_TITLE",
+			value1 = "History");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		var resultOrder = "0";
+
+		for (var publicationName : list "${publicationList}") {
+			var resultOrder = ${resultOrder} + 1;
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Publications#PUBLICATION_ORDER_IN_HISTORY",
+				resultOrder = "${resultOrder}",
+				value1 = "${publicationName}");
+		}
+	}
+
+	macro viewPublicationPublished {
+		ApplicationsMenu.gotoPortlet(
+			category = "Publications",
+			panel = "Applications",
+			portlet = "Publications");
+
+		var key_navBarTitle = "History";
+
+		Click(
+			locator1 = "Publications#MANGE_PUBLICATIONS_NAVBAR_TITLE",
+			value1 = "History");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
+
+		// Workaround LPS-115320
+
+		Refresh();
+
+		var key_publicationName = "${publicationName}";
+
+		AssertTextEquals(
+			locator1 = "Publications#LIST_PUBLISHED_STATUS",
+			value1 = "Published");
+	}
+
+	macro workOnProduction {
+		Click(locator1 = "Publications#PUBLICATIONS_INDICATOR_BUTTON");
+
+		MenuItem.click(menuItem = "Work on Production");
+	}
+
+}

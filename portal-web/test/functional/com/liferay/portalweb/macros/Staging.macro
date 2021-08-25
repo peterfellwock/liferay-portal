@@ -1,986 +1,1594 @@
-<definition>
-	<command name="activateStagingCP">
-		<execute macro="ProductMenuHelper#openProductMenu" />
-
-		<execute function="AssertTextEquals#assertPartialText" locator1="ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME" value1="${siteName}" />
-
-		<if>
-			<equals arg1="${remoteStaging}" arg2="true" />
-			<then>
-				<execute function="Check" locator1="Radio#REMOTE_LIVE" />
-				<execute function="Type" locator1="SiteSettingsStaging#REMOTE_STAGING_IP" value1="localhost" />
-				<if>
-					<isset var="remotePort" />
-					<then>
-						<execute function="Type" locator1="SiteSettingsStaging#REMOTE_STAGING_PORT" value1="${remotePort}" />
-					</then>
-					<else>
-						<execute function="Type" locator1="SiteSettingsStaging#REMOTE_STAGING_PORT" value1="8080" />
-					</else>
-				</if>
-
-				<execute function="Paste" locator1="SiteSettingsStaging#REMOTE_STAGING_SITE_ID" value1="${siteID}" />
-			</then>
-			<else>
-				<execute function="Check" locator1="Radio#LOCAL_LIVE" />
-			</else>
-		</if>
-
-		<if>
-			<equals arg1="${pageVersioningEnabled}" arg2="true" />
-			<then>
-				<execute function="Check#checkToggleSwitch" locator1="Checkbox#ENABLED_ON_PUBLIC_PAGES" />
-				<execute function="Check#checkToggleSwitch" locator1="Checkbox#ENABLED_ON_PRIVATE_PAGES" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="contentName" />
-			<then>
-				<execute function="Check#checkToggleSwitch" locator1="Checkbox#STAGED_CONTENT">
-					<var name="key_contentName" value="${contentName}" />
-				</execute>
-
-				<for list="Documents and Media,Mobile Device Families" param="contentName">
-					<execute function="Uncheck#uncheckToggleSwitchNoErrorNoAssert" locator1="Checkbox#STAGED_CONTENT">
-						<var name="key_contentName" value="${contentName}" />
-					</execute>
-				</for>
-			</then>
-			<else>
-				<for list="Application Display Template,Blogs,Bookmarks,Calendar,Documents and Media,Dynamic Data Lists,Message Boards,Mobile Device Families,Polls,Web Content,Wiki" param="contentName">
-					<var name="key_contentName" value="${contentName}" />
-
-					<execute function="Check#checkToggleSwitch" locator1="Checkbox#STAGED_CONTENT" />
-				</for>
-			</else>
-		</if>
-
-		<for list="Audience Targeting" param="contentName">
-			<var name="key_contentName" value="${contentName}" />
-
-			<if>
-				<condition function="IsElementPresent" locator1="Checkbox#STAGED_CONTENT" />
-				<then>
-					<execute function="Check#checkToggleSwitch" locator1="Checkbox#STAGED_CONTENT" />
-				</then>
-			</if>
-		</for>
-
-		<if>
-			<isset var="uncheckContent" />
-			<then>
-				<var name="key_contentName" value="${uncheckContent}" />
-
-				<execute function="Uncheck#uncheckToggleSwitch" locator1="Checkbox#STAGED_CONTENT" />
-			</then>
-		</if>
-
-		<if>
-			<isset var="isNotEditable" />
-			<then>
-				<var name="key_contentName" value="${isNotEditable}" />
-
-				<execute function="AssertNotEditable" locator1="SiteSettingsStaging#CONTENT_CHECKBOX" />
-			</then>
-		</if>
-
-		<if>
-			<equals arg1="${editActivateStaging}" arg2="true" />
-			<then>
-				<execute macro="Button#clickSave" />
-			</then>
-			<elseif>
-				<equals arg1="${remoteStaging}" arg2="true" />
-				<then>
-					<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
-					<execute function="Confirm" value1="Are you sure you want to activate remote staging for ${siteName}?" />
-				</then>
-			</elseif>
-			<else>
-				<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
-				<execute function="Confirm" value1="Are you sure you want to activate local staging for ${siteName}?" />
-				<execute function="AssertTextEquals" locator1="Staging#INITIAL_PROCESS_SUCCESSFUL" value1="Successful" />
-			</else>
-		</if>
+definition {
 
-		<execute function="Pause" locator1="5000" />
-	</command>
+	macro activateStagingCP {
+		ProductMenuHelper.openProductMenu();
 
-	<command name="addEventRepeatDaily">
-		<execute function="Click" locator1="Staging#STAGING_PUBLISH_TO_LIVE_BUTTON" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME",
+			value1 = "${siteName}");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		Pause(locator1 = "3000");
 
-		<execute function="Click" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" />
+		if (isSet(remoteStaging)) {
+			Check.checkHiddenToggleSwitch(locator1 = "SiteSettingsStaging#STAGING_REMOTE_LIVE");
 
-		<execute function="Check" locator1="StagingPublishToLive#DATE_SCHEDULE_RADIO" />
-		<execute function="Type" locator1="StagingPublishToLive#DATE_SCHEDULE_TITLE_FIELD" value1="${scheduleTitleName}" />
-		<execute function="Check" locator1="StagingPublishToLive#DATE_SCHEDULE_END_DATE_NO_END_DATE_RADIO" />
-		<execute function="Check" locator1="StagingPublishToLive#DATE_SCHEDULE_REPEAT_DAILY_RADIO" />
-		<execute function="Check" locator1="StagingPublishToLive#CONTENT_ALL_CONTENT" />
+			Type(
+				locator1 = "SiteSettingsStaging#REMOTE_STAGING_IP",
+				value1 = "localhost");
 
-		<execute function="AssertClick" locator1="StagingPublishToLive#ADD_EVENT_BUTTON" value1="Add Event" />
+			Type(
+				locator1 = "SiteSettingsStaging#REMOTE_STAGING_PORT",
+				value1 = "${remotePort}");
 
-		<execute macro="Alert#viewSuccessMessage" />
+			Type(
+				locator1 = "SiteSettingsStaging#REMOTE_STAGING_SITE_ID",
+				value1 = "${siteID}");
+		}
 
-		<execute function="SelectFrame" value1="relative=top" />
+		if (!(isSet(remoteStaging))) {
+			Check.checkHiddenToggleSwitch(locator1 = "SiteSettingsStaging#STAGING_LOCAL_LIVE");
+		}
 
-		<execute function="Click" locator1="Icon#CLOSE" />
+		if ("${pageVersioningEnabled}" == "true") {
+			Click(locator1 = "Checkbox#ENABLED_ON_PUBLIC_PAGES");
 
-		<var name="key_siteName" value="${siteName}" />
+			Click(locator1 = "Checkbox#ENABLED_ON_PRIVATE_PAGES");
+		}
 
-		<execute macro="ProductMenu#gotoSitesPublishing">
-			<var name="portlet" value="Staging" />
-		</execute>
+		Click(locator1 = "SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX");
 
-		<execute function="AssertClick" locator1="Staging#SCHEDULED" value1="Scheduled" />
+		if (isSet(noContent)) {
+			Click(locator1 = "SiteSettingsStaging#CONTENT_SELECT_ALL_CHECKBOX");
+		}
 
-		<var name="key_scheduleTitleName" value="${scheduleTitleName}" />
+		if (isSet(uncheckContent)) {
+			var key_contentName = "${uncheckContent}";
 
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#SCHEDULED_TABLE_TITLE" value1="${scheduleTitleName}" />
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#SCHEDULED_TABLE_END_DATE" value1="No End Date" />
-	</command>
+			Click(locator1 = "SiteSettingsStaging#CONTENT_CHECKBOX");
+		}
 
-	<command name="addPageVariationPG">
-		<execute function="Click" locator1="Icon#STAGING_BAR_VERTICAL_ELLIPSIS" />
-		<execute function="Click" locator1="Staging#STAGING_MENU_MANAGE_PAGE_VARIATION" />
+		if (isSet(isNotEditable)) {
+			var key_contentName = "${isNotEditable}";
 
-		<execute function="SelectFrame" locator1="IFrame#PAGE_VARIATION_IFRAME" />
-		<execute function="AssertClick" locator1="Button#ADD_PAGE_VARIATION" value1="Add Page Variation" />
-		<execute function="Type" locator1="StagingManageVariations#MANAGE_VARIATION" value1="${pageVariationName}" />
-		<execute function="AssertClick" locator1="StagingManageVariations#ADD" value1="Add" />
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+			AssertNotEditable(locator1 = "SiteSettingsStaging#CONTENT_CHECKBOX");
+		}
 
-		<execute function="SelectFrame" value1="relative=top" />
+		if (isSet(recycleBinNotification)) {
+			AssertTextPresent(
+				locator1 = "Message#ERROR_3_ALT",
+				value1 = "The recycle bin of this site will be automatically emptied before turning on local staging. Make sure to manually restore anything you don't want to delete permanently before you continue.");
+		}
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+		if (isSet(remoteStaging)) {
+			Staging.saveRemoteStagingConfiguration(siteName = "${siteName}");
+		}
 
-	<command name="addPublishTemplate">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+		if (!(isSet(remoteStaging))) {
+			Staging.saveLocalStagingConfiguration(siteName = "${siteName}");
+		}
 
-		<execute function="AssertClick" locator1="MenuItem#PUBLISH_TEPMLATES" value1="Publish Templates" />
+		AssertTextNotPresent(
+			locator1 = "Message#ERROR",
+			value1 = "The tunneling servlet shared secret is not set.");
 
-		<execute function="Pause" locator1="3000" />
+		AssertTextNotPresent(
+			locator1 = "Message#ERROR",
+			value1 = "Your request failed to complete.");
 
-		<execute function="Click" locator1="Button#PLUS" />
+		AssertElementPresent(locator1 = "Button#PLUS");
 
-		<execute function="Type" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_NAME_FIELD" value1="${publishTemplateName}" />
-		<execute function="Type" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_DESCRIPTION_FIELD" value1="${publishTemplateDescription}" />
-	</command>
+		AssertConsoleTextNotPresent(value1 = "Please configure tunneling.servlet.shared.secret");
 
-	<command name="addSitePagesVariationPG">
-		<execute function="Click" locator1="Icon#STAGING_BAR_VERTICAL_ELLIPSIS" />
-		<execute function="Click" locator1="Staging#MANAGE_VARIATIONS" />
+		AssertConsoleTextNotPresent(value1 = "javax.portlet.PortletException: java.lang.NullPointerException");
+	}
 
-		<var name="key_sitePagesVariationName" value="${sitePagesVariationName}" />
+	macro addCustomPublication {
+		Pause(locator1 = "3000");
 
-		<execute function="SelectFrame" locator1="IFrame#SITE_VARIATION_IFRAME" />
-		<execute function="AssertClick" locator1="StagingManageVariations#ADD_SITE_PAGES_VARIATIONS_BUTTON" value1="Add Site Pages Variation" />
-		<execute function="Type" locator1="StagingManageVariations#MANAGE_VARIATION" value1="${sitePagesVariationName}" />
+		LexiconEntry.gotoAdd();
 
-		<if>
-			<isset var="copySitePagesVariationName" />
-			<then>
-				<execute function="Select" locator1="StagingManageVariations#ADD_SITE_PAGES_VARIATION_COPY_PAGES_SELECT" value1="${copySitePagesVariationName}" />
-			</then>
-		</if>
+		if (isSet(headerTitle)) {
+			AssertTextEquals(
+				locator1 = "ControlMenu#HEADING",
+				value1 = "${headerTitle}");
+		}
 
-		<execute function="AssertClick" locator1="StagingManageVariations#ADD" value1="Add" />
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
+		if (isSet(publishTemplateName)) {
+			var key_publishTemplateName = "${publishTemplateName}";
 
-		<execute function="SelectFrame" value1="relative=top" />
+			Click(locator1 = "Staging#STAGING_PUBLISH_TEMPLATE_LINK");
+		}
+	}
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+	macro addPageVariationPG {
+		Pause(locator1 = "3000");
 
-	<command name="changePageVariationInHistory">
-		<execute function="Click" locator1="Icon#STAGING_BAR_VERTICAL_ELLIPSIS" />
+		Click(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
 
-		<execute function="Click" locator1="Staging#HISTORY_BUTTON" />
+		Click(locator1 = "Staging#STAGING_MENU_MANAGE_PAGE_VARIATION");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		SelectFrame(locator1 = "IFrame#PAGE_VARIATION_IFRAME");
 
-		<execute function="Select" locator1="Staging#VARIATIONS_SELECTOR" value1="${pageVariationNameMenulistName}">
-			<var name="key_pageVariationName" value="${pageVariationNameMenulistName}" />
-		</execute>
-	</command>
+		AssertClick(
+			locator1 = "Button#ADD_PAGE_VARIATION",
+			value1 = "Add Page Variation");
 
-	<command name="changePageVariationPG">
-		<var name="key_pageVariationName" value="${pageVariationName}" />
+		Type(
+			locator1 = "StagingManageVariations#MANAGE_VARIATION",
+			value1 = "${pageVariationName}");
 
-		<execute function="Click" locator1="Staging#PAGE_VARIATION_DROPDOWN" />
+		AssertClick(
+			locator1 = "StagingManageVariations#ADD",
+			value1 = "Add");
 
-		<var name="key_pageVariationName" value="${pageVariationNameMenulistName}" />
+		Alert.viewSuccessMessage();
 
-		<execute function="AssertClick" locator1="Staging#PAGE_VARIATION_MENULIST_NAME" value1="${pageVariationNameMenulistName}" />
-	</command>
+		IFrame.closeFrame();
 
-	<command name="changeSitePageVariationPG">
-		<var name="key_sitePagesVariationName" value="${sitePagesVariationName}" />
+		WaitForLiferayEvent.initializeLiferayEventLog();
+	}
 
-		<execute function="Click" locator1="Staging#SITE_PAGES_VARIATION_DROPDOWN" />
+	macro addPublishTemplate {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Publish Templates");
 
-		<var name="key_sitePagesVariationName" value="${sitePagesVariationMenulistName}" />
+		Pause(locator1 = "3000");
 
-		<execute function="AssertClick" locator1="Staging#SITE_PAGES_VARIATION_MENULIST_NAME" value1="${sitePagesVariationMenulistName}" />
-	</command>
+		LexiconEntry.gotoAdd();
 
-	<command name="configurePublishToLive">
-		<if>
-			<condition function="IsElementPresent" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" />
-			<then>
-				<execute function="AssertClick#assertPartialTextClickAt" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" value1="Switch to Advanced Publication" />
-			</then>
-		</if>
+		Type(
+			locator1 = "TextInput#NAME",
+			value1 = "${publishTemplateName}");
 
-		<if>
-			<equals arg1="${deleteMissingPages}" arg2="true" />
-			<then>
-				<if>
-					<condition function="IsElementPresent" locator1="StagingPublishToLive#PAGES_CHANGE_LINK" />
-					<then>
-						<execute function="AssertClick" locator1="StagingPublishToLive#PAGES_CHANGE_LINK" value1="Change" />
-						<execute function="Check" locator1="PagesConfiguration#PAGES_DELETE_MISSING_PAGES_CHECKBOX" />
-						<execute function="AssertClick" locator1="Button#OK" value1="OK" />
-					</then>
-					<else>
-						<execute function="Check" locator1="PagesConfiguration#PAGES_DELETE_MISSING_PAGES_CHECKBOX" />
-					</else>
-				</if>
-			</then>
-		</if>
+		PortletEntry.inputDescription(description = "${publishTemplateDescription}");
+	}
 
-		<if>
-			<equals arg1="${uncheckLogo}" arg2="true" />
-			<then>
-				<if>
-					<condition function="IsElementPresent" locator1="StagingPublishToLive#PAGES_CHANGE_LINK" />
-					<then>
-						<execute function="AssertClick" locator1="StagingPublishToLive#PAGES_CHANGE_LINK" value1="Change" />
-						<execute function="Uncheck" locator1="PagesConfiguration#PAGES_LOGO_CHECKBOX" />
-						<execute function="AssertClick" locator1="Button#OK" value1="OK" />
-					</then>
-					<else>
-						<execute function="Uncheck" locator1="PagesConfiguration#PAGES_LOGO_CHECKBOX" />
-					</else>
-				</if>
-			</then>
-		</if>
+	macro addRepeatEvent {
+		Click(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
 
-		<if>
-			<isset var="checkPageName" />
-			<then>
-				<execute function="Click" locator1="StagingPublishtolivenow#PAGES_ALL_PUBLIC_PAGES_CHECKBOX" />
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
-				<execute function="Click" locator1="StagingPublishtolivenow#PAGES_ALL_PUBLIC_PAGES_CHECKBOX" />
+		Click(locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION");
 
-				<for list="${checkPageName}" param="pageName">
-					<var name="key_pageName" value="${pageName}" />
+		Type(
+			locator1 = "StagingPublishToLive#DATE_SCHEDULE_TITLE_FIELD",
+			value1 = "${scheduleTitleName}");
 
-					<if>
-						<condition function="IsElementNotPresent" locator1="PagesConfiguration#PAGES_SPECIFIC_PAGE_CHECKED" />
-						<then>
-							<var name="key_pageName" value="${pageName}" />
+		Click(locator1 = "StagingPublishToLive#DATE_SCHEDULE_RADIO");
 
-							<execute function="Click" locator1="PagesConfiguration#PAGES_SPECIFIC_PAGE_NAME" />
-						</then>
-					</if>
-				</for>
-			</then>
-		</if>
+		if (isSet(startOnTomorrow)) {
+			Staging.setStartDateTomorrow();
+		}
 
-		<if>
-			<equals arg1="${contentDateRange}" arg2="All" />
-			<then>
-				<execute function="Click" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT" />
+		Check(locator1 = "StagingPublishToLive#DATE_SCHEDULE_END_DATE_NO_END_DATE_RADIO");
 
-				<execute function="Click" locator1="StagingPublishToLive#CHOOSE_CONTENT_DATE_RANGE_CHANGE" />
+		Select(
+			locator1 = "StagingPublishToLive#DATE_SCHEDULE_REPEAT_DROPDOWN",
+			value1 = "${frequency}");
 
-				<execute function="Check" locator1="Radio#RANGE_ALL" />
+		AssertSelectedLabel(
+			locator1 = "StagingPublishToLive#DATE_SCHEDULE_REPEAT_DROPDOWN",
+			value1 = "${frequency}");
 
-				<execute function="Click" locator1="StagingPublishToLive#REFRESH_COUNTS" />
-			</then>
-		</if>
+		AssertClick(
+			locator1 = "StagingPublishToLive#ADD_EVENT_BUTTON",
+			value1 = "Add Event");
 
-		<if>
-			<equals arg1="${contentDateRange}" arg2="Date Range" />
-			<then>
-				<execute function="Click" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT" />
+		if (isSet(failureExpected)) {
+			Alert.viewRequestFailedToComplete();
 
-				<execute function="Click" locator1="StagingPublishToLive#CHOOSE_CONTENT_DATE_RANGE_CHANGE" />
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#ERROR",
+				value1 = "A wrong start date was specified, the scheduled process cannot start in the past.");
+		}
+		else {
+			Alert.viewSuccessMessage();
+		}
+	}
 
-				<var name="key_contentDateRange" value="${contentDateRange}" />
+	macro addSitePagesVariationPG {
+		Click.waitForMenuToggleJSClick(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
 
-				<execute function="Type" locator1="StagingPublishToLive#DATE_RANGE_START_DATE" value1="${dateRangeStartDate}" />
-				<execute function="Type" locator1="StagingPublishToLive#DATE_RANGE_END_DATE" value1="${dateRangeEndDate}" />
+		Click(locator1 = "Staging#MANAGE_VARIATIONS");
 
-				<execute function="Click" locator1="StagingPublishToLive#REFRESH_COUNTS" />
-			</then>
-		</if>
+		var key_sitePagesVariationName = "${sitePagesVariationName}";
 
-		<if>
-			<equals arg1="${contentDeletion}" arg2="true" />
-			<then>
-				<execute function="Click" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT_DELETION_HEADER" />
-				<execute function="Check#checkToggleSwitch" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT_DELETION_CHECKBOX" />
-			</then>
-		</if>
+		SelectFrame(locator1 = "IFrame#SITE_VARIATION_IFRAME");
 
-		<if>
-			<equals arg1="${checkAllContent}" arg2="true" />
-			<then>
-				<execute function="Check" locator1="StagingPublishToLive#CONTENT_ALL_CONTENT" />
-			</then>
-		</if>
+		AssertClick(
+			locator1 = "StagingManageVariations#ADD_SITE_PAGES_VARIATIONS_BUTTON",
+			value1 = "Add Site Pages Variation");
 
-		<if>
-			<isset var="checkContentNameList" />
-			<then>
-				<execute function="Check" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT" />
+		Type(
+			locator1 = "StagingManageVariations#MANAGE_VARIATION",
+			value1 = "${sitePagesVariationName}");
 
-				<for list="${checkContentNameList}" param="contentName">
-					<var name="key_contentName" value="${contentName}" />
+		if (isSet(copySitePagesVariationName)) {
+			MouseOver(
+				key_tooltipInfo = "Only the latest version marked as ready for publish process is copied.",
+				locator1 = "Staging#STAGING_TOOLTIP");
 
-					<execute function="Check" locator1="PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX" />
-				</for>
-			</then>
-		</if>
+			AssertVisible(
+				key_content = "Only the latest version marked as ready for publish process is copied.",
+				locator1 = "Tooltip#FLOATING_TOOLTIP_CONTENT");
 
-		<if>
-			<isset var="uncheckContentNameList" />
-			<then>
-				<execute function="Check" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT" />
+			Select(
+				locator1 = "StagingManageVariations#ADD_SITE_PAGES_VARIATION_COPY_PAGES_SELECT",
+				value1 = "${copySitePagesVariationName}");
+		}
 
-				<for list="${uncheckContentNameList}" param="contentName">
-					<var name="key_contentName" value="${contentName}" />
+		AssertClick(
+			locator1 = "StagingManageVariations#ADD",
+			value1 = "Add");
 
-					<execute function="Uncheck" locator1="PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX" />
-				</for>
-			</then>
-		</if>
+		Alert.viewSuccessMessage();
 
-		<if>
-			<isset var="uncheckSubContent" />
-			<then>
-				<execute function="Click" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT" />
+		IFrame.closeFrame();
+	}
 
-				<var name="key_uncheckContent" value="${uncheckSubContent}" />
+	macro addStagingAdminRole {
+		JSONRole.addSiteRole(
+			roleKey = "Staging Admin",
+			roleTitle = "Staging Admin");
 
-				<execute function="AssertClick" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_CONTENT_CHANGE_LINK" value1="Change" />
+		Role.openRolesAdmin();
 
-				<execute function="Uncheck" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_SUBCONTENT_CHECKBOX" />
+		Role.definePermissionsCP(
+			permissionDefinitionKeys = "SITE_ADMIN_PAGES_SITE_PAGES_GENERAL_PERMISSIONS_ACTION_CHECKBOX,SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_SITE_ACTION_CHECKBOX,SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_PAGE_ACTION_CHECKBOX,SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_PAGE_VARIATION_ACTION_CHECKBOX,SITE_ADMIN_PAGES_SITE_PAGES_RESOURCE_PERMISSIONS_SITE_PAGES_VARIATION_ACTION_CHECKBOX",
+			roleTitle = "Staging Admin",
+			roleType = "Site");
+	}
 
-				<execute function="AssertClick" locator1="Button#OK" value1="OK" />
-			</then>
-		</if>
+	macro assignStagingAdminToSite {
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-		<if>
-			<isset var="uncheckSubSubContent" />
-			<then>
-				<execute function="Click" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT" />
+		JSONGroup.assignUserToGroup(
+			groupName = "${siteName}",
+			userEmailAddress = "userea@liferay.com");
 
-				<var name="key_contentName" value="${contentName}" />
+		JSONGroup.assignGroupRoleToUser(
+			groupName = "${siteName}",
+			roleTitle = "Staging Admin",
+			userEmailAddress = "userea@liferay.com");
 
-				<execute function="Check" locator1="PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX" />
+		User.openUsersAdmin();
 
-				<var name="key_uncheckContent" value="${contentName}" />
+		User.editPasswordCP(
+			userEmailAddress = "userea@liferay.com",
+			userScreenName = "usersn");
 
-				<execute function="AssertClick" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_CONTENT_CHANGE_LINK" value1="Change" />
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+	}
 
-				<var name="key_subContent" value="${subContent}" />
-				<var name="key_subSubContent" value="${uncheckSubSubContent}" />
+	macro changePageVariationInHistory {
+		Click(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
 
-				<execute function="Uncheck" locator1="StagingPublishtolivenow#CONTENT_CHOOSE_CONTENT_SUB_SUBCONTENT_CHECKBOX" />
-				<execute function="AssertClick" locator1="Button#OK" value1="OK" />
-			</then>
-		</if>
+		Click(locator1 = "Staging#HISTORY_BUTTON");
 
-		<if>
-			<and>
-				<not>
-					<isset var="checkContentNameList" />
-				</not>
-				<not>
-					<isset var="uncheckContentNameList" />
-				</not>
-			</and>
-			<then>
-				<execute function="Check" locator1="StagingPublishToLive#CONTENT_ALL_CONTENT" />
-			</then>
-		</if>
-	</command>
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
-	<command name="deactivateStagingCP">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+		Select(
+			key_pageVariationName = "${pageVariationNameMenulistName}",
+			locator1 = "Staging#VARIATIONS_SELECTOR",
+			value1 = "${pageVariationNameMenulistName}");
+	}
 
-		<execute function="AssertClick" locator1="MenuItem#STAGING_CONFIGURATION" value1="Staging Configuration" />
+	macro changePageVariationPG {
+		var key_pageVariationName = "${pageVariationName}";
 
-		<if>
-			<condition function="IsElementPresent" locator1="SiteSettingsStaging#ENABLED_ON_PUBLIC_PAGES_CHECKBOX" />
-			<then>
-				<execute function="Check" locator1="SiteSettingsStaging#NONE_RADIO" />
-				<execute function="AssertClickNoError" locator1="Button#SAVE" value1="Save" />
-				<execute function="Confirm" value1="Are you sure you want to deactivate staging for ${siteName}?" />
-				<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS_3" value1="Staging is successfully disabled." />
-			</then>
-		</if>
-
-		<execute function="AssertElementNotPresent#assertNotVisible" locator1="SiteSettingsStaging#ENABLED_ON_PUBLIC_PAGES_CHECKBOX" />
-	</command>
-
-	<command name="editPublishTemplate">
-		<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
-
-		<execute function="AssertClick" locator1="MenuItem#PUBLISH_TEPMLATES" value1="Publish Templates" />
+		AssertClick(
+			locator1 = "Staging#PAGE_VARIATION_DROPDOWN",
+			value1 = "${pageVariationName}");
 
-		<var name="key_publishTemplateName" value="${publishTemplateName}" />
-
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME" value1="${publishTemplateName}" />
-
-		<execute function="AssertClick" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME" value1="${publishTemplateName}" />
-
-		<execute function="Type" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_NAME_FIELD" value1="${publishTemplateNameEdit}" />
-		<execute function="Type" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_DESCRIPTION_FIELD" value1="${publishTemplateDescriptionEdit}" />
-	</command>
-
-	<command name="editSitePageVariationPG">
-		<execute function="Click" locator1="Icon#STAGING_BAR_VERTICAL_ELLIPSIS" />
-		<execute function="Click" locator1="Staging#MANAGE_VARIATIONS" />
-
-		<execute function="SelectFrame" locator1="IFrame#SITE_VARIATION_IFRAME" />
+		var key_pageVariationName = "${pageVariationNameMenulistName}";
 
-		<var name="key_sitePagesVariationName" value="${sitePagesVariationName}" />
+		AssertClick(
+			locator1 = "Staging#PAGE_VARIATION_MENULIST_NAME",
+			value1 = "${pageVariationNameMenulistName}");
+	}
 
-		<execute function="Click" locator1="StagingManageVariations#SITE_PAGES_VARIATIONS_TABLE_ACTIONS" />
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
-		<execute function="Type" locator1="StagingManageVariations#MANAGE_VARIATION" value1="${sitePagesVariationName} Edit" />
-		<execute function="AssertClick" locator1="StagingManageVariations#UPDATE_BUTTON" value1="Update" />
-		<execute function="SelectFrameTop" value1="relative=top" />
-		<execute function="SelectFrame" locator1="IFrame#SITE_VARIATION_IFRAME" />
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-		<execute function="SelectFrameTop" value1="relative=top" />
-	</command>
+	macro changeSitePageVariationCP {
+		var key_sitePagesVariationName = "${sitePagesVariationName}";
 
-	<command name="editStagingConfiguration">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+		Click(locator1 = "Staging#SITE_PAGES_VARIATION_MENULIST_NAME");
 
-		<execute function="AssertClick" locator1="MenuItem#STAGING_CONFIGURATION" value1="Staging Configuration" />
-
-		<if>
-			<equals arg1="${pageVersioningEnabled}" arg2="true" />
-			<then>
-				<execute function="Check#checkToggleSwitch" locator1="Checkbox#ENABLED_ON_PUBLIC_PAGES" />
-				<execute function="Check#checkToggleSwitch" locator1="Checkbox#ENABLED_ON_PRIVATE_PAGES" />
-			</then>
-		</if>
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#SITE_PAGES_VARIATION_MENULIST_ACTIVE",
+			value1 = "${sitePagesVariationName}");
+	}
 
-		<if>
-			<isset var="isNotEditable" />
-			<then>
-				<var name="key_contentName" value="${isNotEditable}" />
+	macro changeSitePageVariationPG {
+		var key_sitePagesVariationName = "${sitePagesVariationName}";
 
-				<execute function="AssertNotVisible" locator1="Checkbox#STAGED_CONTENT" />
-			</then>
-		</if>
+		Refresh();
 
-		<execute macro="Button#clickSave" />
+		AssertClick(
+			locator1 = "Staging#SITE_PAGES_VARIATION_DROPDOWN",
+			value1 = "${sitePagesVariationName}");
 
-		<execute function="Pause" locator1="5000" />
-	</command>
+		var key_sitePagesVariationName = "${sitePagesVariationMenulistName}";
 
-	<command name="enablePageInSitePagesVariation">
-		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#STAGING_MENU_REVISION_DETAILS_MESSAGE" value1="The page ${pageName} is not enabled in ${sitePagesVariationName}, but is available for other pages variations." />
-		<execute function="AssertClick" locator1="Staging#STAGING_MENU_ENABLE_PAGE_BUTTON" value1="Enable in ${sitePagesVariationName}" />
+		AssertClick(
+			locator1 = "Staging#SITE_PAGES_VARIATION_MENULIST_NAME",
+			value1 = "${sitePagesVariationMenulistName}");
+	}
 
-		<execute macro="Page#view">
-			<var name="pageName" value="${pageName}" />
-		</execute>
-	</command>
+	macro clickPublishToLiveButton {
+		if ("${remoteStaging}" == "true") {
+			ClickNoError(locator1 = "Staging#STAGING_PUBLISH_TO_REMOTE_LIVE_BUTTON");
+		}
+		else if (isSet(scheduleProcess)) {
+			AssertClick(
+				locator1 = "StagingPublishToLive#ADD_EVENT_BUTTON",
+				value1 = "Add Event");
+		}
+		else {
+			ClickNoError(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
+		}
+	}
 
-	<command name="gotoPublishToLive">
-		<if>
-			<and>
-				<condition function="IsElementNotPresent" locator1="Staging#STAGING_PUBLISH_TO_LIVE_BUTTON" />
-				<condition function="IsElementPresent" locator1="Icon#STAGING" />
-			</and>
-			<then>
-				<execute function="Click" locator1="Icon#STAGING" />
-				<execute function="AssertElementPresent" locator1="Staging#STAGING_PUBLISH_TO_LIVE_BUTTON" />
-			</then>
-		</if>
+	macro configurePublishToLive {
+		if (IsElementPresent.isElementPresentAfterWait(locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION")) {
+			AssertClick.assertPartialTextClickAt(
+				locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION",
+				value1 = "Switch to Advanced Publish Process");
+		}
 
-		<if>
-			<condition function="IsElementPresent" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			<then>
-				<execute function="Check#toggleSwitch" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			</then>
-		</if>
+		SelectFrameTop();
 
-		<if>
-			<and>
-				<condition function="IsElementPresent" locator1="SitePages#NAVIGATION_PUBLIC_PAGES" />
-				<condition function="IsElementPresent" locator1="Staging#STAGING_BUTTON" />
-			</and>
-			<then>
-				<execute function="AssertClick" locator1="Staging#STAGING_BUTTON" value1="Staging" />
-			</then>
-		</if>
+		if (IsElementPresent(locator1 = "IFrame#MODAL_BODY")) {
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
+		}
 
-		<execute function="Click" locator1="Staging#STAGING_PUBLISH_TO_LIVE_BUTTON" />
+		if ("${deleteMissingPages}" == "true") {
+			ContentConfiguration.deleteMissingPages();
+		}
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-	</command>
+		if ("${uncheckLogo}" == "true") {
+			ContentConfiguration.uncheckLogo();
+		}
 
-	<command name="markAsReadyForPublication">
-		<if>
-			<condition function="IsElementPresent" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			<then>
-				<execute function="AssertNotChecked" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
+		if (isSet(checkPageName)) {
+			ContentConfiguration.checkPageName(checkPageName = "${checkPageName}");
+		}
 
-				<execute function="Check#toggleSwitch" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			</then>
-		</if>
-	</command>
+		if (isSet(contentDateRange)) {
+			ContentConfiguration.contentDateRange(
+				contentDateRange = "${contentDateRange}",
+				dateRangeEndDate = "${dateRangeEndDate}",
+				dateRangeStartDate = "${dateRangeStartDate}");
+		}
 
-	<command name="mergeSitePagesVariation">
-		<execute function="Click" locator1="Icon#STAGING_BAR_VERTICAL_ELLIPSIS" />
-		<execute function="Click" locator1="Staging#MANAGE_VARIATIONS" />
+		if ("${contentDeletion}" == "true") {
+			ContentConfiguration.contentDeletion();
+		}
 
-		<execute function="SelectFrame" locator1="IFrame#SITE_VARIATION_IFRAME" />
+		if ("${pageDeletion}" == "true") {
+			ContentConfiguration.pageDeletion();
+		}
 
-		<var name="key_rowEntry" value="${sitePagesVariationName}" />
+		if (isSet(checkContentNameList)) {
+			ContentConfiguration.checkContentNameList(checkContentNameList = "${checkContentNameList}");
+		}
 
-		<execute function="Click" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="AssertClick" locator1="MenuItem#MERGE" value1="Merge" />
+		if (isSet(uncheckContentNameList)) {
+			ContentConfiguration.uncheckContentNameList(uncheckContentNameList = "${uncheckContentNameList}");
+		}
 
-		<var name="key_sitePagesVariationMergeName" value="${sitePagesVariationMergeName}" />
+		if (isSet(uncheckPages)) {
+			ContentConfiguration.uncheckPages();
+		}
 
-		<execute function="AssertTextEquals" locator1="StagingManageVariations#MERGE_SITE_PAGES_VARIATION_TABLE_BRANCH" value1="${sitePagesVariationMergeName}" />
-		<execute function="AssertClickNoError" locator1="StagingManageVariations#MERGE_SITE_PAGES_VARIATION_TABLE_SELECT_LINK" value1="Select" />
-		<execute function="Confirm" value1="Are you sure you want to merge changes from ${sitePagesVariationMergeName}?" />
-		<execute function="SelectFrameTop" value1="relative=top" />
-		<execute function="SelectFrame" locator1="IFrame#SITE_VARIATION_IFRAME" />
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
+		if (isSet(uncheckSubContent)) {
+			Check.checkHiddenToggleSwitch(
+				key_contentName = "${mainContent}",
+				locator1 = "PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX");
 
-	<command name="moveToTheRecycleBinPublishTemplate">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+			Pause(locator1 = "3000");
 
-		<execute function="AssertClick" locator1="MenuItem#PUBLISH_TEPMLATES" value1="Publish Templates" />
+			ContentConfiguration.uncheckSubContent(
+				mainContent = "${mainContent}",
+				uncheckSubContent = "${uncheckSubContent}");
+		}
 
-		<var name="key_rowEntry" value="${publishTemplateName}" />
+		if (isSet(uncheckSubSubContent)) {
+			ContentConfiguration.uncheckSubSubContent(
+				contentName = "${contentName}",
+				subContent = "${subContent}",
+				uncheckSubSubContent = "${uncheckSubSubContent}");
+		}
 
-		<execute function="Click#waitForMenuToggleJSClick" locator1="Icon#ROW_VERTICAL_ELLIPSIS" />
-		<execute function="Click" locator1="MenuItem#MOVE_TO_THE_RECYCLE_BIN" />
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
+		if (isSet(checkPrivatePages)) {
+			ContentConfiguration.checkPrivatePages(checkPrivatePages = "${checkPrivatePages}");
+		}
 
-	<command name="publishCustomPublication">
-		<execute function="Click" locator1="Button#PLUS" />
+		if (isSet(checkPublicPages)) {
+			ContentConfiguration.checkPublicPages(checkPublicPages = "${checkPublicPages}");
+		}
+	}
 
-		<execute function="AssertClickNoError" locator1="Button#PUBLISH_TO_LIVE" value1="Publish to Live" />
+	macro configureScheduleTime {
+		Click(locator1 = "StagingPublishToLive#DATE_SCHEDULE_RADIO");
 
-		<execute function="Pause" locator1="30000" />
+		if (isSet(scheduleTitleName)) {
+			Type(
+				locator1 = "StagingPublishToLive#DATE_SCHEDULE_TITLE_FIELD",
+				value1 = "${scheduleTitleName}");
+		}
 
-		<execute function="AssertTextEquals" locator1="Staging#INITIAL_PROCESS_SUCCESSFUL" value1="Successful" />
-	</command>
+		var displayDateHour = selenium.getAttribute("//input[contains(@id,'schedulerStartDateHour')]@value");
+		var displayDateHourLength = StringUtil.length("${displayDateHour}");
 
-	<command name="publishToLive">
-		<execute function="AssertClickNoError#assertPartialTextClickAt" locator1="Button#SUBMIT" value1="Publish" />
+		if ("${displayDateHourLength}" == "1") {
+			var displayDateHour = "0${displayDateHour}";
+		}
 
-		<execute function="Pause" locator1="5000" />
+		var displayDateAMPM = selenium.getAttribute("//input[contains(@id,'schedulerStartDateAmPm')]@value");
+		var displayDateAMPM = StringUtil.replace("${displayDateAMPM}", "0", "AM");
+		var displayDateAMPM = StringUtil.replace("${displayDateAMPM}", "1", "PM");
+		var displayDateMinute = selenium.getAttribute("//input[contains(@id,'schedulerStartDateMinute')]@value");
+		var displayDateMinuteFuture = ${displayDateMinute} + 3;
+		var displayDateMinuteFutureLength = StringUtil.length("${displayDateMinuteFuture}");
 
-		<if>
-			<isset var="failureExpected" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Staging#PROCESS_FAILED" value1="Failed" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="Staging#PROCESS_SUCCESSFUL" value1="Successful" />
-			</else>
-		</if>
+		if ("${displayDateMinuteFutureLength}" == "1") {
+			var displayDateMinuteFuture = "0${displayDateMinuteFuture}";
+		}
 
-		<if>
-			<isset var="validateErrorMessage" />
-			<then>
-				<execute macro="Staging#viewValidationError">
-					<var name="validateErrorMessage" value="${validateErrorMessage}" />
-				</execute>
-			</then>
-		</if>
+		var displayDate = "${displayDateHour}:${displayDateMinuteFuture} ${displayDateAMPM}";
 
-		<execute function="SelectFrameTop" />
+		Type(
+			locator1 = "StagingPublishToLive#DATE_SCHEDULE_TIME_INPUT",
+			value1 = "${displayDate}");
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+		if (isSet(endByDate)) {
+			Check(locator1 = "StagingPublishToLive#DATE_SCHEDULE_END_DATE_END_BY_RADIO");
 
-	<command name="publishToLiveNowViaPortletCP">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+			var endByDateDay = selenium.getAttribute("//input[contains(@id,'schedulerEndDateDay')]@value");
 
-		<execute function="Click" locator1="MenuItem#STAGING" />
+			if ("${endByDateDayLength}" == "1") {
+				var endByDateDay = "0${endByDateDay}";
+			}
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION_DIALOG" />
+			var endByDateMonth = selenium.getAttribute("//input[contains(@id,'schedulerEndDateMonth')]@value");
 
-		<execute function="AssertClickNoError" locator1="Button#PUBLISH_TO_LIVE" value1="Publish to Live" />
+			if ("${endByDateMonthLength}" == "1") {
+				var endByDateMonth = "0${endByDateMonth}";
+			}
 
-		<execute function="Confirm" value1="Are you sure you want to publish to live and update the existing portlet data?" />
+			var endByDateYear = selenium.getAttribute("//input[contains(@id,'schedulerEndDateYear')]@value");
+			var endByDateYearFuture = ${endByDateYear} + 5;
+			var endByDay = "${endByDateMonth}/${endByDateDay}/${endByDateYearFuture}";
 
-		<execute function="Pause" locator1="5000" />
+			Type(
+				locator1 = "StagingPublishToLive#DATE_SCHEDULE_END_DATE_INPUT",
+				value1 = "${endByDay}");
+		}
+	}
 
-		<execute function="AssertTextEquals" locator1="Staging#STAGING_STATUS_PORTLET" value1="Successful" />
+	macro copyFromLive {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "${portletOption}");
 
-		<execute function="SelectFrame" value1="relative=top" />
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+		ClickNoError(locator1 = "Staging#COPY_FROM_LIVE");
 
-	<command name="publishToLivePublishTemplate">
-		<if>
-			<condition function="IsElementPresent" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" />
-			<then>
-				<execute function="AssertClick#assertPartialTextClickAt" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" value1="Switch to Advanced Publication" />
-			</then>
-		</if>
+		Pause(locator1 = "2000");
 
-		<execute function="AssertClick" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_BUTTON" value1="Publish Templates" />
+		AssertClickNoError.assertPartialTextClickAt(
+			locator1 = "Button#SUBMIT",
+			value1 = "Copy from Live");
 
-		<execute function="Click" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
+		AssertConfirm(value1 = "Are you sure you want to copy from live and update the existing staging widget information?");
 
-		<execute function="Click" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_PUBLISH_TO_LIVE_ARROW_BUTTON" />
+		AssertTextEquals(
+			locator1 = "Staging#STAGING_STATUS_PORTLET",
+			value1 = "Successful");
 
-		<execute function="AssertClick" locator1="Button#PUBLISH_TO_LIVE" value1="Publish to Live" />
+		IFrame.closeFrame();
+	}
 
-		<execute function="Pause" locator1="5000" />
+	macro deactivateStagingCP {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging Configuration");
 
-		<execute function="AssertTextEquals" locator1="Staging#PROCESS_SUCCESSFUL" value1="Successful" />
+		if (IsElementPresent(locator1 = "SiteSettingsStaging#ENABLED_ON_PUBLIC_PAGES_CHECKBOX")) {
+			Check.checkHiddenToggleSwitch(locator1 = "SiteSettingsStaging#NONE_RADIO");
 
-		<execute function="SelectFrame" value1="relative=top" />
+			AssertClickNoError(
+				locator1 = "Button#SAVE",
+				value1 = "Save");
 
-		<if>
-			<condition function="IsElementPresent" locator1="Icon#CLOSE" />
-			<then>
-				<execute function="SelectFrame" value1="relative=top" />
+			AssertConfirm(value1 = "Are you sure you want to deactivate staging for ${siteName}?");
 
-				<execute function="Click" locator1="Icon#CLOSE" />
-			</then>
-		</if>
+			AssertTextEquals.assertPartialText(
+				locator1 = "Message#SUCCESS",
+				value1 = "Staging is successfully disabled.");
+		}
 
-		<var name="key_siteName" value="${siteName}" />
+		AssertNotVisible(locator1 = "SiteSettingsStaging#ENABLED_ON_PUBLIC_PAGES_CHECKBOX");
+	}
 
-		<execute macro="ProductMenu#gotoSitesPublishing">
-			<var name="portlet" value="Staging" />
-		</execute>
+	macro deleteHistory {
+		if (IsElementPresent(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS")) {
+			Staging.gotoHistory();
+		}
 
-		<execute function="AssertTextEquals" locator1="Staging#STAGING_STATUS" value1="Successful" />
-	</command>
+		Click(locator1 = "Icon#HISTORY_VERTICAL_ELLIPSIS");
 
-	<command name="redoStagingPageVersioningPG">
-		<execute function="Click" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
+		MenuItem.clickNoError(menuItem = "Delete");
 
-		<execute function="ClickNoError" locator1="Staging#STAGING_MENU_REDO_BUTTON" />
-		<execute function="Confirm" value1="Are you sure you want to redo your last changes?" />
-	</command>
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-	<command name="remoteStagingSetUp">
-		<var name="siteID" value="${siteID}" />
+		IFrame.closeFrame();
+	}
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
+	macro deletePageVariationPG {
+		WaitForLiferayEvent.initializeLiferayEventLog();
 
-		<execute macro="Site#addBlankCP">
-			<var name="siteName" value="Remote Site" />
-		</execute>
+		Click(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Remote Site" />
-		</execute>
+		Click(locator1 = "Staging#STAGING_MENU_MANAGE_PAGE_VARIATION");
 
-		<execute macro="ProductMenu#gotoSitesConfiguration">
-			<var name="portlet" value="Site Settings" />
-		</execute>
+		SelectFrame(locator1 = "IFrame#PAGE_VARIATION_IFRAME");
 
-		<var name="siteID" value="siteID" />
+		LexiconEntry.gotoEntryMenuItemNoError(
+			menuItem = "Delete",
+			rowEntry = "${pageVariationName}");
 
-		<execute function="Copy" locator1="SitesEditSite#SITE_ID" value1="siteID" />
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="${siteName}" />
-		</execute>
+		Alert.viewSuccessMessage();
 
-		<execute macro="ProductMenu#gotoSitesPublishing">
-			<var name="portlet" value="Staging" />
-		</execute>
+		IFrame.closeFrame();
+	}
 
-		<execute macro="Staging#activateStagingCP">
-			<var name="contentName" value="${contentName}" />
-			<var name="editActivateStaging" value="${editActivateStaging}" />
-			<var name="pageVersioningEnabled" value="${pageVersioningEnabled}" />
-			<var name="remotePort" value="${remotePort}" />
-			<var name="remoteStaging" value="true" />
-			<var name="siteID" value="${siteID}" />
-			<var name="siteName" value="${siteName}" />
-			<var name="uncheckContent" value="${uncheckContent}" />
-		</execute>
-	</command>
+	macro deletePublishTask {
+		LexiconEntry.gotoEntryMenuItemNoError(
+			menuItem = "Clear",
+			rowEntry = "${publicationTitle}");
 
-	<command name="savePublishTemplate">
-		<execute macro="Button#clickSave" />
+		Alert.viewSuccessMessage();
 
-		<var name="key_publishTemplateName" value="${publishTemplateName}" />
+		AssertElementNotPresent(
+			locator1 = "Staging#PROCESS_TITLE",
+			value1 = "${publicationTitle}");
+	}
 
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME" value1="${publishTemplateName}" />
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_DESCRIPTION" value1="${publishTemplateDescription}" />
-	</command>
+	macro deletePublishTemplate {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Publish Templates");
 
-	<command name="schedulePublishToLivePG">
-		<if>
-			<condition function="IsElementPresent" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			<then>
-				<execute function="Check#toggleSwitch" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			</then>
-		</if>
+		LexiconEntry.gotoEntryMenuItemNoError(
+			menuItem = "Delete",
+			rowEntry = "${publishTemplateName}");
 
-		<execute function="Click" locator1="Staging#STAGING_PUBLISH_TO_LIVE_BUTTON" />
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
+		AssertElementNotPresent(
+			key_rowEntry = "${publishTemplateName}",
+			locator1 = "Icon#ROW_VERTICAL_ELLIPSIS");
+	}
 
-		<execute function="Click" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" />
+	macro deleteSitePagesVariationPG {
+		Staging.navigateToSitePageVariation();
 
-		<execute function="Click" locator1="PagesConfiguration#PAGES_ALL_PUBLIC_PAGES_CHECKBOX" />
+		LexiconEntry.gotoEntryMenuItemNoWaitNoError(
+			menuItem = "Delete",
+			rowEntry = "${sitePagesVariationName}");
 
-		<execute function="Check" locator1="StagingPublishToLive#DATE_SCHEDULE_RADIO" />
-		<execute function="Type" locator1="StagingPublishToLive#DATE_SCHEDULE_TITLE_FIELD" value1="${scheduleTitleName}" />
+		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
 
-		<var attribute="value" locator="//input[contains(@id,'schedulerStartDateHour')]" name="displayDateHour" />
-		<var name="displayDateHourLength" value="${displayDateHour?length()}" />
+		Alert.viewSuccessMessage();
 
-		<if>
-			<equals arg1="${displayDateHourLength}" arg2="1" />
-			<then>
-				<var name="displayDateHour" value="0${displayDateHour}" />
-			</then>
-		</if>
+		IFrame.closeFrame();
+	}
 
-		<var attribute="value" locator="//input[contains(@id,'schedulerStartDateAmPm')]" name="displayDateAMPM" />
-		<var method="StringUtil#replace('${displayDateAMPM}', '0', 'AM')" name="displayDateAMPM" />
-		<var method="StringUtil#replace('${displayDateAMPM}', '1', 'PM')" name="displayDateAMPM" />
+	macro editPublishTemplate {
+		Click(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
 
-		<var attribute="value" locator="//input[contains(@id,'schedulerStartDateMinute')]" name="displayDateMinute" />
-		<var method="MathUtil#sum('${displayDateMinute}', '2')" name="displayDateMinuteFuture" />
-		<var name="displayDateMinuteFutureLength" value="${displayDateMinuteFuture?length()}" />
+		Navigator.gotoNavItem(navItem = "Publish Templates");
 
-		<if>
-			<equals arg1="${displayDateMinuteFutureLength}" arg2="1" />
-			<then>
-				<var name="displayDateMinuteFuture" value="0${displayDateMinuteFuture}" />
-			</then>
-		</if>
+		var key_publishTemplateName = "${publishTemplateName}";
 
-		<var name="displayDate" value="${displayDateHour}:${displayDateMinuteFuture} ${displayDateAMPM}" />
+		AssertTextEquals(
+			locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME",
+			value1 = "${publishTemplateName}");
 
-		<execute function="Type" locator1="StagingPublishToLive#DATE_SCHEDULE_TIME_INPUT" value1="${displayDate}" />
-		<execute function="AssertClick" locator1="StagingPublishToLive#ADD_EVENT_BUTTON" value1="Add Event" />
-		<execute macro="Alert#viewSuccessMessage" />
-		<execute function="SelectFrameTop" value1="relative=top" />
+		AssertClick(
+			locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME",
+			value1 = "${publishTemplateName}");
 
-		<execute function="Pause" locator1="5000" />
-	</command>
+		Type(
+			locator1 = "TextInput#NAME",
+			value1 = "${publishTemplateNameEdit}");
 
-	<command name="setContentDateRange">
-		<if>
-			<condition function="IsElementPresent" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			<then>
-				<execute function="Check#toggleSwitch" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			</then>
-		</if>
+		PortletEntry.inputDescription(description = "${publishTemplateDescriptionEdit}");
+	}
 
-		<execute function="Click" locator1="Staging#STAGING_PUBLISH_TO_LIVE_BUTTON" />
+	macro editSitePageVariationPG {
+		Staging.navigateToSitePageVariation();
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION" value1="Switch to Advanced Publication" />
-		<execute function="Check" locator1="StagingPublishToLive#CONTENT_CHOOSE_CONTENT" />
-		<execute function="Click" locator1="StagingPublishToLive#CHOOSE_CONTENT_DATE_RANGE_CHANGE" />
+		var key_sitePagesVariationName = "${sitePagesVariationName}";
 
-		<var name="key_contentDateRange" value="DateRange" />
+		LexiconEntry.openEntryMenu(rowEntry = "${sitePagesVariationName}");
 
-		<execute function="Type" locator1="StagingPublishToLive#DATE_RANGE_START_DATE" value1="${dateRangeStartDate}" />
-		<execute function="Type" locator1="StagingPublishToLive#DATE_RANGE_END_DATE" value1="${dateRangeEndDate}" />
+		MenuItem.click(menuItem = "Edit");
 
-		<execute function="Click" locator1="StagingPublishToLive#REFRESH_COUNTS" />
-	</command>
+		Type(
+			locator1 = "StagingManageVariations#MANAGE_VARIATION",
+			value1 = "${sitePagesVariationName} Edit");
 
-	<command name="setHistoryVersionPG">
-		<execute function="Click" locator1="Icon#STAGING_BAR_VERTICAL_ELLIPSIS" />
+		AssertClick(
+			locator1 = "StagingManageVariations#UPDATE_BUTTON",
+			value1 = "Update");
 
-		<execute function="Click" locator1="Staging#HISTORY_BUTTON" />
+		Staging.viewVariationSuccessMessage();
+	}
 
-		<var locator="Staging#HISTORY_VERSION" name="historyVersion" />
-	</command>
+	macro editStagingConfiguration {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging Configuration");
 
-	<command name="submitForPublicationPageRevision">
-		<if>
-			<condition function="IsTextEqual" locator1="Message#WORKFLOW_STATUS" value1="Draft" />
-			<then>
-				<execute function="AssertClick" locator1="Staging#STAGING_MENU_SUBMIT_FOR_PUBLICATION" value1="Submit for Publication" />
-			</then>
-		</if>
+		if ("${pageVersioningEnabled}" == "true") {
+			Check.checkHiddenToggleSwitch(locator1 = "Checkbox#ENABLED_ON_PUBLIC_PAGES");
 
-		<execute function="AssertElementNotPresent" locator1="Staging#STAGING_MENU_SUBMIT_FOR_PUBLICATION" />
+			Check.checkHiddenToggleSwitch(locator1 = "Checkbox#ENABLED_ON_PRIVATE_PAGES");
+		}
 
-		<if>
-			<condition function="IsTextEqual" locator1="Message#WORKFLOW_STATUS" value1="Pending (Created)" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Message#WORKFLOW_STATUS" value1="Pending (Created)" />
-			</then>
-			<else>
-				<execute function="AssertTextEquals" locator1="Message#WORKFLOW_STATUS" value1="Pending (Review)" />
-			</else>
-		</if>
-	</command>
+		if (isSet(isNotEditable)) {
+			var key_contentName = "${isNotEditable}";
 
-	<command name="undoStagingPageVersioningPG">
-		<execute function="Click" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
+			AssertNotEditable(locator1 = "Checkbox#STAGED_CONTENT");
+		}
 
-		<execute function="ClickNoError" locator1="Staging#STAGING_MENU_UNDO_BUTTON" />
-		<execute function="Confirm" value1="Are you sure you want to undo your last changes?" />
-	</command>
+		Button.clickSave();
 
-	<command name="viewEditedSitePagesVariationPG">
-		<var name="key_sitePagesVariationName" value="${sitePagesVariationName}" />
+		Pause(locator1 = "5000");
+	}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#SITE_PAGES_VARIATION" value1="${sitePagesVariationName}" />
-	</command>
+	macro enablePageInSitePagesVariation {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#STAGING_BAR_PAGE_VARIATIONS_ALERT",
+			value1 = "The page ${pageName} is not enabled in ${sitePagesVariationName}, but is available for other pages variations.");
 
-	<command name="viewHistoryVersionPG">
-		<if>
-			<condition function="IsElementPresent#isVisible" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
-			<then>
-				<execute function="Click" locator1="Icon#HISTORY_VERTICAL_ELLIPSIS" />
+		AssertClick(
+			locator1 = "Staging#STAGING_MENU_ENABLE_PAGE_BUTTON",
+			value1 = "Enable in ${sitePagesVariationName}");
 
-				<execute function="Click" locator1="Staging#HISTORY_BUTTON" />
+		Page.view(
+			pageName = "${pageName}",
+			privacy = "${privacy}");
+	}
 
-				<execute function="SelectFrame" locator1="IFrame#METADATA_SETS_IFRAME" />
-			</then>
-		</if>
+	macro gotoHistory {
+		while (IsElementNotPresent(locator1 = "Staging#HISTORY_BUTTON")) {
+			Click(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
+		}
 
-		<if>
-			<equals arg1="${modifiedVersion}" arg2="true" />
-			<then>
-				<execute function="AssertTextNotEquals" locator1="Staging#HISTORY_VERSION" value1="${historyVersion}" />
-			</then>
-			<elseif>
-				<condition function="IsElementPresent#isVisible" locator1="Staging#HISTORY_VERSION" />
-				<then>
-					<execute function="AssertTextEquals#assertPartialText" locator1="Staging#HISTORY_VERSION" value1="${historyVersion}" />
-				</then>
-			</elseif>
-			<else>
-				<execute function="AssertTextEquals#assertPartialText" locator1="Staging#HISTORY_VERSION_ANCHOR" value1="${historyVersion}" />
-			</else>
-		</if>
+		Click(locator1 = "Staging#HISTORY_BUTTON");
 
-		<execute function="SelectFrame" value1="relative=top" />
+		SelectFrame(locator1 = "IFrame#METADATA_SETS_IFRAME");
+	}
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+	macro gotoNavTab {
+		var key_tabName = "${tabName}";
 
-	<command name="viewIncompletePageViaStagingPageVariation">
-		<var name="key_page" value="${pageName}" />
+		if (IsElementNotPresent(locator1 = "StagingPublishToLive#ACTIVE_TAB_NAME")) {
+			Click(locator1 = "StagingPublishToLive#TAB_NAME");
+		}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="SitePages#INCOMPLETE_STAGING_PAGE_VARIATION_INFO_MESSAGE" value1="The page ${pageName} is not enabled in ${sitePagesVariationName}, but is available for other pages variations." />
-		<execute function="AssertTextEquals" locator1="SitePages#INCOMPLETE_STAGING_PAGE_VARIATION_ENABLE_BUTTON" value1="Enable in ${sitePagesVariationName}" />
-		<execute function="AssertTextEquals" locator1="SitePages#INCOMPLETE_STAGING_PAGE_VARIATION_DELETE_BUTTON" value1="Delete in All Pages Variations" />
-	</command>
+		AssertElementPresent(locator1 = "StagingPublishToLive#ACTIVE_TAB_NAME");
+	}
 
-	<command name="viewNoPublishContentCountViaPortletStagingCP">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
+	macro gotoPublishToLive {
+		if ((IsElementNotPresent(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON")) && (IsElementPresent(locator1 = "Icon#STAGING"))) {
+			Click(locator1 = "Icon#STAGING");
 
-		<execute function="Click" locator1="MenuItem#STAGING" />
+			AssertElementPresent(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
+		}
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION_DIALOG" />
+		if ((IsElementPresent(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION")) && (!(isSet(pleaseDoNotMarkAsReady)))) {
+			Check.toggleSwitch(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION");
+		}
 
-		<execute function="AssertElementNotPresent" locator1="Staging#STAGING_CONTENT_COUNT" />
-		<execute function="AssertElementNotPresent" locator1="Staging#STAGING_CONTENT_INFO" />
+		WaitForLiferayEvent.initializeLiferayEventLog();
 
-		<execute function="SelectFrameTop" />
+		Click(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
 
-	<command name="viewPageVariationPG">
-		<var name="key_pageVariationName" value="${pageVariationName}" />
+	macro markAsReadyForPublication {
+		if (IsElementPresent(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION")) {
+			AssertNotChecked(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION");
 
-		<execute function="AssertTextEquals" locator1="Staging#PAGE_VARIATION" value1="${pageVariationName}" />
-	</command>
+			Check.toggleSwitch(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION");
+		}
+	}
 
-	<command name="viewPublishContentCountViaPortletStagingCP">
-		<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-		<execute function="Click" locator1="MenuItem#STAGING" />
+	macro mergeSitePagesVariation {
+		Refresh();
 
-		<execute function="SelectFrame" locator1="IFrame#CONFIGURATION_DIALOG" />
+		Staging.navigateToSitePageVariation();
 
-		<execute function="AssertTextEquals" locator1="Staging#STAGING_CONTENT_COUNT" value1="${contentCount}" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#STAGING_CONTENT_INFO" value1="${contentInformation}" />
+		LexiconEntry.gotoEntryMenuItemNoWait(
+			menuItem = "Merge",
+			rowEntry = "${sitePagesVariationName}");
 
-		<execute function="SelectFrameTop" />
+		var key_sitePagesVariationMergeName = "${sitePagesVariationMergeName}";
 
-		<execute function="Click" locator1="Icon#CLOSE" />
-	</command>
+		AssertTextEquals(
+			locator1 = "StagingManageVariations#MERGE_SITE_PAGES_VARIATION_TABLE_BRANCH",
+			value1 = "${sitePagesVariationMergeName}");
 
-	<command name="viewPublishTemplate">
-		<if>
-			<condition function="IsElementPresent" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-			<then>
-				<execute function="Click" locator1="Icon#HEADER_VERTICAL_ELLIPSIS" />
-			</then>
-		</if>
+		AssertClickNoError(
+			locator1 = "StagingManageVariations#MERGE_SITE_PAGES_VARIATION_TABLE_SELECT_LINK",
+			value1 = "Select");
 
-		<execute function="AssertClick" locator1="MenuItem#PUBLISH_TEPMLATES" value1="Publish Templates" />
+		AssertConfirm(value1 = "Are you sure you want to merge changes from ${sitePagesVariationMergeName}?");
 
-		<var name="key_publishTemplateName" value="${publishTemplateName}" />
+		Staging.viewVariationSuccessMessage();
 
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME" value1="${publishTemplateName}" />
-		<execute function="AssertTextEquals" locator1="StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_DESCRIPTION" value1="${publishTemplateDescription}" />
-	</command>
+		IFrame.closeFrame();
+	}
 
-	<command name="viewSitePagesVariationPG">
-		<var name="key_sitePagesVariationName" value="${sitePagesVariationName}" />
+	macro modifyVariation {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging Configuration");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#SITE_PAGES_VARIATION" value1="${sitePagesVariationName}" />
-	</command>
+		if (isSet(enableOnPublicPages)) {
+			Click(locator1 = "Checkbox#ENABLED_ON_PUBLIC_PAGES");
 
-	<command name="viewStagingLocalLivePG">
-		<execute function="AssertElementPresent" locator1="Staging#STAGING_VIEW" />
-	</command>
+			AssertClickNoError(
+				locator1 = "Button#SAVE",
+				value1 = "Save");
+		}
 
-	<command name="viewStagingLocalLiveVariationMessagePG">
-		<if>
-			<condition function="IsElementNotPresent" locator1="Staging#LIVE_MENU_MESSAGE" />
-			<then>
-				<execute function="AssertClick" locator1="Staging#LIVE_DROP_DOWN_BUTTON" value1="Live" />
-			</then>
-		</if>
+		if (isSet(enableOnPrivatePages)) {
+			Click(locator1 = "Checkbox#ENABLED_ON_PRIVATE_PAGES");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Staging#LIVE_MENU_MESSAGE" value1="Page ${pageName} was last published from ${sitePagesVariationName}." />
-	</command>
+			AssertClickNoError(
+				locator1 = "Button#SAVE",
+				value1 = "Save");
+		}
+	}
 
-	<command name="viewStagingWorkflowStatusPG">
-		<if>
-			<equals arg1="${stagingWorkflowStatus}" arg2="Ready for Publication" />
-			<then>
-				<execute function="AssertElementPresent" locator1="Staging#STAGING_MENU_READY_FOR_PUBLICATION" />
-			</then>
-		</if>
-	</command>
+	macro moveToTheRecycleBinPublishTemplate {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Publish Templates");
 
-	<command name="viewValidationError">
-		<execute function="Click" locator1="Message#SEE_MORE_DETAILS_LINK" />
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Move to Recycle Bin",
+			rowEntry = "${publishTemplateName}");
 
-		<execute function="SelectFrameTop" />
+		Alert.viewSuccessMessage();
+	}
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#ERROR" value1="${validateErrorMessage}" />
-	</command>
-</definition>
+	macro navigateToSitePageVariation {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		Click(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
+
+		Click(locator1 = "Staging#MANAGE_VARIATIONS");
+
+		SelectFrame(locator1 = "IFrame#SITE_VARIATION_IFRAME");
+	}
+
+	macro openStagingAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_staging_processes_web_portlet_StagingProcessesPortlet");
+	}
+
+	macro publishCustomPublication {
+		Staging.addCustomPublication(headerTitle = "${headerTitle}");
+
+		if (isSet(scheduleProcess)) {
+			Staging.configureScheduleTime();
+		}
+
+		if ("${rangeAll}" == "true") {
+			Click(locator1 = "Radio#CHOOSE_CONTENT_ALL_CHANGE");
+
+			Click(locator1 = "Link#REFRESH_COUNTS");
+		}
+
+		if (isSet(checkContentNameList)) {
+			for (var contentName : list "${checkContentNameList}") {
+				Check(
+					key_contentName = "${contentName}",
+					locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+			}
+		}
+
+		Staging.clickPublishToLiveButton(
+			failureExpected = "${failureExpected}",
+			remoteStaging = "${remoteStaging}",
+			scheduleProcess = "${scheduleProcess}");
+
+		Staging.viewProcessResult(
+			failureExpected = "${failureExpected}",
+			inProcess = "${inProcess}",
+			scheduleProcess = "${scheduleProcess}",
+			validateErrorMessage = "${validateErrorMessage}");
+	}
+
+	macro publishToLive {
+		if (isSet(publicationName)) {
+			PortletEntry.inputName(name = "${publicationName}");
+		}
+
+		Staging.clickPublishToLiveButton(remoteStaging = "${remoteStaging}");
+
+		Staging.viewProcessResult(
+			failureExpected = "${failureExpected}",
+			scheduleProcess = "${scheduleProcess}",
+			validateErrorMessage = "${validateErrorMessage}");
+
+		SelectFrameTop();
+
+		if (IsElementPresent(locator1 = "IFrame#MODAL_BODY")) {
+			IFrame.closeFrame();
+		}
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
+	}
+
+	macro publishToLiveNowViaPortletCP {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging");
+
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION_DIALOG");
+
+		if ("${replicateIndividualDeletions}" == "true") {
+			AssertVisible(locator1 = "Staging#STAGING_CONTENT_DELETIONS");
+
+			Click(locator1 = "Staging#STAGING_CONTENT_DELETIONS");
+
+			Click(locator1 = "Staging#REPLICATE_INDIVIDUAL_DELETIONS");
+		}
+
+		ClickNoError(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
+
+		Confirm(value1 = "Are you sure you want to publish to live and update the existing application data?");
+
+		Pause(locator1 = "5000");
+
+		AssertTextEquals(
+			locator1 = "Staging#STAGING_STATUS_PORTLET",
+			value1 = "Successful");
+
+		IFrame.closeFrame();
+	}
+
+	macro publishToLiveNowViaPortletPG {
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Staging");
+
+		IFrame.selectConfigurationFrame();
+
+		AssertClickNoError(
+			locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON",
+			value1 = "Publish to Live");
+
+		AssertConfirm(value1 = "Are you sure you want to publish to live and update the existing application data?");
+
+		Pause(locator1 = "5000");
+
+		AssertTextEquals(
+			locator1 = "Staging#STAGING_STATUS_PORTLET",
+			value1 = "Successful");
+
+		IFrame.closeFrame();
+	}
+
+	macro publishToLivePublishTemplate {
+		if (IsElementPresent(locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION")) {
+			AssertClick.assertPartialTextClickAt(
+				locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION",
+				value1 = "Switch to Advanced Publish Process");
+
+			AssertClick(
+				locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_BUTTON",
+				value1 = "Publish Templates");
+		}
+
+		Click(locator1 = "Icon#HISTORY_VERTICAL_ELLIPSIS");
+
+		Click(locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_PUBLISH_TO_LIVE_ARROW_BUTTON");
+
+		AssertClick(
+			locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON",
+			value1 = "Publish to Live");
+
+		while ((IsElementNotPresent(locator1 = "Staging#PROCESS_SUCCESSFUL")) && (IsElementNotPresent(locator1 = "Staging#LATEST_PROCESS_RESULT"))) {
+			Pause(locator1 = "1000");
+		}
+
+		if (IsElementPresent(locator1 = "Staging#PROCESS_SUCCESSFUL")) {
+			AssertTextEquals(
+				locator1 = "Staging#PROCESS_SUCCESSFUL",
+				value1 = "Successful");
+
+			SelectFrame(value1 = "relative=top");
+
+			IFrame.closeFrame();
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "Staging#LATEST_PROCESS_RESULT",
+				value1 = "SUCCESSFUL");
+		}
+
+		var key_siteName = "${siteName}";
+
+		ProductMenu.gotoPortlet(
+			category = "Publishing",
+			portlet = "Staging");
+
+		if (IsElementPresent(locator1 = "Staging#LATEST_PROCESS_RESULT")) {
+			AssertTextEquals(
+				locator1 = "Staging#LATEST_PROCESS_RESULT",
+				value1 = "SUCCESSFUL");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "Staging#PROCESS_SUCCESSFUL",
+				value1 = "Successful");
+		}
+	}
+
+	macro publishToRemoteUncheckContentViaCustomPublication {
+		LexiconEntry.gotoAdd();
+
+		var key_contentName = "${contentName}";
+
+		Uncheck(locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+		AssertNotChecked(locator1 = "Staging#STAGING_CONTENT_CHECKBOX");
+
+		AssertClickNoError(
+			locator1 = "Staging#STAGING_PUBLISH_TO_REMOTE_LIVE_BUTTON",
+			value1 = "Publish to Remote Live");
+
+		Pause(locator1 = "5000");
+
+		AssertTextEquals(
+			locator1 = "Staging#PROCESS_RESULT",
+			value1 = "SUCCESSFUL");
+	}
+
+	macro publishViaSAP {
+		if (IsElementPresent(locator1 = "Icon#ROW_VERTICAL_ELLIPSIS", key_rowEntry = "${entry}")) {
+			Click(
+				key_rowEntry = "${entry}",
+				locator1 = "Icon#ROW_VERTICAL_ELLIPSIS");
+
+			MenuItem.clickNoError(menuItem = "Publish to Live");
+		}
+		else {
+			WebContentNavigator.gotoEntryMenuItem(
+				entry = "${entry}",
+				menuItem = "Publish to Live");
+		}
+
+		AssertConfirm(value1 = "${confirmMessage}");
+
+		AssertTextEquals(
+			locator1 = "Staging#PROCESS_SUCCESSFUL",
+			value1 = "Successful");
+	}
+
+	macro redoStagingPageVersioningPG {
+		while (IsElementNotPresent(locator1 = "Staging#STAGING_MENU_REDO_BUTTON")) {
+			Click(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS");
+		}
+
+		ClickNoError(locator1 = "Staging#STAGING_MENU_REDO_BUTTON");
+
+		AssertConfirm(value1 = "Are you sure you want to redo your last changes?");
+	}
+
+	macro remoteStagingSetUp {
+		if (!(isSet(remotePort))) {
+			var remotePort = "8080";
+		}
+
+		JSONGroup.addGroup(
+			groupName = "Remote Site",
+			portalURL = "http://localhost:${remotePort}");
+
+		var siteID = JSONGroupSetter.setGroupId(
+			groupName = "Remote Site",
+			portalURL = "http://localhost:${remotePort}");
+
+		var siteURLKey = ContentPagesNavigator._convertNameToKey(name = "${siteName}");
+
+		Staging.openStagingAdmin(siteURLKey = "${siteURLKey}");
+
+		Staging.activateStagingCP(
+			contentName = "${contentName}",
+			pageVersioningEnabled = "${pageVersioningEnabled}",
+			remotePort = "${remotePort}",
+			remoteStaging = "true",
+			siteID = "${siteID}",
+			siteName = "${siteName}",
+			uncheckContent = "${uncheckContent}");
+	}
+
+	macro remoteStagingSetUpViaJson {
+		if (!(isSet(remotePort))) {
+			var remotePort = "8080";
+		}
+
+		JSONGroup.addGroup(
+			groupName = "Remote Site",
+			portalURL = "http://localhost:${remotePort}");
+
+		var remoteGroupId = JSONGroupSetter.setGroupId(
+			groupName = "Remote Site",
+			portalURL = "http://localhost:${remotePort}");
+
+		JSONStaging.enableRemoteStaging(
+			branchingPrivate = "${branchingPrivate}",
+			branchingPublic = "${branchingPublic}",
+			groupName = "${groupName}",
+			parentGroupName = "${parentGroupName}",
+			remoteGroupId = "${remoteGroupId}",
+			remotePort = "${remotePort}");
+	}
+
+	macro saveLocalStagingConfiguration {
+		AssertClickNoError(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		AssertConfirm(value1 = "Are you sure you want to activate local staging for ${siteName}?");
+
+		while (IsElementNotPresent(locator1 = "Staging#PROCESS_SUCCESSFUL")) {
+			Pause(locator1 = "1000");
+		}
+
+		AssertTextEquals(
+			locator1 = "Staging#PROCESS_RESULT",
+			value1 = "SUCCESSFUL");
+	}
+
+	macro savePublishTemplate {
+		Button.clickSave();
+
+		var key_publishTemplateName = "${publishTemplateName}";
+
+		AssertTextEquals(
+			locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME",
+			value1 = "${publishTemplateName}");
+
+		AssertTextEquals(
+			locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_DESCRIPTION",
+			value1 = "${publishTemplateDescription}");
+	}
+
+	macro saveRemoteStagingConfiguration {
+		AssertClickNoError(
+			locator1 = "Button#SAVE",
+			value1 = "Save");
+
+		AssertConfirm(value1 = "Are you sure you want to activate remote staging for ${siteName}?");
+
+		while (IsElementNotPresent(locator1 = "Message#SUCCESS")) {
+			Pause(locator1 = "1000");
+		}
+
+		if (IsElementPresent(locator1 = "Button#CLOSE_MESSAGE")) {
+			Click(locator1 = "Button#CLOSE_MESSAGE");
+		}
+	}
+
+	macro schedulePublishToLivePG {
+		if (IsElementPresent(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION")) {
+			Check.toggleSwitch(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION");
+		}
+
+		Click(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		Click(locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION");
+
+		Click(locator1 = "PagesConfiguration#PAGES_ALL_PUBLIC_PAGES_CHECKBOX");
+
+		Staging.configureScheduleTime(scheduleTitleName = "${scheduleTitleName}");
+
+		if (isSet(frequency)) {
+			Select(
+				locator1 = "StagingPublishToLive#DATE_SCHEDULE_REPEAT_DROPDOWN",
+				value1 = "${frequency}");
+		}
+
+		if (isSet(checkContentNameList)) {
+			for (var contentName : list "${checkContentNameList}") {
+				var key_contentName = "${contentName}";
+
+				Click(locator1 = "PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX");
+			}
+		}
+
+		AssertClick(
+			locator1 = "StagingPublishToLive#ADD_EVENT_BUTTON",
+			value1 = "Add Event");
+
+		Alert.viewSuccessMessage();
+
+		SelectFrameTop(value1 = "relative=top");
+
+		Pause(locator1 = "5000");
+	}
+
+	macro searchPublishTemplate {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Publish Templates");
+
+		Pause(locator1 = "3000");
+
+		Search.searchCP(searchTerm = "${searchTerm}");
+
+		var key_publishTemplateName = "${searchTerm}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME",
+			value1 = "${searchTerm}");
+	}
+
+	macro setContentDateRange {
+		if (IsElementPresent(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION")) {
+			Check.toggleSwitch(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION");
+		}
+
+		Click(locator1 = "Staging#STAGING_PUBLISH_TO_LIVE_BUTTON");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertClick.assertPartialTextClickAt(
+			locator1 = "StagingPublishToLive#SWITCH_TO_ADVANCED_PUBLICATION",
+			value1 = "Switch to Advanced Publish Process");
+
+		ScrollWebElementIntoView(locator1 = "Staging#STAGING_PUBLICATION_PERMISSION");
+
+		Click(locator1 = "Radio#CHOOSE_CONTENT_DATE_RANGE_CHANGE");
+
+		var key_contentDateRange = "DateRange";
+
+		Type(
+			locator1 = "Select#DATE_RANGE_START_DATE",
+			value1 = "${dateRangeStartDate}");
+
+		Type(
+			locator1 = "Select#DATE_RANGE_END_DATE",
+			value1 = "${dateRangeEndDate}");
+
+		Click(locator1 = "Select#DATE_RANGE_END_DATE");
+
+		Click.mouseDownMouseUp(locator1 = "Link#REFRESH_COUNTS");
+
+		ScrollWebElementIntoView(locator1 = "Staging#STAGING_PUBLICATION_PERMISSION");
+
+		takeScreenshot();
+	}
+
+	macro setStartDateTomorrow {
+		Click(locator1 = "StagingPublishToLive#DATE_SCHEDULE_START_DATE");
+
+		var daySelected = selenium.getText("CalendarEditEvent#MINI_CALENDAR_DAY_SELECTED");
+		var tomorrow = ${daySelected} + 1;
+		var key_daySpecific = "${tomorrow}";
+
+		if (IsElementPresent(locator1 = "CalendarEditEvent#MINI_CALENDAR_DAY_SPECIFIC")) {
+			Click(locator1 = "CalendarEditEvent#MINI_CALENDAR_DAY_SPECIFIC");
+		}
+		else {
+			Click(locator1 = "CalendarEditEvent#MINI_CALENDAR_NEXT_MONTH_BUTTON");
+
+			var key_daySpecific = "1";
+
+			Click(locator1 = "CalendarEditEvent#MINI_CALENDAR_DAY_SPECIFIC");
+		}
+	}
+
+	macro submitForPublicationPageRevision {
+		if (IsTextEqual(locator1 = "Message#WORKFLOW_STATUS", value1 = "Draft")) {
+			AssertClick(
+				locator1 = "Staging#STAGING_MENU_SUBMIT_FOR_PUBLICATION",
+				value1 = "Submit for Publication");
+		}
+
+		AssertElementNotPresent(locator1 = "Staging#STAGING_MENU_SUBMIT_FOR_PUBLICATION");
+
+		if (IsTextEqual(locator1 = "Message#WORKFLOW_STATUS", value1 = "Pending (Created)")) {
+			AssertTextEquals(
+				locator1 = "Message#WORKFLOW_STATUS",
+				value1 = "Pending (Created)");
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "Message#WORKFLOW_STATUS",
+				value1 = "Pending (Review)");
+		}
+	}
+
+	macro undoStagingPageVersioningPG {
+		Click(locator1 = "Icon#HISTORY_VERTICAL_ELLIPSIS");
+
+		ClickNoError(locator1 = "Staging#STAGING_MENU_UNDO_BUTTON");
+
+		AssertConfirm(value1 = "Are you sure you want to undo your last changes?");
+	}
+
+	macro viewAddButtonDoesNotExist {
+		IsElementNotPresent(locator1 = "Button#PLUS");
+	}
+
+	macro viewAddButtonExists {
+		AssertVisible(locator1 = "Button#PLUS");
+	}
+
+	macro viewDateRange {
+		AssertElementPresent(
+			key_dateRangeStartDate = "${dateRangeStartDate}",
+			locator1 = "Select#DATE_RANGE_START_DATE_VALUE");
+
+		AssertElementPresent(
+			key_dateRangeEndDate = "${dateRangeEndDate}",
+			locator1 = "Select#DATE_RANGE_END_DATE_VALUE");
+	}
+
+	macro viewDefaultConfiguration {
+		for (var configurationName : list "${configurationNameList}") {
+			var key_checkboxName = "${configurationName}";
+
+			AssertChecked(locator1 = "StagingPublishToLive#STAGING_CONFIGURATION_CHECKBOX");
+		}
+	}
+
+	macro viewEditedSitePagesVariationPG {
+		var key_sitePagesVariationName = "${sitePagesVariationName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#SITE_PAGES_VARIATION",
+			value1 = "${sitePagesVariationName}");
+	}
+
+	macro viewHistoryVersionPG {
+		if (IsElementPresent(locator1 = "Icon#STAGING_BAR_VERTICAL_ELLIPSIS")) {
+			Staging.gotoHistory();
+		}
+
+		if ("${modifiedVersion}" == "true") {
+			AssertTextNotEquals(
+				locator1 = "Staging#HISTORY_VERSION",
+				value1 = "${historyVersion}");
+		}
+		else if (isSet(historyVersionName)) {
+			var key_historyVersionName = "${historyVersionName}";
+
+			AssertTextEquals.assertPartialText(
+				locator1 = "Staging#HISTORY_VERSION_NAME",
+				value1 = "${historyVersionName}");
+		}
+		else if (IsElementPresent(locator1 = "Staging#HISTORY_VERSION_2")) {
+			AssertTextEquals(
+				locator1 = "Staging#HISTORY_VERSION_2",
+				value1 = "${historyVersion}");
+		}
+		else if (IsElementPresent.isVisible(locator1 = "Staging#HISTORY_VERSION")) {
+			AssertTextEquals(
+				locator1 = "Staging#HISTORY_VERSION",
+				value1 = "${historyVersion}");
+		}
+		else {
+			AssertTextEquals.assertPartialText(
+				locator1 = "Staging#HISTORY_VERSION_ANCHOR",
+				value1 = "${historyVersion}");
+		}
+
+		IFrame.closeFrame();
+	}
+
+	macro viewNoPublishContentCountViaPortletStagingCP {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION_DIALOG");
+
+		AssertElementNotPresent(locator1 = "Staging#STAGING_CONTENT_COUNT");
+
+		AssertElementNotPresent(locator1 = "Staging#STAGING_CONTENT_INFO");
+
+		IFrame.closeFrame();
+	}
+
+	macro viewNotStagedAssetMessageOnStaging {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#NOT_STAGED_ASSET_MESSAGE",
+			value1 = "The data of this portlet is not staged.");
+	}
+
+	macro viewPageVariationPG {
+		var key_pageVariationName = "${pageVariationName}";
+
+		AssertTextEquals(
+			locator1 = "Staging#PAGE_VARIATION",
+			value1 = "${pageVariationName}");
+	}
+
+	macro viewProcessResult {
+		while (IsElementNotPresent(locator1 = "Staging#PROCESS_RESULT")) {
+			Pause(locator1 = "1000");
+		}
+
+		if (isSet(failureExpected)) {
+			AssertTextEquals(
+				locator1 = "Staging#PROCESS_FAILED",
+				value1 = "Failed");
+		}
+		else if (isSet(inProcess)) {
+			AssertTextEquals(
+				locator1 = "Staging#PROCESS_CURRENT_ITEM",
+				value1 = "Please wait as the publish processes complete on the remote site.");
+		}
+		else if (isSet(scheduleProcess)) {
+			Alert.viewSuccessMessage();
+		}
+		else {
+			AssertTextEquals(
+				locator1 = "Staging#PROCESS_SUCCESSFUL",
+				value1 = "Successful");
+		}
+
+		if (isSet(validateErrorMessage)) {
+			Staging.viewValidationError(validateErrorMessage = "${validateErrorMessage}");
+		}
+	}
+
+	macro viewPublicationSummary {
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Summary",
+			rowEntry = "${publicationTitle}");
+
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+
+		AssertElementPresent(locator1 = "Staging#PROCESS_SUMMARY_PAGES_TITLE");
+
+		if (isSet(content)) {
+			for (var content : list "${contentList}") {
+				var key_content = "${content}";
+
+				AssertTextPresent(
+					locator1 = "Staging#PUBLICATION_CONTENT",
+					value1 = "${content}");
+			}
+		}
+
+		if (isSet(deletions)) {
+			AssertElementPresent(locator1 = "Staging#PUBLICATION_DELETIONS");
+		}
+
+		if (isSet(lookAndFeelList)) {
+			for (var lookAndFeel : list "${lookAndFeelList}") {
+				var key_lookAndFeel = "${lookAndFeel}";
+
+				AssertTextPresent(
+					locator1 = "Staging#PUBLICATION_LOOK_AND_FEEL",
+					value1 = "${lookAndFeel}");
+			}
+		}
+
+		if ("${dateRestrictionOption}" == "All") {
+			var key_dateRestrictionOption = "Without Restriction";
+
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${key_dateRestrictionOption}");
+		}
+
+		if ("${dateRestrictionOption}" == "From Last Publish Date") {
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${dateRestrictionOption}");
+		}
+
+		if ("${dateRestrictionOption}" == "Date Range") {
+			var key_dateRestrictionOption = "Modified or Created Between";
+
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${key_dateRestrictionOption}");
+		}
+
+		if ("${dateRestrictionOption}" == "Last") {
+			AssertTextPresent(
+				locator1 = "Staging#PUBLICATION_DATE",
+				value1 = "${dateRestrictionOption}");
+		}
+
+		if (isSet(noContent)) {
+			for (var noContent : list "${noContentList}") {
+				var key_content = "${noContent}";
+
+				AssertTextNotPresent(
+					locator1 = "Staging#PUBLICATION_CONTENT",
+					value1 = "${content}");
+			}
+		}
+
+		if (isSet(pagesNotToPublish)) {
+			AssertHTMLSourceTextNotPresent(value1 = "${pagesNotToPublish}");
+		}
+
+		if (isSet(pagesOption)) {
+			AssertTextEquals(
+				locator1 = "Staging#PUBLICATION_PAGE_OPTION",
+				value1 = "${pagesOption}");
+		}
+
+		if (isSet(pagesToPublish)) {
+			AssertHTMLSourceTextPresent(value1 = "${pagesToPublish}");
+		}
+
+		if (isSet(permissions)) {
+			AssertElementPresent(locator1 = "Staging#PUBLICATION_PERMISSION");
+		}
+
+		IFrame.closeFrame();
+	}
+
+	macro viewPublishContentCountViaPortletStagingCP {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging");
+
+		SelectFrame(locator1 = "IFrame#CONFIGURATION_DIALOG");
+
+		AssertTextEquals(
+			locator1 = "Staging#STAGING_CONTENT_COUNT",
+			value1 = "${contentCount}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#STAGING_CONTENT_INFO",
+			value1 = "${contentInformation}");
+
+		IFrame.closeFrame();
+	}
+
+	macro viewPublishTask {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#PROCESS_TITLE",
+			value1 = "${publicationTitle}");
+	}
+
+	macro viewPublishTemplate {
+		if (IsElementPresent(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS")) {
+			Click(locator1 = "Icon#HEADER_VERTICAL_ELLIPSIS");
+		}
+
+		MenuItem.click(menuItem = "Publish Templates");
+
+		var key_publishTemplateName = "${publishTemplateName}";
+
+		AssertTextEquals(
+			locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME",
+			value1 = "${publishTemplateName}");
+
+		AssertTextEquals(
+			locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_DESCRIPTION",
+			value1 = "${publishTemplateDescription}");
+
+		if (isSet(uncheckContentNameList)) {
+			AssertClick(
+				locator1 = "StagingPublishToLive#PUBLISH_TEMPLATES_TABLE_NAME",
+				value1 = "${publishTemplateName}");
+
+			for (var contentName : list "${uncheckContentNameList}") {
+				AssertNotChecked(
+					key_contentName = "${contentName}",
+					locator1 = "PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX");
+			}
+		}
+	}
+
+	macro viewRepeatingEventDetails {
+		Staging.openStagingAdmin(siteURLKey = "${siteName}");
+
+		Navigator.gotoNavItem(navItem = "Scheduled");
+
+		var key_scheduleTitleName = "${scheduleTitleName}";
+
+		AssertTextPresent(
+			locator1 = "StagingPublishToLive#SCHEDULED_TABLE_TITLE",
+			value1 = "${scheduleTitleName}");
+
+		AssertTextEquals(
+			locator1 = "StagingPublishToLive#SCHEDULED_TABLE_END_DATE",
+			value1 = "${endDate}");
+	}
+
+	macro viewSitePagesVariationActiveCP {
+		var key_sitePagesVariationName = "${sitePagesVariationName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#SITE_PAGES_VARIATION_MENULIST_ACTIVE",
+			value1 = "${sitePagesVariationName}");
+	}
+
+	macro viewSitePagesVariationPG {
+		var key_sitePagesVariationName = "${sitePagesVariationName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#SITE_PAGES_VARIATION",
+			value1 = "${sitePagesVariationName}");
+	}
+
+	macro viewStagingLocalLivePG {
+		AssertElementPresent(locator1 = "Staging#STAGING_VIEW");
+	}
+
+	macro viewStagingLocalLiveVariationMessagePG {
+		if (IsElementNotPresent(locator1 = "Staging#LIVE_MENU_MESSAGE")) {
+			AssertClick(
+				locator1 = "Staging#LIVE_DROP_DOWN_BUTTON",
+				value1 = "Live");
+		}
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Staging#LIVE_MENU_MESSAGE",
+			value1 = "Page ${pageName} was last published from ${sitePagesVariationName}.");
+	}
+
+	macro viewStagingWorkflowStatusPG {
+		if ("${stagingWorkflowStatus}" == "Ready for Publication") {
+			AssertElementPresent(locator1 = "Staging#STAGING_MENU_READY_FOR_PUBLICATION");
+		}
+	}
+
+	macro viewUncheckContentNameList {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Staging Configuration");
+
+		for (var contentName : list "${uncheckContentNameList}") {
+			AssertNotChecked(
+				key_contentName = "${contentName}",
+				locator1 = "PagesConfiguration#CONTENT_CHOOSE_CONTENT_CONTENT_CHECKBOX");
+		}
+	}
+
+	macro viewValidationError {
+		Click.javaScriptClick(locator1 = "Message#SEE_MORE_DETAILS_LINK");
+
+		SelectFrameTop();
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#ERROR",
+			value1 = "${validateErrorMessage}");
+	}
+
+	macro viewVariationSuccessMessage {
+		SelectFrameTop(value1 = "relative=top");
+
+		SelectFrame(locator1 = "IFrame#SITE_VARIATION_IFRAME");
+
+		Alert.viewSuccessMessage();
+
+		SelectFrameTop(value1 = "relative=top");
+	}
+
+	macro viewVariationTooltipMessage {
+		var key_pageName = "${pageName}";
+		var key_title = "${title}";
+
+		MouseOver(
+			key_pageName = "${pageName}",
+			locator1 = "StagingPublishToLive#PAGES_TO_PUBLISH_PAGE_NAME");
+
+		AssertVisible(
+			key_pageName = "${pageName}",
+			key_title = "${title}",
+			locator1 = "StagingPublishToLive#PAGES_TO_PUBLISH_PAGE_NAME_SPAN_TITLE");
+	}
+
+}

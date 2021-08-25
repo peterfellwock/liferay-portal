@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.repository;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 /**
  * @author Adolfo Pérez
@@ -25,25 +24,20 @@ public class RepositoryFactoryUtil {
 	public static LocalRepository createLocalRepository(long repositoryId)
 		throws PortalException {
 
-		return getRepositoryFactory().createLocalRepository(repositoryId);
+		return _repositoryFactory.createLocalRepository(repositoryId);
 	}
 
 	public static Repository createRepository(long repositoryId)
 		throws PortalException {
 
-		return getRepositoryFactory().createRepository(repositoryId);
+		return _repositoryFactory.createRepository(repositoryId);
 	}
 
 	public static RepositoryFactory getRepositoryFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			RepositoryFactoryUtil.class);
-
 		return _repositoryFactory;
 	}
 
 	public void setRepositoryFactory(RepositoryFactory repositoryFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_repositoryFactory = repositoryFactory;
 	}
 

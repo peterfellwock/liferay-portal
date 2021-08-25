@@ -1,0 +1,164 @@
+@component-name = "portal-collaboration"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Blogs";
+
+	var pageName = "Blogs Page";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Blogs Page");
+
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Blogs Page",
+			widgetName = "Blogs");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "test@liferay.com",
+				userLoginFullName = "Test Test");
+
+			BlogsEntry.tearDownCP();
+
+			Blogs.tearDownConfigurationScopePG(pageName = "Blogs Page");
+
+			Organization.tearDownCP();
+
+			PortalInstances.tearDownCP();
+
+			Page.tearDownCP();
+
+			Site.tearDownCP();
+		}
+	}
+
+	@description = "This checks that the default abstract (appends to 400 characters) can display properly in the UI."
+	@priority = "4"
+	@refactordone
+	test CanAddAbstractDisplayingFirst400Characters {
+		property test.name.skip.portal.instance = "BlogsUsecase#CanAddAbstractDisplayingFirst400Characters";
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		Blogs.addWithDefaultAbstract(
+			entryAbstractDescription = "Blogs Entry Custom Abstract",
+			entryContent = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares represent a definition of a standard web application while the darker blue squares show the addition of social aspects.",
+			entryTitle = "Blogs Entry Title");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		BlogsEntry.viewAbstractDisplay(
+			entryAbstractDescription = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares represent...",
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title");
+
+		BlogsNavigator.gotoEntryWithAbstractPG(
+			entryAbstractDescription = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares represent...",
+			entryTitle = "Blogs Entry Title");
+
+		BlogsEntry.viewEntryPG(
+			entryContent = "Liferay Portal provides an excellent platform for building web applications, websites, and portals, but it can additionally be used for a new category of web applications called social applications. The definition is simple: a social application is a web application that additionally leverages social identity, data, and features or services. In the left figure, the light blue squares represent a definition of a standard web application while the darker blue squares show the addition of social aspects.",
+			entryTitle = "Blogs Entry Title");
+	}
+
+	@description = "This test checks that blog entry can be added with special charaters."
+	@priority = "5"
+	@refactordone
+	test CanAddWithSpecialCharacters {
+		BlogsNavigator.openToAddEntry(
+			layoutName = "Blogs Page",
+			siteURLKey = "guest");
+
+		BlogsEntry.addEntryContent(
+			entryContent = '''Blogs Entry Content `~!@#$%^&*(){}[],.<>/?|''',
+			entryTitle = '''Blogs Entry Title `~!@#$%^&*(){}[],.<>/?|''');
+
+		PortletEntry.publish();
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		BlogsNavigator.gotoEntryPG(
+			entryContent = '''Blogs Entry Content `~!@#$%^&*(){}[],.<>/?|''',
+			entryTitle = '''Blogs Entry Title `~!@#$%^&*(){}[],.<>/?|''');
+
+		BlogsEntry.viewPG(
+			entryContent = '''Blogs Entry Content `~!@#$%^&*(){}[],.<>/?|''',
+			entryTitle = '''Blogs Entry Title `~!@#$%^&*(){}[],.<>/?|''');
+	}
+
+	@description = "This test covers LPS-127212 and LPS-128781. This ensures that a blog title can be imported to a site when a duplicate title already exists."
+	@priority = "4"
+	@refactordone
+	test CanImportBlogWhenDuplicateTitleExists {
+		JSONGroup.addGroup(groupName = "Source Site Name");
+
+		JSONBlog.addEntry(
+			entryContent = "Blogs Entry Content",
+			entryTitle = "Blogs Entry Title",
+			groupName = "Source Site Name");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "source-site-name");
+
+		LAR.importPortlet(
+			larFileName = "Blogs.portlet.lar",
+			uploadFrom = "dependencies");
+
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "source-site-name");
+
+		LexiconEntry.changeDisplayStyle(displayStyle = "table");
+
+		for (var i : list "1,2") {
+			AssertTextEquals(
+				key_rowNumber = "${i}",
+				locator1 = "ContentRow#ENTRY_CONTENT_ROW_NUMBER_TD_2",
+				value1 = "Blogs Entry Title");
+		}
+	}
+
+	@description = "This checks that a blog entry with a comment can be imported with no data loss."
+	@priority = "4"
+	@refactordone
+	test CanImportEntryWithComment {
+		BlogsNavigator.openBlogsAdmin(siteURLKey = "guest");
+
+		LAR.importPortlet(
+			larFileName = "BlogWithComment.lar",
+			uploadFrom = "dependencies");
+
+		Navigator.gotoPage(pageName = "Blogs Page");
+
+		BlogsNavigator.openToBlogEntry(
+			entryTitle = "Blog Entry Title",
+			layoutName = "Blogs Page",
+			siteURLKey = "guest");
+
+		BlogsEntry.viewPG(
+			entryContent = "Blog Entry Content",
+			entryTitle = "Blog Entry Title");
+
+		Comments.viewPG(
+			commentCount = "1",
+			entryComment = "Blog Entry Comment",
+			importedComment = "true",
+			userFullName = "Test Test");
+	}
+
+}

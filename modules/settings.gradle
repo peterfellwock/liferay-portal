@@ -1,8 +1,50 @@
 buildscript {
 	apply from: "build-buildscript.gradle", to: buildscript
+
+	File buildFile = gradle.startParameter.buildFile
+
+	if ((buildFile != null) && buildFile.name.startsWith("releng")) {
+		dependencies {
+			classpath group: "org.apache.maven", name: "maven-model", version: "3.0.4"
+		}
+	}
 }
 
 apply plugin: "com.liferay.settings.plugin"
+
+if (Boolean.getBoolean("gradle.build.scan.enabled")) {
+	apply plugin: "com.gradle.enterprise"
+
+	gradleEnterprise {
+		buildScan {
+			allowUntrustedServer = true
+			captureTaskInputFiles = true
+			server = System.getProperty("gradle.build.scan.server.url") ?: null
+
+			publishAlwaysIf true
+			tag System.getenv("JENKINS_HOME") ? "CI" : "LOCAL"
+
+			if (System.getProperty("gradle.build.scan.tag")) {
+				tag System.getProperty("gradle.build.scan.tag")
+			}
+
+			if (!System.getProperty("gradle.build.scan.server.url")) {
+				termsOfServiceAgree = "yes"
+				termsOfServiceUrl = "https://gradle.com/terms-of-service"
+			}
+		}
+	}
+}
+
+File privateYarnLockFile = new File(rootDir, "private/yarn.lock")
+
+if (privateYarnLockFile.exists()) {
+	include "private"
+
+	ProjectDescriptor projectDescriptor = project(":private")
+
+	projectDescriptor.projectDir = privateYarnLockFile.parentFile
+}
 
 String testClassGroupIndex = System.getProperty("test.class.group.index")
 
@@ -13,10 +55,16 @@ if (testClassGroupIndex) {
 
 	properties.load(new StringReader(file.text.replace("\\", "/")))
 
-	String testClassGroup = properties["TEST_CLASS_GROUP_" + testClassGroupIndex]
-	String testClassGroups = properties["TEST_CLASS_GROUPS"]
+	List<String> testClasses = []
 
-	gradle.ext.testClasses = testClassGroup.tokenize(",")
+	String testClassGroup = properties["TEST_CLASS_GROUP_" + testClassGroupIndex]
+
+	if (testClassGroup != null) {
+		testClasses = testClassGroup.tokenize(",")
+	}
+
+	gradle.ext.testClasses = testClasses
+
 	gradle.ext.testClassGroupIndex = testClassGroupIndex
-	gradle.ext.testClassGroups = testClassGroups
+	gradle.ext.testClassGroups = properties["TEST_CLASS_GROUPS"]
 }

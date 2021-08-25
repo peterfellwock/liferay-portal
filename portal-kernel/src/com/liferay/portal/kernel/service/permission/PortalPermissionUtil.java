@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.service.permission;
 
 import com.liferay.portal.kernel.security.auth.PrincipalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -27,25 +26,20 @@ public class PortalPermissionUtil {
 			PermissionChecker permissionChecker, String actionId)
 		throws PrincipalException {
 
-		getPortalPermission().check(permissionChecker, actionId);
+		_portalPermission.check(permissionChecker, actionId);
 	}
 
 	public static boolean contains(
 		PermissionChecker permissionChecker, String actionId) {
 
-		return getPortalPermission().contains(permissionChecker, actionId);
+		return _portalPermission.contains(permissionChecker, actionId);
 	}
 
 	public static PortalPermission getPortalPermission() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortalPermissionUtil.class);
-
 		return _portalPermission;
 	}
 
 	public void setPortalPermission(PortalPermission portalPermission) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_portalPermission = portalPermission;
 	}
 

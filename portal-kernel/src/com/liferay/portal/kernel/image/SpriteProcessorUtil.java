@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.image;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.io.IOException;
 
 import java.net.URL;
@@ -37,20 +35,16 @@ public class SpriteProcessorUtil {
 			int maxWidth, int maxSize)
 		throws IOException {
 
-		return getSpriteProcessor().generate(
+		return _spriteProcessor.generate(
 			servletContext, imageURLs, spriteRootDirName, spriteFileName,
 			spritePropertiesFileName, rootPath, maxHeight, maxWidth, maxSize);
 	}
 
 	public static SpriteProcessor getSpriteProcessor() {
-		PortalRuntimePermission.checkGetBeanProperty(SpriteProcessorUtil.class);
-
 		return _spriteProcessor;
 	}
 
 	public void setSpriteProcessor(SpriteProcessor spriteProcessor) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_spriteProcessor = spriteProcessor;
 	}
 

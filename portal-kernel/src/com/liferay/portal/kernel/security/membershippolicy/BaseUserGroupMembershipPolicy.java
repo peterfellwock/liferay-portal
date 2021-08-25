@@ -16,6 +16,8 @@ package com.liferay.portal.kernel.security.membershippolicy;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 
@@ -27,7 +29,6 @@ public abstract class BaseUserGroupMembershipPolicy
 	implements UserGroupMembershipPolicy {
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean isMembershipAllowed(long userId, long userGroupId)
 		throws PortalException {
 
@@ -35,7 +36,11 @@ public abstract class BaseUserGroupMembershipPolicy
 			checkMembership(
 				new long[] {userId}, new long[] {userGroupId}, null);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return false;
 		}
 
@@ -43,7 +48,6 @@ public abstract class BaseUserGroupMembershipPolicy
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean isMembershipRequired(long userId, long userGroupId)
 		throws PortalException {
 
@@ -51,7 +55,11 @@ public abstract class BaseUserGroupMembershipPolicy
 			checkMembership(
 				new long[] {userId}, null, new long[] {userGroupId});
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return true;
 		}
 
@@ -64,16 +72,7 @@ public abstract class BaseUserGroupMembershipPolicy
 			UserGroupLocalServiceUtil.getActionableDynamicQuery();
 
 		actionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<UserGroup>() {
-
-				@Override
-				public void performAction(UserGroup userGroup)
-					throws PortalException {
-
-					verifyPolicy(userGroup);
-				}
-
-			});
+			(UserGroup userGroup) -> verifyPolicy(userGroup));
 
 		actionableDynamicQuery.performActions();
 	}
@@ -82,5 +81,8 @@ public abstract class BaseUserGroupMembershipPolicy
 	public void verifyPolicy(UserGroup userGroup) throws PortalException {
 		verifyPolicy(userGroup, null, null);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseUserGroupMembershipPolicy.class);
 
 }

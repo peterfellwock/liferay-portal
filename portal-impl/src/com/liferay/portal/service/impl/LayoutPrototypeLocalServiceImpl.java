@@ -14,6 +14,9 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.NoSuchLayoutPrototypeException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.RequiredLayoutPrototypeException;
 import com.liferay.portal.kernel.model.Group;
@@ -24,16 +27,16 @@ import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.service.base.LayoutPrototypeLocalServiceBaseImpl;
 
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -56,7 +59,7 @@ public class LayoutPrototypeLocalServiceImpl
 		// Layout prototype
 
 		User user = userPersistence.findByPrimaryKey(userId);
-		Date now = new Date();
+		Date date = new Date();
 
 		long layoutPrototypeId = counterLocalService.increment();
 
@@ -67,13 +70,13 @@ public class LayoutPrototypeLocalServiceImpl
 		layoutPrototype.setCompanyId(companyId);
 		layoutPrototype.setUserId(userId);
 		layoutPrototype.setUserName(user.getFullName());
-		layoutPrototype.setCreateDate(serviceContext.getCreateDate(now));
-		layoutPrototype.setModifiedDate(serviceContext.getModifiedDate(now));
+		layoutPrototype.setCreateDate(serviceContext.getCreateDate(date));
+		layoutPrototype.setModifiedDate(serviceContext.getModifiedDate(date));
 		layoutPrototype.setNameMap(nameMap);
 		layoutPrototype.setDescriptionMap(descriptionMap);
 		layoutPrototype.setActive(active);
 
-		layoutPrototypePersistence.update(layoutPrototype);
+		layoutPrototype = layoutPrototypePersistence.update(layoutPrototype);
 
 		// Resources
 
@@ -97,38 +100,18 @@ public class LayoutPrototypeLocalServiceImpl
 		if (GetterUtil.getBoolean(
 				serviceContext.getAttribute("addDefaultLayout"), true)) {
 
-			Map<Locale, String> friendlyURLMap = new HashMap<>();
-
-			friendlyURLMap.put(LocaleUtil.getSiteDefault(), "/layout");
-
 			layoutLocalService.addLayout(
 				userId, group.getGroupId(), true,
 				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
 				layoutPrototype.getNameMap(), null, null, null, null,
 				LayoutConstants.TYPE_PORTLET, StringPool.BLANK, false,
-				friendlyURLMap, serviceContext);
+				HashMapBuilder.put(
+					LocaleUtil.getSiteDefault(), "/layout"
+				).build(),
+				serviceContext);
 		}
 
 		return layoutPrototype;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #addLayoutPrototype(long,
-	 *             long, Map, Map, boolean, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public LayoutPrototype addLayoutPrototype(
-			long userId, long companyId, Map<Locale, String> nameMap,
-			String description, boolean active, ServiceContext serviceContext)
-		throws PortalException {
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(LocaleUtil.getDefault(), description);
-
-		return addLayoutPrototype(
-			userId, companyId, nameMap, descriptionMap, active, serviceContext);
 	}
 
 	@Override
@@ -142,15 +125,22 @@ public class LayoutPrototypeLocalServiceImpl
 
 		// Group
 
-		if (layoutPersistence.countByLayoutPrototypeUuid(
-				layoutPrototype.getUuid()) > 0) {
+		if (!CompanyThreadLocal.isDeleteInProcess()) {
+			int count = layoutPersistence.countByC_L(
+				layoutPrototype.getCompanyId(), layoutPrototype.getUuid());
 
-			throw new RequiredLayoutPrototypeException();
+			if (count > 0) {
+				throw new RequiredLayoutPrototypeException(
+					StringBundler.concat(
+						"Layout prototype cannot be deleted because it is ",
+						"used by layout with company ID ",
+						layoutPrototype.getCompanyId(),
+						" and layout prototype UUID ",
+						layoutPrototype.getUuid()));
+			}
 		}
 
-		Group group = layoutPrototype.getGroup();
-
-		groupLocalService.deleteGroup(group);
+		groupLocalService.deleteGroup(layoutPrototype.getGroup());
 
 		// Resources
 
@@ -195,27 +185,65 @@ public class LayoutPrototypeLocalServiceImpl
 	}
 
 	@Override
-	public LayoutPrototype getLayoutPrototypeByUuidAndCompanyId(
-			String uuid, long companyId)
+	public LayoutPrototype fetchLayoutPrototype(
+		long companyId, String name, Locale locale) {
+
+		List<LayoutPrototype> layoutPrototypes =
+			layoutPrototypePersistence.findByCompanyId(companyId);
+
+		for (LayoutPrototype layoutPrototype : layoutPrototypes) {
+			String layoutPrototypeName = layoutPrototype.getName(locale);
+
+			if (layoutPrototypeName.equals(name)) {
+				return layoutPrototype;
+			}
+		}
+
+		return null;
+	}
+
+	@Override
+	public LayoutPrototype fetchLayoutProtoype(long companyId, String name) {
+		return layoutPrototypeLocalService.fetchLayoutPrototype(
+			companyId, name, LocaleUtil.getDefault());
+	}
+
+	@Override
+	public LayoutPrototype getLayoutPrototype(long companyId, String name)
 		throws PortalException {
 
-		return layoutPrototypePersistence.findByUuid_C_First(
-			uuid, companyId, null);
+		return layoutPrototypeLocalService.getLayoutPrototype(
+			companyId, name, LocaleUtil.getDefault());
+	}
+
+	@Override
+	public LayoutPrototype getLayoutPrototype(
+			long companyId, String name, Locale locale)
+		throws PortalException {
+
+		LayoutPrototype layoutPrototype =
+			layoutPrototypeLocalService.fetchLayoutPrototype(
+				companyId, name, locale);
+
+		if (layoutPrototype == null) {
+			throw new NoSuchLayoutPrototypeException();
+		}
+
+		return layoutPrototype;
 	}
 
 	@Override
 	public List<LayoutPrototype> search(
 		long companyId, Boolean active, int start, int end,
-		OrderByComparator<LayoutPrototype> obc) {
+		OrderByComparator<LayoutPrototype> orderByComparator) {
 
 		if (active != null) {
 			return layoutPrototypePersistence.findByC_A(
-				companyId, active, start, end, obc);
+				companyId, active, start, end, orderByComparator);
 		}
-		else {
-			return layoutPrototypePersistence.findByCompanyId(
-				companyId, start, end, obc);
-		}
+
+		return layoutPrototypePersistence.findByCompanyId(
+			companyId, start, end, orderByComparator);
 	}
 
 	@Override
@@ -223,9 +251,8 @@ public class LayoutPrototypeLocalServiceImpl
 		if (active != null) {
 			return layoutPrototypePersistence.countByC_A(companyId, active);
 		}
-		else {
-			return layoutPrototypePersistence.countByCompanyId(companyId);
-		}
+
+		return layoutPrototypePersistence.countByCompanyId(companyId);
 	}
 
 	@Override
@@ -246,7 +273,7 @@ public class LayoutPrototypeLocalServiceImpl
 		layoutPrototype.setDescriptionMap(descriptionMap);
 		layoutPrototype.setActive(active);
 
-		layoutPrototypePersistence.update(layoutPrototype);
+		layoutPrototype = layoutPrototypePersistence.update(layoutPrototype);
 
 		// Layout
 
@@ -259,25 +286,6 @@ public class LayoutPrototypeLocalServiceImpl
 		layoutPersistence.update(layout);
 
 		return layoutPrototype;
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #updateLayoutPrototype(long,
-	 *             Map, Map, boolean, ServiceContext)}
-	 */
-	@Deprecated
-	@Override
-	public LayoutPrototype updateLayoutPrototype(
-			long layoutPrototypeId, Map<Locale, String> nameMap,
-			String description, boolean active, ServiceContext serviceContext)
-		throws PortalException {
-
-		Map<Locale, String> descriptionMap = new HashMap<>();
-
-		descriptionMap.put(LocaleUtil.getDefault(), description);
-
-		return updateLayoutPrototype(
-			layoutPrototypeId, nameMap, descriptionMap, active, null);
 	}
 
 }

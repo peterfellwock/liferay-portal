@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -28,7 +27,7 @@ public class CommonPermissionUtil {
 			String actionId)
 		throws PortalException {
 
-		getCommonPermission().check(
+		_commonPermission.check(
 			permissionChecker, classNameId, classPK, actionId);
 	}
 
@@ -37,20 +36,15 @@ public class CommonPermissionUtil {
 			String actionId)
 		throws PortalException {
 
-		getCommonPermission().check(
+		_commonPermission.check(
 			permissionChecker, className, classPK, actionId);
 	}
 
 	public static CommonPermission getCommonPermission() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			CommonPermissionUtil.class);
-
 		return _commonPermission;
 	}
 
 	public void setCommonPermission(CommonPermission commonPermission) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_commonPermission = commonPermission;
 	}
 

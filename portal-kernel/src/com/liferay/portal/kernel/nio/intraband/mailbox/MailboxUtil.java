@@ -67,8 +67,8 @@ public class MailboxUtil {
 
 			return byteBuffer.getLong();
 		}
-		catch (Exception e) {
-			throw new MailboxException(e);
+		catch (Exception exception) {
+			throw new MailboxException(exception);
 		}
 	}
 
@@ -108,23 +108,7 @@ public class MailboxUtil {
 		new DelayQueue<>();
 	private static final AtomicLong _receiptGenerator = new AtomicLong();
 
-	static {
-		if (_INTRABAND_MAILBOX_REAPER_THREAD_ENABLED) {
-			Thread thread = new OverdueMailReaperThread(
-				MailboxUtil.class.getName());
-
-			thread.setContextClassLoader(MailboxUtil.class.getClassLoader());
-			thread.setDaemon(true);
-
-			thread.start();
-		}
-	}
-
 	private static class OverdueMailReaperThread extends Thread {
-
-		public OverdueMailReaperThread(String name) {
-			super(name);
-		}
 
 		@Override
 		public void run() {
@@ -134,29 +118,18 @@ public class MailboxUtil {
 
 					_mailMap.remove(receiptStub.getReceipt());
 				}
-				catch (InterruptedException ie) {
+				catch (InterruptedException interruptedException) {
 				}
 			}
+		}
+
+		private OverdueMailReaperThread(String name) {
+			super(name);
 		}
 
 	}
 
 	private static class ReceiptStub implements Delayed {
-
-		public ReceiptStub(long receipt) {
-			this(receipt, -1);
-		}
-
-		public ReceiptStub(long receipt, long currentNanoTime) {
-			long expireTime = currentNanoTime;
-
-			expireTime += TimeUnit.MILLISECONDS.toNanos(
-				_INTRABAND_MAILBOX_STORAGE_LIFE);
-
-			_expireTime = expireTime;
-
-			_receipt = receipt;
-		}
 
 		@Override
 		public int compareTo(Delayed delayed) {
@@ -166,8 +139,8 @@ public class MailboxUtil {
 		}
 
 		@Override
-		public boolean equals(Object obj) {
-			ReceiptStub receiptStub = (ReceiptStub)obj;
+		public boolean equals(Object object) {
+			ReceiptStub receiptStub = (ReceiptStub)object;
 
 			if (_receipt == receiptStub._receipt) {
 				return true;
@@ -190,9 +163,36 @@ public class MailboxUtil {
 			return (int)_receipt;
 		}
 
+		private ReceiptStub(long receipt) {
+			this(receipt, -1);
+		}
+
+		private ReceiptStub(long receipt, long currentNanoTime) {
+			long expireTime = currentNanoTime;
+
+			expireTime += TimeUnit.MILLISECONDS.toNanos(
+				_INTRABAND_MAILBOX_STORAGE_LIFE);
+
+			_expireTime = expireTime;
+
+			_receipt = receipt;
+		}
+
 		private final long _expireTime;
 		private final long _receipt;
 
+	}
+
+	static {
+		if (_INTRABAND_MAILBOX_REAPER_THREAD_ENABLED) {
+			Thread thread = new OverdueMailReaperThread(
+				MailboxUtil.class.getName());
+
+			thread.setContextClassLoader(MailboxUtil.class.getClassLoader());
+			thread.setDaemon(true);
+
+			thread.start();
+		}
 	}
 
 }

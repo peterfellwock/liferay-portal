@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.util;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.Set;
 
 /**
@@ -27,39 +25,34 @@ public class CustomJspRegistryUtil {
 	public static String getCustomJspFileName(
 		String servletContextName, String fileName) {
 
-		return getCustomJspRegistry().getCustomJspFileName(
+		return _customJspRegistry.getCustomJspFileName(
 			servletContextName, fileName);
 	}
 
 	public static CustomJspRegistry getCustomJspRegistry() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			CustomJspRegistryUtil.class);
-
 		return _customJspRegistry;
 	}
 
 	public static String getDisplayName(String servletContextName) {
-		return getCustomJspRegistry().getDisplayName(servletContextName);
+		return _customJspRegistry.getDisplayName(servletContextName);
 	}
 
 	public static Set<String> getServletContextNames() {
-		return getCustomJspRegistry().getServletContextNames();
+		return _customJspRegistry.getServletContextNames();
 	}
 
 	public static void registerServletContextName(
 		String servletContextName, String displayName) {
 
-		getCustomJspRegistry().registerServletContextName(
+		_customJspRegistry.registerServletContextName(
 			servletContextName, displayName);
 	}
 
 	public static void unregisterServletContextName(String servletContextName) {
-		getCustomJspRegistry().unregisterServletContextName(servletContextName);
+		_customJspRegistry.unregisterServletContextName(servletContextName);
 	}
 
 	public void setCustomJspRegistry(CustomJspRegistry customJspRegistry) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_customJspRegistry = customJspRegistry;
 	}
 

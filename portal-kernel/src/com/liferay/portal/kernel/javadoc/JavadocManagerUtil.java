@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.javadoc;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.lang.reflect.Method;
 
 /**
@@ -24,32 +22,28 @@ import java.lang.reflect.Method;
 public class JavadocManagerUtil {
 
 	public static JavadocManager getJavadocManager() {
-		PortalRuntimePermission.checkGetBeanProperty(JavadocManagerUtil.class);
-
 		return _javadocManager;
 	}
 
 	public static void load(
 		String servletContextName, ClassLoader classLoader) {
 
-		getJavadocManager().load(servletContextName, classLoader);
+		_javadocManager.load(servletContextName, classLoader);
 	}
 
 	public static JavadocClass lookupJavadocClass(Class<?> clazz) {
-		return getJavadocManager().lookupJavadocClass(clazz);
+		return _javadocManager.lookupJavadocClass(clazz);
 	}
 
 	public static JavadocMethod lookupJavadocMethod(Method method) {
-		return getJavadocManager().lookupJavadocMethod(method);
+		return _javadocManager.lookupJavadocMethod(method);
 	}
 
 	public static void unload(String servletContextName) {
-		getJavadocManager().unload(servletContextName);
+		_javadocManager.unload(servletContextName);
 	}
 
 	public void setJavadocManager(JavadocManager javadocManager) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_javadocManager = javadocManager;
 	}
 

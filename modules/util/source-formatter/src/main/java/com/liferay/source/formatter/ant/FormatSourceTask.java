@@ -22,6 +22,7 @@ import java.io.File;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,8 +63,8 @@ public class FormatSourceTask extends Task {
 				SourceFormatterArgs.OUTPUT_KEY_MODIFIED_FILES,
 				modifiedFileNames);
 		}
-		catch (Exception e) {
-			throw new BuildException(e);
+		catch (Exception exception) {
+			throw new BuildException(exception);
 		}
 	}
 
@@ -71,12 +72,28 @@ public class FormatSourceTask extends Task {
 		_sourceFormatterArgs.setAutoFix(autoFix);
 	}
 
-	public void setBaseDir(String baseDir) {
-		_sourceFormatterArgs.setBaseDirName(baseDir);
+	public void setBaseDir(String baseDirName) {
+		_sourceFormatterArgs.setBaseDirName(baseDirName);
 	}
 
-	public void setCopyright(String copyright) {
-		_sourceFormatterArgs.setCopyrightFileName(copyright);
+	public void setCheckCategoryNames(List<String> checkCategoryNames) {
+		_sourceFormatterArgs.setCheckCategoryNames(checkCategoryNames);
+	}
+
+	public void setCheckNames(List<String> checkNames) {
+		_sourceFormatterArgs.setCheckNames(checkNames);
+	}
+
+	public void setFailOnAutoFix(boolean failOnAutoFix) {
+		_sourceFormatterArgs.setFailOnAutoFix(failOnAutoFix);
+	}
+
+	public void setFailOnHasWarning(boolean failOnHasWarning) {
+		_sourceFormatterArgs.setFailOnHasWarning(failOnHasWarning);
+	}
+
+	public void setFileExtensions(List<String> fileExtensions) {
+		_sourceFormatterArgs.setFileExtensions(fileExtensions);
 	}
 
 	public void setFileNames(String fileNames) {
@@ -108,6 +125,10 @@ public class FormatSourceTask extends Task {
 		_sourceFormatterArgs.setMaxLineLength(maxLineLength);
 	}
 
+	public void setOutputFileName(String outputFileName) {
+		_sourceFormatterArgs.setOutputFileName(outputFileName);
+	}
+
 	public void setPrintErrors(boolean printErrors) {
 		_sourceFormatterArgs.setPrintErrors(printErrors);
 	}
@@ -116,12 +137,20 @@ public class FormatSourceTask extends Task {
 		_sourceFormatterArgs.setProcessorThreadCount(processorThreadCount);
 	}
 
-	public void setThrowException(boolean throwException) {
-		_sourceFormatterArgs.setThrowException(throwException);
+	public void setShowDebugInformation(boolean showDebugInformation) {
+		_sourceFormatterArgs.setShowDebugInformation(showDebugInformation);
 	}
 
-	public void setUseProperties(boolean useProperties) {
-		_sourceFormatterArgs.setUseProperties(useProperties);
+	public void setShowDocumentation(boolean showDocumentation) {
+		_sourceFormatterArgs.setShowDocumentation(showDocumentation);
+	}
+
+	public void setShowStatusUpdates(boolean showStatusUpdates) {
+		_sourceFormatterArgs.setShowStatusUpdates(showStatusUpdates);
+	}
+
+	public void setValidateCommitMessages(boolean validateCommitMessages) {
+		_sourceFormatterArgs.setValidateCommitMessages(validateCommitMessages);
 	}
 
 	private void _collectFromFileSets() {
@@ -131,17 +160,17 @@ public class FormatSourceTask extends Task {
 			DirectoryScanner directoryScanner = fileSet.getDirectoryScanner(
 				getProject());
 
-			File baseDir = directoryScanner.getBasedir();
+			File basedir = directoryScanner.getBasedir();
 
 			String[] includedFiles = directoryScanner.getIncludedFiles();
 
 			for (int i = 0; i < includedFiles.length; i++) {
-				File file = new File(baseDir, includedFiles[i]);
+				File file = new File(basedir, includedFiles[i]);
 
 				includedFiles[i] = file.getAbsolutePath();
 			}
 
-			fileNames.addAll(Arrays.asList(includedFiles));
+			Collections.addAll(fileNames, includedFiles);
 		}
 
 		_sourceFormatterArgs.setFileNames(fileNames);

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.impl;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.image.SpriteProcessor;
 import com.liferay.portal.kernel.image.SpriteProcessorUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -26,23 +28,25 @@ import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.plugin.PluginPackage;
 import com.liferay.portal.kernel.plugin.Version;
 import com.liferay.portal.kernel.servlet.ServletContextUtil;
+import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.theme.PortletDecoratorFactoryUtil;
 import com.liferay.portal.kernel.theme.ThemeCompanyId;
 import com.liferay.portal.kernel.theme.ThemeCompanyLimit;
 import com.liferay.portal.kernel.theme.ThemeGroupId;
 import com.liferay.portal.kernel.theme.ThemeGroupLimit;
+import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.ThemeFactoryUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.UnsecureSAXReaderUtil;
+import com.liferay.portal.model.impl.ThemeImpl;
 import com.liferay.portal.plugin.PluginUtil;
 import com.liferay.portal.service.base.ThemeLocalServiceBaseImpl;
 import com.liferay.portal.util.PropsValues;
@@ -67,6 +71,7 @@ import javax.servlet.ServletContext;
  * @author Jorge Ferrer
  * @author Raymond Augé
  */
+@Transactional(enabled = false)
 public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 	@Override
@@ -154,13 +159,13 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		themes = PluginUtil.restrictPlugins(themes, companyId, userId);
 
-		Iterator<Theme> itr = themes.iterator();
+		Iterator<Theme> iterator = themes.iterator();
 
-		while (itr.hasNext()) {
-			Theme theme = itr.next();
+		while (iterator.hasNext()) {
+			Theme theme = iterator.next();
 
 			if (!theme.isControlPanelTheme()) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -173,15 +178,15 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		List<Theme> themes = getThemes(companyId);
 
-		themes = PluginUtil.restrictPlugins(themes, companyId, userId);
+		themes = PluginUtil.restrictPlugins(themes, companyId, groupId, userId);
 
-		Iterator<Theme> itr = themes.iterator();
+		Iterator<Theme> iterator = themes.iterator();
 
-		while (itr.hasNext()) {
-			Theme theme = itr.next();
+		while (iterator.hasNext()) {
+			Theme theme = iterator.next();
 
 			if (!theme.isPageTheme() || !theme.isGroupAvailable(groupId)) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -206,19 +211,9 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 			return portletDecorator;
 		}
 
-		List<PortletDecorator> portletDecorators = theme.getPortletDecorators();
+		ThemeImpl themeImpl = (ThemeImpl)theme;
 
-		if (!portletDecorators.isEmpty()) {
-			for (int i = portletDecorators.size() - 1; i >= 0; i--) {
-				portletDecorator = portletDecorators.get(i);
-
-				if (portletDecorator.isDefaultPortletDecorator()) {
-					return portletDecorator;
-				}
-			}
-		}
-
-		return PortletDecoratorFactoryUtil.getDefaultPortletDecorator();
+		return themeImpl.getDefaultPortletDecorator();
 	}
 
 	@Override
@@ -274,35 +269,22 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 	@Override
 	public List<Theme> getThemes(long companyId) {
-		Map<String, Theme> themes = _getThemes(companyId);
-
-		List<Theme> themesList = ListUtil.fromMapValues(themes);
+		List<Theme> themesList = ListUtil.fromMapValues(_getThemes(companyId));
 
 		return ListUtil.sort(themesList);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getPageThemes}
-	 */
-	@Deprecated
-	@Override
-	public List<Theme> getThemes(
-		long companyId, long groupId, long userId, boolean wapTheme) {
-
-		return getPageThemes(companyId, groupId, userId);
 	}
 
 	@Override
 	public List<Theme> getWARThemes() {
 		List<Theme> themes = ListUtil.fromMapValues(_themes);
 
-		Iterator<Theme> itr = themes.iterator();
+		Iterator<Theme> iterator = themes.iterator();
 
-		while (itr.hasNext()) {
-			Theme theme = itr.next();
+		while (iterator.hasNext()) {
+			Theme theme = iterator.next();
 
 			if (!theme.isWARFile()) {
-				itr.remove();
+				iterator.remove();
 			}
 		}
 
@@ -336,8 +318,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 						loadFromServletContext, xml, pluginPackage));
 			}
 		}
-		catch (Exception e) {
-			_log.error(e, e);
+		catch (Exception exception) {
+			_log.error(exception, exception);
 		}
 
 		_themesPool.clear();
@@ -367,9 +349,7 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		List<Element> companyIdsElements = element.elements("company-id");
 
-		for (int i = 0; i < companyIdsElements.size(); i++) {
-			Element companyIdElement = companyIdsElements.get(i);
-
+		for (Element companyIdElement : companyIdsElements) {
 			String name = companyIdElement.attributeValue("name");
 			String pattern = companyIdElement.attributeValue("pattern");
 
@@ -403,9 +383,7 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		List<Element> groupIdsElements = element.elements("group-id");
 
-		for (int i = 0; i < groupIdsElements.size(); i++) {
-			Element groupIdElement = groupIdsElements.get(i);
-
+		for (Element groupIdElement : groupIdsElements) {
 			String name = groupIdElement.attributeValue("name");
 			String pattern = groupIdElement.attributeValue("pattern");
 
@@ -440,11 +418,10 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 		themes = new ConcurrentHashMap<>();
 
 		for (Map.Entry<String, Theme> entry : _themes.entrySet()) {
-			String themeId = entry.getKey();
 			Theme theme = entry.getValue();
 
 			if (theme.isCompanyAvailable(companyId)) {
-				themes.put(themeId, theme);
+				themes.put(entry.getKey(), theme);
 			}
 		}
 
@@ -602,13 +579,13 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 
 		Element rootElement = document.getRootElement();
 
-		Version portalVersion = _getVersion(ReleaseInfo.getVersion());
-
 		boolean compatible = false;
 
 		Element compatibilityElement = rootElement.element("compatibility");
 
 		if (compatibilityElement != null) {
+			Version portalVersion = _getVersion(ReleaseInfo.getVersion());
+
 			List<Element> versionElements = compatibilityElement.elements(
 				"version");
 
@@ -706,6 +683,24 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				theme = ThemeFactoryUtil.getTheme(themeId);
 			}
 
+			String templateExtension = GetterUtil.getString(
+				themeElement.elementText("template-extension"),
+				theme.getTemplateExtension());
+
+			if (!templateExtension.equals(TemplateConstants.LANG_TYPE_FTL)) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							templateExtension, " is no longer supported for ",
+							"theme. Please Update theme ", themeId,
+							" to use FreeMarker for forward compatibility."));
+				}
+
+				continue;
+			}
+
+			theme.setTemplateExtension(templateExtension);
+
 			theme.setTimestamp(timestamp);
 
 			PluginSetting pluginSetting =
@@ -738,7 +733,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				theme.getTemplatesPath());
 
 			templatesPath = themeContextReplace.replace(templatesPath);
-			templatesPath = StringUtil.safePath(templatesPath);
+			templatesPath = StringUtil.replace(
+				templatesPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("templates-path", templatesPath);
 
@@ -746,7 +742,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				themeElement.elementText("css-path"), theme.getCssPath());
 
 			cssPath = themeContextReplace.replace(cssPath);
-			cssPath = StringUtil.safePath(cssPath);
+			cssPath = StringUtil.replace(
+				cssPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("css-path", cssPath);
 
@@ -754,7 +751,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				themeElement.elementText("images-path"), theme.getImagesPath());
 
 			imagesPath = themeContextReplace.replace(imagesPath);
-			imagesPath = StringUtil.safePath(imagesPath);
+			imagesPath = StringUtil.replace(
+				imagesPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("images-path", imagesPath);
 
@@ -763,17 +761,14 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				theme.getJavaScriptPath());
 
 			javaScriptPath = themeContextReplace.replace(javaScriptPath);
-			javaScriptPath = StringUtil.safePath(javaScriptPath);
+			javaScriptPath = StringUtil.replace(
+				javaScriptPath, StringPool.DOUBLE_SLASH, StringPool.SLASH);
 
 			themeContextReplace.addValue("javascript-path", javaScriptPath);
 
 			String virtualPath = GetterUtil.getString(
 				themeElement.elementText("virtual-path"),
 				theme.getVirtualPath());
-
-			String templateExtension = GetterUtil.getString(
-				themeElement.elementText("template-extension"),
-				theme.getTemplateExtension());
 
 			theme.setName(name);
 			theme.setRootPath(rootPath);
@@ -782,7 +777,6 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 			theme.setImagesPath(imagesPath);
 			theme.setJavaScriptPath(javaScriptPath);
 			theme.setVirtualPath(virtualPath);
-			theme.setTemplateExtension(templateExtension);
 
 			Element settingsElement = themeElement.element("settings");
 
@@ -852,7 +846,9 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 				}
 			}
 
-			_setSpriteImages(servletContext, theme, imagesPath);
+			if (PropsValues.SPRITE_ENABLED) {
+				_setSpriteImages(servletContext, theme, imagesPath);
+			}
 
 			if (!_themes.containsKey(themeId)) {
 				_themes.put(themeId, theme);
@@ -920,9 +916,8 @@ public class ThemeLocalServiceImpl extends ThemeLocalServiceBaseImpl {
 			return;
 		}
 
-		String contextPath = servletContext.getContextPath();
-
-		spriteFileName = contextPath.concat(SpriteProcessor.PATH).concat(
+		spriteFileName = StringBundler.concat(
+			servletContext.getContextPath(), SpriteProcessor.PATH,
 			spriteFileName);
 
 		theme.setSpriteImages(spriteFileName, spriteProperties);

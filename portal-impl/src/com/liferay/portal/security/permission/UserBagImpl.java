@@ -19,10 +19,12 @@ import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.security.permission.UserBag;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,32 +39,56 @@ import java.util.Set;
 public class UserBagImpl implements UserBag {
 
 	public UserBagImpl(
-		long userId, Collection<Group> userGroups,
-		Collection<Organization> userOrgs, Collection<Group> userOrgGroups,
-		Collection<Group> userUserGroupGroups, Collection<Role> userRoles) {
+		long userId, long[] userGroupIds, Collection<Organization> userOrgs,
+		Collection<Long> userOrgGroups, Collection<UserGroup> userUserGroups,
+		long[] userUserGroupGroupIds, Collection<Role> userRoles) {
 
 		_userId = userId;
-		_userGroupIds = _toSortedLongArray(userGroups);
+
+		_userGroupIds = userGroupIds;
+
+		Arrays.sort(_userGroupIds);
+
+		_userOrgGroupIds = ArrayUtil.toLongArray(userOrgGroups);
+
+		Arrays.sort(_userOrgGroupIds);
+
 		_userOrgIds = _toSortedLongArray(userOrgs);
-		_userOrgGroupIds = _toSortedLongArray(userOrgGroups);
 		_userRoleIds = _toSortedLongArray(userRoles);
-		_userUserGroupGroupsIds = _toSortedLongArray(userUserGroupGroups);
+
+		_userUserGroupGroupIds = userUserGroupGroupIds;
+
+		Arrays.sort(_userUserGroupGroupIds);
+
+		_userUserGroupIds = _toSortedLongArray(userUserGroups);
 	}
 
 	public UserBagImpl(
-		long userId, Collection<Group> userGroups,
-		Collection<Organization> userOrgs, Collection<Group> userOrgGroups,
-		Collection<Group> userUserGroupGroups, long[] userRoleIds) {
+		long userId, long[] userGroupIds, Collection<Organization> userOrgs,
+		Collection<Long> userOrgGroups, Collection<UserGroup> userUserGroups,
+		long[] userUserGroupGroupIds, long[] userRoleIds) {
 
 		_userId = userId;
-		_userGroupIds = _toSortedLongArray(userGroups);
-		_userOrgIds = _toSortedLongArray(userOrgs);
-		_userOrgGroupIds = _toSortedLongArray(userOrgGroups);
-		_userUserGroupGroupsIds = _toSortedLongArray(userUserGroupGroups);
 
-		Arrays.sort(userRoleIds);
+		_userGroupIds = userGroupIds;
+
+		Arrays.sort(userGroupIds);
+
+		_userOrgIds = _toSortedLongArray(userOrgs);
+
+		_userOrgGroupIds = ArrayUtil.toLongArray(userOrgGroups);
+
+		Arrays.sort(_userOrgGroupIds);
+
+		_userUserGroupIds = _toSortedLongArray(userUserGroups);
+
+		_userUserGroupGroupIds = userUserGroupGroupIds;
+
+		Arrays.sort(_userUserGroupGroupIds);
 
 		_userRoleIds = userRoleIds;
+
+		Arrays.sort(_userRoleIds);
 	}
 
 	@Override
@@ -122,7 +148,12 @@ public class UserBagImpl implements UserBag {
 
 	@Override
 	public List<Group> getUserUserGroupGroups() throws PortalException {
-		return GroupLocalServiceUtil.getGroups(_userUserGroupGroupsIds);
+		return GroupLocalServiceUtil.getGroups(_userUserGroupGroupIds);
+	}
+
+	@Override
+	public long[] getUserUserGroupsIds() {
+		return _userUserGroupIds;
 	}
 
 	@Override
@@ -157,7 +188,7 @@ public class UserBagImpl implements UserBag {
 		Collection<? extends BaseModel<?>> baseModels) {
 
 		if ((baseModels == null) || baseModels.isEmpty()) {
-			return new long[0];
+			return _EMPTY;
 		}
 
 		long[] array = new long[baseModels.size()];
@@ -173,11 +204,14 @@ public class UserBagImpl implements UserBag {
 		return array;
 	}
 
+	private static final long[] _EMPTY = {};
+
 	private final long[] _userGroupIds;
 	private final long _userId;
 	private final long[] _userOrgGroupIds;
 	private final long[] _userOrgIds;
 	private final long[] _userRoleIds;
-	private final long[] _userUserGroupGroupsIds;
+	private final long[] _userUserGroupGroupIds;
+	private final long[] _userUserGroupIds;
 
 }

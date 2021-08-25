@@ -14,7 +14,6 @@
 
 package com.liferay.portal.kernel.backgroundtask;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
@@ -25,41 +24,22 @@ public class BackgroundTaskStatusRegistryUtil {
 	public static BackgroundTaskStatus getBackgroundTaskStatus(
 		long backgroundTaskId) {
 
-		return _getBackgroundTaskStatusRegistry().getBackgroundTaskStatus(
+		return _backgroundTaskStatusRegistry.getBackgroundTaskStatus(
 			backgroundTaskId);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getBackgroundTaskStatusRegistry()}
-	 */
-	@Deprecated
-	public static BackgroundTaskStatusRegistry
-		getBackgroundTaskStatusRegistry() {
-
-		return _getBackgroundTaskStatusRegistry();
 	}
 
 	public static BackgroundTaskStatus registerBackgroundTaskStatus(
 		long backgroundTaskId) {
 
-		return _getBackgroundTaskStatusRegistry().registerBackgroundTaskStatus(
+		return _backgroundTaskStatusRegistry.registerBackgroundTaskStatus(
 			backgroundTaskId);
 	}
 
 	public static BackgroundTaskStatus unregisterBackgroundTaskStatus(
 		long backgroundTaskId) {
 
-		return _getBackgroundTaskStatusRegistry().
-			unregisterBackgroundTaskStatus(backgroundTaskId);
-	}
-
-	private static BackgroundTaskStatusRegistry
-		_getBackgroundTaskStatusRegistry() {
-
-		PortalRuntimePermission.checkGetBeanProperty(
-			BackgroundTaskStatusRegistryUtil.class);
-
-		return _backgroundTaskStatusRegistry;
+		return _backgroundTaskStatusRegistry.unregisterBackgroundTaskStatus(
+			backgroundTaskId);
 	}
 
 	private static volatile BackgroundTaskStatusRegistry

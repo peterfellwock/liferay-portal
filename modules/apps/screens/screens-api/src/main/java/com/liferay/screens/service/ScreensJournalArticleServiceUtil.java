@@ -14,67 +14,64 @@
 
 package com.liferay.screens.service;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.osgi.util.ServiceTrackerFactory;
-
-import org.osgi.util.tracker.ServiceTracker;
+import com.liferay.portal.kernel.exception.PortalException;
 
 /**
  * Provides the remote service utility for ScreensJournalArticle. This utility wraps
- * {@link com.liferay.screens.service.impl.ScreensJournalArticleServiceImpl} and is the
- * primary access point for service operations in application layer code running
- * on a remote server. Methods of this service are expected to have security
- * checks based on the propagated JAAS credentials because this service can be
+ * <code>com.liferay.screens.service.impl.ScreensJournalArticleServiceImpl</code> and is an
+ * access point for service operations in application layer code running on a
+ * remote server. Methods of this service are expected to have security checks
+ * based on the propagated JAAS credentials because this service can be
  * accessed remotely.
  *
  * @author José Manuel Navarro
  * @see ScreensJournalArticleService
- * @see com.liferay.screens.service.base.ScreensJournalArticleServiceBaseImpl
- * @see com.liferay.screens.service.impl.ScreensJournalArticleServiceImpl
  * @generated
  */
-@ProviderType
 public class ScreensJournalArticleServiceUtil {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify this class directly. Add custom service methods to {@link com.liferay.screens.service.impl.ScreensJournalArticleServiceImpl} and rerun ServiceBuilder to regenerate this class.
+	 * Never modify this class directly. Add custom service methods to <code>com.liferay.screens.service.impl.ScreensJournalArticleServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static java.lang.String getJournalArticleContent(long classPK,
-		java.util.Locale locale)
-		throws com.liferay.portal.kernel.exception.PortalException {
+	public static String getJournalArticleContent(
+			long classPK, java.util.Locale locale)
+		throws PortalException {
+
 		return getService().getJournalArticleContent(classPK, locale);
 	}
 
-	public static java.lang.String getJournalArticleContent(long classPK,
-		long ddmTemplateId, java.util.Locale locale)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .getJournalArticleContent(classPK, ddmTemplateId, locale);
+	public static String getJournalArticleContent(
+			long classPK, long ddmTemplateId, java.util.Locale locale)
+		throws PortalException {
+
+		return getService().getJournalArticleContent(
+			classPK, ddmTemplateId, locale);
 	}
 
-	public static java.lang.String getJournalArticleContent(long groupId,
-		java.lang.String articleId, long ddmTemplateId, java.util.Locale locale)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return getService()
-				   .getJournalArticleContent(groupId, articleId, ddmTemplateId,
-			locale);
+	public static String getJournalArticleContent(
+			long groupId, String articleId, long ddmTemplateId,
+			java.util.Locale locale)
+		throws PortalException {
+
+		return getService().getJournalArticleContent(
+			groupId, articleId, ddmTemplateId, locale);
 	}
 
 	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
-	public static java.lang.String getOSGiServiceIdentifier() {
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	public static String getOSGiServiceIdentifier() {
 		return getService().getOSGiServiceIdentifier();
 	}
 
 	public static ScreensJournalArticleService getService() {
-		return _serviceTracker.getService();
+		return _service;
 	}
 
-	private static ServiceTracker<ScreensJournalArticleService, ScreensJournalArticleService> _serviceTracker =
-		ServiceTrackerFactory.open(ScreensJournalArticleService.class);
+	private static volatile ScreensJournalArticleService _service;
+
 }

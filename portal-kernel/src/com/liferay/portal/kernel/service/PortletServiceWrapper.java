@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 /**
  * Provides a wrapper for {@link PortletService}.
  *
@@ -23,11 +21,21 @@ import aQute.bnd.annotation.ProviderType;
  * @see PortletService
  * @generated
  */
-@ProviderType
-public class PortletServiceWrapper implements PortletService,
-	ServiceWrapper<PortletService> {
+public class PortletServiceWrapper
+	implements PortletService, ServiceWrapper<PortletService> {
+
 	public PortletServiceWrapper(PortletService portletService) {
 		_portletService = portletService;
+	}
+
+	/**
+	 * Returns the OSGi service identifier.
+	 *
+	 * @return the OSGi service identifier
+	 */
+	@Override
+	public java.lang.String getOSGiServiceIdentifier() {
+		return _portletService.getOSGiServiceIdentifier();
 	}
 
 	@Override
@@ -36,21 +44,18 @@ public class PortletServiceWrapper implements PortletService,
 	}
 
 	@Override
-	public com.liferay.portal.kernel.model.Portlet updatePortlet(
-		long companyId, java.lang.String portletId, java.lang.String roles,
-		boolean active)
-		throws com.liferay.portal.kernel.exception.PortalException {
-		return _portletService.updatePortlet(companyId, portletId, roles, active);
+	public boolean hasPortlet(long companyId, java.lang.String portletId) {
+		return _portletService.hasPortlet(companyId, portletId);
 	}
 
-	/**
-	* Returns the OSGi service identifier.
-	*
-	* @return the OSGi service identifier
-	*/
 	@Override
-	public java.lang.String getOSGiServiceIdentifier() {
-		return _portletService.getOSGiServiceIdentifier();
+	public com.liferay.portal.kernel.model.Portlet updatePortlet(
+			long companyId, java.lang.String portletId, java.lang.String roles,
+			boolean active)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _portletService.updatePortlet(
+			companyId, portletId, roles, active);
 	}
 
 	@Override
@@ -64,4 +69,5 @@ public class PortletServiceWrapper implements PortletService,
 	}
 
 	private PortletService _portletService;
+
 }

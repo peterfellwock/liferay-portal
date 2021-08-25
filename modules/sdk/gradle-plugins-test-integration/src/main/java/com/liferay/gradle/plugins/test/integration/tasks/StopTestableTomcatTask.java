@@ -14,22 +14,26 @@
 
 package com.liferay.gradle.plugins.test.integration.tasks;
 
-import com.liferay.gradle.plugins.test.integration.util.GradleUtil;
+import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
 
 import java.io.File;
 
 import org.gradle.api.logging.Logger;
-import org.gradle.api.logging.Logging;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class StopTestableTomcatTask
 	extends StopAppServerTask implements ModuleFrameworkBaseDirSpec {
 
 	@Input
 	@Override
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getModuleFrameworkBaseDir() {
 		return GradleUtil.toFile(getProject(), _moduleFrameworkBaseDir);
 	}
@@ -53,11 +57,13 @@ public class StopTestableTomcatTask
 		super.stopAppServer();
 
 		if (isDeleteTestModules()) {
-			deleteTestModules();
+			_deleteTestModules();
 		}
 	}
 
-	protected void deleteTestModules() {
+	private void _deleteTestModules() {
+		Logger logger = getLogger();
+
 		File moduleFrameworkBaseDir = getModuleFrameworkBaseDir();
 
 		File modulesDir = new File(moduleFrameworkBaseDir, "modules");
@@ -72,14 +78,11 @@ public class StopTestableTomcatTask
 
 			boolean deleted = moduleFile.delete();
 
-			if (!deleted && _logger.isWarnEnabled()) {
-				_logger.warn("Unable to delete " + moduleFile);
+			if (!deleted && logger.isWarnEnabled()) {
+				logger.warn("Unable to delete {}", moduleFile);
 			}
 		}
 	}
-
-	private static final Logger _logger = Logging.getLogger(
-		StopTestableTomcatTask.class);
 
 	private boolean _deleteTestModules = true;
 	private Object _moduleFrameworkBaseDir;

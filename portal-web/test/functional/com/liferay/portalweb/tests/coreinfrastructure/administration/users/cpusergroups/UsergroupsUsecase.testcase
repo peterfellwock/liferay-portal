@@ -1,776 +1,196 @@
-<definition component-name="portal-user-management-and-portal-configuration">
-	<property name="portal.release" value="true" />
-	<property name="testray.main.component.name" value="User Groups" />
-
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
-
-		<execute macro="User#firstLoginPG" />
-	</set-up>
-
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
-
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="User#tearDownCP" />
-
-				<execute macro="UserGroup#tearDownCP" />
-
-				<execute macro="Role#tearDownCP" />
-
-				<execute macro="Site#tearDownCP" />
-
-				<execute macro="Organization#tearDownCP" />
-			</else>
-		</if>
-	</tear-down>
-
-	<command name="ExportUserGroupMembers" priority="3">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-			<var name="userFirstName" value="userfn1" />
-			<var name="userLastName" value="userln1" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea2@liferay.com" />
-			<var name="userFirstName" value="userfn2" />
-			<var name="userLastName" value="userln2" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
+@component-name = "portal-user-management-and-portal-configuration"
+definition {
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "User Groups";
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
+	setUp {
+		TestCase.setUpPortalInstance();
 
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
+		User.firstLoginPG();
+	}
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONUser.tearDownNonAdminUsers();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
+			UserGroup.tearDownCP();
 
-		<execute macro="LAR#exportUserGroups">
-			<var name="larFileName" value="User_Group_Members.lar" />
-		</execute>
-	</command>
+			Role.tearDownCP();
 
-	<command name="UserGroupPrivatePageInheritance" priority="4">
-		<property name="custom.properties" value="layout.user.private.layouts.auto.create=false${line.separator}user.groups.copy.layouts.to.user.personal.site=true" />
+			Site.tearDownCP();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
+			Organization.tearDownCP();
+		}
+	}
 
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
+	@priority = "3"
+	test ExportUserGroupMembers {
+		JSONUserGroup.addUserGroup(
+			userGroupDescription = "UG UserGroup Name Description",
+			userGroupName = "UG UserGroup Name");
 
-		<execute macro="UserGroup#addPageCP">
-			<var name="page" value="Dashboard" />
-			<var name="pageName" value="Test User Group Page 1" />
-			<var name="sitePagePrivacy" value="Private" />
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
+		for (var userNumber : list "1,2") {
+			JSONUser.addUser(
+				userEmailAddress = "userea${userNumber}@liferay.com",
+				userFirstName = "userfn${userNumber}",
+				userLastName = "userln${userNumber}",
+				userScreenName = "usersn${userNumber}");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+			JSONUser.addUserToUserGroup(
+				userEmailAddress = "userea${userNumber}@liferay.com",
+				userGroupName = "UG UserGroup Name");
+		}
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		UserGroup.openUserGroupsAdmin();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		LAR.exportUserGroups(larFileName = "User_Group_Members.lar");
+	}
 
-		<execute function="Type" locator1="NavBar#BASIC_SEARCH_FIELD" value1="userfn" />
-
-		<execute function="Click" locator1="Button#SUBMIT" />
+	@priority = "3"
+	test PredefinedPagesCanBeAdded {
+		JSONUserGroup.addUserGroup(
+			userGroupDescription = "UG User Group Description",
+			userGroupName = "UG User Group");
 
-		<var name="key_rowEntry" value="usersn" />
-
-		<execute function="Click" locator1="ContentRow#ENTRY_CONTENT_ENTRY_ELLIPSIS" />
+		JSONUserGroup.addLayout(
+			layoutName = "UG Public Page",
+			userGroupName = "UG User Group");
 
-		<execute function="AssertClick" locator1="MenuItem#MANAGE_PAGES" value1="Manage Pages" />
-
-		<var name="key_page" value="Test User Group Page 1" />
+		JSONUserGroup.addLayout(
+			layoutName = "UG Private Page",
+			privateLayout = "true",
+			userGroupName = "UG User Group");
 
-		<execute function="AssertElementNotPresent" locator1="ProductMenu#PAGES" />
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
+		UserGroup.openUserGroupsAdmin();
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
-
-		<execute macro="UserBar#gotoDashboard" />
-
-		<execute function="AssertTextEquals" locator1="Home#PAGE_1" value1="Test User Group Page 1" />
-
-		<execute macro="User#logoutUserPG" />
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-	</command>
-
-	<command name="UserGroupSiteOwnerPermissions" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Server Administration" />
-		</execute>
-
-		<execute macro="ServerAdministration#executeServerResourcesActions">
-			<var name="actionsDescription" value="Reindex all search indexes." />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCP">
-			<var name="permissionDefinitionKey" value="CONTROL_PANEL_GENERAL_PERMISSIONS_GO_TO_CONTROL_PANEL_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View Control Panel Menu" />
-			<var name="permissionNavigationKey" value="CONTROL_PANEL_GENERAL_PERMISSIONS" />
-			<var name="permissionNavigationValue" value="General Permissions" />
-			<var name="roleTitle" value="Authenticated" />
-			<var name="roleUser" value="User" />
-		</execute>
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Go to Profile Pages",
+			rowEntry = "UG User Group");
 
-		<for list="1,2,3,4,5" param="userNumber">
-			<execute macro="ProductMenu#gotoControlPanelUsers">
-				<var name="portlet" value="Users and Organizations" />
-			</execute>
-
-			<execute macro="User#addCP">
-				<var name="userEmailAddress" value="userea${userNumber}@liferay.com" />
-				<var name="userFirstName" value="userfn${userNumber}" />
-				<var name="userLastName" value="userln${userNumber}" />
-				<var name="userScreenName" value="usersn${userNumber}" />
-			</execute>
-
-			<execute macro="ProductMenu#gotoControlPanelUsers">
-				<var name="portlet" value="Users and Organizations" />
-			</execute>
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
-			<execute macro="User#editPasswordCP">
-				<var name="userEmailAddress" value="userea${userNumber}@liferay.com" />
-				<var name="userScreenName" value="usersn${userNumber}" />
-			</execute>
-		</for>
+		SelectWindow(locator1 = "title=UG Public Page - UG User Group - ${siteName}");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
+		Page.viewCurrentPage(pageName = "UG Public Page");
 
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
+		Navigator.closeWindow();
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
+		UserGroup.openUserGroupsAdmin();
 
-		<execute macro="UserGroup#assignAllMembersCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Go to Dashboard Pages",
+			rowEntry = "UG User Group");
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
+		var siteName = TestCase.getSiteName(siteName = "${siteName}");
 
-		<execute macro="Site#addBlankCP">
-			<var name="siteName" value="Site Name" />
-		</execute>
+		SelectWindow(locator1 = "title=UG Private Page - UG User Group - ${siteName}");
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
+		Page.viewCurrentPage(pageName = "UG Private Page");
+	}
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Site Page Name" />
-			<var name="siteName" value="Site Name" />
-		</execute>
+	@priority = "4"
+	test UserGroupSiteTemplates {
+		property custom.properties = "jsonws.web.service.paths.excludes=";
+		property test.name.skip.portal.instance = "UsergroupsUsecase#UserGroupSiteTemplates";
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
+		SiteTemplates.addCP(
+			disableChanges = "true",
+			siteTemplateName = "Site Template Name");
 
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Memberships" />
-		</execute>
+		SiteTemplates.addSitePageViaSiteTemplateCP(
+			pageName = "Wiki Page Name",
+			siteTemplateName = "Site Template Name");
 
-		<execute macro="Site#addAllMembersCP">
-			<var name="siteName" value="Site Name" />
-		</execute>
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
 
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Memberships" />
-		</execute>
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-		<execute macro="Site#assignUserGroupAsMemberCP">
-			<var name="siteName" value="Site Name" />
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
+		JSONUser.setFirstPassword(
+			agreeToTermsAndAnswerReminderQuery = "true",
+			requireReset = "false",
+			userEmailAddress = "userea@liferay.com");
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
+		JSONUserGroup.addUserGroup(
+			userGroupDescription = "UG UserGroup Name Description",
+			userGroupName = "UG UserGroup Name");
 
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Memberships" />
-		</execute>
+		JSONUser.addUserToUserGroup(
+			userEmailAddress = "test@liferay.com",
+			userGroupName = "UG UserGroup Name");
 
-		<execute macro="Navigator#gotoNavItem">
-			<var name="navItem" value="User Groups" />
-		</execute>
+		UserGroup.openUserGroupsAdmin();
 
-		<execute macro="Site#assignSiteRoleCP">
-			<var name="resourceName" value="UG UserGroup Name" />
-			<var name="roleTitle" value="Site Owner" />
-		</execute>
+		UserGroup.editCP(
+			userGroupName = "UG UserGroup Name",
+			userGroupSite = "Site Template Name");
 
-		<execute macro="User#logoutPG" />
+		UserBar.gotoDropdownItem(dropdownItem = "My Profile");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea3@liferay.com" />
-		</execute>
+		Page.viewSpecificPG(pageNameList = "My Profile,Home,Wiki Page Name");
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
+		UserBar.gotoDropdownItem(dropdownItem = "My Dashboard");
 
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Memberships" />
-		</execute>
+		Page.viewSpecificPG(pageNameList = "My Dashboard");
 
-		<execute function="Click" locator1="Icon#DISPLAY_STYLE_LIST" />
+		Page.viewNoPG(pageName = "Home");
 
-		<var name="key_userScreenName" value="usersn3" />
+		Page.viewNoPG(pageName = "Wiki Page Name");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="SiteMemberships#USER_TABLE_NAME" value1="userfn3 userln3" />
-		<execute function="AssertTextEquals" locator1="SiteMemberships#USER_TABLE_SCREEN_NAME" value1="usersn3" />
-		<execute function="Click" locator1="SiteMemberships#USER_TABLE_ACTIONS" />
-		<execute function="AssertTextEquals" locator1="MenuItem#ASSIGN_SITE_ROLES" value1="Assign Site Roles" />
+		User.logoutPG();
 
-		<execute macro="User#logoutUserPG" />
+		User.loginUserPG(
+			password = "test",
+			userEmailAddress = "userea@liferay.com");
 
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
+		UserBar.gotoDropdownItem(dropdownItem = "My Profile");
 
-		<execute macro="ProductMenu#gotoSite">
-			<var name="site" value="Site Name" />
-		</execute>
+		Page.viewSpecificPG(pageNameList = "My Profile");
 
-		<execute macro="ProductMenu#gotoSitesMembers">
-			<var name="portlet" value="Site Memberships" />
-		</execute>
+		Page.viewNoPG(pageName = "Home");
 
-		<execute macro="Site#removeSiteRolesSiteOwnerUserGroupsCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
+		Page.viewNoPG(pageName = "Wiki Page Name");
 
-		<execute macro="User#logoutPG" />
+		UserBar.gotoDropdownItem(dropdownItem = "My Dashboard");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea5@liferay.com" />
-		</execute>
+		Page.viewSpecificPG(pageNameList = "My Dashboard");
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
+		Page.viewNoPG(pageName = "Home");
 
-		<var name="key_siteName" value="Site Name" />
-
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="Sites#SITE_TABLE_NAME_UNVIEWABLE" value1="Site Name" />
+		Page.viewNoPG(pageName = "Wiki Page Name");
 
-		<execute macro="User#logoutUserPG" />
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleTitle" value="Test UserGroup Role" />
-			<var name="roleType" value="Regular" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCP">
-			<var name="permissionDefinitionKey" value="SITE_ADMIN_CONTENT_BOOKMARKS_GENERAL_PERMISSIONS_ACCESS_IN_SITE_ADMINISTRATION_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Access in Site Administration" />
-			<var name="permissionNavigationKey" value="SITE_ADMIN_CONTENT_BOOKMARKS" />
-			<var name="permissionNavigationValue" value="Bookmarks" />
-			<var name="roleTitle" value="Test UserGroup Role" />
-			<var name="roleUser" value="Test UserGroup Role" />
-		</execute>
+		JSONUser.addUserToUserGroup(
+			userEmailAddress = "userea@liferay.com",
+			userGroupName = "UG UserGroup Name");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
+		Refresh();
 
-		<execute macro="Role#assignMembersUserGroupsCP">
-			<var name="roleTitle" value="Test UserGroup Role" />
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
+		UserBar.gotoDropdownItem(dropdownItem = "My Profile");
 
-		<execute macro="User#logoutPG" />
+		Page.viewSpecificPG(pageNameList = "My Profile,Home,Wiki Page Name");
 
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-		</execute>
+		UserBar.gotoDropdownItem(dropdownItem = "My Dashboard");
 
-		<execute macro="ProductMenu#gotoControlPanelSites">
-			<var name="portlet" value="Sites" />
-		</execute>
+		Page.viewSpecificPG(pageNameList = "My Dashboard");
 
-		<var name="key_siteName" value="Site Name" />
+		Page.viewNoPG(pageName = "Home");
 
-		<execute function="AssertClick#assertPartialTextClickAt" locator1="Sites#SITE_TABLE_NAME" value1="Site Name" />
+		Page.viewNoPG(pageName = "Wiki Page Name");
+	}
 
-		<execute macro="User#logoutUserPG" />
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#removeMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="test" />
-		</execute>
-	</command>
-
-	<command name="UserGroupSiteTemplates" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Server Administration" />
-		</execute>
-
-		<execute macro="ServerAdministration#executeServerResourcesActions">
-			<var name="actionsDescription" value="Reindex all search indexes." />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea@liferay.com" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="test" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#addSiteCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userGroupSite" value="Community Site" />
-		</execute>
-
-		<execute macro="UserBar#gotoProfile" />
-
-		<var name="key_pageName" value="Welcome" />
-
-		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextPresent" locator1="Home#PAGE_3" value1="Wiki" />
-
-		<execute macro="UserBar#gotoDashboard" />
-
-		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
-
-		<execute macro="UserBar#gotoProfile" />
-
-		<var name="key_pageName" value="Welcome" />
-
-		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
-
-		<execute macro="UserBar#gotoDashboard" />
-
-		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea@liferay.com" />
-		</execute>
-
-		<execute macro="UserBar#gotoProfile" />
-
-		<var name="key_pageName" value="Welcome" />
-
-		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextPresent" locator1="Home#PAGE_3" value1="Wiki" />
-
-		<execute macro="UserBar#gotoDashboard" />
-
-		<execute function="AssertTextPresent" locator1="Home#PAGE_1" value1="Welcome" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_2" value1="Home" />
-		<execute function="AssertTextNotPresent" locator1="Home#PAGE_3" value1="Wiki" />
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#removeMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="test" />
-		</execute>
-	</command>
-
-	<command name="ViewUserGroupPermissionsNoAsUser" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleTitle" value="Roles Regrole Name" />
-			<var name="roleType" value="Regular" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="CONTROL_PANEL_GENERAL_PERMISSIONS_GO_TO_CONTROL_PANEL_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View Control Panel Menu" />
-			<var name="roleTitle" value="Roles Regrole Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="CONTROL_PANEL_USERS_USER_GROUPS_GENERAL_PERMISSIONS_ACCESS_IN_CONTROL_PANEL_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="Access in Control Panel" />
-			<var name="roleTitle" value="Roles Regrole Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#definePermissionCmdCP">
-			<var name="permissionDefinitionKey" value="CONTROL_PANEL_USERS_USER_GROUPS_RESOURCE_PERMISSIONS_USER_GROUP_VIEW_CHECKBOX" />
-			<var name="permissionDefinitionValue" value="View" />
-			<var name="roleTitle" value="Roles Regrole Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-			<var name="userFirstName" value="userfn1" />
-			<var name="userLastName" value="userln1" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#editPasswordCP">
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#assignRegularRoleCP">
-			<var name="roleTitle" value="Roles Regrole Name" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea2@liferay.com" />
-			<var name="userFirstName" value="userfn2" />
-			<var name="userLastName" value="userln2" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" value="userea3@liferay.com" />
-			<var name="userFirstName" value="userfn3" />
-			<var name="userLastName" value="userln3" />
-			<var name="userScreenName" value="usersn3" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="Organization#addCP">
-			<var name="orgName" value="Organization Name" />
-			<var name="orgType" value="Organization" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="UsersAndOrganizationsNavigator#gotoOrganizations" />
-
-		<execute macro="Organization#addMemberCP">
-			<var name="orgName" value="Organization Name" />
-			<var name="userFirstName" value="userfn1" />
-			<var name="userLastName" value="userln1" />
-			<var name="userName" value="userfn1 userln1" />
-			<var name="userScreenName" value="usersn1" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
-
-		<execute macro="UsersAndOrganizationsNavigator#gotoOrganizations" />
-
-		<execute macro="Organization#addMemberCP">
-			<var name="orgName" value="Organization Name" />
-			<var name="userFirstName" value="userfn2" />
-			<var name="userLastName" value="userln2" />
-			<var name="userName" value="userfn2 userln2" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="usersn2" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#assignMemberCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-			<var name="userScreenName" value="usersn3" />
-		</execute>
-
-		<execute macro="User#logoutPG" />
-
-		<execute macro="User#loginUserPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="userea1@liferay.com" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<var name="key_userGroupName" value="UG UserGroup Name" />
-
-		<execute function="AssertTextEquals" locator1="UserGroups#USER_GROUP_TABLE_NAME" value1="UG UserGroup Name" />
-		<execute function="AssertElementNotPresent" locator1="UserGroups#USER_GROUP_TABLE_ACTIONS" />
-
-		<execute macro="User#logoutUserPG" />
-
-		<execute macro="User#loginPG">
-			<var name="password" value="test" />
-			<var name="userEmailAddress" value="test@liferay.com" />
-		</execute>
-	</command>
-
-	<command name="ViewUserGroupSiteRolePermissions" priority="4">
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Roles" />
-		</execute>
-
-		<execute macro="Role#addCP">
-			<var name="roleTitle" value="Roles Siterole Name" />
-			<var name="roleType" value="Site" />
-		</execute>
-
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="User Groups" />
-		</execute>
-
-		<execute macro="UserGroup#addCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
-
-		<execute macro="PermissionsInline#gotoUserGroupSitePermissionsCP">
-			<var name="userGroupName" value="UG UserGroup Name" />
-		</execute>
-
-		<var name="key_roleTitle" value="Roles Siterole Name" />
-
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-		<execute function="AssertTextEquals" locator1="Permissions#CONTENT_PERMISSIONS_ROLE_NAME" value1="Roles Siterole Name" />
-	</command>
-</definition>
+}

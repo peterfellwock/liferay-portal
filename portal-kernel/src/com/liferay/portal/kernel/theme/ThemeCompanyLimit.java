@@ -28,11 +28,6 @@ import java.util.regex.Pattern;
  */
 public class ThemeCompanyLimit implements Serializable {
 
-	public ThemeCompanyLimit() {
-		_includes = new ArrayList<>();
-		_excludes = new ArrayList<>();
-	}
-
 	public List<ThemeCompanyId> getExcludes() {
 		return _excludes;
 	}
@@ -60,9 +55,7 @@ public class ThemeCompanyLimit implements Serializable {
 	private boolean _matches(
 		List<ThemeCompanyId> themeCompanyIds, long companyId) {
 
-		for (int i = 0; i < themeCompanyIds.size(); i++) {
-			ThemeCompanyId themeCompanyId = themeCompanyIds.get(i);
-
+		for (ThemeCompanyId themeCompanyId : themeCompanyIds) {
 			String themeCompanyIdValue = themeCompanyId.getValue();
 
 			if (themeCompanyId.isPattern()) {
@@ -87,7 +80,7 @@ public class ThemeCompanyLimit implements Serializable {
 		return false;
 	}
 
-	private List<ThemeCompanyId> _excludes;
-	private List<ThemeCompanyId> _includes;
+	private List<ThemeCompanyId> _excludes = new ArrayList<>();
+	private List<ThemeCompanyId> _includes = new ArrayList<>();
 
 }

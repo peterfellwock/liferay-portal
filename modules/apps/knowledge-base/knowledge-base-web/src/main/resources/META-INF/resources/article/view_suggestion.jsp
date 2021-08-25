@@ -16,6 +16,6 @@
 
 <%@ include file="/admin/init.jsp" %>
 
-<div class="container-fluid-1280 main-content-body">
+<clay:container-fluid>
 	<liferay-util:include page="/admin/common/view_suggestion.jsp" servletContext="<%= application %>" />
-</div>
+</clay:container-fluid>

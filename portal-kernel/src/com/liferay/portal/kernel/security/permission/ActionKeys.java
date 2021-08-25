@@ -183,6 +183,8 @@ public class ActionKeys {
 	public static final String MANAGE_ARCHIVED_SETUPS =
 		"MANAGE_ARCHIVED_SETUPS";
 
+	public static final String MANAGE_COUNTRIES = "MANAGE_COUNTRIES";
+
 	public static final String MANAGE_COUPONS = "MANAGE_COUPONS";
 
 	public static final String MANAGE_LAYOUTS = "MANAGE_LAYOUTS";
@@ -195,6 +197,8 @@ public class ActionKeys {
 
 	public static final String MANAGE_SUBORGANIZATIONS =
 		"MANAGE_SUBORGANIZATIONS";
+
+	public static final String MANAGE_TAG = "MANAGE_TAG";
 
 	public static final String MANAGE_TEAMS = "MANAGE_TEAMS";
 
@@ -234,6 +238,8 @@ public class ActionKeys {
 	public static final String UPDATE = "UPDATE";
 
 	public static final String UPDATE_DISCUSSION = "UPDATE_DISCUSSION";
+
+	public static final String UPDATE_LAYOUT_CONTENT = "UPDATE_LAYOUT_CONTENT";
 
 	public static final String UPDATE_THREAD_PRIORITY =
 		"UPDATE_THREAD_PRIORITY";

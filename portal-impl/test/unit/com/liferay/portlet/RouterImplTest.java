@@ -18,13 +18,16 @@ import com.liferay.portal.kernel.portlet.Route;
 import com.liferay.portal.kernel.test.AssertUtils;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.MapUtil;
-import com.liferay.portal.util.HttpImpl;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
+import com.liferay.portlet.internal.RouterImpl;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -33,12 +36,13 @@ import org.junit.Test;
  */
 public class RouterImplTest {
 
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
+
 	@Before
 	public void setUp() throws Exception {
-		HttpUtil httpUtil = new HttpUtil();
-
-		httpUtil.setHttp(new HttpImpl());
-
 		_routerImpl = new RouterImpl();
 
 		Route route = _routerImpl.addRoute(
@@ -96,14 +100,14 @@ public class RouterImplTest {
 
 		route.addImplicitParameter("format", "html");
 
-		route = _routerImpl.addRoute(
+		_routerImpl.addRoute(
 			"{method}/{controller}/{id:\\d+}/{action}.{format}");
 
 		route = _routerImpl.addRoute("{method}/{controller}/{action}");
 
 		route.addImplicitParameter("format", "html");
 
-		route = _routerImpl.addRoute("{method}/{controller}/{action}.{format}");
+		_routerImpl.addRoute("{method}/{controller}/{action}.{format}");
 	}
 
 	@Test

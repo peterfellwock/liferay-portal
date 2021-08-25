@@ -14,17 +14,20 @@
 
 package com.liferay.portal.tools.deploy;
 
-import static org.junit.Assert.assertTrue;
-
 import com.liferay.portal.deploy.auto.ModuleAutoDeployer;
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.PropsUtil;
 
 import java.io.File;
 
 import java.text.MessageFormat;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -32,11 +35,17 @@ import org.junit.Test;
  */
 public class ModuleAutoDeployerTest extends BaseDeployerTestCase {
 
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
+
 	@Override
 	public BaseDeployer getDeployer() {
 		return new ModuleAutoDeployer();
 	}
 
+	@Before
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
@@ -66,7 +75,7 @@ public class ModuleAutoDeployerTest extends BaseDeployerTestCase {
 
 		File deployedJarFile = new File(getModulesDir(), jarFile.getName());
 
-		assertTrue(deployedJarFile.exists());
+		Assert.assertTrue(deployedJarFile.exists());
 	}
 
 	protected File getConfigsDir() {

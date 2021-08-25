@@ -16,6 +16,7 @@ package com.liferay.gradle.plugins.node.tasks;
 
 import com.liferay.gradle.plugins.node.internal.util.FileUtil;
 import com.liferay.gradle.plugins.node.internal.util.GradleUtil;
+import com.liferay.gradle.util.OSDetector;
 import com.liferay.gradle.util.Validator;
 
 import groovy.json.JsonSlurper;
@@ -29,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -38,14 +40,19 @@ import org.gradle.api.Task;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.plugins.PluginContainer;
 import org.gradle.api.specs.Spec;
+import org.gradle.api.tasks.CacheableTask;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 
 /**
  * @author Andrea Di Giorgi
  */
-public class NpmInstallTask extends ExecuteNpmTask {
+@CacheableTask
+public class NpmInstallTask extends ExecutePackageManagerTask {
 
 	public NpmInstallTask() {
 		_removeShrinkwrappedUrls = new Callable<Boolean>() {
@@ -70,17 +77,17 @@ public class NpmInstallTask extends ExecuteNpmTask {
 
 					File packageJsonFile = npmInstallTask.getPackageJsonFile();
 
-					if (!packageJsonFile.exists()) {
+					if (!packageJsonFile.exists() || !isUseNpm()) {
 						return false;
 					}
 
 					JsonSlurper jsonSlurper = new JsonSlurper();
 
-					Map<String, Object> packageJson =
+					Map<String, Object> packageJsonMap =
 						(Map<String, Object>)jsonSlurper.parse(packageJsonFile);
 
-					if (packageJson.containsKey("dependencies") ||
-						packageJson.containsKey("devDependencies")) {
+					if (packageJsonMap.containsKey("dependencies") ||
+						packageJsonMap.containsKey("devDependencies")) {
 
 						return true;
 					}
@@ -100,14 +107,30 @@ public class NpmInstallTask extends ExecuteNpmTask {
 		return GradleUtil.toFile(getProject(), _nodeModulesCacheDir);
 	}
 
-	@OutputDirectory
-	public File getNodeModulesDir() {
-		Project project = getProject();
+	public File getNodeModulesDigestFile() {
+		return GradleUtil.toFile(getProject(), _nodeModulesDigestFile);
+	}
 
-		return project.file("node_modules");
+	@OutputDirectory
+	@Override
+	public File getNodeModulesDir() {
+		return super.getNodeModulesDir();
+	}
+
+	@Input
+	@Optional
+	public String getNodeVersion() {
+		return GradleUtil.toString(_nodeVersion);
+	}
+
+	@Input
+	@Optional
+	public String getNpmVersion() {
+		return GradleUtil.toString(_npmVersion);
 	}
 
 	@InputFile
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getPackageJsonFile() {
 		Project project = getProject();
 
@@ -116,28 +139,46 @@ public class NpmInstallTask extends ExecuteNpmTask {
 
 	@InputFile
 	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
+	public File getPackageLockJsonFile() {
+		return _getExistentFile("package-lock.json");
+	}
+
+	@InputFile
+	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getShrinkwrapJsonFile() {
-		Project project = getProject();
+		return _getExistentFile("npm-shrinkwrap.json");
+	}
 
-		File shrinkwrapJsonFile = project.file("npm-shrinkwrap.json");
-
-		if (!shrinkwrapJsonFile.exists()) {
-			shrinkwrapJsonFile = null;
+	public boolean isCheckDigest() {
+		if (_isCacheEnabled()) {
+			return false;
 		}
 
-		return shrinkwrapJsonFile;
+		Project project = getProject();
+
+		PluginContainer pluginContainer = project.getPlugins();
+
+		if (!pluginContainer.hasPlugin("com.liferay.cache") &&
+			(getNodeModulesDigestFile() != null)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public boolean isNodeModulesCacheNativeSync() {
 		return _nodeModulesCacheNativeSync;
 	}
 
-	public boolean isNodeModulesCacheRemoveBinDirs() {
-		return _nodeModulesCacheRemoveBinDirs;
-	}
-
 	public boolean isRemoveShrinkwrappedUrls() {
 		return GradleUtil.toBoolean(_removeShrinkwrappedUrls);
+	}
+
+	public boolean isUseNpmCI() {
+		return GradleUtil.toBoolean(_useNpmCI);
 	}
 
 	public void setNodeModulesCacheDir(Object nodeModulesCacheDir) {
@@ -150,23 +191,24 @@ public class NpmInstallTask extends ExecuteNpmTask {
 		_nodeModulesCacheNativeSync = nodeModulesCacheNativeSync;
 	}
 
-	public void setNodeModulesCacheRemoveBinDirs(
-		boolean nodeModulesCacheRemoveBinDirs) {
-
-		_nodeModulesCacheRemoveBinDirs = nodeModulesCacheRemoveBinDirs;
+	public void setNodeModulesDigestFile(Object nodeModulesDigestFile) {
+		_nodeModulesDigestFile = nodeModulesDigestFile;
 	}
 
-	/**
-	 * @deprecated As of 1.3.0, replaced by {@link
-	 *             #setRemoveShrinkwrappedUrls(Object)}
-	 */
-	@Deprecated
-	public void setRemoveShrinkwrappedUrls(boolean removeShrinkwrappedUrls) {
-		_removeShrinkwrappedUrls = removeShrinkwrappedUrls;
+	public void setNodeVersion(Object nodeVersion) {
+		_nodeVersion = nodeVersion;
+	}
+
+	public void setNpmVersion(Object npmVersion) {
+		_npmVersion = npmVersion;
 	}
 
 	public void setRemoveShrinkwrappedUrls(Object removeShrinkwrappedUrls) {
 		_removeShrinkwrappedUrls = removeShrinkwrappedUrls;
+	}
+
+	public void setUseNpmCI(Object useNpmCI) {
+		_useNpmCI = useNpmCI;
 	}
 
 	protected void executeNpmInstall(boolean reset) throws Exception {
@@ -203,7 +245,12 @@ public class NpmInstallTask extends ExecuteNpmTask {
 					logger.info("Cache for {} is disabled", this);
 				}
 
-				_npmInstall(reset);
+				if (isCheckDigest()) {
+					_npmInstallCheckDigest(reset);
+				}
+				else {
+					_npmInstall(reset);
+				}
 			}
 		}
 		finally {
@@ -219,7 +266,16 @@ public class NpmInstallTask extends ExecuteNpmTask {
 	protected List<String> getCompleteArgs() {
 		List<String> completeArgs = super.getCompleteArgs();
 
-		completeArgs.add("install");
+		if (_npmCacheVerify) {
+			completeArgs.add("cache");
+			completeArgs.add("verify");
+		}
+		else if (isUseNpmCI() && (getPackageLockJsonFile() != null)) {
+			completeArgs.add("ci");
+		}
+		else {
+			completeArgs.add("install");
+		}
 
 		return completeArgs;
 	}
@@ -227,13 +283,24 @@ public class NpmInstallTask extends ExecuteNpmTask {
 	private static String _getNodeModulesCacheDigest(
 		NpmInstallTask npmInstallTask) {
 
+		Logger logger = npmInstallTask.getLogger();
+
 		JsonSlurper jsonSlurper = new JsonSlurper();
 
-		File jsonFile = npmInstallTask.getShrinkwrapJsonFile();
+		File jsonFile = npmInstallTask.getPackageLockJsonFile();
 
 		if (jsonFile == null) {
-			Logger logger = npmInstallTask.getLogger();
+			if (logger.isInfoEnabled()) {
+				logger.info(
+					"Unable to find package-lock.json for {}, using " +
+						"npm-shrinkwrap.json instead",
+					npmInstallTask.getProject());
+			}
 
+			jsonFile = npmInstallTask.getShrinkwrapJsonFile();
+		}
+
+		if (jsonFile == null) {
 			if (logger.isWarnEnabled()) {
 				logger.warn(
 					"Unable to find npm-shrinkwrap.json for {}, using " +
@@ -268,8 +335,6 @@ public class NpmInstallTask extends ExecuteNpmTask {
 		File nodeModulesDir = npmInstallTask.getNodeModulesDir();
 
 		boolean nativeSync = npmInstallTask.isNodeModulesCacheNativeSync();
-		boolean removeBinDirs =
-			npmInstallTask.isNodeModulesCacheRemoveBinDirs();
 
 		if (reset) {
 			project.delete(nodeModulesCacheDir);
@@ -285,18 +350,24 @@ public class NpmInstallTask extends ExecuteNpmTask {
 			FileUtil.syncDir(
 				project, nodeModulesCacheDir, nodeModulesDir, nativeSync);
 
-			if (removeBinDirs) {
-				FileUtil.removeDirs(
-					project, nodeModulesDir, _NODE_MODULES_BIN_DIR_NAME);
+			if (logger.isLifecycleEnabled()) {
+				logger.lifecycle(
+					"Removing binary symbolic links of {} from {}", project,
+					nodeModulesDir);
 			}
+
+			FileUtil.removeBinDirLinks(logger, nodeModulesDir);
 		}
 		else {
 			npmInstallTask._npmInstall(reset);
 
-			if (removeBinDirs) {
-				FileUtil.removeDirs(
-					project, nodeModulesDir, _NODE_MODULES_BIN_DIR_NAME);
+			if (logger.isLifecycleEnabled()) {
+				logger.lifecycle(
+					"Removing binary symbolic links of {} from {}", project,
+					nodeModulesDir);
 			}
+
+			FileUtil.removeBinDirLinks(logger, nodeModulesDir);
 
 			if (logger.isLifecycleEnabled()) {
 				logger.lifecycle(
@@ -307,6 +378,28 @@ public class NpmInstallTask extends ExecuteNpmTask {
 			FileUtil.syncDir(
 				project, nodeModulesDir, nodeModulesCacheDir, nativeSync);
 		}
+
+		if (!OSDetector.isWindows()) {
+			if (logger.isLifecycleEnabled()) {
+				logger.lifecycle(
+					"Restoring binary symbolic links of {} from {}", project,
+					nodeModulesDir);
+			}
+
+			FileUtil.createBinDirLinks(logger, nodeModulesDir);
+		}
+	}
+
+	private File _getExistentFile(String fileName) {
+		Project project = getProject();
+
+		File file = project.file(fileName);
+
+		if (!file.exists()) {
+			file = null;
+		}
+
+		return file;
 	}
 
 	private boolean _isCacheEnabled() {
@@ -323,14 +416,86 @@ public class NpmInstallTask extends ExecuteNpmTask {
 		return false;
 	}
 
-	private void _npmInstall(boolean reset) throws Exception {
-		if (reset) {
-			Project project = getProject();
+	private void _npmCacheVerify() {
+		Logger logger = getLogger();
 
-			project.delete(getNodeModulesDir());
+		try {
+			_npmCacheVerify = true;
+
+			super.executeNode();
+		}
+		catch (Exception exception) {
+			if (logger.isWarnEnabled()) {
+				String message = "Unable to run \"npm cache verify\"";
+
+				if (Validator.isNotNull(exception.getMessage())) {
+					message = exception.getMessage() + ". " + message;
+				}
+
+				logger.warn(message);
+			}
+		}
+		finally {
+			_npmCacheVerify = false;
+		}
+	}
+
+	private void _npmInstall(boolean reset) throws Exception {
+		Logger logger = getLogger();
+		int npmInstallRetries = getNpmInstallRetries();
+		Project project = getProject();
+
+		for (int i = 0; i < (npmInstallRetries + 1); i++) {
+			if (reset || (i > 0)) {
+				project.delete(getNodeModulesDir());
+			}
+
+			try {
+				super.executeNode();
+
+				break;
+			}
+			catch (IOException ioException) {
+				if (i == npmInstallRetries) {
+					throw ioException;
+				}
+
+				if (logger.isWarnEnabled()) {
+					logger.warn(
+						ioException.getMessage() +
+							". Running \"npm install\" again");
+				}
+
+				_npmCacheVerify();
+			}
+		}
+	}
+
+	private void _npmInstallCheckDigest(boolean reset) throws Exception {
+		String digest = _getNodeModulesCacheDigest(this);
+
+		byte[] digestBytes = digest.getBytes(StandardCharsets.UTF_8);
+
+		File nodeModulesDigestFile = getNodeModulesDigestFile();
+
+		Path nodeModulesDigestPath = nodeModulesDigestFile.toPath();
+
+		if (!reset && Files.exists(nodeModulesDigestPath)) {
+			byte[] bytes = Files.readAllBytes(nodeModulesDigestPath);
+
+			if (Arrays.equals(bytes, digestBytes)) {
+				return;
+			}
+
+			reset = true;
+		}
+		else {
+			reset = true;
 		}
 
-		super.executeNode();
+		_npmInstall(reset);
+
+		Files.write(nodeModulesDigestPath, digestBytes);
 	}
 
 	private void _removeShrinkwrappedUrls() throws IOException {
@@ -347,11 +512,13 @@ public class NpmInstallTask extends ExecuteNpmTask {
 		Files.write(shrinkwrapJsonPath, json.getBytes(StandardCharsets.UTF_8));
 	}
 
-	private static final String _NODE_MODULES_BIN_DIR_NAME = ".bin";
-
 	private Object _nodeModulesCacheDir;
 	private boolean _nodeModulesCacheNativeSync = true;
-	private boolean _nodeModulesCacheRemoveBinDirs = true;
+	private Object _nodeModulesDigestFile;
+	private Object _nodeVersion;
+	private boolean _npmCacheVerify;
+	private Object _npmVersion;
 	private Object _removeShrinkwrappedUrls;
+	private Object _useNpmCI;
 
 }

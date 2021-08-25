@@ -14,9 +14,11 @@
 
 package com.liferay.gradle.plugins.test.integration.tasks;
 
-import com.liferay.gradle.plugins.test.integration.util.GradleUtil;
-import com.liferay.gradle.plugins.test.integration.util.StringUtil;
+import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.test.integration.internal.util.StringUtil;
 import com.liferay.gradle.util.FileUtil;
+import com.liferay.gradle.util.OSDetector;
+import com.liferay.gradle.util.Validator;
 import com.liferay.gradle.util.copy.ExcludeExistingFileAction;
 import com.liferay.gradle.util.copy.StripPathSegmentsAction;
 
@@ -41,8 +43,6 @@ import java.text.SimpleDateFormat;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -50,8 +50,11 @@ import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.file.CopySpec;
-import org.gradle.api.logging.Logger;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.VersionNumber;
 
@@ -63,9 +66,9 @@ import org.w3c.dom.NodeList;
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class SetUpTestableTomcatTask
-	extends DefaultTask
-	implements JmxRemotePortSpec, ManagerSpec, ModuleFrameworkBaseDirSpec {
+	extends DefaultTask implements ManagerSpec, ModuleFrameworkBaseDirSpec {
 
 	public SetUpTestableTomcatTask() {
 		_zipUrl = new Callable<String>() {
@@ -105,20 +108,16 @@ public class SetUpTestableTomcatTask
 		};
 	}
 
-	public SetUpTestableTomcatTask catalinaOptsReplacement(
-		String oldSub, Object newSub) {
-
-		_catalinaOptsReplacements.put(oldSub, newSub);
-
-		return this;
+	@Input
+	@Optional
+	public String getAspectJAgent() {
+		return GradleUtil.toString(_aspectJAgent);
 	}
 
-	public SetUpTestableTomcatTask catalinaOptsReplacements(
-		Map<String, ?> catalinaOptsReplacements) {
-
-		_catalinaOptsReplacements.putAll(catalinaOptsReplacements);
-
-		return this;
+	@Input
+	@Optional
+	public String getAspectJConfiguration() {
+		return GradleUtil.toString(_aspectJConfiguration);
 	}
 
 	public File getBinDir() {
@@ -126,19 +125,22 @@ public class SetUpTestableTomcatTask
 	}
 
 	@Input
-	public Map<String, Object> getCatalinaOptsReplacements() {
-		return _catalinaOptsReplacements;
-	}
-
-	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getDir() {
 		return GradleUtil.toFile(getProject(), _dir);
 	}
 
 	@Input
-	@Override
-	public int getJmxRemotePort() {
-		return GradleUtil.toInteger(_jmxRemotePort);
+	@Optional
+	public String getJaCoCoAgentConfiguration() {
+		return GradleUtil.toString(_jaCoCoAgentConfiguration);
+	}
+
+	@Input
+	@Optional
+	@PathSensitive(PathSensitivity.RELATIVE)
+	public File getJaCoCoAgentFile() {
+		return GradleUtil.toFile(getProject(), _jaCoCoAgentFile);
 	}
 
 	@Input
@@ -155,6 +157,7 @@ public class SetUpTestableTomcatTask
 
 	@Input
 	@Override
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getModuleFrameworkBaseDir() {
 		return GradleUtil.toFile(getProject(), _moduleFrameworkBaseDir);
 	}
@@ -170,26 +173,16 @@ public class SetUpTestableTomcatTask
 	}
 
 	@Input
-	public boolean isJmxRemoteAuthenticate() {
-		return _jmxRemoteAuthenticate;
-	}
-
-	@Input
-	public boolean isJmxRemoteSsl() {
-		return _jmxRemoteSsl;
-	}
-
-	@Input
 	public boolean isOverwriteTestModules() {
 		return _overwriteTestModules;
 	}
 
-	public void setCatalinaOptsReplacements(
-		Map<String, ?> catalinaOptsReplacements) {
+	public void setAspectJAgent(Object aspectJAgent) {
+		_aspectJAgent = aspectJAgent;
+	}
 
-		_catalinaOptsReplacements.clear();
-
-		catalinaOptsReplacements(catalinaOptsReplacements);
+	public void setAspectJConfiguration(Object aspectJConfiguration) {
+		_aspectJConfiguration = aspectJConfiguration;
 	}
 
 	public void setDebugLogging(boolean debugLogging) {
@@ -200,17 +193,12 @@ public class SetUpTestableTomcatTask
 		_dir = dir;
 	}
 
-	public void setJmxRemoteAuthenticate(boolean jmxRemoteAuthenticate) {
-		_jmxRemoteAuthenticate = jmxRemoteAuthenticate;
+	public void setJaCoCoAgentConfiguration(Object jaCoCoAgentConfiguration) {
+		_jaCoCoAgentConfiguration = jaCoCoAgentConfiguration;
 	}
 
-	@Override
-	public void setJmxRemotePort(Object jmxRemotePort) {
-		_jmxRemotePort = jmxRemotePort;
-	}
-
-	public void setJmxRemoteSsl(boolean jmxRemoteSsl) {
-		_jmxRemoteSsl = jmxRemoteSsl;
+	public void setJaCoCoAgentFile(Object jaCoCoAgentFile) {
+		_jaCoCoAgentFile = jaCoCoAgentFile;
 	}
 
 	@Override
@@ -234,18 +222,18 @@ public class SetUpTestableTomcatTask
 
 	@TaskAction
 	public void setUpTestableTomcat() throws Exception {
-		setUpCatalinaOpts();
-		setUpJmx();
-		setUpLogging();
-		setUpManager();
-		setUpOsgiModules();
+		_setUpFilePermissions();
+		_setUpLogging();
+		_setUpManager();
+		_setUpOsgiModules();
+		_setUpSetEnv();
 	}
 
 	public void setZipUrl(Object zipUrl) {
 		_zipUrl = zipUrl;
 	}
 
-	protected boolean contains(String fileName, String s) throws IOException {
+	private boolean _contains(String fileName, String s) throws Exception {
 		File file = new File(getDir(), fileName);
 
 		String fileContent = new String(Files.readAllBytes(file.toPath()));
@@ -257,7 +245,7 @@ public class SetUpTestableTomcatTask
 		return false;
 	}
 
-	protected PrintWriter getAppendPrintWriter(String fileName)
+	private PrintWriter _getAppendPrintWriter(String fileName)
 		throws IOException {
 
 		File file = new File(getDir(), fileName);
@@ -268,104 +256,108 @@ public class SetUpTestableTomcatTask
 				StandardOpenOption.APPEND, StandardOpenOption.WRITE));
 	}
 
-	protected String getJmxOptions() {
-		StringBuilder sb = new StringBuilder();
+	private void _setUpAspectJ() throws Exception {
+		String aspectJAgent = getAspectJAgent();
 
-		sb.append("-Dcom.sun.management.jmxremote ");
-		sb.append("-Dcom.sun.management.jmxremote.authenticate=");
-		sb.append(isJmxRemoteAuthenticate());
-		sb.append(" -Dcom.sun.management.jmxremote.port=");
-		sb.append(getJmxRemotePort());
-		sb.append(" -Dcom.sun.management.jmxremote.ssl=");
-		sb.append(isJmxRemoteSsl());
+		if (Validator.isNotNull(aspectJAgent) &&
+			!_contains("bin/setenv.sh", aspectJAgent)) {
 
-		return sb.toString();
-	}
-
-	protected void replace(String fileName, Map<String, Object> replacements)
-		throws IOException {
-
-		Logger logger = getLogger();
-
-		File dir = getDir();
-
-		Path dirPath = dir.toPath();
-
-		Path path = dirPath.resolve(fileName);
-
-		String content = new String(Files.readAllBytes(path));
-
-		for (Map.Entry<String, Object> entry : replacements.entrySet()) {
-			String oldSub = entry.getKey();
-			String newSub = GradleUtil.toString(entry.getValue());
-
-			if (logger.isWarnEnabled() && !content.contains(oldSub)) {
-				logger.warn("Unable to find \"" + oldSub + "\" in " + path);
-			}
-
-			content = content.replace(oldSub, newSub);
-		}
-
-		Files.write(path, content.getBytes());
-	}
-
-	protected void setUpCatalinaOpts() throws IOException {
-		Map<String, Object> replacements = getCatalinaOptsReplacements();
-
-		if (replacements.isEmpty()) {
-			return;
-		}
-
-		replace("bin/setenv.bat", replacements);
-		replace("bin/setenv.sh", replacements);
-	}
-
-	protected void setUpJmx() throws IOException {
-		String jmxOptions = getJmxOptions();
-
-		if (!contains("bin/setenv.bat", jmxOptions)) {
-			try (PrintWriter printWriter = getAppendPrintWriter(
-					"bin/setenv.bat")) {
-
-				printWriter.println();
-
-				printWriter.print("set \"JMX_OPTS=");
-				printWriter.print(jmxOptions);
-				printWriter.println('\"');
-
-				printWriter.println();
-
-				printWriter.println(
-					"set \"CATALINA_OPTS=%CATALINA_OPTS% %JMX_OPTS%\"");
-			}
-		}
-
-		if (!contains("bin/setenv.sh", jmxOptions)) {
-			try (PrintWriter printWriter = getAppendPrintWriter(
+			try (PrintWriter printWriter = _getAppendPrintWriter(
 					"bin/setenv.sh")) {
 
 				printWriter.println();
 
-				printWriter.print("JMX_OPTS=\"");
-				printWriter.print(jmxOptions);
-				printWriter.println('\"');
+				printWriter.print("CATALINA_OPTS=\"${CATALINA_OPTS} ");
+				printWriter.print(aspectJAgent);
+				printWriter.print(
+					" -Dorg.aspectj.weaver.loadtime.configuration=");
 
-				printWriter.println();
+				String aspectJConfiguration = getAspectJConfiguration();
 
-				printWriter.println(
-					"CATALINA_OPTS=\"${CATALINA_OPTS} ${JMX_OPTS}\"");
+				if (Validator.isNotNull(aspectJConfiguration)) {
+					printWriter.print(aspectJConfiguration);
+				}
+
+				printWriter.println("\"");
 			}
 		}
 	}
 
-	protected void setUpLogging() throws IOException {
+	private void _setUpFilePermissions() {
+		if (OSDetector.isWindows()) {
+			return;
+		}
+
+		File binDir = getBinDir();
+
+		for (File file : binDir.listFiles()) {
+			if (!file.isFile()) {
+				continue;
+			}
+
+			String fileName = file.getName();
+
+			if (fileName.endsWith(".sh")) {
+				file.setExecutable(true);
+			}
+		}
+	}
+
+	private void _setUpJaCoCo() throws Exception {
+		File jaCoCoAgentFile = getJaCoCoAgentFile();
+		File targetJaCoCoAgentFile = new File(getDir(), "bin/jacocoagent.jar");
+
+		if ((jaCoCoAgentFile != null) && !targetJaCoCoAgentFile.exists()) {
+			Files.copy(
+				jaCoCoAgentFile.toPath(), targetJaCoCoAgentFile.toPath());
+		}
+
+		String jaCoCoJvmArg =
+			"-javaagent:" + targetJaCoCoAgentFile.getAbsolutePath();
+
+		if (_jaCoCoAgentConfiguration != null) {
+			jaCoCoJvmArg += _jaCoCoAgentConfiguration;
+		}
+
+		if (!_contains("bin/setenv.sh", jaCoCoJvmArg)) {
+			try (PrintWriter printWriter = _getAppendPrintWriter(
+					"bin/setenv.sh")) {
+
+				printWriter.println();
+
+				printWriter.println("if [ \"$1\" = \"jacoco\" ]");
+				printWriter.println("then");
+				printWriter.print("    JACOCO_OPTS=\"");
+				printWriter.print(jaCoCoJvmArg);
+				printWriter.println("\"");
+				printWriter.println(
+					"    CATALINA_OPTS=\"${CATALINA_OPTS} ${JACOCO_OPTS}\"");
+				printWriter.println("    shift");
+				printWriter.println("fi");
+			}
+		}
+	}
+
+	private void _setUpJpda() throws Exception {
+		if (!_contains("bin/setenv.sh", "JPDA_ADDRESS")) {
+			try (PrintWriter printWriter = _getAppendPrintWriter(
+					"bin/setenv.sh")) {
+
+				printWriter.println();
+
+				printWriter.println("JPDA_ADDRESS=\"8000\"");
+			}
+		}
+	}
+
+	private void _setUpLogging() throws Exception {
 		if (!isDebugLogging() ||
-			contains("conf/Logging.properties", "org.apache.catalina.level")) {
+			_contains("conf/Logging.properties", "org.apache.catalina.level")) {
 
 			return;
 		}
 
-		try (PrintWriter printWriter = getAppendPrintWriter(
+		try (PrintWriter printWriter = _getAppendPrintWriter(
 				"conf/Logging.properties")) {
 
 			printWriter.println("org.apache.catalina.level=ALL");
@@ -381,7 +373,7 @@ public class SetUpTestableTomcatTask
 		}
 	}
 
-	protected void setUpManager() throws Exception {
+	private void _setUpManager() throws Exception {
 		final File managerDir = new File(getDir(), "webapps/manager");
 
 		if (!managerDir.exists()) {
@@ -407,8 +399,7 @@ public class SetUpTestableTomcatTask
 
 		Document document = null;
 
-		final File tomcatUsersXmlFile = new File(
-			getDir(), "conf/tomcat-users.xml");
+		File tomcatUsersXmlFile = new File(getDir(), "conf/tomcat-users.xml");
 
 		try (InputStreamReader inputStreamReader = new InputStreamReader(
 				new FileInputStream(tomcatUsersXmlFile))) {
@@ -492,7 +483,7 @@ public class SetUpTestableTomcatTask
 		}
 	}
 
-	protected void setUpOsgiModules() {
+	private void _setUpOsgiModules() {
 		Project project = getProject();
 
 		project.copy(
@@ -517,18 +508,24 @@ public class SetUpTestableTomcatTask
 			});
 	}
 
+	private void _setUpSetEnv() throws Exception {
+		_setUpJaCoCo();
+
+		_setUpAspectJ();
+		_setUpJpda();
+	}
+
 	private static final String[] _TOMCAT_USERS_ROLE_NAMES = {
 		"manager-gui", "manager-jmx", "manager-script", "manager-status",
 		"tomcat"
 	};
 
-	private final Map<String, Object> _catalinaOptsReplacements =
-		new LinkedHashMap<>();
+	private Object _aspectJAgent;
+	private Object _aspectJConfiguration;
 	private boolean _debugLogging;
 	private Object _dir;
-	private boolean _jmxRemoteAuthenticate;
-	private Object _jmxRemotePort;
-	private boolean _jmxRemoteSsl;
+	private Object _jaCoCoAgentConfiguration;
+	private Object _jaCoCoAgentFile;
 	private Object _managerPassword;
 	private Object _managerUserName;
 	private Object _moduleFrameworkBaseDir;

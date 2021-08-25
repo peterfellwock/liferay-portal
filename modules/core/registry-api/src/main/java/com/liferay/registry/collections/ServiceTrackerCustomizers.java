@@ -33,7 +33,7 @@ public class ServiceTrackerCustomizers {
 
 			@Override
 			public ServiceWrapper<S> addingService(
-				final ServiceReference<S> serviceReference) {
+				ServiceReference<S> serviceReference) {
 
 				Registry registry = RegistryUtil.getRegistry();
 
@@ -61,10 +61,10 @@ public class ServiceTrackerCustomizers {
 
 					};
 				}
-				catch (Throwable t) {
+				catch (Throwable throwable) {
 					registry.ungetService(serviceReference);
 
-					throw t;
+					throw throwable;
 				}
 			}
 

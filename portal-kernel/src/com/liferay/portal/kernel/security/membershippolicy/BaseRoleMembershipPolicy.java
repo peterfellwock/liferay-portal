@@ -16,6 +16,8 @@ package com.liferay.portal.kernel.security.membershippolicy;
 
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 
@@ -26,14 +28,17 @@ import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 public abstract class BaseRoleMembershipPolicy implements RoleMembershipPolicy {
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean isRoleAllowed(long userId, long roleId)
 		throws PortalException {
 
 		try {
 			checkRoles(new long[] {userId}, new long[] {roleId}, null);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return false;
 		}
 
@@ -41,14 +46,17 @@ public abstract class BaseRoleMembershipPolicy implements RoleMembershipPolicy {
 	}
 
 	@Override
-	@SuppressWarnings("unused")
 	public boolean isRoleRequired(long userId, long roleId)
 		throws PortalException {
 
 		try {
 			checkRoles(new long[] {userId}, null, new long[] {roleId});
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return true;
 		}
 
@@ -61,14 +69,7 @@ public abstract class BaseRoleMembershipPolicy implements RoleMembershipPolicy {
 			RoleLocalServiceUtil.getActionableDynamicQuery();
 
 		actionableDynamicQuery.setPerformActionMethod(
-			new ActionableDynamicQuery.PerformActionMethod<Role>() {
-
-				@Override
-				public void performAction(Role role) throws PortalException {
-					verifyPolicy(role);
-				}
-
-			});
+			(Role role) -> verifyPolicy(role));
 
 		actionableDynamicQuery.performActions();
 	}
@@ -77,5 +78,8 @@ public abstract class BaseRoleMembershipPolicy implements RoleMembershipPolicy {
 	public void verifyPolicy(Role role) throws PortalException {
 		verifyPolicy(role, null, null);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseRoleMembershipPolicy.class);
 
 }

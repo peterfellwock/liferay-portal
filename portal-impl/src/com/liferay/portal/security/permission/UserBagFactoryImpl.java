@@ -26,9 +26,9 @@ import com.liferay.portal.kernel.service.OrganizationLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserGroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.util.PropsValues;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -49,56 +49,79 @@ public class UserBagFactoryImpl implements UserBagFactory {
 			return userBag;
 		}
 
-		try {
+		Set<Long> allGroupIds = new HashSet<>();
+
+		Collection<Organization> userOrgs = getUserOrgs(userId);
+
+		Set<Long> userOrgGroupIds = new HashSet<>();
+
+		for (Organization organization : userOrgs) {
+			userOrgGroupIds.add(organization.getGroupId());
+		}
+
+		allGroupIds.addAll(userOrgGroupIds);
+
+		List<UserGroup> userUserGroups =
+			UserGroupLocalServiceUtil.getUserUserGroups(userId);
+
+		long[] userUserGroupGroupIds = new long[userUserGroups.size()];
+
+		for (int i = 0; i < userUserGroups.size(); i++) {
+			UserGroup userUserGroup = userUserGroups.get(i);
+
+			long groupId = userUserGroup.getGroupId();
+
+			userUserGroupGroupIds[i] = groupId;
+
+			allGroupIds.add(groupId);
+		}
+
+		long[] userGroupIds = null;
+
+		if (userOrgs.isEmpty() && userUserGroups.isEmpty()) {
+			userGroupIds = UserLocalServiceUtil.getGroupPrimaryKeys(userId);
+
+			for (long userGroupId : userGroupIds) {
+				allGroupIds.add(userGroupId);
+			}
+		}
+		else {
 			List<Group> userGroups = GroupLocalServiceUtil.getUserGroups(
 				userId, true);
 
-			Collection<Organization> userOrgs = getUserOrgs(userId);
+			userGroupIds = new long[userGroups.size()];
 
-			Set<Group> userOrgGroups = new HashSet<>(userOrgs.size());
+			for (int i = 0; i < userGroups.size(); i++) {
+				Group userGroup = userGroups.get(i);
 
-			for (Organization organization : userOrgs) {
-				userOrgGroups.add(organization.getGroup());
+				long groupId = userGroup.getGroupId();
+
+				userGroupIds[i] = groupId;
+
+				allGroupIds.add(groupId);
 			}
-
-			List<UserGroup> userUserGroups =
-				UserGroupLocalServiceUtil.getUserUserGroups(userId);
-
-			List<Group> userUserGroupGroups =
-				GroupLocalServiceUtil.getUserGroupsGroups(userUserGroups);
-
-			List<Group> allUserGroups = new ArrayList<>();
-
-			allUserGroups.addAll(userGroups);
-			allUserGroups.addAll(userOrgGroups);
-			allUserGroups.addAll(userUserGroupGroups);
-
-			if (allUserGroups.isEmpty()) {
-				long[] userRoleIds = UserLocalServiceUtil.getRolePrimaryKeys(
-					userId);
-
-				userBag = new UserBagImpl(
-					userId, userGroups, userOrgs, userOrgGroups,
-					userUserGroupGroups, userRoleIds);
-			}
-			else {
-				List<Role> userRoles = RoleLocalServiceUtil.getUserRelatedRoles(
-					userId, allUserGroups);
-
-				userBag = new UserBagImpl(
-					userId, userGroups, userOrgs, userOrgGroups,
-					userUserGroupGroups, userRoles);
-			}
-
-			PermissionCacheUtil.putUserBag(userId, userBag);
-
-			return userBag;
 		}
-		catch (Exception e) {
-			PermissionCacheUtil.removeUserBag(userId);
 
-			throw e;
+		if (allGroupIds.isEmpty()) {
+			long[] userRoleIds = UserLocalServiceUtil.getRolePrimaryKeys(
+				userId);
+
+			userBag = new UserBagImpl(
+				userId, userGroupIds, userOrgs, userOrgGroupIds, userUserGroups,
+				userUserGroupGroupIds, userRoleIds);
 		}
+		else {
+			List<Role> userRoles = RoleLocalServiceUtil.getUserRelatedRoles(
+				userId, ArrayUtil.toLongArray(allGroupIds));
+
+			userBag = new UserBagImpl(
+				userId, userGroupIds, userOrgs, userOrgGroupIds, userUserGroups,
+				userUserGroupGroupIds, userRoles);
+		}
+
+		PermissionCacheUtil.putUserBag(userId, userBag);
+
+		return userBag;
 	}
 
 	protected Collection<Organization> getUserOrgs(long userId)

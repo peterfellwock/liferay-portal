@@ -69,58 +69,48 @@ public abstract class BaseFieldsetTag extends com.liferay.taglib.util.IncludeTag
 		return _markupView;
 	}
 
+	public java.lang.String getPanelHeaderLinkCssClass() {
+		return _panelHeaderLinkCssClass;
+	}
+
 	public void setCollapsed(boolean collapsed) {
 		_collapsed = collapsed;
-
-		setScopedAttribute("collapsed", collapsed);
 	}
 
 	public void setCollapsible(boolean collapsible) {
 		_collapsible = collapsible;
-
-		setScopedAttribute("collapsible", collapsible);
 	}
 
 	public void setColumn(boolean column) {
 		_column = column;
-
-		setScopedAttribute("column", column);
 	}
 
 	public void setCssClass(java.lang.String cssClass) {
 		_cssClass = cssClass;
-
-		setScopedAttribute("cssClass", cssClass);
 	}
 
 	public void setHelpMessage(java.lang.String helpMessage) {
 		_helpMessage = helpMessage;
-
-		setScopedAttribute("helpMessage", helpMessage);
 	}
 
 	public void setId(java.lang.String id) {
 		_id = id;
-
-		setScopedAttribute("id", id);
 	}
 
 	public void setLabel(java.lang.String label) {
 		_label = label;
-
-		setScopedAttribute("label", label);
 	}
 
 	public void setLocalizeLabel(boolean localizeLabel) {
 		_localizeLabel = localizeLabel;
-
-		setScopedAttribute("localizeLabel", localizeLabel);
 	}
 
 	public void setMarkupView(java.lang.String markupView) {
 		_markupView = markupView;
+	}
 
-		setScopedAttribute("markupView", markupView);
+	public void setPanelHeaderLinkCssClass(java.lang.String panelHeaderLinkCssClass) {
+		_panelHeaderLinkCssClass = panelHeaderLinkCssClass;
 	}
 
 	@Override
@@ -136,6 +126,7 @@ public abstract class BaseFieldsetTag extends com.liferay.taglib.util.IncludeTag
 		_label = null;
 		_localizeLabel = true;
 		_markupView = null;
+		_panelHeaderLinkCssClass = null;
 	}
 
 	@Override
@@ -159,6 +150,7 @@ public abstract class BaseFieldsetTag extends com.liferay.taglib.util.IncludeTag
 		setNamespacedAttribute(request, "label", _label);
 		setNamespacedAttribute(request, "localizeLabel", _localizeLabel);
 		setNamespacedAttribute(request, "markupView", _markupView);
+		setNamespacedAttribute(request, "panelHeaderLinkCssClass", _panelHeaderLinkCssClass);
 	}
 
 	protected static final String _ATTRIBUTE_NAMESPACE = "aui:fieldset:";
@@ -178,5 +170,6 @@ public abstract class BaseFieldsetTag extends com.liferay.taglib.util.IncludeTag
 	private java.lang.String _label = null;
 	private boolean _localizeLabel = true;
 	private java.lang.String _markupView = null;
+	private java.lang.String _panelHeaderLinkCssClass = null;
 
 }

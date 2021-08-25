@@ -14,8 +14,6 @@
 
 package com.liferay.document.library.kernel.model;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.ArrayList;
@@ -26,15 +24,19 @@ import java.util.List;
  * This class is used by SOAP remote services, specifically {@link com.liferay.portlet.documentlibrary.service.http.DLFileEntryServiceSoap}.
  *
  * @author Brian Wing Shun Chan
- * @see com.liferay.portlet.documentlibrary.service.http.DLFileEntryServiceSoap
+ * @deprecated As of Athanasius (7.3.x), with no direct replacement
  * @generated
  */
-@ProviderType
+@Deprecated
 public class DLFileEntrySoap implements Serializable {
+
 	public static DLFileEntrySoap toSoapModel(DLFileEntry model) {
 		DLFileEntrySoap soapModel = new DLFileEntrySoap();
 
+		soapModel.setMvccVersion(model.getMvccVersion());
+		soapModel.setCtCollectionId(model.getCtCollectionId());
 		soapModel.setUuid(model.getUuid());
+		soapModel.setExternalReferenceCode(model.getExternalReferenceCode());
 		soapModel.setFileEntryId(model.getFileEntryId());
 		soapModel.setGroupId(model.getGroupId());
 		soapModel.setCompanyId(model.getCompanyId());
@@ -57,12 +59,13 @@ public class DLFileEntrySoap implements Serializable {
 		soapModel.setFileEntryTypeId(model.getFileEntryTypeId());
 		soapModel.setVersion(model.getVersion());
 		soapModel.setSize(model.getSize());
-		soapModel.setReadCount(model.getReadCount());
 		soapModel.setSmallImageId(model.getSmallImageId());
 		soapModel.setLargeImageId(model.getLargeImageId());
 		soapModel.setCustom1ImageId(model.getCustom1ImageId());
 		soapModel.setCustom2ImageId(model.getCustom2ImageId());
-		soapModel.setManualCheckInRequired(model.getManualCheckInRequired());
+		soapModel.setManualCheckInRequired(model.isManualCheckInRequired());
+		soapModel.setExpirationDate(model.getExpirationDate());
+		soapModel.setReviewDate(model.getReviewDate());
 		soapModel.setLastPublishDate(model.getLastPublishDate());
 
 		return soapModel;
@@ -96,7 +99,8 @@ public class DLFileEntrySoap implements Serializable {
 	}
 
 	public static DLFileEntrySoap[] toSoapModels(List<DLFileEntry> models) {
-		List<DLFileEntrySoap> soapModels = new ArrayList<DLFileEntrySoap>(models.size());
+		List<DLFileEntrySoap> soapModels = new ArrayList<DLFileEntrySoap>(
+			models.size());
 
 		for (DLFileEntry model : models) {
 			soapModels.add(toSoapModel(model));
@@ -116,12 +120,36 @@ public class DLFileEntrySoap implements Serializable {
 		setFileEntryId(pk);
 	}
 
+	public long getMvccVersion() {
+		return _mvccVersion;
+	}
+
+	public void setMvccVersion(long mvccVersion) {
+		_mvccVersion = mvccVersion;
+	}
+
+	public long getCtCollectionId() {
+		return _ctCollectionId;
+	}
+
+	public void setCtCollectionId(long ctCollectionId) {
+		_ctCollectionId = ctCollectionId;
+	}
+
 	public String getUuid() {
 		return _uuid;
 	}
 
 	public void setUuid(String uuid) {
 		_uuid = uuid;
+	}
+
+	public String getExternalReferenceCode() {
+		return _externalReferenceCode;
+	}
+
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		_externalReferenceCode = externalReferenceCode;
 	}
 
 	public long getFileEntryId() {
@@ -300,14 +328,6 @@ public class DLFileEntrySoap implements Serializable {
 		_size = size;
 	}
 
-	public int getReadCount() {
-		return _readCount;
-	}
-
-	public void setReadCount(int readCount) {
-		_readCount = readCount;
-	}
-
 	public long getSmallImageId() {
 		return _smallImageId;
 	}
@@ -352,6 +372,22 @@ public class DLFileEntrySoap implements Serializable {
 		_manualCheckInRequired = manualCheckInRequired;
 	}
 
+	public Date getExpirationDate() {
+		return _expirationDate;
+	}
+
+	public void setExpirationDate(Date expirationDate) {
+		_expirationDate = expirationDate;
+	}
+
+	public Date getReviewDate() {
+		return _reviewDate;
+	}
+
+	public void setReviewDate(Date reviewDate) {
+		_reviewDate = reviewDate;
+	}
+
 	public Date getLastPublishDate() {
 		return _lastPublishDate;
 	}
@@ -360,7 +396,10 @@ public class DLFileEntrySoap implements Serializable {
 		_lastPublishDate = lastPublishDate;
 	}
 
+	private long _mvccVersion;
+	private long _ctCollectionId;
 	private String _uuid;
+	private String _externalReferenceCode;
 	private long _fileEntryId;
 	private long _groupId;
 	private long _companyId;
@@ -383,11 +422,13 @@ public class DLFileEntrySoap implements Serializable {
 	private long _fileEntryTypeId;
 	private String _version;
 	private long _size;
-	private int _readCount;
 	private long _smallImageId;
 	private long _largeImageId;
 	private long _custom1ImageId;
 	private long _custom2ImageId;
 	private boolean _manualCheckInRequired;
+	private Date _expirationDate;
+	private Date _reviewDate;
 	private Date _lastPublishDate;
+
 }

@@ -23,17 +23,21 @@ int status = (Integer)request.getAttribute(KBWebKeys.KNOWLEDGE_BASE_STATUS);
 int selStatus = KBArticlePermission.contains(permissionChecker, kbArticle, KBActionKeys.UPDATE) ? WorkflowConstants.STATUS_ANY : status;
 
 int sourceVersion = ParamUtil.getInteger(request, "sourceVersion");
-String eventName = ParamUtil.getString(request, "eventName", renderResponse.getNamespace() + "selectVersionFm");
 
-PortletURL portletURL = renderResponse.createRenderURL();
-
-portletURL.setParameter("mvcPath", "/admin/common/select_version.jsp");
-portletURL.setParameter("redirect", currentURL);
-portletURL.setParameter("resourcePrimKey", String.valueOf(kbArticle.getResourcePrimKey()));
-portletURL.setParameter("sourceVersion", String.valueOf(sourceVersion));
+PortletURL portletURL = PortletURLBuilder.createRenderURL(
+	renderResponse
+).setMVCPath(
+	"/admin/common/select_version.jsp"
+).setRedirect(
+	currentURL
+).setParameter(
+	"resourcePrimKey", kbArticle.getResourcePrimKey()
+).setParameter(
+	"sourceVersion", sourceVersion
+).buildPortletURL();
 %>
 
-<div class="container-fluid-1280">
+<clay:container-fluid>
 	<aui:form action="<%= portletURL.toString() %>" method="post" name="selectVersionFm">
 		<liferay-ui:search-container
 			id="articleVersionSearchContainer"
@@ -64,14 +68,19 @@ portletURL.setParameter("sourceVersion", String.valueOf(sourceVersion));
 								curTargetVersion = curSourceVersion;
 								curSourceVersion = tempVersion;
 							}
-
-							Map<String, Object> data = new HashMap<String, Object>();
-
-							data.put("sourceversion", curSourceVersion);
-							data.put("targetversion", curTargetVersion);
 							%>
 
-							<aui:a cssClass="selector-button" data="<%= data %>" href="javascript:;">
+							<aui:a
+								cssClass="selector-button"
+								data='<%=
+									HashMapBuilder.<String, Object>put(
+										"sourceversion", curSourceVersion
+									).put(
+										"targetversion", curTargetVersion
+									).build()
+								%>'
+								href="javascript:;"
+							>
 								<%= String.valueOf(curKBArticle.getVersion()) %>
 							</aui:a>
 						</c:when>
@@ -87,11 +96,9 @@ portletURL.setParameter("sourceVersion", String.valueOf(sourceVersion));
 				/>
 			</liferay-ui:search-container-row>
 
-			<liferay-ui:search-iterator markupView="lexicon" />
+			<liferay-ui:search-iterator
+				markupView="lexicon"
+			/>
 		</liferay-ui:search-container>
 	</aui:form>
-</div>
-
-<aui:script>
-	Liferay.Util.selectEntityHandler('#<portlet:namespace />selectVersionFm', '<%= HtmlUtil.escapeJS(eventName) %>');
-</aui:script>
+</clay:container-fluid>

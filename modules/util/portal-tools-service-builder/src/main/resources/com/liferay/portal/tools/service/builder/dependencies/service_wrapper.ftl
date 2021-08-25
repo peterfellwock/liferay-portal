@@ -1,8 +1,13 @@
 package ${apiPackagePath}.service;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.service.ServiceWrapper;
+
+<#if entity.isChangeTrackingEnabled()>
+	import ${apiPackagePath}.model.${entity.name};
+	import com.liferay.petra.function.UnsafeFunction;
+	import com.liferay.portal.kernel.service.change.tracking.CTService;
+	import com.liferay.portal.kernel.service.persistence.change.tracking.CTPersistence;
+</#if>
 
 /**
  * Provides a wrapper for {@link ${entity.name}${sessionTypeName}Service}.
@@ -18,16 +23,14 @@ import com.liferay.portal.kernel.service.ServiceWrapper;
 <#if classDeprecated>
 	@Deprecated
 </#if>
-
-@ProviderType
 public class ${entity.name}${sessionTypeName}ServiceWrapper implements ${entity.name}${sessionTypeName}Service, ServiceWrapper<${entity.name}${sessionTypeName}Service> {
 
-	public ${entity.name}${sessionTypeName}ServiceWrapper(${entity.name}${sessionTypeName}Service ${entity.varName}${sessionTypeName}Service) {
-		_${entity.varName}${sessionTypeName}Service = ${entity.varName}${sessionTypeName}Service;
+	public ${entity.name}${sessionTypeName}ServiceWrapper(${entity.name}${sessionTypeName}Service ${entity.variableName}${sessionTypeName}Service) {
+		_${entity.variableName}${sessionTypeName}Service = ${entity.variableName}${sessionTypeName}Service;
 	}
 
 	<#list methods as method>
-		<#if !method.isConstructor() && method.isPublic() && serviceBuilder.isCustomMethod(method)>
+		<#if method.isPublic() && serviceBuilder.isCustomMethod(method)>
 			${serviceBuilder.getJavadocComment(method)}
 
 			<#if serviceBuilder.hasAnnotation(method, "Deprecated")>
@@ -37,11 +40,7 @@ public class ${entity.name}${sessionTypeName}ServiceWrapper implements ${entity.
 			@Override
 			public
 
-			<#if method.name = "dynamicQuery" && (serviceBuilder.getTypeGenericsName(method.returns) == "java.util.List<T>")>
-				<T>
-			</#if>
-
-			${serviceBuilder.getTypeGenericsName(method.returns)} ${method.name}(
+			${serviceBuilder.getTypeParametersDefinition(method.typeParameters)} ${serviceBuilder.getTypeGenericsName(method.returns)} ${method.name}(
 
 			<#list method.parameters as parameter>
 				${serviceBuilder.getTypeGenericsName(parameter.type)} ${parameter.name}
@@ -58,7 +57,7 @@ public class ${entity.name}${sessionTypeName}ServiceWrapper implements ${entity.
 					throws
 				</#if>
 
-				${exception.value}
+				${exception.fullyQualifiedName}
 
 				<#if exception_has_next>
 					,
@@ -66,11 +65,11 @@ public class ${entity.name}${sessionTypeName}ServiceWrapper implements ${entity.
 			</#list>
 
 			{
-				<#if method.returns.value != "void">
+				<#if !stringUtil.equals(method.returns.value, "void")>
 					return
 				</#if>
 
-				_${entity.varName}${sessionTypeName}Service.${method.name}(
+				_${entity.variableName}${sessionTypeName}Service.${method.name}(
 
 				<#list method.parameters as parameter>
 					${parameter.name}
@@ -85,16 +84,33 @@ public class ${entity.name}${sessionTypeName}ServiceWrapper implements ${entity.
 		</#if>
 	</#list>
 
+	<#if entity.hasPersistence() && entity.isChangeTrackingEnabled() && stringUtil.equals(sessionTypeName, "Local") && entity.hasEntityColumns()>
+		@Override
+		public CTPersistence<${entity.name}> getCTPersistence() {
+			return _${entity.variableName}LocalService.getCTPersistence();
+		}
+
+		@Override
+		public Class<${entity.name}> getModelClass() {
+			return _${entity.variableName}LocalService.getModelClass();
+		}
+
+		@Override
+		public <R, E extends Throwable> R updateWithUnsafeFunction(UnsafeFunction<CTPersistence<${entity.name}>, R, E> updateUnsafeFunction) throws E {
+			return _${entity.variableName}LocalService.updateWithUnsafeFunction(updateUnsafeFunction);
+		}
+	</#if>
+
 	@Override
 	public ${entity.name}${sessionTypeName}Service getWrappedService() {
-		return _${entity.varName}${sessionTypeName}Service;
+		return _${entity.variableName}${sessionTypeName}Service;
 	}
 
 	@Override
-	public void setWrappedService(${entity.name}${sessionTypeName}Service ${entity.varName}${sessionTypeName}Service) {
-		_${entity.varName}${sessionTypeName}Service = ${entity.varName}${sessionTypeName}Service;
+	public void setWrappedService(${entity.name}${sessionTypeName}Service ${entity.variableName}${sessionTypeName}Service) {
+		_${entity.variableName}${sessionTypeName}Service = ${entity.variableName}${sessionTypeName}Service;
 	}
 
-	private ${entity.name}${sessionTypeName}Service _${entity.varName}${sessionTypeName}Service;
+	private ${entity.name}${sessionTypeName}Service _${entity.variableName}${sessionTypeName}Service;
 
 }

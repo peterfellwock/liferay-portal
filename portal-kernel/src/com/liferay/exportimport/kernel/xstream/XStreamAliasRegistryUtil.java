@@ -14,8 +14,6 @@
 
 package com.liferay.exportimport.kernel.xstream;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
 import com.liferay.registry.ServiceReference;
@@ -25,25 +23,25 @@ import com.liferay.registry.ServiceTrackerCustomizer;
 import com.liferay.registry.collections.ServiceRegistrationMap;
 import com.liferay.registry.collections.ServiceRegistrationMapImpl;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author Mate Thurzo
+ * @author Máté Thurzó
  */
-@ProviderType
 public class XStreamAliasRegistryUtil {
 
 	public static Map<Class<?>, String> getAliases() {
-		return _instance._getAliases();
+		return new HashMap<>(_xStreamAliasRegistryUtil._getAliases());
 	}
 
 	public static void register(Class<?> clazz, String name) {
-		_instance._register(clazz, name);
+		_xStreamAliasRegistryUtil._register(clazz, name);
 	}
 
 	public static void unregister(Class<?> clazz, String name) {
-		_instance._unregister(clazz, name);
+		_xStreamAliasRegistryUtil._unregister(clazz, name);
 	}
 
 	private XStreamAliasRegistryUtil() {
@@ -67,24 +65,24 @@ public class XStreamAliasRegistryUtil {
 		ServiceRegistration<XStreamAlias> serviceRegistration =
 			registry.registerService(XStreamAlias.class, xStreamAlias);
 
-		_serviceRegistrations.put(xStreamAlias, serviceRegistration);
+		_serviceRegistrationMap.put(xStreamAlias, serviceRegistration);
 	}
 
 	private void _unregister(Class<?> clazz, String name) {
 		XStreamAlias xStreamAlias = new XStreamAlias(clazz, name);
 
 		ServiceRegistration<XStreamAlias> serviceRegistration =
-			_serviceRegistrations.remove(xStreamAlias);
+			_serviceRegistrationMap.remove(xStreamAlias);
 
 		if (serviceRegistration != null) {
 			serviceRegistration.unregister();
 		}
 	}
 
-	private static final XStreamAliasRegistryUtil _instance =
+	private static final XStreamAliasRegistryUtil _xStreamAliasRegistryUtil =
 		new XStreamAliasRegistryUtil();
 
-	private final ServiceRegistrationMap<XStreamAlias> _serviceRegistrations =
+	private final ServiceRegistrationMap<XStreamAlias> _serviceRegistrationMap =
 		new ServiceRegistrationMapImpl<>();
 	private final ServiceTracker<XStreamAlias, XStreamAlias> _serviceTracker;
 	private final Map<Class<?>, String> _xstreamAliases =

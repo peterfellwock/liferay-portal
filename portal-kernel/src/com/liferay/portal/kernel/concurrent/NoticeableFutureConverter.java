@@ -28,8 +28,6 @@ public abstract class NoticeableFutureConverter<T, V>
 	public NoticeableFutureConverter(NoticeableFuture<V> noticeableFuture) {
 		super(noticeableFuture);
 
-		_defaultNoticeableFuture = new DefaultNoticeableFuture<>();
-
 		noticeableFuture.addFutureListener(
 			new FutureListener<V>() {
 
@@ -44,12 +42,12 @@ public abstract class NoticeableFutureConverter<T, V>
 					try {
 						_defaultNoticeableFuture.set(convert(future.get()));
 					}
-					catch (Throwable t) {
-						if (t instanceof ExecutionException) {
-							t = t.getCause();
+					catch (Throwable throwable) {
+						if (throwable instanceof ExecutionException) {
+							throwable = throwable.getCause();
 						}
 
-						_defaultNoticeableFuture.setException(t);
+						_defaultNoticeableFuture.setException(throwable);
 					}
 				}
 
@@ -78,6 +76,7 @@ public abstract class NoticeableFutureConverter<T, V>
 		return _defaultNoticeableFuture.removeFutureListener(futureListener);
 	}
 
-	private final DefaultNoticeableFuture<T> _defaultNoticeableFuture;
+	private final DefaultNoticeableFuture<T> _defaultNoticeableFuture =
+		new DefaultNoticeableFuture<>();
 
 }

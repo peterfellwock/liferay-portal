@@ -25,10 +25,6 @@ import jodd.json.ValueConverter;
  */
 public class JSONDeserializerImpl<T> implements JSONDeserializer<T> {
 
-	public JSONDeserializerImpl() {
-		_jsonDeserializer = new PortalJsonParser();
-	}
-
 	@Override
 	public T deserialize(String input) {
 		return _jsonDeserializer.parse(input);
@@ -47,7 +43,7 @@ public class JSONDeserializerImpl<T> implements JSONDeserializer<T> {
 		ValueConverter<K, V> valueConverter =
 			new JoddJsonDeserializerTransformer<>(jsonDeserializerTransformer);
 
-		_jsonDeserializer.use(field, valueConverter);
+		_jsonDeserializer.withValueConverter(field, valueConverter);
 
 		return this;
 	}
@@ -59,6 +55,6 @@ public class JSONDeserializerImpl<T> implements JSONDeserializer<T> {
 		return this;
 	}
 
-	private final JsonParser _jsonDeserializer;
+	private final JsonParser _jsonDeserializer = new PortalJsonParser();
 
 }

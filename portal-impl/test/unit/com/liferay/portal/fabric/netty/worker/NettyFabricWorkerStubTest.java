@@ -14,6 +14,9 @@
 
 package com.liferay.portal.fabric.netty.worker;
 
+import com.liferay.petra.concurrent.DefaultNoticeableFuture;
+import com.liferay.petra.concurrent.NoticeableFuture;
+import com.liferay.portal.fabric.ReturnProcessCallable;
 import com.liferay.portal.fabric.local.worker.EmbeddedProcessChannel;
 import com.liferay.portal.fabric.local.worker.LocalFabricWorker;
 import com.liferay.portal.fabric.netty.NettyTestUtil;
@@ -23,15 +26,12 @@ import com.liferay.portal.fabric.netty.util.NettyUtilAdvice;
 import com.liferay.portal.fabric.repository.MockRepository;
 import com.liferay.portal.fabric.status.FabricStatus;
 import com.liferay.portal.fabric.status.RemoteFabricStatus;
-import com.liferay.portal.kernel.concurrent.DefaultNoticeableFuture;
-import com.liferay.portal.kernel.concurrent.NoticeableFuture;
-import com.liferay.portal.kernel.process.local.ReturnProcessCallable;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
 import com.liferay.portal.test.rule.AdviseWith;
-import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -57,7 +57,7 @@ public class NettyFabricWorkerStubTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			CodeCoverageAssertor.INSTANCE, LiferayUnitTestRule.INSTANCE);
 
 	@Test
 	public void testConstructor() {
@@ -66,8 +66,9 @@ public class NettyFabricWorkerStubTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Channel is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Channel is null", nullPointerException.getMessage());
 		}
 
 		try {
@@ -76,8 +77,9 @@ public class NettyFabricWorkerStubTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Repository is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Repository is null", nullPointerException.getMessage());
 		}
 
 		try {
@@ -87,8 +89,9 @@ public class NettyFabricWorkerStubTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
-			Assert.assertEquals("Output path map is null", npe.getMessage());
+		catch (NullPointerException nullPointerException) {
+			Assert.assertEquals(
+				"Output path map is null", nullPointerException.getMessage());
 		}
 
 		Channel channel = NettyTestUtil.createEmptyEmbeddedChannel();
@@ -98,7 +101,7 @@ public class NettyFabricWorkerStubTest {
 		Assert.assertFalse(channelFuture.isDone());
 
 		NettyFabricWorkerStub<String> nettyFabricWorkerStub =
-			new NettyFabricWorkerStub<String>(
+			new NettyFabricWorkerStub<>(
 				0, channel, new MockRepository<Channel>(),
 				Collections.<Path, Path>emptyMap(), 0);
 
@@ -121,7 +124,7 @@ public class NettyFabricWorkerStubTest {
 
 		Assert.assertFalse(channelFuture.isDone());
 
-		nettyFabricWorkerStub = new NettyFabricWorkerStub<String>(
+		nettyFabricWorkerStub = new NettyFabricWorkerStub<>(
 			0, channel, new MockRepository<Channel>(),
 			Collections.<Path, Path>emptyMap(), 0);
 
@@ -141,7 +144,7 @@ public class NettyFabricWorkerStubTest {
 	@Test
 	public void testGetFabricStatus() {
 		NettyFabricWorkerStub<String> nettyFabricWorkerStub =
-			new NettyFabricWorkerStub<String>(
+			new NettyFabricWorkerStub<>(
 				0, NettyTestUtil.createEmptyEmbeddedChannel(),
 				new MockRepository<Channel>(),
 				Collections.<Path, Path>emptyMap(), 0);
@@ -154,7 +157,7 @@ public class NettyFabricWorkerStubTest {
 	@Test
 	public void testSetCancellation() throws Exception {
 		NettyFabricWorkerStub<String> nettyFabricWorkerStub =
-			new NettyFabricWorkerStub<String>(
+			new NettyFabricWorkerStub<>(
 				0, NettyTestUtil.createEmptyEmbeddedChannel(),
 				new MockRepository<Channel>(),
 				Collections.<Path, Path>emptyMap(), 0);
@@ -170,7 +173,7 @@ public class NettyFabricWorkerStubTest {
 	@Test
 	public void testSetException() throws InterruptedException {
 		NettyFabricWorkerStub<String> nettyFabricWorkerStub =
-			new NettyFabricWorkerStub<String>(
+			new NettyFabricWorkerStub<>(
 				0, NettyTestUtil.createEmptyEmbeddedChannel(),
 				new MockRepository<Channel>(),
 				Collections.<Path, Path>emptyMap(), 0);
@@ -187,8 +190,8 @@ public class NettyFabricWorkerStubTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertSame(throwable, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertSame(throwable, executionException.getCause());
 		}
 	}
 
@@ -296,8 +299,8 @@ public class NettyFabricWorkerStubTest {
 
 			Assert.fail();
 		}
-		catch (ExecutionException ee) {
-			Assert.assertSame(throwable, ee.getCause());
+		catch (ExecutionException executionException) {
+			Assert.assertSame(throwable, executionException.getCause());
 		}
 	}
 
@@ -309,7 +312,7 @@ public class NettyFabricWorkerStubTest {
 			NettyRPCChannelHandler.INSTANCE);
 
 		NettyFabricWorkerStub<String> nettyFabricWorkerStub =
-			new NettyFabricWorkerStub<String>(
+			new NettyFabricWorkerStub<>(
 				0, embeddedChannel, new MockRepository<Channel>(),
 				Collections.<Path, Path>emptyMap(), 0);
 
@@ -324,8 +327,8 @@ public class NettyFabricWorkerStubTest {
 		NoticeableFuture<String> noticeableFuture = nettyFabricWorkerStub.write(
 			new ReturnProcessCallable<String>(result));
 
-		embeddedChannel.writeInbound(embeddedChannel.readOutbound());
-		embeddedChannel.writeInbound(embeddedChannel.readOutbound());
+		embeddedChannel.writeOneInbound(embeddedChannel.readOutbound());
+		embeddedChannel.writeOneInbound(embeddedChannel.readOutbound());
 
 		Assert.assertEquals(result, noticeableFuture.get());
 	}

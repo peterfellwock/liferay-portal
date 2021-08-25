@@ -14,14 +14,10 @@
 
 package com.liferay.marketplace.model.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.marketplace.model.Module;
-
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.model.CacheModel;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -32,22 +28,21 @@ import java.io.ObjectOutput;
  * The cache model class for representing Module in entity cache.
  *
  * @author Ryan Park
- * @see Module
  * @generated
  */
-@ProviderType
 public class ModuleCacheModel implements CacheModel<Module>, Externalizable {
+
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if (!(obj instanceof ModuleCacheModel)) {
+		if (!(object instanceof ModuleCacheModel)) {
 			return false;
 		}
 
-		ModuleCacheModel moduleCacheModel = (ModuleCacheModel)obj;
+		ModuleCacheModel moduleCacheModel = (ModuleCacheModel)object;
 
 		if (moduleId == moduleCacheModel.moduleId) {
 			return true;
@@ -63,12 +58,14 @@ public class ModuleCacheModel implements CacheModel<Module>, Externalizable {
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(13);
+		StringBundler sb = new StringBundler(15);
 
 		sb.append("{uuid=");
 		sb.append(uuid);
 		sb.append(", moduleId=");
 		sb.append(moduleId);
+		sb.append(", companyId=");
+		sb.append(companyId);
 		sb.append(", appId=");
 		sb.append(appId);
 		sb.append(", bundleSymbolicName=");
@@ -87,31 +84,32 @@ public class ModuleCacheModel implements CacheModel<Module>, Externalizable {
 		ModuleImpl moduleImpl = new ModuleImpl();
 
 		if (uuid == null) {
-			moduleImpl.setUuid(StringPool.BLANK);
+			moduleImpl.setUuid("");
 		}
 		else {
 			moduleImpl.setUuid(uuid);
 		}
 
 		moduleImpl.setModuleId(moduleId);
+		moduleImpl.setCompanyId(companyId);
 		moduleImpl.setAppId(appId);
 
 		if (bundleSymbolicName == null) {
-			moduleImpl.setBundleSymbolicName(StringPool.BLANK);
+			moduleImpl.setBundleSymbolicName("");
 		}
 		else {
 			moduleImpl.setBundleSymbolicName(bundleSymbolicName);
 		}
 
 		if (bundleVersion == null) {
-			moduleImpl.setBundleVersion(StringPool.BLANK);
+			moduleImpl.setBundleVersion("");
 		}
 		else {
 			moduleImpl.setBundleVersion(bundleVersion);
 		}
 
 		if (contextName == null) {
-			moduleImpl.setContextName(StringPool.BLANK);
+			moduleImpl.setContextName("");
 		}
 		else {
 			moduleImpl.setContextName(contextName);
@@ -128,6 +126,8 @@ public class ModuleCacheModel implements CacheModel<Module>, Externalizable {
 
 		moduleId = objectInput.readLong();
 
+		companyId = objectInput.readLong();
+
 		appId = objectInput.readLong();
 		bundleSymbolicName = objectInput.readUTF();
 		bundleVersion = objectInput.readUTF();
@@ -135,10 +135,9 @@ public class ModuleCacheModel implements CacheModel<Module>, Externalizable {
 	}
 
 	@Override
-	public void writeExternal(ObjectOutput objectOutput)
-		throws IOException {
+	public void writeExternal(ObjectOutput objectOutput) throws IOException {
 		if (uuid == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(uuid);
@@ -146,24 +145,26 @@ public class ModuleCacheModel implements CacheModel<Module>, Externalizable {
 
 		objectOutput.writeLong(moduleId);
 
+		objectOutput.writeLong(companyId);
+
 		objectOutput.writeLong(appId);
 
 		if (bundleSymbolicName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(bundleSymbolicName);
 		}
 
 		if (bundleVersion == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(bundleVersion);
 		}
 
 		if (contextName == null) {
-			objectOutput.writeUTF(StringPool.BLANK);
+			objectOutput.writeUTF("");
 		}
 		else {
 			objectOutput.writeUTF(contextName);
@@ -172,8 +173,10 @@ public class ModuleCacheModel implements CacheModel<Module>, Externalizable {
 
 	public String uuid;
 	public long moduleId;
+	public long companyId;
 	public long appId;
 	public String bundleSymbolicName;
 	public String bundleVersion;
 	public String contextName;
+
 }

@@ -1,8 +1,8 @@
 Bundle-Name: ${manifest.bundle.name}
 Bundle-SymbolicName: ${manifest.bundle.symbolic.name}
-Bundle-Version: 2.6.0
+Bundle-Version: 8.0.2
 Export-Package:\
-	com.liferay.alloy.taglib.*;version="2.0.0",\
+	com.liferay.alloy.taglib.*;version="3.0.0",\
 	com.liferay.taglib.*
 Import-Package:\
 	!com.liferay.portal.freemarker,\
@@ -16,6 +16,7 @@ Import-Package:\
 	com.ibm.crypto.provider;resolution:=optional,\
 	\
 	com.liferay.*,\
+	\
 	*
 Include-Resource:\
 	classes,\
@@ -40,11 +41,19 @@ Provide-Capability:\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
+		uri="http://java.sun.com/jsp/jstl/core";\
+		version:Version="${Bundle-Version}",\
+	osgi.extender;\
+		osgi.extender="jsp.taglib";\
 		uri="http://java.sun.com/portlet";\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
 		uri="http://java.sun.com/portlet_2_0";\
+		version:Version="${Bundle-Version}",\
+	osgi.extender;\
+		osgi.extender="jsp.taglib";\
+		uri="http://xmlns.jcp.org/portlet_3_0";\
 		version:Version="${Bundle-Version}",\
 	osgi.extender;\
 		osgi.extender="jsp.taglib";\
@@ -70,4 +79,4 @@ Provide-Capability:\
 		osgi.extender="jsp.taglib";\
 		uri="http://liferay.com/tld/util";\
 		version:Version="${Bundle-Version}"
--baseline: *;file=${project.dir}/.bnd/ant-baseline-cache/com.liferay.util.taglib-2.5.0.jar
+-include ../common.bnd

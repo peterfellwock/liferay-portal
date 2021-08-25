@@ -15,6 +15,7 @@
 package com.liferay.gradle.plugins.defaults.tasks;
 
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
+import com.liferay.gradle.util.GUtil;
 
 import groovy.lang.Closure;
 
@@ -30,6 +31,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,14 +39,15 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.Project;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.logging.Logger;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.SkipWhenEmpty;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.util.GUtil;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class ReplaceRegexTask extends DefaultTask {
 
 	@Input
@@ -57,7 +60,6 @@ public class ReplaceRegexTask extends DefaultTask {
 		return _preClosures;
 	}
 
-	@Input
 	public Object getReplacement() {
 		return _replacement;
 	}
@@ -89,7 +91,9 @@ public class ReplaceRegexTask extends DefaultTask {
 		return match(regex, Arrays.asList(files));
 	}
 
-	public ReplaceRegexTask pre(Closure<String>... preClosures) {
+	public ReplaceRegexTask pre(
+		@SuppressWarnings("unchecked") Closure<String>... preClosures) {
+
 		return pre(Arrays.asList(preClosures));
 	}
 
@@ -100,7 +104,8 @@ public class ReplaceRegexTask extends DefaultTask {
 	}
 
 	public ReplaceRegexTask replaceOnlyIf(
-		Closure<Boolean>... replaceOnlyIfClosures) {
+		@SuppressWarnings("unchecked") Closure<Boolean>...
+			replaceOnlyIfClosures) {
 
 		return replaceOnlyIf(Arrays.asList(replaceOnlyIfClosures));
 	}
@@ -117,12 +122,14 @@ public class ReplaceRegexTask extends DefaultTask {
 	public void replaceRegex() throws IOException {
 		Map<String, FileCollection> matches = getMatches();
 
+		Object replacementObject = _getReplacementObject();
+
 		for (Map.Entry<String, FileCollection> entry : matches.entrySet()) {
 			Pattern pattern = Pattern.compile(entry.getKey());
 			FileCollection fileCollection = entry.getValue();
 
 			for (File file : fileCollection) {
-				_replaceRegex(file, pattern);
+				_replaceRegex(file, pattern, replacementObject);
 			}
 		}
 	}
@@ -133,7 +140,9 @@ public class ReplaceRegexTask extends DefaultTask {
 		_matches.putAll(matches);
 	}
 
-	public void setPre(Closure<String>... preClosures) {
+	public void setPre(
+		@SuppressWarnings("unchecked") Closure<String>... preClosures) {
+
 		setPre(Arrays.asList(preClosures));
 	}
 
@@ -147,7 +156,10 @@ public class ReplaceRegexTask extends DefaultTask {
 		_replacement = replacement;
 	}
 
-	public void setReplaceOnlyIf(Closure<Boolean>... replaceOnlyIfClosures) {
+	public void setReplaceOnlyIf(
+		@SuppressWarnings("unchecked") Closure<Boolean>...
+			replaceOnlyIfClosures) {
+
 		setReplaceOnlyIf(Arrays.asList(replaceOnlyIfClosures));
 	}
 
@@ -159,7 +171,23 @@ public class ReplaceRegexTask extends DefaultTask {
 		replaceOnlyIf(replaceOnlyIfClosures);
 	}
 
-	private void _replaceRegex(File file, Pattern pattern) throws IOException {
+	private Object _getReplacementObject() {
+		Object replacementObject = getReplacement();
+
+		if ((replacementObject instanceof Callable<?>) &&
+			!(replacementObject instanceof Closure<?>)) {
+
+			replacementObject = GradleUtil.toString(replacementObject);
+		}
+
+		return replacementObject;
+	}
+
+	@SuppressWarnings("unchecked")
+	private void _replaceRegex(
+			File file, Pattern pattern, Object replacementObject)
+		throws IOException {
+
 		Logger logger = getLogger();
 
 		Path path = file.toPath();
@@ -184,20 +212,18 @@ public class ReplaceRegexTask extends DefaultTask {
 
 			String replacement;
 
-			Object replacementObj = getReplacement();
-
-			if (replacementObj instanceof Closure<?>) {
+			if (replacementObject instanceof Closure<?>) {
 				Closure<String> replacementClosure =
-					(Closure<String>)replacementObj;
+					(Closure<String>)replacementObject;
 
 				replacement = replacementClosure.call(group);
 			}
 			else {
-				replacement = GradleUtil.toString(replacementObj);
+				replacement = GradleUtil.toString(replacementObject);
 			}
 
 			for (Closure<Boolean> closure : getReplaceOnlyIf()) {
-				if (!closure.call(group, replacement, newContent)) {
+				if (!closure.call(group, replacement, newContent, file)) {
 					replace = false;
 
 					break;

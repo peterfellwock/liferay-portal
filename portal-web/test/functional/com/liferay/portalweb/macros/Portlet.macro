@@ -1,425 +1,666 @@
-<definition>
-	<command name="_clickAddPortlet">
-		<execute function="AssertClick#pauseMakeVisibleAssertTextEqualsClickAt" locator1="ControlMenuAddPanel#ADD_PORTLET_LINK" value1="Add" />
-	</command>
-
-	<command name="_mobileClickAddPortlet">
-		<execute function="AssertClick" locator1="ControlMenuAddPanel#ADD_PORTLET_LINK" value1="Add" />
-	</command>
-
-	<command name="addDuplicatePG">
-		<var name="portletTypeKey" value="PORTLET" />
-
-		<if>
-			<equals arg1="${portletName}" arg2="Map" />
-			<then>
-				<var name="portletName" value="Where are the Liferay members?" />
-			</then>
-			<elseif>
-				<equals arg1="${portletName}" arg2="Requests" />
-				<then>
-					<var name="portletTypeKey" value="PORTLET_BORDERLESS" />
-				</then>
-			</elseif>
-		</if>
-
-		<if>
-			<not>
-				<isset var="portletCount" />
-			</not>
-			<then>
-				<var name="portletCount" value="1" />
-			</then>
-		</if>
-
-		<var name="i" value="0" />
-
-		<while>
-			<not>
-				<equals arg1="${i}" arg2="${portletCount}" />
-			</not>
-			<then>
-				<var method="MathUtil#sum('${i}', '1')" name="i" />
-
-				<execute function="Refresh" />
-
-				<execute macro="Portlet#addPGCmd">
-					<var name="portletName" value="${portletName}" />
-				</execute>
-			</then>
-		</while>
-
-		<var name="key_portletName" value="${portletName}" />
-
-		<execute function="AssertElementPresent" locator1="Home#${portletTypeKey}" />
-	</command>
-
-	<command name="addPG" summary="Add a '${portletName}' portlet">
-		<if>
-			<equals arg1="${portletName}" arg2="Map" />
-			<then>
-				<var name="portletName" value="Where are the Liferay members?" />
-			</then>
-		</if>
-
-		<execute macro="Portlet#addPGCmd">
-			<var name="portletName" value="${portletName}" />
-		</execute>
-
-		<var name="i" value="1" />
-		<var name="key_portletName" value="${portletName}" />
-
-		<while>
-			<not>
-				<or>
-					<condition function="IsElementPresent" locator1="Home#PORTLET" />
-					<equals arg1="${i}" arg2="3" />
-				</or>
-			</not>
-			<then>
-				<var method="MathUtil#sum('${i}', '1')" name="i" />
-
-				<execute function="Pause" locator1="30000" />
-
-				<echo message="The PORTLET could not be found. Refreshing the page. Attempt number ${i}..." />
-
-				<execute function="Refresh" />
-
-				<execute macro="Portlet#addPGCmd">
-					<var name="portletName" value="${portletName}" />
-				</execute>
-			</then>
-		</while>
+definition {
 
-		<execute function="AssertElementPresent" locator1="Home#PORTLET" />
-	</command>
+	macro _clickAddPortlet {
+		Click.clickNoWaitForVisible(
+			key_portletName = "${portletName}",
+			locator1 = "ControlMenuAddPanel#ADD_PORTLET_LINK");
+	}
 
-	<command name="addPGCmd">
-		<if>
-			<equals arg1="${portletName}" arg2="Where are the Liferay members?" />
-			<then>
-				<var name="portletName" value="Map" />
-			</then>
-		</if>
+	macro addDuplicatePG {
+		var portletTypeKey = "PORTLET";
 
-		<execute macro-mobile="MobileNavigator#clickRemoveIcon" />
+		if ("${portletName}" == "Map") {
+			var portletName = "Where are the Liferay members?";
+		}
+		else if ("${portletName}" == "Requests") {
+			var portletTypeKey = "PORTLET_BORDERLESS";
+		}
 
-		<if>
-			<condition function="IsNotVisible" locator1="ControlMenuAddPanel#CLOSE_ADD_PANEL" />
-			<then>
-				<var method="TestPropsUtil#get('browser.type')" name="browserType" />
+		if (!(isSet(portletCount))) {
+			var portletCount = "1";
+		}
 
-				<if>
-					<equals arg1="${browserType}" arg2="safari" />
-					<then>
-						<execute function="Pause" locator1="10000" />
+		var i = "0";
 
-						<execute function="Click#clickAt" locator1="ControlMenu#ADD" />
-					</then>
-					<else>
-						<execute function="Click#clickAt" locator1="ControlMenu#ADD" />
-					</else>
-				</if>
-			</then>
-		</if>
+		while ("${i}" != "${portletCount}") {
+			var i = ${i} + 1;
 
-		<execute function="AssertElementPresent" locator1="ControlMenuAddPanel#APPLICATIONS_ACCORDION_PANEL_TITLE" />
-		<execute function="AssertVisible" locator1="ControlMenuAddPanel#APPLICATIONS_ACCORDION_PANEL_TITLE" value1="Applications" />
+			Refresh();
 
-		<execute function="Pause" locator1="5000" />
+			Portlet.addPGCmd(portletName = "${portletName}");
+		}
 
-		<execute macro="Panel#expandSidebarApplicationsPanel" />
+		var key_portletName = "${portletName}";
 
-		<execute function="Type#sendKeysApplicationSearch" locator1="NavBar#APPLICATION_SEARCH_FIELD" value1="${portletName}" />
+		AssertElementPresent(locator1 = "Home#${portletTypeKey}");
+	}
 
-		<execute macro-desktop="Portlet#_clickAddPortlet" macro-mobile="Portlet#_mobileClickAddPortlet">
-			<var name="portletName" value="${portletName}" />
-		</execute>
+	@summary = "Add a '${portletName}' portlet"
+	macro addPG {
+		if ("${portletName}" == "Map") {
+			var portletName = "Where are the Liferay members?";
+		}
 
-		<var name="key_portletName" value="${portletName}" />
+		Portlet.addPGCmd(portletName = "${portletName}");
 
-		<execute function="AssertElementPresent" locator1="Portlet#LOADED" />
-	</command>
+		var i = "1";
+		var key_portletName = "${portletName}";
 
-	<command name="changeDisplayStyle">
-		<var method="StringUtil#upperCase('${displayStyle}')" name="displayStyle" />
+		while (!((IsElementPresent(locator1 = "Home#PORTLET")) || ("${i}" == "3"))) {
+			var i = ${i} + 1;
 
-		<if>
-			<condition function="IsElementNotPresent" locator1="Icon#DISPLAY_STYLE_${displayStyle}_ACTIVE" />
-			<then>
-				<execute function="Click" locator1="Icon#DISPLAY_STYLE_${displayStyle}" />
-			</then>
-		</if>
+			echo("The PORTLET could not be found. Refreshing the page. Attempt number ${i}...");
 
-		<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_${displayStyle}_ACTIVE" />
-	</command>
+			Refresh();
 
-	<command name="configureCustomStylesViaLookandfeelPG">
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Text Styles" />
-		</execute>
+			Portlet.addPGCmd(portletName = "${portletName}");
+		}
 
-		<execute function="Select" locator1="Portlet#TEXT_FONT_SELECT" value1="Verdana" />
+		Click.clickAt(locator1 = "ControlMenuAddPanel#CLOSE_ADD_PANEL");
 
-		<execute function="Select" locator1="Portlet#TEXT_FONT_SIZE_SELECT" value1="2em" />
+		AssertElementPresent(locator1 = "Home#PORTLET");
+	}
 
-		<execute macro="Navigator#gotoTab">
-			<var name="tab" value="Border Styles" />
-		</execute>
+	macro addPGCmd {
+		if ("${portletName}" == "Where are the Liferay members?") {
+			var portletName = "Map";
+		}
 
-		<execute function="Type" locator1="Portlet#BORDER_WIDTH_TOP_INPUT" value1="20" />
+		if (IsNotVisible(locator1 = "ControlMenuAddPanel#CLOSE_ADD_PANEL")) {
+			var browserType = PropsUtil.get("browser.type");
 
-		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
-	</command>
+			if ("${browserType}" == "safari") {
+				Click.clickNoMouseOver(locator1 = "ControlMenu#ADD");
+			}
+			else {
+				Click.clickAt(locator1 = "ControlMenu#ADD");
+			}
+		}
 
-	<command name="configureCustomTitleViaLookandfeelPG">
-		<execute function="Check#checkToggleSwitch" locator1="ToggleSwitch#USE_CUSTOM_TITLE" />
+		AssertElementPresent(locator1 = "ControlMenuAddPanel#SIDEBAR_HEADER");
 
-		<execute function="Type" locator1="Portlet#CONFIGURATION_CUSTOM_TITLE_FIELD" value1="${portletName} Custom" />
+		Navigator.gotoNavTab(navTab = "Widgets");
 
-		<execute function="AssertClick" locator1="Button#SAVE" value1="Save" />
+		Pause(locator1 = "3000");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Message#SUCCESS" value1="Your request processed successfully." />
-	</command>
+		Type(
+			locator1 = "NavBar#APPLICATION_SEARCH_FIELD",
+			value1 = "${portletName}");
 
-	<command name="deletePG">
-		<var name="key_portletName" value="${portletName}" />
+		Portlet._clickAddPortlet(portletName = "${portletName}");
 
-		<execute function="Click#makeVisibleClickAt" locator1="Portlet#SPECIFIC_ELLIPSIS_ICON" />
+		var key_portletName = "${portletName}";
 
-		<execute function="AssertClickNoError" locator1="MenuItem#REMOVE" value1="Remove" />
+		LiferayEvent.waitForPortletReady();
 
-		<execute function="Confirm" value1="Are you sure you want to remove this component?" />
-	</command>
+		AssertElementPresent(locator1 = "Portlet#LOADED");
+	}
 
-	<command name="dragAndDropPortletToColumnPG" summary="Drag and drop the '${portletName}' portlet from column ${columnNumberFrom} to column ${columnNumberTo}">
-		<var name="key_portletTitleName" value="${portletName}" />
+	macro assertPortletHeader {
+		var key_portletTitleName = "${portletName}";
 
-		<execute function="AssertTextEquals" locator1="Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_TITLE" value1="${portletName}" />
-		<execute function="DragAndDrop#dragAndDropPortletToObject" locator1="Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_HEADER" locator2="Home#PAGE_COLUMN_${columnNumberTo}" value1="${portletName}" />
-		<execute function="AssertTextEquals" locator1="Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberTo}_PORTLET_TITLE" value1="${portletName}" />
-		<execute function="AssertTextEquals" locator1="Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberTo}_PORTLET_TITLE" value1="${portletName}" />
-	</command>
+		AssertVisible(locator1 = "Home#PORTLET_HEADER");
+	}
 
-	<command name="gotoPortletOptions">
-		<if>
-			<isset var="portletName" />
-			<then>
-				<var name="key_portletName" value="${portletName}" />
+	macro assertServerShutdown {
+		var shutdownPauseCount = "0";
 
-				<execute function="Click#makeVisibleClickAt" locator1="Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON" />
-			</then>
-			<else>
-				<execute function="Click#makeVisibleClickAt" locator1="Portlet#OPTIONS_ICON" />
-			</else>
-		</if>
+		while ((IsElementPresent(locator1 = "//body")) && ("${shutdownPauseCount}" != "12")) {
+			Refresh();
 
-		<if>
-			<isset var="portletOption" />
-			<then>
-				<var name="key_menuItem" value="${portletOption}" />
+			Pause(locator1 = "10000");
 
-				<execute function="Click" locator1="MenuItem#ANY_MENU_ITEM" />
-			</then>
-		</if>
-	</command>
+			var shutdownPauseCount = ${shutdownPauseCount} + 1;
 
-	<command name="openAdminURL">
-		<execute function="Open" locator1="${adminURL}" />
-	</command>
+			echo("Shutdown pause count: ${shutdownPauseCount}");
+		}
+	}
 
-	<command name="shutdownServer">
-		<description message="This will shutdown the server at ${base_branch}-bundles\tomcat." />
+	macro assertServerStartup {
+		var startupPauseCount = "0";
 
-		<execute function="AntCommand" locator1="build-test.xml" value1="stop-app-server" />
-	</command>
+		while ((!(IsElementPresent(locator1 = "UserBar#USER_SIGN_IN"))) && ("${startupPauseCount}" != "12")) {
+			Refresh();
 
-	<command name="shutdownSpecificServer">
-		<description message="This will shutdown the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat." />
+			Pause(locator1 = "10000");
 
-		<var method="StringUtil#replace('${nodePort}', '080','')" name="leadingPortNumber" />
+			var startupPauseCount = ${startupPauseCount} + 1;
 
-		<var method="MathUtil#difference('${leadingPortNumber}', '8')" name="bundleIndex" />
+			echo("Startup pause count: ${startupPauseCount}");
+		}
+	}
 
-		<execute function="AntCommand" locator1="build-test.xml" value1="stop-app-server -Dapp.server.bundle.index=${bundleIndex}" />
-	</command>
+	macro changeDisplayStyle {
+		if (IsElementNotPresent(locator1 = "Icon#DISPLAY_STYLE_ACTIVE", key_displayStyle = StringUtil.toLowerCase("${displayStyle}"))) {
+			Click(
+				key_displayStyle = StringUtil.toLowerCase("${displayStyle}"),
+				locator1 = "Icon#DISPLAY_STYLE");
+		}
 
-	<command name="startServer">
-		<description message="This will start the server at ${base_branch}-bundles\tomcat." />
+		AssertElementPresent(
+			key_displayStyle = StringUtil.toLowerCase("${displayStyle}"),
+			locator1 = "Icon#DISPLAY_STYLE_ACTIVE");
+	}
 
-		<if>
-			<equals arg1="${deleteLiferayHome}" arg2="false" />
-			<then>
-				<execute function="AntCommand" locator1="build-test.xml" value1="start-app-server -Ddelete.liferay.home=false" />
-			</then>
-			<else>
-				<execute function="AntCommand" locator1="build-test.xml" value1="start-app-server" />
-			</else>
-		</if>
-	</command>
+	macro clickPortletPlusIconPG {
+		var browserType = PropsUtil.get("browser.type");
+		var key_portletName = "${portletName}";
 
-	<command name="startSpecificServer">
-		<description message="This will start the server at a specific bundle at ${base_branch}-bundles-${bundle_index}\tomcat." />
+		if ("${browserType}" == "safari") {
+			Click.javaScriptClick(locator1 = "Portlet#ICON_PLUS_SIGN");
 
-		<var method="StringUtil#replace('${nodePort}', '080','')" name="leadingPortNumber" />
+			AssertVisible(locator1 = "Portlet#ICON_PLUS_SIGN");
+		}
 
-		<var method="MathUtil#difference('${leadingPortNumber}', '8')" name="bundleIndex" />
+		else {
+			MouseOver.mouseOverNotVisible(
+				key_portletName = "${portletName}",
+				locator1 = "Portlet#ICON_PLUS_SIGN");
 
-		<if>
-			<equals arg1="${deleteLiferayHome}" arg2="false" />
-			<then>
-				<execute function="AntCommand" locator1="build-test.xml" value1="start-app-server -Dapp.server.bundle.index=${bundleIndex} -Ddelete.liferay.home=false" />
-			</then>
-			<else>
-				<execute function="AntCommand" locator1="build-test.xml" value1="start-app-server -Dapp.server.bundle.index=${bundleIndex}" />
-			</else>
-		</if>
-	</command>
+			Click(
+				key_portletName = "${portletName}",
+				locator1 = "Portlet#ICON_PLUS_SIGN");
+		}
+	}
 
-	<command name="viewBody" summary="Assert that the ${portletName} portlet body has the text '${portletBody}'">
-		<var name="key_portletName" value="${portletName}" />
+	macro configureApplicationDecoratorViaLookandfeelPG {
+		Navigator.gotoNavTab(navTab = "General");
 
-		<execute function="AssertTextEquals#assertPartialText" locator1="Portlet#BODY" value1="${portletBody}" />
-	</command>
+		Select(
+			locator1 = "Portlet#APPLICATION_DECORATOR_SELECT",
+			value1 = "${applicationDecorator}");
+	}
 
-	<command name="viewCannotAddPG">
-		<description message="View Cannot Add ${portletName} portlet." />
+	macro configureCustomBorderStylesViaLookandfeelPG {
+		Navigator.gotoNavTab(navTab = "Border Styles");
 
-		<if>
-			<equals arg1="${portletName}" arg2="Map" />
-			<then>
-				<var name="portletName" value="Where are the Liferay members?" />
-			</then>
-			<elseif>
-				<equals arg1="${portletName}" arg2="Requests" />
-				<then>
-					<var name="portletTypeKey" value="PORTLET_BORDERLESS" />
-				</then>
-			</elseif>
-		</if>
+		if (isSet(sameForAllFieldsetLabelList)) {
+			for (var sameForAllFieldsetLabel : list "${sameForAllFieldsetLabelList}") {
+				Check.checkToggleSwitch(
+					key_fieldLabel = "Same for All",
+					key_fieldsetLabel = "${sameForAllFieldsetLabel}",
+					locator1 = "ToggleSwitch#ANY_TOGGLE_SWITCH_IN_FIELDSET");
+			}
+		}
 
-		<execute function="Click#clickAtSidebarClickAtWaitForScript" locator1="ControlMenu#ADD" value1="Add" />
+		if (isSet(borderWidthAttributeList)) {
+			for (var borderWidthAttribute : list "${borderWidthAttributeList}") {
+				var fieldLabel = StringUtil.extractFirst("${borderWidthAttribute}", "-");
 
-		<execute macro="Panel#expandSidebarApplicationsPanel" />
+				var value = StringUtil.extractLast("${borderWidthAttribute}", "-");
 
-		<execute function="Type#sendKeysApplicationSearch" locator1="NavBar#APPLICATION_SEARCH_FIELD" value1="${portletName}" />
+				Type(
+					inputFieldId = "${fieldLabel}",
+					locator1 = "TextInput#INPUT_ID",
+					value1 = "${value}");
+			}
+		}
 
-		<var name="portletLocator" value="//span[@data-title=&quot;${portletName}&quot; and contains(@class,'add-content-item')]" />
+		if (isSet(borderWidthUnitList)) {
+			for (var borderWidthUnit : list "${borderWidthUnitList}") {
+				var fieldLabel = StringUtil.extractFirst("${borderWidthUnit}", "-");
 
-		<execute function="AssertElementNotPresent" locator1="${portletLocator}" />
-	</command>
+				var value = StringUtil.extractLast("${borderWidthUnit}", "-");
 
-	<command name="viewCannotEdit">
-		<execute function="AssertElementNotPresent" locator1="Button#EDIT" />
-	</command>
+				Select(
+					locator1 = "Select#SELECT_ID",
+					selectFieldId = "${fieldLabel}",
+					value1 = "${value}");
+			}
+		}
 
-	<command name="viewCannotPublish">
-		<execute function="AssertElementNotPresent" locator1="Button#PUBLISH" value1="Publish" />
-	</command>
+		if (isSet(borderStyleAttributeList)) {
+			for (var borderStyleAttribute : list "${borderStyleAttributeList}") {
+				var fieldLabel = StringUtil.extractFirst("${borderStyleAttribute}", "-");
 
-	<command name="viewCannotSaveAsDraft">
-		<execute function="AssertElementNotPresent" locator1="Button#SAVE_AS_DRAFT" value1="Save as Draft" />
-	</command>
+				var value = StringUtil.extractLast("${borderStyleAttribute}", "-");
 
-	<command name="viewCustomStylesViaLookandfeelPG">
-		<execute function="SikuliClick" locator1="Portlet#SIGN_IN_CUSTOM_LOOK_AND_FEEL" />
-	</command>
+				Select(
+					locator1 = "Select#SELECT_ID",
+					selectFieldId = "${fieldLabel}",
+					value1 = "${value}");
+			}
+		}
 
-	<command name="viewDefaultDisplayStyle">
-		<var method="StringUtil#upperCase('${displayStyle}')" name="displayStyleUppercase" />
+		if (isSet(borderColorAttributeList)) {
+			for (var borderColorAttribute : list "${borderColorAttributeList}") {
+				var fieldLabel = StringUtil.extractFirst("${borderColorAttribute}", "-");
 
-		<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_${displayStyleUppercase}_ACTIVE" />
-	</command>
+				var value = StringUtil.extractLast("${borderColorAttribute}", "-");
 
-	<command name="viewDisplayStyles">
-		<for list="${displayStyleList}" param="displayStyle">
-			<var method="StringUtil#upperCase('${displayStyle}')" name="displayStyleUppercase" />
+				PageEditor.selectColorSwatchItem(
+					colorSwatchItem = "${value}",
+					fieldLabel = "${fieldLabel}");
+			}
+		}
 
-			<execute function="AssertElementPresent" locator1="Icon#DISPLAY_STYLE_${displayStyleUppercase}" />
-		</for>
-	</command>
+		PortletEntry.save();
+	}
 
-	<command name="viewDisplayStylesNotPresent">
-		<for list="${displayStyleList}" param="displayStyle">
-			<var method="StringUtil#upperCase('${displayStyle}')" name="displayStyleUppercase" />
+	macro configureCustomStylesViaLookandfeelPG {
+		Navigator.gotoNavTab(navTab = "Text Styles");
 
-			<execute function="AssertElementNotPresent" locator1="Icon#DISPLAY_STYLE_${displayStyleUppercase}" />
-		</for>
-	</command>
+		Select(
+			locator1 = "Portlet#TEXT_FONT_SELECT",
+			value1 = "Verdana");
 
-	<command name="viewDuplicatePG">
-		<var name="i" value="0" />
+		Select(
+			locator1 = "Portlet#TEXT_FONT_SIZE_SELECT",
+			value1 = "2em");
 
-		<while>
-			<not>
-				<equals arg1="${i}" arg2="${totalPortletCount}" />
-			</not>
-			<then>
-				<var method="MathUtil#sum('${i}', '1')" name="i" />
+		Navigator.gotoNavTab(navTab = "Border Styles");
 
-				<execute function="AssertElementPresent" locator1="xpath=(//h2[contains(.,'${portletName}')])[${i}]" />
-			</then>
-		</while>
-	</command>
+		Type(
+			locator1 = "Portlet#BORDER_WIDTH_TOP_INPUT",
+			value1 = "20");
+	}
 
-	<command name="viewEmptyMessage">
-		<execute function="AssertTextEquals" locator1="Message#EMPTY_INFO" value1="There are no results." />
-	</command>
+	macro configureCustomTitlePG {
+		var key_portletTitleName = "${portletTitleName}";
 
-	<command name="viewNoPortletsPresentPG">
-		<execute function="AssertElementNotPresent" locator1="Portlet#PORTLET_CONTENT" />
-	</command>
+		AssertElementPresent(locator1 = "Portlet#SPECIFIC_TITLE");
 
-	<command name="viewNoSpecificPG">
-		<var name="key_portletTitleName" value="${portletName}" />
+		Click(locator1 = "Portlet#SPECIFIC_TITLE");
 
-		<execute function="AssertElementNotPresent" locator1="Portlet#SPECIFIC_TITLE" value1="${portletName}" />
-	</command>
+		Type.typePause(
+			locator1 = "TextInput#PORTLET_TITLE",
+			value1 = "${portletTitleName} Custom");
 
-	<command name="viewPG">
-		<execute macro="Portlet#viewTitle">
-			<var name="portletName" value="${portletName}" />
-		</execute>
+		Click.mouseDownMouseUp(locator1 = "Icon#OK");
+	}
 
-		<if>
-			<isset var="portletBody" />
-			<then>
-				<execute macro="Portlet#viewBody">
-					<var name="portletBody" value="${portletBody}" />
-					<var name="portletName" value="${portletName}" />
-				</execute>
-			</then>
-		</if>
-	</command>
+	macro configureCustomTitleViaLookandfeelPG {
+		IFrame.selectConfigurationFrame();
 
-	<command name="viewPillTitle" summary="Assert that the ${portletName} portlet title has the text '${portletName}' in ALL CAPS">
-		<var name="key_portletName" value="${portletName}" />
+		Navigator.gotoNavTab(navTab = "General");
 
-		<var method="StringUtil#upperCase('${portletName}')" name="portletNameUppercase" />
+		Check.checkToggleSwitch(locator1 = "ToggleSwitch#USE_CUSTOM_TITLE");
 
-		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="${portletNameUppercase}" />
-	</command>
+		Type(
+			locator1 = "TextInput#CUSTOM_TITLE",
+			value1 = "${portletName} Custom");
+	}
 
-	<command name="viewPortletOptionsMenulist">
-		<execute function="Click#makeVisibleClickAt" locator1="Portlet#OPTIONS_ICON" />
+	macro deletePG {
+		var key_portletName = "${portletName}";
 
-		<execute function="AssertTextEquals" locator1="MenuItem#LOOK_AND_FEEL" value1="Look and Feel Configuration" />
-		<execute function="AssertTextEquals" locator1="MenuItem#CONFIGURATION_PORTLET_OPTION" value1="Configuration" />
-		<execute function="AssertTextEquals" locator1="MenuItem#TEMPLATES" value1="Configuration Templates" />
-		<execute function="AssertTextEquals" locator1="MenuItem#EXPORT_IMPORT" value1="Export / Import" />
-		<execute function="AssertTextEquals" locator1="MenuItem#PERMISSIONS" value1="Permissions" />
-		<execute function="AssertTextEquals" locator1="MenuItem#REMOVE" value1="Remove" />
-	</command>
+		MouseOver.mouseOverNotVisible(locator1 = "Portlet#SPECIFIC_ELLIPSIS_ICON");
 
-	<command name="viewSpecificPG">
-		<var name="key_portletTitleName" value="${portletName}" />
+		Click(locator1 = "Portlet#SPECIFIC_ELLIPSIS_ICON");
 
-		<execute function="AssertTextEquals" locator1="Portlet#SPECIFIC_TITLE" value1="${portletName}" />
-	</command>
+		MenuItem.clickNoError(menuItem = "Remove");
 
-	<command name="viewTitle" summary="Assert that the ${portletName} portlet title has the text '${portletName}'">
-		<var name="key_portletName" value="${portletName}" />
+		AssertConfirm(value1 = "Are you sure you want to remove this component?");
+	}
 
-		<execute function="AssertTextEquals" locator1="Portlet#TITLE" value1="${portletName}" />
-	</command>
-</definition>
+	@summary = "Drag and drop the '${portletName}' portlet from column ${columnNumberFrom} to column ${columnNumberTo}"
+	macro dragAndDropPortletToColumnPG {
+		var key_portletTitleName = "${portletName}";
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_TITLE",
+			value1 = "${portletName}");
+
+		DragAndDrop.dragAndDropPortletToObject(
+			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberFrom}_PORTLET_HEADER",
+			locator2 = "Home#PAGE_COLUMN_${columnNumberTo}",
+			value1 = "${portletName}");
+
+		AssertTextEquals(
+			locator1 = "Home#PAGE_COLUMN_PORTLET_COLUMN_${columnNumberTo}_PORTLET_TITLE",
+			value1 = "${portletName}");
+	}
+
+	macro expandTree {
+		while (IsElementPresent(locator1 = "Treeview#NODE_COLLAPSED")) {
+			Pause(locator1 = "3000");
+			Click(locator1 = "Treeview#NODE_COLLAPSED");
+		}
+
+		AssertElementNotPresent(locator1 = "Treeview#NODE_COLLAPSED");
+	}
+
+	macro gotoPortletOptions {
+		if (isSet(portletName)) {
+			var key_portletName = "${portletName}";
+			var browserType = PropsUtil.get("browser.type");
+
+			if ("${browserType}" == "safari") {
+				Click.javaScriptClick(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON");
+
+				AssertVisible(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON");
+			}
+
+			else if ("${siteTemplate}" == "true") {
+				MouseOver.mouseOverNotVisible(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON");
+
+				Click(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON");
+			}
+			else {
+				MouseOver.mouseOverInvisible(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON");
+
+				while (IsNotVisible(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON")) {
+					Pause(locator1 = "3000");
+
+					MouseOver.mouseOverInvisible(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON");
+				}
+
+				Click.waitForMenuToggleJSClick(locator1 = "Portlet#SPECIFIC_BORDERLESS_ELLIPSIS_ICON");
+			}
+		}
+		else {
+			MouseOver.mouseOverNotVisible(locator1 = "Portlet#OPTIONS_ICON");
+
+			Click.waitForMenuToggleJSClick(locator1 = "Portlet#OPTIONS_ICON");
+		}
+
+		if (isSet(portletOption)) {
+			MenuItem.click(menuItem = "${portletOption}");
+		}
+	}
+
+	macro mouseOverPortletTitle {
+		var key_portletTitleName = "${portletTitleName}";
+
+		MouseOver(locator1 = "Portlet#SPECIFIC_TITLE");
+	}
+
+	macro saveAndCloseConfig {
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
+
+		SelectFrameTop();
+
+		Click.mouseDownMouseUp(locator1 = "Modal#CLOSE_BUTTON");
+
+		WaitForElementNotPresent(locator1 = "IFrame#MODAL_BODY");
+	}
+
+	macro selectApplicationDecorator {
+		Select(
+			locator1 = "Select#APPLICATION_DECORATORS",
+			value1 = "${decorator}");
+	}
+
+	macro selectScope {
+		Navigator.gotoNavTab(navTab = "Scope");
+
+		Select(
+			locator1 = "Select#SCOPE",
+			value1 = "regexp:.*${scope}.*");
+
+		Portlet.saveAndCloseConfig();
+	}
+
+	macro selectScopePG {
+		WaitForLiferayEvent.initializeLiferayEventLog();
+
+		Portlet.gotoPortletOptions(
+			portletName = "${portletName}",
+			portletOption = "Configuration");
+
+		IFrame.selectConfigurationFrame();
+
+		Portlet.selectScope(scope = "${scope}");
+	}
+
+	macro selectTreeNode {
+		if (IsElementPresent(locator1 = "Treeview#NODE_UNSELECTED", key_nodeName = "${nodeName}")) {
+			AssertClick.assertPartialTextClickAt(
+				key_nodeName = "${nodeName}",
+				locator1 = "Treeview#NODE_UNSELECTED",
+				value1 = "${nodeName}");
+		}
+
+		AssertElementPresent(
+			key_nodeName = "${nodeName}",
+			locator1 = "Treeview#NODE_SELECTED");
+	}
+
+	@summary = "Shutdown the current Liferay Portal instance."
+	macro shutdownServer {
+		AntCommand(
+			locator1 = "build-test.xml",
+			value1 = "stop-app-server");
+	}
+
+	@summary = "Start the current Liferay Portal instance."
+	macro startServer {
+		var appServerType = PropsUtil.get("app.server.type");
+
+		if ("${commerceEnabled}" == "false") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "start-app-server -Dcommerce.enabled=false -Ddelete.liferay.home=false");
+		}
+		else if ("${deleteLiferayHome}" == "false") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "start-app-server -Ddelete.liferay.home=false");
+		}
+		else if ("${keepCachedAppServerData}" == "true") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "start-app-server -Dkeep.cached.app.server.data=true");
+		}
+		else if ("${keepOSGiState}" == "true") {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "start-app-server -Dkeep.osgi.state=true");
+		}
+		else {
+			AntCommand(
+				locator1 = "build-test.xml",
+				value1 = "start-app-server");
+		}
+
+		if (!(isSet(userEmailAddress))) {
+			var userEmailAddress = "test@liferay.com";
+		}
+
+		if (!(isSet(password))) {
+			var password = "test";
+		}
+
+		if (("${appServerType}" == "jboss") || ("${appServerType}" == "wildfly")) {
+			User.loginPG(
+				password = "${password}",
+				userEmailAddress = "${userEmailAddress}");
+		}
+	}
+
+	macro viewApplicationDecorator {
+		if (isSet(portletName)) {
+			key_decorator = StringUtil.lowerCase("${decorator}");
+			var key_portletTitleName = "${portletName}";
+
+			AssertElementPresent(locator1 = "Portlet#SPECIFIC_PORTLET_BORDER_DECORATOR");
+		}
+		else {
+			AssertElementPresent(
+				key_decorator = StringUtil.lowerCase("${decorator}"),
+				locator1 = "Portlet#PORTLET_BORDER_DECORATOR");
+		}
+	}
+
+	@summary = "Assert that the ${portletName} portlet body has the text '${portletBody}'"
+	macro viewBody {
+		var key_portletName = "${portletName}";
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "Portlet#BODY",
+			value1 = "${portletBody}");
+	}
+
+	macro viewCannotAddPG {
+		if (IsNotVisible(locator1 = "ControlMenuAddPanel#CLOSE_ADD_PANEL")) {
+			Click.clickAt(locator1 = "ControlMenu#ADD");
+		}
+
+		AssertElementPresent(locator1 = "ControlMenuAddPanel#SIDEBAR_HEADER");
+
+		Navigator.gotoNavTab(navTab = "Widgets");
+
+		Pause(locator1 = "5000");
+
+		Type(
+			locator1 = "NavBar#APPLICATION_SEARCH_FIELD",
+			value1 = "${portletName}");
+
+		AssertElementNotPresent(
+			key_portletName = "${portletName}",
+			locator1 = "ControlMenuAddPanel#ADD_PORTLET_LINK");
+	}
+
+	macro viewCannotEdit {
+		AssertElementNotPresent(locator1 = "Button#EDIT");
+	}
+
+	macro viewCannotPublish {
+		AssertElementNotPresent(locator1 = "Button#PUBLISH");
+	}
+
+	macro viewCannotSaveAsDraft {
+		AssertElementNotPresent(locator1 = "Button#SAVE_AS_DRAFT");
+	}
+
+	macro viewCustomStylesViaLookandfeelPG {
+		SikuliClick(locator1 = "Portlet#SIGN_IN_CUSTOM_LOOK_AND_FEEL");
+	}
+
+	macro viewDuplicatePG {
+		var i = "0";
+
+		while ("${i}" != "${totalPortletCount}") {
+			var i = ${i} + 1;
+
+			AssertElementPresent(locator1 = "xpath=(//h2[contains(.,'${portletName}')])[${i}]");
+		}
+	}
+
+	macro viewEmptyMessage {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Message#EMPTY_INFO",
+			value1 = "${message}");
+	}
+
+	macro viewNoPermissionPG {
+		AssertTextEquals(
+			locator1 = "Message#ERROR",
+			value1 = "You do not have the roles required to access this portlet.");
+	}
+
+	macro viewNoPortletsPresentCP {
+		ApplicationsMenuHelper.openApplicationsMenu();
+
+		Navigator.gotoNavTab(navTab = "${panel}");
+
+		AssertElementNotPresent(
+			key_category = "${category}",
+			key_portlet = "${portlet}",
+			locator1 = "ApplicationsMenu#PORTLET",
+			value1 = "${portlet}");
+	}
+
+	macro viewNoPortletsPresentPG {
+		AssertElementNotPresent(locator1 = "Portlet#PORTLET_CONTENT");
+	}
+
+	macro viewNoSpecificPG {
+		AssertElementNotPresent(
+			key_portletTitleName = "${portletName}",
+			locator1 = "Portlet#SPECIFIC_TITLE");
+	}
+
+	macro viewPG {
+		Portlet.viewTitle(portletName = "${portletName}");
+
+		if (isSet(portletBody)) {
+			Portlet.viewBody(
+				portletBody = "${portletBody}",
+				portletName = "${portletName}");
+		}
+	}
+
+	macro viewPortletOptions {
+		MouseOver.mouseOverNotVisible(locator1 = "Portlet#OPTIONS_ICON");
+
+		Click(locator1 = "Portlet#OPTIONS_ICON");
+
+		AssertTextEquals(
+			key_menuItem = "${OptionsName}",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "${OptionsName}");
+	}
+
+	macro viewPortletOptionsMenulist {
+		MouseOver.mouseOverNotVisible(locator1 = "Portlet#OPTIONS_ICON");
+
+		Click(locator1 = "Portlet#OPTIONS_ICON");
+
+		AssertTextEquals(
+			key_menuItem = "Look and Feel Configuration",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Look and Feel Configuration");
+
+		AssertTextEquals(
+			key_menuItem = "Configuration",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Configuration");
+
+		AssertTextEquals(
+			key_menuItem = "Configuration Templates",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Configuration Templates");
+
+		AssertTextEquals(
+			key_menuItem = "Export / Import",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Export / Import");
+
+		AssertTextEquals(
+			key_menuItem = "Permissions",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Permissions");
+
+		AssertTextEquals(
+			key_menuItem = "Remove",
+			locator1 = "MenuItem#ANY_MENU_ITEM",
+			value1 = "Remove");
+	}
+
+	macro viewPortletPresentPG {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Portlet#PORTLET_CONTENT",
+			value1 = "${portletContent}");
+	}
+
+	macro viewSpecificPG {
+		var key_portletTitleName = "${portletName}";
+
+		AssertTextEquals(
+			locator1 = "Portlet#SPECIFIC_TITLE",
+			value1 = "${portletName}");
+	}
+
+	@summary = "Assert that the ${portletName} portlet title has the text '${portletName}'"
+	macro viewTitle {
+		var key_portletName = "${portletName}";
+
+		AssertTextEquals(
+			locator1 = "Portlet#TITLE",
+			value1 = "${portletName}");
+	}
+
+	macro viewUndeployMessage {
+		AssertTextEquals.assertPartialText(
+			locator1 = "Portlet#PORTLET_CONTENT",
+			value1 = "This portlet could not be found. Please redeploy it or remove it from the page.");
+	}
+
+	macro waitForForm {
+		AssertElementNotPresent(locator1 = "//fieldset[@disabled]");
+	}
+
+}

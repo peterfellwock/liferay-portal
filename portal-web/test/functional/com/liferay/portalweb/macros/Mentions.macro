@@ -1,199 +1,264 @@
-<definition>
-	<command name="addMentionViaBlogsEntry">
-		<var name="key_entryContent" value="${entryContent}" />
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
+definition {
 
-		<execute macro="BlogsNavigator#gotoAddEntry" />
+	macro addMentionViaBlogsEntry {
+		var key_entryContent = "${entryContent}";
+		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
 
-		<execute macro="BlogsEntry#addTitle">
-			<var name="entryTitle" value="${entryTitle}" />
-		</execute>
+		if (isSet(siteURLKey)) {
+			BlogsNavigator.openToAddEntry(
+				layoutName = "${layoutName}",
+				siteURLKey = "${siteURLKey}");
+		}
+		else {
+			BlogsNavigator.gotoAddEntry();
+		}
 
-		<execute function="Type#sendKeys" locator1="AlloyEditor#CONTENT_FIELD" value1="${entryContent} @${mentionsUserScreenName}" />
+		BlogsEntry.addTitle(entryTitle = "${entryTitle}");
 
-		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
+		Type.sendKeys(
+			key_editor = "content",
+			locator1 = "AlloyEditor#EDITOR",
+			value1 = "${entryContent} @${mentionsUserScreenName}");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
 
-	<command name="addMentionViaComments">
-		<var name="key_entryComment" value="${entryComment}" />
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
+		PortletEntry.publish();
+	}
 
-		<execute function="Type#sendKeys" locator1="Comments#COMMENT_FIELD"  value1="${entryComment} @${mentionsUserScreenName}" />
+	macro addMentionViaComments {
+		if (isSet(parentComment)) {
+			AssertClick(
+				key_entryComment = "${parentComment}",
+				key_text = "Reply",
+				locator1 = "Comments#ANY_BUTTON_IN_COMMENT",
+				value1 = "Reply");
+
+			AssertElementPresent.pauseAssertVisible(locator1 = "CKEditor#BODY_FIELD_IFRAME_2");
+
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME_2");
+		}
+		else {
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+		}
+
+		var key_entryComment = "${entryComment}";
+		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
+
+		Type.sendKeys(
+			locator1 = "CKEditor#BODY",
+			value1 = "${entryComment} @${mentionsUserScreenName}");
 
-		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
+		SelectFrame(value1 = "relative=top");
 
-		<execute function="AssertClick" locator1="Button#REPLY" value1="Reply" />
+		Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
 
-		<execute macro="Alert#viewSuccessMessage" />
-	</command>
+		if (isSet(guest)) {
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-	<command name="addMentionViaMessageBoardsReply">
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
-		<var name="key_threadSubject" value="${threadSubject}" />
+			AssertElementPresent(
+				key_mentionsUserScreenName = "${mentionsUserScreenName}",
+				locator1 = "Mentions#MENTIONS_TAG_LINK");
 
-		<execute function="AssertClick" locator1="MessageBoards#THREAD_LIST_THREAD" value1="${threadSubject}" />
+			SelectFrame(value1 = "relative=top");
 
-		<execute function="AssertElementPresent" locator1="MessageBoardsThread#THREAD_REPLY_BUTTON" />
+			AssertClick(
+				locator1 = "Button#REPLY_AS",
+				value1 = "Reply as...");
 
-		<execute function="AssertClick" locator1="MessageBoardsThread#THREAD_REPLY_BUTTON" value1="Reply to Main Thread" />
+			SelectFrame(locator1 = "IFrame#MODAL_BODY");
 
-		<execute function="Type#sendKeys" locator1="AlloyEditor#CONTENT_FIELD" value1="${threadBody} @${mentionsUserScreenName}" />
+			AssertClick(
+				locator1 = "Link#GUEST",
+				value1 = "Guest");
 
-		<execute function="SelectFrame#selectFrameTop" />
+			Type(
+				locator1 = "TextInput#FIRST_NAME",
+				value1 = "${userFirstName}");
 
-		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
+			Type(
+				locator1 = "TextInput#LAST_NAME",
+				value1 = "${userLastName}");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+			Type(
+				locator1 = "TextInput#EMAIL_ADDRESS",
+				value1 = "${userEmailAddress}");
 
-	<command name="addMentionViaMessageBoardThread">
-		<execute function="Click" locator1="Button#PLUS" />
+			Button.clickSave();
 
-		<execute function="AssertClick" locator1="MenuItem#THREAD" value1="Thread" />
+			var uniqueSuccess = "Your comment has already been posted. Would you like to create an account with the provided information?";
+			var key_uniqueSuccess = "${uniqueSuccess}";
 
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
+			AssertTextEquals(
+				locator1 = "Message#UNIQUE_SUCCESS",
+				value1 = "${uniqueSuccess}");
 
-		<execute function="Type" locator1="TextInput#SUBJECT" value1="${threadSubject}" />
+			AssertClick(
+				locator1 = "Button#CANCEL",
+				value1 = "Cancel");
 
-		<execute function="Type#sendKeys" locator1="AlloyEditor#CONTENT_FIELD" value1="@${mentionsUserScreenName}" />
+			SelectFrame(value1 = "relative=top");
 
-		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
+			Alert.viewSuccessMessage();
+		}
+		else if (isSet(parentComment)) {
+			AssertClick(
+				locator1 = "Button#REPLY_LAST",
+				value1 = "Reply");
+
+			Alert.viewSuccessMessage();
+		}
+		else {
+			AssertClick(
+				locator1 = "Button#REPLY",
+				value1 = "Reply");
+
+			Alert.viewSuccessMessage();
+		}
+	}
+
+	macro addMentionViaMessageBoardsReply {
+		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
+		var key_threadSubject = "${threadSubject}";
+
+		if (isSet(siteURLKey)) {
+			MessageboardsThread.openToThread(
+				groupName = "${groupName}",
+				layoutName = "${layoutName}",
+				siteURLKey = "${siteURLKey}",
+				threadSubject = "${threadSubject}");
+		}
+		else {
+			AssertClick(
+				locator1 = "MessageBoards#THREAD_LIST_THREAD",
+				value1 = "${threadSubject}");
+
+			AssertElementPresent(locator1 = "MessageBoardsThread#THREAD_REPLY_BUTTON");
+		}
+
+		AssertClick(
+			locator1 = "MessageBoardsThread#THREAD_REPLY_BUTTON",
+			value1 = "Reply");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-	<command name="addMentionViaMessageBoardThreadEdit">
-		<execute function="Click" locator1="Icon#BODY_VERTICAL_ELLIPSIS" />
+		Type.sendKeys(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody} @${mentionsUserScreenName}");
+
+		SelectFrame.selectFrameTop();
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
+
+		PortletEntry.publish();
+	}
+
+	macro addMentionViaMessageBoardThread {
+		if (isSet(siteURLKey)) {
+			MessageboardsThread.openToAddThread(siteURLKey = "${siteURLKey}");
+		}
+		else {
+			LexiconEntry.gotoAdd();
 
-		<execute function="Type" locator1="TextInput#SUBJECT" value1="${threadSubject}" />
+			MenuItem.click(menuItem = "Thread");
+		}
 
-		<execute function="Click" locator1="AlloyEditor#CONTENT_FIELD" />
+		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
 
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
+		Type.typeWaitForCKEditorScript(
+			locator1 = "TextInput#SUBJECT",
+			value1 = "${threadSubject}");
 
-		<execute function="Type#sendKeys" locator1="AlloyEditor#CONTENT_FIELD" value1=" @${mentionsUserScreenName}" />
+		if (isSet(multipleMentions)) {
+			for (var mentionsUserScreenName : list "${mentionsUserScreenNameList}") {
+				SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-		<execute function="Click#clickNoMouseOver" locator1="Mentions#MENTIONS_USER_DISPLAY_OPTION" />
+				Type.sendKeys(
+					locator1 = "CKEditor#BODY",
+					value1 = " @${mentionsUserScreenName}");
 
-		<execute macro="PortletEntry#publish" />
-	</command>
+				SelectFrame.selectFrameTop();
 
-	<command name="disableMentionsViaPortalSettings">
-		<execute macro="Mentions#gotoMentionsViaPortalSettings" />
+				Click.clickNoMouseOver(
+					key_mentionsUserScreenName = "${mentionsUserScreenName}",
+					locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
+			}
+		}
+		else {
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-		<execute function="AssertChecked" locator1="Checkbox#MENTIONS" />
+			Type.sendKeys(
+				locator1 = "CKEditor#BODY",
+				value1 = "@${mentionsUserScreenName}");
 
-		<execute function="Uncheck" locator1="Checkbox#MENTIONS" />
+			SelectFrame.selectFrameTop();
 
-		<execute macro="PortletEntry#save" />
-		<execute function="AssertNotChecked" locator1="Checkbox#MENTIONS" />
-	</command>
+			Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
+		}
 
-	<command name="disableMentionsViaSiteSettings">
-		<execute macro="Mentions#gotoMentionsViaSiteSettings" />
+		PortletEntry.publish();
+	}
 
-		<execute function="AssertElementNotPresent" locator1="Message#ERROR_3" value1="Mentions are disabled in the portal." />
-		<execute function="AssertChecked" locator1="Checkbox#MENTIONS" />
+	macro addMentionViaMessageBoardThreadEdit {
+		if (isSet(siteURLKey)) {
+			MessageboardsThread.openToEditThread(
+				groupName = "${groupName}",
+				siteURLKey = "${siteURLKey}",
+				threadSubject = "${threadSubject}");
+		}
+		else {
+			Click(locator1 = "Icon#BODY_VERTICAL_ELLIPSIS");
 
-		<execute function="Uncheck" locator1="Checkbox#MENTIONS" />
+			MenuItem.click(menuItem = "Edit");
+		}
 
-		<execute macro="PortletEntry#save" />
-		<execute function="AssertNotChecked" locator1="Checkbox#MENTIONS" />
-	</command>
+		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-	<command name="enableMentionsViaPortalSettings">
-		<execute macro="Mentions#gotoMentionsViaPortalSettings" />
+		Type(
+			locator1 = "CKEditor#BODY",
+			value1 = "${threadBody} @${mentionsUserScreenName}");
 
-		<execute function="AssertNotChecked" locator1="Checkbox#MENTIONS" />
+		SelectFrame(value1 = "relative=top");
 
-		<execute function="Check" locator1="Checkbox#MENTIONS" />
+		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
 
-		<execute macro="PortletEntry#save" />
-		<execute function="AssertChecked" locator1="Checkbox#MENTIONS" />
-	</command>
+		Click.clickNoMouseOver(locator1 = "Mentions#MENTIONS_USER_DISPLAY_OPTION");
 
-	<command name="enableMentionsViaSiteSettings">
-		<execute macro="Mentions#gotoMentionsViaSiteSettings" />
+		PortletEntry.publish();
+	}
 
-		<execute function="AssertNotChecked" locator1="Checkbox#MENTIONS" />
+	macro viewCommentMentionTagLink {
+		var key_mentionsUserFullName = "${mentionsUserFullName}";
+		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
+		var key_siteName = "${mentionsUserFullName}";
 
-		<execute function="AssertElementNotPresent" locator1="Message#ERROR_3" value1="Mentions are disabled in the portal." />
-		<execute function="Check" locator1="Checkbox#MENTIONS" />
+		AssertClick(
+			locator1 = "Mentions#MENTIONS_COMMENT_TAG_LINK",
+			value1 = "@${mentionsUserScreenName}");
 
-		<execute macro="PortletEntry#save" />
-		<execute function="AssertChecked" locator1="Checkbox#MENTIONS" />
-	</command>
+		ProductMenuHelper.openProductMenu();
 
-	<command name="gotoMentionsViaPortalSettings">
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Instance Settings" />
-		</execute>
+		// Disabling assertion for Test Test until LPS-108776 is fixed.
 
-		<execute function="AssertClick" locator1="NavListItem#MENTIONS" value1="Mentions" />
+		if ("${mentionsUserFullName}" != "Test Test") {
+			AssertTextEquals.assertPartialText(
+				locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME",
+				value1 = "${mentionsUserFullName}");
+		}
+	}
 
-		<execute function="AssertTextEquals" locator1="Mentions#MENTIONS_HEADER" value1="Mentions" />
-	</command>
+	macro viewMentionTagLink {
+		var key_mentionsUserScreenName = "${mentionsUserScreenName}";
+		var key_siteName = "${mentionsUserFullName}";
 
-	<command name="gotoMentionsViaSiteSettings">
-		<execute macro="Navigator#openURL" />
+		AssertClick(
+			locator1 = "Mentions#MENTIONS_TAG_LINK",
+			value1 = "@${mentionsUserScreenName}");
 
-		<execute macro="ProductMenu#gotoSitesConfiguration">
-			<var name="portlet" value="Site Settings" />
-		</execute>
+		ProductMenuHelper.openProductMenu();
 
-		<execute function="AssertClick" locator1="NavListItem#MENTIONS" value1="Mentions" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "ProductMenu#PRODUCT_MENU_PANEL_SITE_ADMINISTRATION_SITE_NAME",
+			value1 = "${mentionsUserFullName}");
+	}
 
-		<execute function="AssertTextEquals" locator1="Mentions#MENTIONS_HEADER" value1="Mentions" />
-	</command>
-
-	<command name="viewCommentMentionTagLink">
-		<var name="key_mentionsUserFullName" value="${mentionsUserFullName}" />
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
-		<var name="key_siteName" value="${mentionsUserFullName}" />
-
-		<execute function="AssertClick" locator1="Mentions#MENTIONS_COMMENT_TAG_LINK" value1="@${mentionsUserScreenName}" />
-
-		<execute function="AssertTextEquals" locator1="SitePages#SITE_NAME" value1="${mentionsUserFullName}" />
-	</command>
-
-	<command name="viewDisabledViaPortalSettings">
-		<execute macro="Mentions#gotoMentionsViaPortalSettings" />
-
-		<execute function="AssertNotChecked" locator1="Checkbox#MENTIONS" />
-
-		<execute macro="Mentions#gotoMentionsViaSiteSettings" />
-
-		<execute function="AssertTextEquals" locator1="Message#ERROR_3" value1="Mentions are disabled in the portal." />
-		<execute function="AssertElementPresent" locator1="Checkbox#MENTIONS_CHECKBOX_DISABLED" />
-	</command>
-
-	<command name="viewDisabledViaSiteSettings">
-		<execute macro="Mentions#gotoMentionsViaSiteSettings" />
-
-		<execute function="AssertElementNotPresent" locator1="Message#ERROR_3" value1="Mentions are disabled in the portal." />
-		<execute function="AssertNotChecked" locator1="Checkbox#MENTIONS" />
-
-		<execute macro="Mentions#gotoMentionsViaPortalSettings" />
-
-		<execute function="AssertChecked" locator1="Checkbox#MENTIONS" />
-	</command>
-
-	<command name="viewMentionTagLink">
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
-		<var name="key_siteName" value="${mentionsUserFullName}" />
-
-		<execute function="AssertClick" locator1="Mentions#MENTIONS_TAG_LINK" value1="@${mentionsUserScreenName}" />
-
-		<execute function="AssertTextEquals" locator1="SitePages#SITE_NAME" value1="${mentionsUserFullName}" />
-	</command>
-
-	<command name="viewNoMentionTagLink">
-		<var name="key_mentionsUserScreenName" value="${mentionsUserScreenName}" />
-
-		<execute function="AssertElementNotPresent" locator1="Mentions#MENTIONS_TAG_LINK" value1="${mentionsUserScreenName}" />
-	</command>
-</definition>
+}

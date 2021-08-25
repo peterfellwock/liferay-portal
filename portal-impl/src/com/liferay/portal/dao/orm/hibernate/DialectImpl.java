@@ -14,8 +14,8 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.Dialect;
-import com.liferay.portal.kernel.util.StringBundler;
 
 /**
  * @author Brian Wing Shun Chan
@@ -37,13 +37,7 @@ public class DialectImpl implements Dialect {
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(3);
-
-		sb.append("{_dialect=");
-		sb.append(String.valueOf(_dialect));
-		sb.append("}");
-
-		return sb.toString();
+		return StringBundler.concat("{_dialect=", _dialect, "}");
 	}
 
 	private final org.hibernate.dialect.Dialect _dialect;

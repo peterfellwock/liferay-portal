@@ -24,15 +24,13 @@ import com.liferay.expando.kernel.service.ExpandoTableLocalService;
 import com.liferay.expando.kernel.service.ExpandoValueLocalService;
 import com.liferay.marketplace.store.web.internal.configuration.MarketplaceStoreWebConfigurationValues;
 import com.liferay.marketplace.store.web.internal.oauth.api.MarketplaceApi;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.service.CompanyLocalService;
-
-import java.util.List;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -136,20 +134,20 @@ public class OAuthManager {
 
 	@Activate
 	protected void activate() {
-		List<Company> companys = _companyLocalService.getCompanies();
-
-		for (Company company : companys) {
-			try {
-				setupExpando(company.getCompanyId());
-			}
-			catch (Exception e) {
-				if (_log.isWarnEnabled()) {
-					_log.warn(
-						"Unable to setup Marketplace for company " +
-							company.getCompanyId() + ": " + e.getMessage());
+		_companyLocalService.forEachCompanyId(
+			companyId -> {
+				try {
+					setupExpando(companyId);
 				}
-			}
-		}
+				catch (Exception exception) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Unable to setup Marketplace for company ",
+								companyId, ": ", exception.getMessage()));
+					}
+				}
+			});
 	}
 
 	@Reference(unbind = "-")
@@ -192,12 +190,13 @@ public class OAuthManager {
 			table = _expandoTableLocalService.addTable(
 				companyId, User.class.getName(), "MP");
 		}
-		catch (DuplicateTableNameException dtne) {
+		catch (DuplicateTableNameException duplicateTableNameException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(dtne, dtne);
+				_log.debug(
+					duplicateTableNameException, duplicateTableNameException);
 			}
 
 			table = _expandoTableLocalService.getTable(
@@ -218,12 +217,13 @@ public class OAuthManager {
 				table.getTableId(), "requestToken",
 				ExpandoColumnConstants.STRING);
 		}
-		catch (DuplicateColumnNameException dcne) {
+		catch (DuplicateColumnNameException duplicateColumnNameException) {
 
 			// LPS-52675
 
 			if (_log.isDebugEnabled()) {
-				_log.debug(dcne, dcne);
+				_log.debug(
+					duplicateColumnNameException, duplicateColumnNameException);
 			}
 		}
 	}

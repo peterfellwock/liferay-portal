@@ -1,0 +1,136 @@
+@component-name = "portal-analytics-cloud"
+definition {
+
+	property analytics.cloud.enabled = "true";
+	property minimum.slave.ram = "32";
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Analytics Cloud";
+
+	setUp {
+		ACUtils.launchAC();
+
+		ACSettings.takeTokenFromAnalyticsCloud();
+
+		TestCase.setUpPortalInstance();
+
+		ACUtils.launchDXP();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		ACUtils.tearDownDXP();
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+
+		ACUtils.tearDownAC();
+	}
+
+	@description = "Automation ID: LRAC-8108 | Test Summary: Add date source page that allows user to choose type of data source"
+	@priority = "5"
+	test AddDataSourcePageAllowsUserToChooseWhatKind {
+		task ("Go to data sources and enter in each one to assert that the user can choose any of them") {
+			ACUtils.launchAC();
+
+			ACNavigation.goToSettings();
+
+			ACSettings.goToDataSources();
+
+			ACSettings.clickGenericAddOrConfirmationButton();
+
+			ACSettings.assertCanChooseDataSourceOptions();
+		}
+	}
+
+	@description = "Automation ID: LRAC-8107 | Test Summary: Navigates to data source page"
+	@priority = "5"
+	test CanNavigatesToDataSourcePage {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+
+		var dataSource = StringUtil.replace("${propertyName}", " Combined Property", "");
+
+		ACDXPSettings.syncNewContactData();
+
+		Navigator.openURL();
+
+		Pause(locator1 = "5000");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToSettings();
+
+		ACUtils.assertItemsName(itemList = "${dataSource},Beryl Commerce");
+	}
+
+	@description = "Sync Liferay Data Source Contacts"
+	@priority = "5"
+	test CanSyncAllContactsFromDXPToAC {
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
+
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+
+		Navigator.openURL();
+
+		Pause(locator1 = "5000");
+
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
+
+		ACUtils.closeAllSessions();
+
+		Pause(locator1 = "30000");
+
+		ACUtils.launchAC();
+
+		ACProperties.switchProperty(propertyName = "${propertyName}");
+
+		ACNavigation.goToIndividuals();
+
+		ACNavigation.switchTab(tabName = "Known Individuals");
+
+		ACUtils.searchBar(searchItem = "userfn userln");
+
+		ACIndividualsDashboard.goToKnownIndividualDetails(individualName = "userfn userln");
+
+		ACNavigation.switchTab(tabName = "Details");
+
+		ACIndividualsDashboard.assertIndividualAttribute(individualAttribute = "userea@liferay.com");
+
+		ACIndividualsDashboard.assertIndividualAttribute(individualAttribute = "userfn");
+	}
+
+	@description = "Validate if the user can connect AC to DXP"
+	@priority = "5"
+	test ConnectACtoDXP {
+		var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+	}
+
+	@description = "Automation ID: LRAC-8128 | Test Summary: View asset added by DXP data source"
+	@ignore = "true"
+	@priority = "5"
+	test ViewAssetAddedByDXPDataSource {
+
+		// TODO LRAC-8128 ViewAssetAddedByDXPDataSource
+
+	}
+
+	@description = "Automation ID: LRAC-8127 | Test Summary: View page added by DXP data source"
+	@ignore = "true"
+	@priority = "5"
+	test ViewPageAddedByDXPDataSource {
+
+		// TODO LRAC-8127 ViewPageAddedByDXPDataSource
+
+	}
+
+}

@@ -14,18 +14,18 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.util.HashCode;
-import com.liferay.portal.kernel.util.HashCodeFactoryUtil;
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
 /**
  * @author Zsolt Berentey
  */
-@ProviderType
 public class StagedModelType {
 
 	public static final String REFERRER_CLASS_NAME_ALL =
@@ -37,6 +37,38 @@ public class StagedModelType {
 	public static final int REFERRER_CLASS_NAME_ID_ALL = -1;
 
 	public static final int REFERRER_CLASS_NAME_ID_ANY = -2;
+
+	public static StagedModelType parse(String stagedModelTypeString) {
+		if (Validator.isNull(stagedModelTypeString)) {
+			return null;
+		}
+
+		try {
+			int index = stagedModelTypeString.indexOf(CharPool.POUND);
+
+			if (index == -1) {
+				return new StagedModelType(stagedModelTypeString);
+			}
+
+			String className = stagedModelTypeString.substring(0, index);
+
+			if (Validator.isNull(className)) {
+				return null;
+			}
+
+			String referrerClassName = stagedModelTypeString.substring(
+				index + 1);
+
+			return new StagedModelType(className, referrerClassName);
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
+			return null;
+		}
+	}
 
 	public StagedModelType(Class<?> clazz) {
 		setClassName(clazz.getName());
@@ -66,16 +98,16 @@ public class StagedModelType {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
+	public boolean equals(Object object) {
+		if (this == object) {
 			return true;
 		}
 
-		if ((obj == null) || !(obj instanceof StagedModelType)) {
+		if ((object == null) || !(object instanceof StagedModelType)) {
 			return false;
 		}
 
-		StagedModelType stagedModelType = (StagedModelType)obj;
+		StagedModelType stagedModelType = (StagedModelType)object;
 
 		if ((stagedModelType._classNameId != _classNameId) ||
 			(stagedModelType._referrerClassNameId != _referrerClassNameId)) {
@@ -108,12 +140,9 @@ public class StagedModelType {
 
 	@Override
 	public int hashCode() {
-		HashCode hashCode = HashCodeFactoryUtil.getHashCode();
+		int hashCode = HashUtil.hash(0, _classNameId);
 
-		hashCode.append(_classNameId);
-		hashCode.append(_referrerClassNameId);
-
-		return hashCode.toHashCode();
+		return HashUtil.hash(hashCode, _referrerClassNameId);
 	}
 
 	@Override
@@ -122,7 +151,8 @@ public class StagedModelType {
 			return _className;
 		}
 
-		return _className.concat(StringPool.POUND).concat(_referrerClassName);
+		return StringBundler.concat(
+			_className, StringPool.POUND, _referrerClassName);
 	}
 
 	protected String getSimpleName(String className) {
@@ -130,13 +160,13 @@ public class StagedModelType {
 			return StringPool.BLANK;
 		}
 
-		int pos = className.lastIndexOf(StringPool.PERIOD) + 1;
+		int index = className.lastIndexOf(StringPool.PERIOD) + 1;
 
-		if (pos <= 0) {
+		if (index <= 0) {
 			return className;
 		}
 
-		return className.substring(pos);
+		return className.substring(index);
 	}
 
 	protected void setClassName(String className) {
@@ -203,6 +233,9 @@ public class StagedModelType {
 			_referrerClassName = PortalUtil.getClassName(referrerClassNameId);
 		}
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		StagedModelType.class);
 
 	private String _className;
 	private long _classNameId;

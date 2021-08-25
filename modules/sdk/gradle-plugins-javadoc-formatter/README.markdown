@@ -12,6 +12,8 @@ The tool lets you generate:
 - An XML representation of the Javadoc comments, which can be used by tools in
   order to index the Javadocs of the project.
 
+The plugin has been successfully tested with Gradle 5.6.4 and 6.6.1.
+
 ## Usage
 
 To use the plugin, include it in your build script:
@@ -19,12 +21,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.javadoc.formatter", version: "1.0.10"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.javadoc.formatter", version: "1.0.33"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -39,7 +41,7 @@ transitive dependencies. The Liferay CDN repository hosts them all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```
@@ -100,7 +102,7 @@ manually adding a dependency to the `javadocFormatter` configuration:
 
 ```gradle
 dependencies {
-	javadocFormatter group: "com.liferay", name: "com.liferay.javadoc.formatter", version: "1.0.16"
+	javadocFormatter group: "com.liferay", name: "com.liferay.javadoc.formatter", version: "1.0.36"
 }
 ```
 

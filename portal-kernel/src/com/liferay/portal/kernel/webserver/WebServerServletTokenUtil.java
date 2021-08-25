@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.webserver;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
  * @author Brian Wing Shun Chan
  * @since  6.1, replaced com.liferay.portal.kernel.servlet.ImageServletTokenUtil
@@ -23,24 +21,19 @@ import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermissio
 public class WebServerServletTokenUtil {
 
 	public static String getToken(long imageId) {
-		return getWebServerServletToken().getToken(imageId);
+		return _webServerServletToken.getToken(imageId);
 	}
 
 	public static WebServerServletToken getWebServerServletToken() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			WebServerServletTokenUtil.class);
-
 		return _webServerServletToken;
 	}
 
 	public static void resetToken(long imageId) {
-		getWebServerServletToken().resetToken(imageId);
+		_webServerServletToken.resetToken(imageId);
 	}
 
 	public void setWebServerServletToken(
 		WebServerServletToken webServerServletToken) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_webServerServletToken = webServerServletToken;
 	}

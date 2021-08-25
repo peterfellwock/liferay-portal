@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
 
+import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,7 +39,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		try {
@@ -45,7 +47,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (IllegalArgumentException illegalArgumentException) {
 		}
 
 		new OutputBlob(new ByteArrayInputStream(new byte[10]), 10);
@@ -69,7 +71,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (IOException ioe) {
+		catch (IOException ioException) {
 		}
 	}
 
@@ -85,7 +87,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		// pos - 1 > _length
@@ -95,7 +97,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		// pos - 1 + length > _length
@@ -105,7 +107,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		// Fail to skip enough data
@@ -116,7 +118,7 @@ public class OutputBlobTest {
 			outputBlob.getBinaryStream(6, 1);
 			Assert.fail();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		// Normal
@@ -144,7 +146,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		// length < 0
@@ -154,20 +156,20 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (SQLException sqle) {
+		catch (SQLException sqlException) {
 		}
 
 		// Normal read
 
 		byte[] bytes = outputBlob.getBytes(1, 6);
 
-		Assert.assertEquals(6, bytes.length);
+		Assert.assertEquals(Arrays.toString(bytes), 6, bytes.length);
 
 		// Short read
 
 		bytes = outputBlob.getBytes(1, 6);
 
-		Assert.assertEquals(4, bytes.length);
+		Assert.assertEquals(Arrays.toString(bytes), 4, bytes.length);
 	}
 
 	@Test
@@ -192,7 +194,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -200,7 +202,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -208,7 +210,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -216,7 +218,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -224,7 +226,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 
 		try {
@@ -232,7 +234,7 @@ public class OutputBlobTest {
 
 			Assert.fail();
 		}
-		catch (UnsupportedOperationException uoe) {
+		catch (UnsupportedOperationException unsupportedOperationException) {
 		}
 	}
 

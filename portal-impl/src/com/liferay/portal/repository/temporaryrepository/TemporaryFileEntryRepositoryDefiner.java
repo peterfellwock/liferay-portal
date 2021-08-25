@@ -14,16 +14,21 @@
 
 package com.liferay.portal.repository.temporaryrepository;
 
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.repository.DocumentRepository;
 import com.liferay.portal.kernel.repository.RepositoryFactory;
+import com.liferay.portal.kernel.repository.UndeployedExternalRepositoryException;
 import com.liferay.portal.kernel.repository.capabilities.BulkOperationCapability;
 import com.liferay.portal.kernel.repository.capabilities.PortalCapabilityLocator;
 import com.liferay.portal.kernel.repository.capabilities.TemporaryFileEntriesCapability;
 import com.liferay.portal.kernel.repository.capabilities.WorkflowCapability;
 import com.liferay.portal.kernel.repository.registry.BaseRepositoryDefiner;
 import com.liferay.portal.kernel.repository.registry.CapabilityRegistry;
+import com.liferay.portal.kernel.repository.registry.RepositoryDefiner;
 import com.liferay.portal.kernel.repository.registry.RepositoryFactoryRegistry;
+
+import java.util.function.BiFunction;
 
 /**
  * @author Iván Zaera
@@ -32,6 +37,21 @@ public class TemporaryFileEntryRepositoryDefiner extends BaseRepositoryDefiner {
 
 	public static final String CLASS_NAME =
 		TemporaryFileEntryRepository.class.getName();
+
+	public static BiFunction
+		<PortalCapabilityLocator, RepositoryFactory, RepositoryDefiner>
+			getFactoryBiFunction() {
+
+		return TemporaryFileEntryRepositoryDefiner::new;
+	}
+
+	public TemporaryFileEntryRepositoryDefiner(
+		PortalCapabilityLocator portalCapabilityLocator,
+		RepositoryFactory repositoryFactory) {
+
+		_portalCapabilityLocator = portalCapabilityLocator;
+		_repositoryFactory = repositoryFactory;
+	}
 
 	@Override
 	public String getClassName() {
@@ -47,20 +67,30 @@ public class TemporaryFileEntryRepositoryDefiner extends BaseRepositoryDefiner {
 	public void registerCapabilities(
 		CapabilityRegistry<DocumentRepository> capabilityRegistry) {
 
+		if (_portalCapabilityLocator == null) {
+			ReflectionUtil.throwException(
+				new UndeployedExternalRepositoryException(
+					TemporaryFileEntryRepositoryDefiner.class.getName(),
+					StringBundler.concat(
+						"Repository definer ",
+						TemporaryFileEntryRepositoryDefiner.class.getName(),
+						" is not initialized")));
+		}
+
 		DocumentRepository documentRepository = capabilityRegistry.getTarget();
 
 		capabilityRegistry.addExportedCapability(
 			BulkOperationCapability.class,
-			portalCapabilityLocator.getBulkOperationCapability(
+			_portalCapabilityLocator.getBulkOperationCapability(
 				documentRepository));
 		capabilityRegistry.addExportedCapability(
 			TemporaryFileEntriesCapability.class,
-			portalCapabilityLocator.getTemporaryFileEntriesCapability(
+			_portalCapabilityLocator.getTemporaryFileEntriesCapability(
 				documentRepository));
 
 		capabilityRegistry.addSupportedCapability(
 			WorkflowCapability.class,
-			portalCapabilityLocator.getWorkflowCapability(
+			_portalCapabilityLocator.getWorkflowCapability(
 				documentRepository, WorkflowCapability.OperationMode.MINIMAL));
 	}
 
@@ -71,13 +101,7 @@ public class TemporaryFileEntryRepositoryDefiner extends BaseRepositoryDefiner {
 		repositoryFactoryRegistry.setRepositoryFactory(_repositoryFactory);
 	}
 
-	public void setRepositoryFactory(RepositoryFactory repositoryFactory) {
-		_repositoryFactory = repositoryFactory;
-	}
-
-	@BeanReference(type = PortalCapabilityLocator.class)
-	protected PortalCapabilityLocator portalCapabilityLocator;
-
-	private RepositoryFactory _repositoryFactory;
+	private final PortalCapabilityLocator _portalCapabilityLocator;
+	private final RepositoryFactory _repositoryFactory;
 
 }

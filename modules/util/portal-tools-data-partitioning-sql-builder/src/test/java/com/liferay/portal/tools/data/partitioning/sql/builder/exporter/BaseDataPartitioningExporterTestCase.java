@@ -37,8 +37,8 @@ public abstract class BaseDataPartitioningExporterTestCase {
 		throws SQLException {
 
 		try (Connection connection = dataSource.getConnection();
-			PreparedStatement preparedStatement =
-				connection.prepareStatement(sql)) {
+			PreparedStatement preparedStatement = connection.prepareStatement(
+				sql)) {
 
 			return preparedStatement.executeUpdate();
 		}
@@ -70,7 +70,7 @@ public abstract class BaseDataPartitioningExporterTestCase {
 			int expectedInteger, Timestamp expectedTimestamp)
 		throws Exception {
 
-		float expectedFloat = 99.99f;
+		float expectedFloat = 99.99F;
 		String expectedString = "expectedString";
 
 		return new Object[] {

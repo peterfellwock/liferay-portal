@@ -15,44 +15,96 @@
 package com.liferay.portal.kernel.portlet;
 
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+import com.liferay.portal.kernel.model.Portlet;
 
+import javax.portlet.MimeResponse;
 import javax.portlet.PortletRequest;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Brian Wing Shun Chan
+ * @author Neil Griffin
  */
 public class PortletURLFactoryUtil {
 
 	public static LiferayPortletURL create(
-		HttpServletRequest request, String portletId, Layout layout,
+		HttpServletRequest httpServletRequest, Portlet portlet, Layout layout,
 		String lifecycle) {
 
-		return getPortletURLFactory().create(
-			request, portletId, layout, lifecycle);
+		return _portletURLFactory.create(
+			httpServletRequest, portlet, layout, lifecycle);
 	}
 
 	public static LiferayPortletURL create(
-		HttpServletRequest request, String portletId, long plid,
-		String lifecycle) {
+		HttpServletRequest httpServletRequest, Portlet portlet, Layout layout,
+		String lifecycle, MimeResponse.Copy copy) {
 
-		return getPortletURLFactory().create(
-			request, portletId, plid, lifecycle);
+		return _portletURLFactory.create(
+			httpServletRequest, portlet, layout, lifecycle, copy);
 	}
 
 	public static LiferayPortletURL create(
-		HttpServletRequest request, String portletId, String lifecycle) {
+		HttpServletRequest httpServletRequest, Portlet portlet,
+		String lifecycle) {
 
-		return getPortletURLFactory().create(request, portletId, lifecycle);
+		return _portletURLFactory.create(
+			httpServletRequest, portlet, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		HttpServletRequest httpServletRequest, String portletId, Layout layout,
+		String lifecycle) {
+
+		return _portletURLFactory.create(
+			httpServletRequest, portletId, layout, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		HttpServletRequest httpServletRequest, String portletId, long plid,
+		String lifecycle) {
+
+		return _portletURLFactory.create(
+			httpServletRequest, portletId, plid, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		HttpServletRequest httpServletRequest, String portletId,
+		String lifecycle) {
+
+		return _portletURLFactory.create(
+			httpServletRequest, portletId, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		PortletRequest portletRequest, Portlet portlet, Layout layout,
+		String lifecycle) {
+
+		return _portletURLFactory.create(
+			portletRequest, portlet, layout, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		PortletRequest portletRequest, Portlet portlet, long plid,
+		String lifecycle) {
+
+		return _portletURLFactory.create(
+			portletRequest, portlet, plid, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		PortletRequest portletRequest, Portlet portlet, long plid,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		return _portletURLFactory.create(
+			portletRequest, portlet, plid, lifecycle, copy);
 	}
 
 	public static LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, Layout layout,
 		String lifecycle) {
 
-		return getPortletURLFactory().create(
+		return _portletURLFactory.create(
 			portletRequest, portletId, layout, lifecycle);
 	}
 
@@ -60,27 +112,29 @@ public class PortletURLFactoryUtil {
 		PortletRequest portletRequest, String portletId, long plid,
 		String lifecycle) {
 
-		return getPortletURLFactory().create(
+		return _portletURLFactory.create(
 			portletRequest, portletId, plid, lifecycle);
+	}
+
+	public static LiferayPortletURL create(
+		PortletRequest portletRequest, String portletId, long plid,
+		String lifecycle, MimeResponse.Copy copy) {
+
+		return _portletURLFactory.create(
+			portletRequest, portletId, plid, lifecycle, copy);
 	}
 
 	public static LiferayPortletURL create(
 		PortletRequest portletRequest, String portletId, String lifecycle) {
 
-		return getPortletURLFactory().create(
-			portletRequest, portletId, lifecycle);
+		return _portletURLFactory.create(portletRequest, portletId, lifecycle);
 	}
 
 	public static PortletURLFactory getPortletURLFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortletURLFactoryUtil.class);
-
 		return _portletURLFactory;
 	}
 
 	public void setPortletURLFactory(PortletURLFactory portletURLFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_portletURLFactory = portletURLFactory;
 	}
 

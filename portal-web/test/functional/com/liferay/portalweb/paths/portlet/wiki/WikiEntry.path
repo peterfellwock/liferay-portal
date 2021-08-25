@@ -2,11 +2,13 @@
 <head>
 <title>WikiEntry</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">WikiEntry</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ATTACHMENTS_LABEL</td>
@@ -15,7 +17,7 @@
 </tr>
 <tr>
 	<td>ATTACHMENT_FILE_NAME</td>
-	<td>//span[contains(@class,'lfr-card-title-text')]/a[contains(@title,'${key_attachmentFileName}')]</td>
+	<td>//div[contains(@class,'page-attachments')]//a[contains(@title,'${key_attachmentFileName}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -24,18 +26,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>BODY_ASSET</td>
-	<td>//div[@class='portlet-body']/p[contains(.,'${key_wikiPageContent}')]</td>
-	<td></td>
-</tr>
-<tr>
 	<td>BODY_GENERIC</td>
 	<td>//div[@class='wiki-body']</td>
-	<td></td>
-</tr>
-<tr>
-	<td>BODY_HEADER</td>
-	<td>//div[@class='wiki-body']/h1</td>
 	<td></td>
 </tr>
 <tr>

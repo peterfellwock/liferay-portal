@@ -14,7 +14,7 @@
 
 package com.liferay.source.formatter;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.tools.BaseImportsFormatter;
@@ -34,7 +34,7 @@ public class BNDImportsFormatter extends BaseImportsFormatter {
 		Matcher matcher = pattern.matcher(content);
 
 		if (matcher.find()) {
-			return matcher.group(2);
+			return matcher.group(3);
 		}
 
 		return null;
@@ -62,7 +62,7 @@ public class BNDImportsFormatter extends BaseImportsFormatter {
 			importString = importString.substring(0, pos);
 		}
 
-		return new ImportPackage(importString, false, line, true);
+		return new BNDImportPackage(importString, line);
 	}
 
 	@Override
@@ -79,12 +79,15 @@ public class BNDImportsFormatter extends BaseImportsFormatter {
 
 		String newImports = sortAndGroupImports(imports);
 
+		newImports = newImports.substring(0, newImports.length() - 1);
+
 		newImports = StringUtil.replace(
 			newImports, new String[] {"\n", "\n,\\"},
 			new String[] {",\\\n", "\n\t\\"});
 
-		newImports = StringUtil.replaceLast(
-			newImports, ",\\", StringPool.BLANK);
+		if (newImports.contains(",\\\n")) {
+			newImports = newImports.replaceAll("(?m)^\t*", "\t");
+		}
 
 		if (!imports.equals(newImports)) {
 			content = StringUtil.replaceFirst(content, imports, newImports);

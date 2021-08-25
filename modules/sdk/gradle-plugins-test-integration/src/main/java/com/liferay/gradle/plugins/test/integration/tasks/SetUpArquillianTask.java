@@ -14,7 +14,7 @@
 
 package com.liferay.gradle.plugins.test.integration.tasks;
 
-import com.liferay.gradle.plugins.test.integration.util.GradleUtil;
+import com.liferay.gradle.plugins.test.integration.internal.util.GradleUtil;
 import com.liferay.gradle.util.FileUtil;
 
 import java.io.File;
@@ -26,12 +26,16 @@ import java.nio.file.Files;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.specs.Spec;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.PathSensitive;
+import org.gradle.api.tasks.PathSensitivity;
 import org.gradle.api.tasks.TaskAction;
 
 /**
  * @author Andrea Di Giorgi
  */
+@CacheableTask
 public class SetUpArquillianTask
 	extends DefaultTask implements JmxRemotePortSpec, ManagerSpec {
 
@@ -41,7 +45,7 @@ public class SetUpArquillianTask
 
 				@Override
 				public boolean isSatisfiedBy(Task task) {
-					File outputFile = getOutputFile();
+					File outputFile = _getOutputFile();
 
 					if (outputFile.exists()) {
 						return false;
@@ -72,6 +76,7 @@ public class SetUpArquillianTask
 	}
 
 	@Input
+	@PathSensitive(PathSensitivity.RELATIVE)
 	public File getOutputDir() {
 		return GradleUtil.toFile(getProject(), _outputDir);
 	}
@@ -97,7 +102,7 @@ public class SetUpArquillianTask
 
 	@TaskAction
 	public void setUpArquillian() throws IOException {
-		File outputFile = getOutputFile();
+		File outputFile = _getOutputFile();
 
 		String xml = FileUtil.read(
 			"com/liferay/gradle/plugins/test/integration/dependencies" +
@@ -113,7 +118,7 @@ public class SetUpArquillianTask
 		Files.write(outputFile.toPath(), xml.getBytes(StandardCharsets.UTF_8));
 	}
 
-	protected File getOutputFile() {
+	private File _getOutputFile() {
 		return new File(getOutputDir(), "arquillian.xml");
 	}
 

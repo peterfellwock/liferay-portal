@@ -14,22 +14,28 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.concurrent.ConcurrentReferenceKeyHashMap;
+import com.liferay.petra.memory.FinalizeManager;
+import com.liferay.portal.kernel.language.LanguageBuilderUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.language.UTF8Control;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoader;
+import com.liferay.portal.kernel.resource.bundle.ResourceBundleLoaderUtil;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
 
 import java.text.MessageFormat;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * @author Shuyang Zhou
@@ -52,6 +58,22 @@ public class ResourceBundleUtil {
 
 		};
 
+	public static ResourceBundle getBundle(Locale locale, Class<?> clazz) {
+		return getBundle("content.Language", locale, clazz);
+	}
+
+	public static ResourceBundle getBundle(
+		Locale locale, ClassLoader classLoader) {
+
+		return getBundle("content.Language", locale, classLoader);
+	}
+
+	public static ResourceBundle getBundle(Locale locale, String symbolicName) {
+		return _getBundle(
+			"content.Language", locale,
+			ResourceBundleUtil.class.getClassLoader(), symbolicName);
+	}
+
 	public static ResourceBundle getBundle(String baseName, Class<?> clazz) {
 		return getBundle(baseName, clazz.getClassLoader());
 	}
@@ -59,8 +81,7 @@ public class ResourceBundleUtil {
 	public static ResourceBundle getBundle(
 		String baseName, ClassLoader classLoader) {
 
-		return ResourceBundle.getBundle(
-			baseName, Locale.getDefault(), classLoader, UTF8Control.INSTANCE);
+		return getBundle(baseName, LocaleUtil.getDefault(), classLoader);
 	}
 
 	public static ResourceBundle getBundle(
@@ -72,8 +93,33 @@ public class ResourceBundleUtil {
 	public static ResourceBundle getBundle(
 		String baseName, Locale locale, ClassLoader classLoader) {
 
-		return ResourceBundle.getBundle(
-			baseName, locale, classLoader, UTF8Control.INSTANCE);
+		Registry registry = RegistryUtil.getRegistry();
+
+		return _getBundle(
+			baseName, locale, classLoader,
+			registry.getSymbolicName(classLoader));
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getLocalizationMap(ResourceBundleLoader, String)}
+	 */
+	@Deprecated
+	public static Map<Locale, String> getLocalizationMap(
+		com.liferay.portal.kernel.util.ResourceBundleLoader
+			resourceBundleLoader,
+		String key) {
+
+		return getLocalizationMap(
+			new ResourceBundleLoader() {
+
+				@Override
+				public ResourceBundle loadResourceBundle(Locale locale) {
+					return resourceBundleLoader.loadResourceBundle(locale);
+				}
+
+			},
+			key);
 	}
 
 	public static Map<Locale, String> getLocalizationMap(
@@ -83,49 +129,29 @@ public class ResourceBundleUtil {
 
 		for (Locale locale : LanguageUtil.getAvailableLocales()) {
 			ResourceBundle resourceBundle =
-				resourceBundleLoader.loadResourceBundle(
-					LocaleUtil.toLanguageId(locale));
+				resourceBundleLoader.loadResourceBundle(locale);
 
 			map.put(locale, getString(resourceBundle, key));
 		}
 
 		return map;
+	}
+
+	public static ResourceBundle getModuleAndPortalResourceBundle(
+		Locale locale, Class<?> clazz) {
+
+		return new AggregateResourceBundle(
+			getBundle(locale, clazz), PortalUtil.getResourceBundle(locale));
 	}
 
 	/**
-	 * @deprecated As of 7.0.0
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
 	 */
 	@Deprecated
-	public static Map<Locale, String> getLocalizationMap(
-		String baseName, Class<?> clazz, String key) {
-
-		Map<Locale, String> map = new HashMap<>();
-
-		for (Locale locale : LanguageUtil.getAvailableLocales()) {
-			ResourceBundle resourceBundle = getBundle(baseName, locale, clazz);
-
-			map.put(locale, getString(resourceBundle, key));
-		}
-
-		return map;
-	}
-
-	public static ResourceBundleLoader getResourceBundleLoader(
-		final String baseName, final ClassLoader classLoader) {
+	public static com.liferay.portal.kernel.util.ResourceBundleLoader
+		getResourceBundleLoader(String baseName, ClassLoader classLoader) {
 
 		return new ClassResourceBundleLoader(baseName, classLoader);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getString(ResourceBundle,
-	 *             String, Object...)}
-	 */
-	@Deprecated
-	public static String getString(
-		ResourceBundle resourceBundle, Locale locale, String key,
-		Object[] arguments) {
-
-		return getString(resourceBundle, key, arguments);
 	}
 
 	public static String getString(ResourceBundle resourceBundle, String key) {
@@ -134,9 +160,13 @@ public class ResourceBundleUtil {
 		}
 
 		try {
-			return resourceBundle.getString(key);
+			return LanguageBuilderUtil.fixValue(resourceBundle.getString(key));
 		}
-		catch (MissingResourceException mre) {
+		catch (MissingResourceException missingResourceException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(missingResourceException, missingResourceException);
+			}
+
 			return null;
 		}
 	}
@@ -164,64 +194,56 @@ public class ResourceBundleUtil {
 		return value;
 	}
 
-	public static void loadResourceBundles(
-		Map<String, ResourceBundle> resourceBundles, Locale locale,
-		ResourceBundleLoader resourceBundleLoader) {
+	private static ResourceBundle _getBundle(
+		String baseName, Locale locale, ClassLoader classLoader,
+		String symbolicName) {
 
-		String languageId = LocaleUtil.toLanguageId(locale);
+		ResourceBundleLoader resourceBundleLoader = null;
 
-		loadResourceBundles(resourceBundles, languageId, resourceBundleLoader);
-	}
+		if (symbolicName == null) {
+			ClassLoader portalClassLoader =
+				PortalClassLoaderUtil.getClassLoader();
 
-	public static void loadResourceBundles(
-		Map<String, ResourceBundle> resourceBundles, String languageId,
-		ResourceBundleLoader resourceBundleLoader) {
-
-		Deque<ResourceBundle> currentResourceBundles = new LinkedList<>();
-
-		for (String currentLanguageId : _getLanguageIds(languageId)) {
-			ResourceBundle resourceBundle =
-				resourceBundleLoader.loadResourceBundle(currentLanguageId);
-
-			if (resourceBundle != null) {
-				currentResourceBundles.addFirst(resourceBundle);
-			}
-			else if (currentResourceBundles.isEmpty()) {
-				continue;
-			}
-
-			if (currentResourceBundles.size() == 1) {
-				resourceBundles.put(
-					currentLanguageId, currentResourceBundles.peek());
-			}
-			else {
-				int size = currentResourceBundles.size();
-
-				resourceBundles.put(
-					currentLanguageId,
-					new AggregateResourceBundle(
-						currentResourceBundles.toArray(
-							new ResourceBundle[size])));
+			if (classLoader == portalClassLoader) {
+				resourceBundleLoader =
+					ResourceBundleLoaderUtil.getPortalResourceBundleLoader();
 			}
 		}
-	}
-
-	private static List<String> _getLanguageIds(String languageId) {
-		List<String> languageIds = new ArrayList<>();
-
-		languageIds.add(StringPool.BLANK);
-
-		int index = 0;
-
-		while ((index = languageId.indexOf(CharPool.UNDERLINE, index + 1)) !=
-					-1) {
-
-			languageIds.add(languageId.substring(0, index));
+		else {
+			resourceBundleLoader =
+				ResourceBundleLoaderUtil.
+					getResourceBundleLoaderByBundleSymbolicName(symbolicName);
 		}
 
-		languageIds.add(languageId);
+		if (resourceBundleLoader == null) {
+			if (!_portalResourceBundleClassLoaders.contains(classLoader)) {
+				try {
+					return ResourceBundle.getBundle(
+						baseName, locale, classLoader, UTF8Control.INSTANCE);
+				}
+				catch (MissingResourceException missingResourceException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							missingResourceException, missingResourceException);
+					}
 
-		return languageIds;
+					_portalResourceBundleClassLoaders.add(classLoader);
+				}
+			}
+
+			resourceBundleLoader =
+				ResourceBundleLoaderUtil.getPortalResourceBundleLoader();
+		}
+
+		return resourceBundleLoader.loadResourceBundle(locale);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		ResourceBundleUtil.class);
+
+	private static final Set<ClassLoader> _portalResourceBundleClassLoaders =
+		Collections.newSetFromMap(
+			new ConcurrentReferenceKeyHashMap<>(
+				FinalizeManager.WEAK_REFERENCE_FACTORY));
 
 }

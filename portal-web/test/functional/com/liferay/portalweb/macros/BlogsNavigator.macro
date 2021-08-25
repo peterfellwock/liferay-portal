@@ -1,233 +1,263 @@
-<definition>
-	<command name="gotoAbstractField">
-		<execute macro="Panel#expandPanel">
-			<var name="panelHeading" value="Configuration" />
-		</execute>
-	</command>
+definition {
 
-	<command name="gotoAddEntry">
-		<if>
-			<condition function="IsElementPresent" locator1="Blogs#ADD_BLOGS_ENTRY" />
-			<then>
-				<execute function="AssertClick" locator1="Blogs#ADD_BLOGS_ENTRY" value1="Add Blog Entry" />
-			</then>
-			<else>
-				<execute function="Click" locator1="Button#PLUS" />
-			</else>
-		</if>
+	macro gotoAddEntry {
+		if (IsElementPresent(locator1 = "Blogs#ADD_BLOGS_ENTRY")) {
+			Click(locator1 = "Blogs#ADD_BLOGS_ENTRY");
+		}
+		else {
+			Click(
+				key_text = "New Entry",
+				locator1 = "Button#ANY");
+		}
 
-		<execute function="AssertVisible" locator1="BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE" />
-	</command>
+		AssertVisible(locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE");
+	}
 
-	<command name="gotoBrowseImage">
-		<execute function="Click" locator1="Button#BROWSE_IMAGE" />
-	</command>
+	macro gotoBlogsEntriesPermissionsCP {
+		LexiconEntry.gotoHeaderMenuItem(menuItem = "Entries Permissions");
 
-	<command name="gotoConfigurationPermissionsPG">
-		<execute function="AssertClick" locator1="NavBar#PERMISSIONS" value1="Permissions" />
-	</command>
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
 
-	<command name="gotoConfigurationScopePG">
-		<execute function="AssertClick" locator1="NavBar#SCOPE" value1="Scope" />
-	</command>
+	macro gotoBlogsEntryPermissionsCP {
+		Pause(locator = "1000");
 
-	<command name="gotoConfigurationSetupPG">
-		<if>
-			<equals arg1="${soPage}" arg2="true" />
-			<then>
-				<execute macro="SOPortlet#gotoPortletOptions">
-					<var name="portletName" value="Blogs" />
-					<var name="portletOption" value="Configuration" />
-				</execute>
-			</then>
-			<else>
-				<execute macro="Portlet#gotoPortletOptions">
-					<var name="portletOption" value="Configuration" />
-				</execute>
-			</else>
-		</if>
+		LexiconCard.clickEllipsisItem(
+			card = "${entryTitle}",
+			item = "Permissions");
 
-		<execute function="SelectFrame" locator1="IFrame#DIALOG" />
-	</command>
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
 
-	<command name="gotoConfigurationSetupRSSPG">
-		<execute function="AssertClick" locator1="Configuration#NAVIGATION_RSS" value1="RSS" />
-	</command>
+	macro gotoBlogsEntryPermissionsPG {
+		Portlet.mouseOverPortletTitle(portletTitleName = "Blogs");
 
-	<command name="gotoContentTab">
-		<execute function="AssertClick" locator1="BlogsEditEntry#CONTENT_TAB" value1="Content" />
-	</command>
+		Blogs.clickEllipsisItemPG(
+			entryTitle = "${entryTitle}",
+			item = "Permissions");
 
-	<command name="gotoDraftCP">
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
 
-		<var name="key_entryTitle" value="${entryTitle}" />
+	macro gotoBrowseImage {
+		Click(locator1 = "Button#BROWSE_IMAGE");
+	}
 
-		<execute function="AssertTextEquals" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_STATUS" value1="Draft" />
+	macro gotoConfigurationScopePG {
+		Navigator.gotoNavItem(navItem = "Scope");
+	}
 
-		<execute function="AssertClick" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_TITLE" value1="${entryTitle}" />
-	</command>
+	macro gotoConfigurationSetupPG {
+		Portlet.gotoPortletOptions(portletOption = "Configuration");
 
-	<command name="gotoDraftEditPG">
-		<var name="key_entryTitle" value="${entryTitle}" />
+		SelectFrame(locator1 = "IFrame#MODAL_BODY");
+	}
 
-		<execute function="AssertTextEquals" locator1="BlogsEntry#TITLE" value1="${entryTitle}" />
+	macro gotoEditCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		<execute function="AssertClick" locator1="Link#EDIT" value1="Edit" />
-	</command>
+		var key_entryTitle = "${entryTitle}";
 
-	<command name="gotoEditCP">
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+		Blogs.viewEntryTitle(entryTitle = "${entryTitle}");
 
-		<var name="key_entryTitle" value="${entryTitle}" />
+		Click(
+			key_listEntry = "${entryTitle}",
+			locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
 
-		<execute function="AssertTextEquals" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_TITLE" value1="${entryTitle}" />
+		MenuItem.click(menuItem = "Edit");
 
-		<execute function="Click" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_OPTIONS_DROPDOWN" />
+		AssertElementPresent(locator1 = "Icon#BACK");
 
-		<execute function="AssertClick" locator1="MenuItem#EDIT" value1="Edit" />
+		AssertVisible(
+			key_text = "Title",
+			locator1 = "TextArea#ANY");
+	}
 
-		<execute function="AssertElementPresent" locator1="Icon#BACK" />
-		<execute function="AssertVisible" locator1="AlloyEditor#TITLE_FIELD" />
-	</command>
+	macro gotoEditPG {
+		var key_entryTitle = "${entryTitle}";
 
-	<command name="gotoEditPG">
-		<var name="key_entryTitle" value="${entryTitle}" />
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TITLE",
+			value1 = "${entryTitle}");
 
-		<execute function="AssertTextEquals" locator1="BlogsEntry#TITLE" value1="${entryTitle}" />
+		if (IsElementPresent(locator1 = "Button#EDIT_PENCIL")) {
+			Click(locator1 = "Button#EDIT_PENCIL");
+		}
+		else {
+			Portlet.mouseOverPortletTitle(portletTitleName = "Blogs");
 
-		<execute macro="PortletEntry#clickEditFromEllipsis" />
+			Blogs.clickEllipsisItemPG(
+				entryTitle = "${entryTitle}",
+				item = "Edit");
+		}
 
-		<execute function="AssertVisible" locator1="BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE" />
-	</command>
+		AssertVisible(
+			key_text = "Title",
+			locator1 = "TextArea#ANY");
+	}
 
-	<command name="gotoEntryCP">
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+	macro gotoEntryCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		<var name="key_entryTitle" value="${entryTitle}" />
+		var key_entryTitle = "${entryTitle}";
 
-		<if>
-			<isset var="entryStatus" />
-			<then>
-				<execute function="AssertTextEquals" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_STATUS" value1="${entryStatus}" />
-			</then>
-		</if>
+		if (isSet(entryStatus)) {
+			AssertTextEquals(
+				locator1 = "Blogs#DESCRIPTIVE_VIEW_ENTRY_STATUS",
+				value1 = "${entryStatus}");
+		}
 
-		<execute function="AssertClick" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_TITLE" value1="${entryTitle}" />
-	</command>
+		LexiconList.clickListEntryTitle(listEntry = "${entryTitle}");
+	}
 
-	<command name="gotoEntryPG">
-		<var name="key_entryContent" value="${entryContent}" />
-		<var name="key_entryTitle" value="${entryTitle}" />
+	macro gotoEntryPG {
+		var key_entryContent = "${entryContent}";
+		var key_entryTitle = "${entryTitle}";
 
-		<execute function="AssertTextEquals" locator1="BlogsEntry#TITLE" value1="${entryTitle}" />
-		<execute function="AssertTextEquals" locator1="BlogsEntry#CONTENT" value1="${entryContent}" />
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TITLE",
+			value1 = "${entryTitle}");
 
-		<execute function="AssertClick#assertTextClickAt" locator1="BlogsEntry#TITLE_LINK" value1="${entryTitle}" />
-	</command>
+		AssertTextEquals(
+			locator1 = "BlogsEntry#CONTENT",
+			value1 = "${entryContent}");
 
-	<command name="gotoEntryWithAbstractPG">
-		<var name="key_entryAbstractDescription" value="${entryAbstractDescription}" />
-		<var name="key_entryTitle" value="${entryTitle}" />
+		AssertClick.assertTextClickAt(
+			locator1 = "BlogsEntry#TITLE_LINK",
+			value1 = "${entryTitle}");
+	}
 
-		<execute function="AssertTextEquals" locator1="BlogsEntry#TITLE" value1="${entryTitle}" />
-		<execute function="AssertTextEquals#assertPartialText" locator1="BlogsEntry#CONTENT_ABSTRACT" value1="${entryAbstractDescription}" />
+	macro gotoEntryWithAbstractPG {
+		var key_entryAbstractDescription = "${entryAbstractDescription}";
+		var key_entryTitle = "${entryTitle}";
 
-		<execute function="AssertClick" locator1="BlogsEntry#TITLE_LINK" value1="${entryTitle}" />
-	</command>
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TITLE",
+			value1 = "${entryTitle}");
 
-	<command name="gotoPG">
-		<var name="key_entryTitle" value="${entryTitle}" />
+		AssertTextEquals.assertPartialText(
+			locator1 = "BlogsEntry#CONTENT_ABSTRACT",
+			value1 = "${entryAbstractDescription}");
 
-		<if>
-			<isset var="blogEntryURL" />
-			<then>
-				<execute function="AssertLocation" value1="${blogEntryURL}" />
-			</then>
-			<else>
-				<execute function="Click" locator1="BlogsEntry#TITLE_LINK" value1="${entryTitle}" />
-			</else>
-		</if>
+		AssertClick(
+			locator1 = "BlogsEntry#TITLE_LINK",
+			value1 = "${entryTitle}");
+	}
 
-		<execute function="AssertTextEquals" locator1="BlogsEntry#TITLE" value1="${entryTitle}" />
-	</command>
+	macro gotoPG {
+		var key_entryTitle = "${entryTitle}";
 
-	<command name="moveToRecycleBinCP">
-		<execute macro="Portlet#changeDisplayStyle">
-			<var name="displayStyle" value="Descriptive" />
-		</execute>
+		if (isSet(blogEntryURL)) {
+			AssertLocation(value1 = "${blogEntryURL}");
+		}
+		else {
+			Click(
+				locator1 = "BlogsEntry#TITLE_LINK",
+				value1 = "${entryTitle}");
+		}
 
-		<var name="key_entryTitle" value="${entryTitle}" />
+		AssertTextEquals(
+			locator1 = "BlogsEntry#TITLE",
+			value1 = "${entryTitle}");
+	}
 
-		<execute function="AssertTextEquals" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_TITLE" value1="${entryTitle}" />
+	macro gotoSelectFile {
+		WaitForElementPresent(
+			locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE",
+			value1 = "Select File");
 
-		<execute function="Click" locator1="Blogs#DESCRIPTIVE_VIEW_ENTRY_OPTIONS_DROPDOWN" />
+		AssertClick(
+			locator1 = "BlogsEntry#ENTRY_COVER_IMAGE_SELECT_FILE",
+			value1 = "Select File");
+	}
 
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
+	macro gotoShare {
+		WaitForLiferayEvent.initializeLiferayEventLog();
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
+		LexiconEntry.gotoEntryMenuItem(
+			menuItem = "Share",
+			rowEntry = "${entryTitle}");
+	}
 
-	<command name="moveToRecycleBinDraftCP">
-		<var name="key_entryTitle" value="${entryTitle}" />
+	macro moveToRecycleBinCP {
+		LexiconEntry.changeDisplayStyle(displayStyle = "list");
 
-		<execute function="AssertTextEquals" locator1="Blogs#ENTRY_TABLE_TITLE" value1="${entryTitle}" />
-		<execute function="AssertTextEquals" locator1="Blogs#ENTRY_TABLE_STATUS" value1="Draft" />
+		var key_entryTitle = "${entryTitle}";
 
-		<execute function="Click" locator1="Blogs#ENTRY_TABLE_ACTIONS" />
+		Blogs.viewEntryTitle(entryTitle = "${entryTitle}");
 
-		<execute macro="PortletEntry#clickMoveToRecycleBin" />
+		Click(
+			key_listEntry = "${entryTitle}",
+			locator1 = "LexiconList#LIST_ENTRY_ELLIPSIS");
 
-		<execute function="AssertElementPresent" locator1="Message#SUCCESS" />
-	</command>
+		ClickNoError(
+			key_menuItem = "Move to Recycle Bin",
+			locator1 = "MenuItem#DROPDOWN_MENU_ITEM");
 
-	<command name="viewEditLinkPG">
-		<var name="key_entryTitle" value="${entryTitle}" />
+		VerifyElementPresent(locator1 = "Message#SUCCESS");
+	}
 
-		<execute function="AssertTextEquals" locator1="BlogsEntry#TITLE" value1="${entryTitle}" />
-		<execute function="AssertTextEquals" locator1="BlogsEntry#CONTENT" value1="${entryContent}" />
-		<execute function="AssertElementPresent" locator1="Link#EDIT" />
-	</command>
+	macro openBlogsAdmin {
+		Navigator.openWithAppendToBaseURL(urlAppend = "group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_blogs_web_portlet_BlogsAdminPortlet");
+	}
 
-	<command name="viewNextEntryNavigation">
-		<execute function="AssertTextEquals" locator1="BlogsEntry#PREVIOUS_ENTRY_TITLE" value1="${nextEntryTitle}" />
+	// Usually used (openTo) navigations for refactoring or adding new tests with SACRED model
 
-		<if>
-			<isset var="nextEntrySubtitle" />
-			<then>
-				<execute function="AssertTextEquals" locator1="BlogsEntry#NEXT_ENTRY_SUBTITLE" value1="${nextEntrySubtitle}" />
-			</then>
-		</if>
+	macro openToAddEntry {
+		var baseURL = "${baseURL}";
 
-		<if>
-			<isset var="nextEntryAuthor" />
-			<then>
-				<execute function="AssertTextEquals" locator1="BlogsEntry#NEXT_ENTRY_AUTHOR" value1="${nextEntryAuthor}" />
-			</then>
-		</if>
-	</command>
+		if (contains("${baseURL}", "{baseURL}")) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
 
-	<command name="viewPreviousEntryNavigation">
-		<execute function="AssertTextEquals" locator1="BlogsEntry#NEXT_ENTRY_TITLE" value1="${previousEntryTitle}" />
+		// Entries accessed in site pages will be redirected back to the page after publishing. Those accessed in admin will stay in admin after publishing.
 
-		<if>
-			<isset var="previousEntrySubtitle" />
-			<then>
-				<execute function="AssertTextEquals" locator1="BlogsEntry#PREVIOUS_ENTRY_SUBTITLE" value1="${previousEntrySubtitle}" />
-			</then>
-		</if>
+		if (isSet(layoutName)) {
+			Open(locator1 = "${baseURL}/group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_blogs_web_portlet_BlogsAdminPortlet&_com_liferay_blogs_web_portlet_BlogsAdminPortlet_mvcRenderCommandName=%2Fblogs%2Fedit_entry&_com_liferay_blogs_web_portlet_BlogsAdminPortlet_redirect=http%3A%2F%2F${baseURL}%3A8080%2Fweb%2F${siteURLKey}%2F${layoutName}");
+		}
+		else {
+			Open(locator1 = "${baseURL}/group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_blogs_web_portlet_BlogsAdminPortlet&_com_liferay_blogs_web_portlet_BlogsAdminPortlet_mvcRenderCommandName=%2Fblogs%2Fedit_entry");
+		}
+	}
 
-		<if>
-			<isset var="previousEntryAuthor" />
-			<then>
-				<execute function="AssertTextEquals" locator1="BlogsEntry#PREVIOUS_ENTRY_AUTHOR" value1="${previousEntryAuthor}" />
-			</then>
-		</if>
-	</command>
-</definition>
+	macro openToBlogEntry {
+		Navigator.openWithAppendToBaseURL(urlAppend = "web/${siteURLKey}/${layoutName}/-/blogs/${entryTitle}");
+	}
+
+	macro openToEditEntryInSite {
+		var entryId = JSONBlog.getBlogEntryId(
+			friendlyURL = "${friendlyURL}",
+			entryTitle = "${entryTitle}",
+			groupName = "${groupName}",
+			site = "${site}");
+
+		var baseURL = "${baseURL}";
+
+		if (contains("${baseURL}", "{baseURL}")) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		Open(locator1 = "${baseURL}/group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_blogs_web_portlet_BlogsAdminPortlet&p_p_lifecycle=0&p_p_state=maximized&refererPlid=12&_com_liferay_blogs_web_portlet_BlogsAdminPortlet_mvcRenderCommandName=%2Fblogs%2Fedit_entry&_com_liferay_blogs_web_portlet_BlogsAdminPortlet_entryId=${entryId}");
+	}
+
+	macro openToNotPublishedTab {
+		Navigator.openWithAppendToBaseURL(urlAppend = "web/${siteURLKey}/${layoutName}?p_p_id=com_liferay_blogs_web_portlet_BlogsPortlet&_com_liferay_blogs_web_portlet_BlogsPortlet_mvcRenderCommandName=%2Fblogs%2Fview_not_published_entries");
+	}
+
+	macro openToStagingCP {
+		if (!(isSet(site))) {
+			var site = "true";
+		}
+
+		var stagingId = JSONGroupAPI._getGroupIdByName(groupName = "${groupName}", site = "${site}");
+
+		var baseURL = "${baseURL}";
+
+		if (contains("${baseURL}", "{baseURL}")) {
+			var baseURL = PropsUtil.get("portal.url");
+		}
+
+		Open(locator1 = "${baseURL}/group/${siteURLKey}/~/control_panel/manage?p_p_id=com_liferay_blogs_web_portlet_BlogsAdminPortlet&p_v_l_s_g_id=${stagingId}");
+	}
+
+}

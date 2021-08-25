@@ -14,9 +14,11 @@
 
 package com.liferay.portal.fabric.netty.fileserver;
 
+import com.liferay.petra.lang.HashUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
-import com.liferay.portal.kernel.util.HashUtil;
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,6 +26,7 @@ import java.nio.file.Paths;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -32,8 +35,10 @@ import org.junit.Test;
 public class FileResponseTest {
 
 	@ClassRule
-	public static final CodeCoverageAssertor codeCoverageAssertor =
-		CodeCoverageAssertor.INSTANCE;
+	@Rule
+	public static final AggregateTestRule aggregateTestRule =
+		new AggregateTestRule(
+			CodeCoverageAssertor.INSTANCE, LiferayUnitTestRule.INSTANCE);
 
 	@Before
 	public void setUp() {
@@ -50,7 +55,7 @@ public class FileResponseTest {
 
 			Assert.fail();
 		}
-		catch (NullPointerException npe) {
+		catch (NullPointerException nullPointerException) {
 		}
 
 		Assert.assertEquals(_path, _fileResponse.getPath());
@@ -144,17 +149,15 @@ public class FileResponseTest {
 		FileResponse fileResponse = new FileResponse(
 			_path, FileResponse.FILE_NOT_FOUND, _LAST_MODIFIED_TIME, _FOLDER);
 
-		sb = new StringBundler(9);
+		sb = new StringBundler(7);
 
 		sb.append("{folder=");
 		sb.append(_FOLDER);
 		sb.append(", lastModifiedTime=");
 		sb.append(_LAST_MODIFIED_TIME);
-		sb.append(", localFile=null");
-		sb.append(", pathHolder=");
+		sb.append(", localFile=null, pathHolder=");
 		sb.append(_path);
-		sb.append(", status=File Not Found");
-		sb.append("}");
+		sb.append(", status=File Not Found}");
 
 		Assert.assertEquals(sb.toString(), fileResponse.toString());
 
@@ -162,17 +165,15 @@ public class FileResponseTest {
 			_path, FileResponse.FILE_NOT_MODIFIED, _LAST_MODIFIED_TIME,
 			_FOLDER);
 
-		sb = new StringBundler(9);
+		sb = new StringBundler(7);
 
 		sb.append("{folder=");
 		sb.append(_FOLDER);
 		sb.append(", lastModifiedTime=");
 		sb.append(_LAST_MODIFIED_TIME);
-		sb.append(", localFile=null");
-		sb.append(", pathHolder=");
+		sb.append(", localFile=null, pathHolder=");
 		sb.append(_path);
-		sb.append(", status=File Not Modified");
-		sb.append("}");
+		sb.append(", status=File Not Modified}");
 
 		Assert.assertEquals(sb.toString(), fileResponse.toString());
 	}

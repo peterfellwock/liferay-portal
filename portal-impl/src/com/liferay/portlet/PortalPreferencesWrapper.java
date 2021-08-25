@@ -14,10 +14,6 @@
 
 package com.liferay.portlet;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.model.MVCCModel;
-
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -25,14 +21,12 @@ import java.util.Enumeration;
 import java.util.Map;
 
 import javax.portlet.PortletPreferences;
-import javax.portlet.ReadOnlyException;
 
 /**
  * @author Alexander Chow
  */
-@ProviderType
 public class PortalPreferencesWrapper
-	implements Cloneable, MVCCModel, PortletPreferences, Serializable {
+	implements Cloneable, PortletPreferences, Serializable {
 
 	public PortalPreferencesWrapper(
 		PortalPreferencesImpl portalPreferencesImpl) {
@@ -47,17 +41,12 @@ public class PortalPreferencesWrapper
 
 	@Override
 	public Map<String, String[]> getMap() {
-		return _portalPreferencesImpl.getMap();
-	}
-
-	@Override
-	public long getMvccVersion() {
-		return _portalPreferencesImpl.getMvccVersion();
+		return _portalPreferencesImpl.getMap(null);
 	}
 
 	@Override
 	public Enumeration<String> getNames() {
-		return _portalPreferencesImpl.getNames();
+		return _portalPreferencesImpl.getNames(null);
 	}
 
 	public PortalPreferencesImpl getPortalPreferencesImpl() {
@@ -76,29 +65,22 @@ public class PortalPreferencesWrapper
 
 	@Override
 	public boolean isReadOnly(String key) {
-		return _portalPreferencesImpl.isReadOnly(key);
+		return false;
 	}
 
 	@Override
-	public void reset(String key) throws ReadOnlyException {
-		_portalPreferencesImpl.reset(key);
+	public void reset(String key) {
+		_portalPreferencesImpl.reset(null, key);
 	}
 
 	@Override
-	public void setMvccVersion(long mvccVersion) {
-		throw new UnsupportedOperationException();
+	public void setValue(String key, String value) {
+		_portalPreferencesImpl.setValue(null, key, value);
 	}
 
 	@Override
-	public void setValue(String key, String value) throws ReadOnlyException {
-		_portalPreferencesImpl.setValue(key, value);
-	}
-
-	@Override
-	public void setValues(String key, String[] values)
-		throws ReadOnlyException {
-
-		_portalPreferencesImpl.setValues(key, values);
+	public void setValues(String key, String... values) {
+		_portalPreferencesImpl.setValues(null, key, values);
 	}
 
 	@Override

@@ -16,7 +16,6 @@ package com.liferay.portal.kernel.deploy;
 
 import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
 import com.liferay.portal.kernel.plugin.PluginPackage;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import java.util.List;
 import java.util.Properties;
@@ -31,77 +30,71 @@ public class DeployManagerUtil {
 	public static void deploy(AutoDeploymentContext autoDeploymentContext)
 		throws Exception {
 
-		getDeployManager().deploy(autoDeploymentContext);
+		_deployManager.deploy(autoDeploymentContext);
 	}
 
 	public static String getDeployDir() throws Exception {
-		return getDeployManager().getDeployDir();
+		return _deployManager.getDeployDir();
 	}
 
 	public static DeployManager getDeployManager() {
-		PortalRuntimePermission.checkGetBeanProperty(DeployManagerUtil.class);
-
 		return _deployManager;
 	}
 
 	public static String getInstalledDir() throws Exception {
-		return getDeployManager().getInstalledDir();
+		return _deployManager.getInstalledDir();
 	}
 
 	public static PluginPackage getInstalledPluginPackage(String context) {
-		return getDeployManager().getInstalledPluginPackage(context);
+		return _deployManager.getInstalledPluginPackage(context);
 	}
 
 	public static List<PluginPackage> getInstalledPluginPackages() {
-		return getDeployManager().getInstalledPluginPackages();
+		return _deployManager.getInstalledPluginPackages();
 	}
 
 	public static List<String[]> getLevelsRequiredDeploymentContexts() {
-		return getDeployManager().getLevelsRequiredDeploymentContexts();
+		return _deployManager.getLevelsRequiredDeploymentContexts();
 	}
 
 	public static List<String[]> getLevelsRequiredDeploymentWARFileNames() {
-		return getDeployManager().getLevelsRequiredDeploymentWARFileNames();
+		return _deployManager.getLevelsRequiredDeploymentWARFileNames();
 	}
 
 	public static boolean isDeployed(String context) {
-		return getDeployManager().isDeployed(context);
+		return _deployManager.isDeployed(context);
 	}
 
 	public static boolean isRequiredDeploymentContext(String context) {
-		return getDeployManager().isRequiredDeploymentContext(context);
+		return _deployManager.isRequiredDeploymentContext(context);
 	}
 
 	public static PluginPackage readPluginPackageProperties(
 		String displayName, Properties properties) {
 
-		return getDeployManager().readPluginPackageProperties(
+		return _deployManager.readPluginPackageProperties(
 			displayName, properties);
 	}
 
 	public static PluginPackage readPluginPackageXml(String xml)
 		throws Exception {
 
-		return getDeployManager().readPluginPackageXml(xml);
+		return _deployManager.readPluginPackageXml(xml);
 	}
 
 	public static void redeploy(String context) throws Exception {
-		getDeployManager().redeploy(context);
+		_deployManager.redeploy(context);
 	}
 
 	public static void reset() {
-		PortalRuntimePermission.checkSetBeanProperty(DeployManagerUtil.class);
-
 		_deployManager = null;
 	}
 
 	public static void undeploy(String context) throws Exception {
-		getDeployManager().undeploy(context);
+		_deployManager.undeploy(context);
 	}
 
 	public void setDeployManager(DeployManager deployManager) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_deployManager = deployManager;
 	}
 

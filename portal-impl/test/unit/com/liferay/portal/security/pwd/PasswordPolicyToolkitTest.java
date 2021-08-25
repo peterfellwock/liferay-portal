@@ -17,9 +17,12 @@ package com.liferay.portal.security.pwd;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.PasswordPolicy;
 import com.liferay.portal.model.impl.PasswordPolicyImpl;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -27,21 +30,26 @@ import org.junit.Test;
  */
 public class PasswordPolicyToolkitTest {
 
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
+
 	@Before
 	public void setUp() throws Exception {
 		_passwordPolicyToolkit = new PasswordPolicyToolkit();
 
 		_passwordPolicy = new PasswordPolicyImpl();
 
-		_passwordPolicy.setAllowDictionaryWords(true);
 		_passwordPolicy.setChangeable(true);
 		_passwordPolicy.setCheckSyntax(true);
+		_passwordPolicy.setAllowDictionaryWords(true);
 		_passwordPolicy.setMinAlphanumeric(5);
 		_passwordPolicy.setMinLength(8);
 		_passwordPolicy.setMinLowerCase(2);
-		_passwordPolicy.setMinUpperCase(2);
 		_passwordPolicy.setMinNumbers(1);
 		_passwordPolicy.setMinSymbols(1);
+		_passwordPolicy.setMinUpperCase(2);
 		_passwordPolicy.setRegex(".{5,}");
 	}
 
@@ -102,7 +110,7 @@ public class PasswordPolicyToolkitTest {
 			_passwordPolicyToolkit.validate(
 				password, password, _passwordPolicy);
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
 			return false;
 		}
 

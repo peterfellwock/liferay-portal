@@ -1,148 +1,80 @@
-<definition component-name="portal-collaboration">
-	<property name="portal.release" value="true" />
-	<property name="custom.properties" value="default.layout.template.id=1_column" />
-	<property name="testray.main.component.name" value="Mentions" />
+@component-name = "portal-collaboration"
+definition {
 
-	<set-up>
-		<execute macro="TestCase#setUpPortalInstance" />
+	property custom.properties = "default.layout.template.id=1_column${line.separator}jsonws.web.service.paths.excludes=";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Mentions";
+	property testray.main.component.name = "Mentions";
 
-		<execute macro="User#firstLoginPG" />
+	setUp {
+		TestCase.setUpPortalInstance();
 
-		<execute macro="Page#add">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
+		User.firstLoginPG();
 
-		<execute macro="Portlet#addPG">
-			<var name="portletName" value="Wiki" />
-		</execute>
+		JSONLayout.addPublicLayout(
+			groupName = "Guest",
+			layoutName = "Wiki Page");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
+		JSONLayout.addWidgetToPublicLayout(
+			column = "1",
+			groupName = "Guest",
+			layoutName = "Wiki Page",
+			widgetName = "Wiki");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		JSONUser.addUser(
+			userEmailAddress = "userea@liferay.com",
+			userFirstName = "userfn",
+			userLastName = "userln",
+			userScreenName = "usersn");
 
-		<execute macro="User#addCP">
-			<var name="userEmailAddress" property-value="email.address.4" />
-			<var name="userFirstName" value="userfn" />
-			<var name="userLastName" value="userln" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "userea@liferay.com",
+			userLoginFullName = "userfn userln");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		User.logoutAndLoginPG(
+			userLoginEmailAddress = "test@liferay.com",
+			userLoginFullName = "Test Test");
+	}
 
-		<execute macro="User#editPasswordCP">
-			<var name="password" value="password" />
-			<var name="userEmailAddress" property-value="email.address.4" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
-		<execute macro="ProductMenu#gotoControlPanelUsers">
-			<var name="portlet" value="Users and Organizations" />
-		</execute>
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			WikiPage.tearDownCP();
 
-		<execute macro="User#assignRegularRoleCP">
-			<var name="roleTitle" value="Administrator" />
-			<var name="userScreenName" value="usersn" />
-		</execute>
+			JSONUser.tearDownNonAdminUsers();
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Server Administration" />
-		</execute>
+			Page.tearDownCP();
+		}
+	}
 
-		<execute macro="ServerAdministration#configureMailServerSettings">
-			<var name="userName" property-value="email.address.1" />
-			<var name="userPassword" property-value="email.password.1" />
-		</execute>
+	@priority = "5"
+	@refactordone
+	test CanViewWikiCommentMentionedUser {
+		JSONWiki.addWikiPage(
+			groupName = "Guest",
+			wikiNodeName = "Main",
+			wikiPageContent = "Wiki Page Content",
+			wikiPageName = "Wiki Page Title");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
+		Navigator.gotoPage(pageName = "Wiki Page");
 
-		<execute macro="ProductMenu#gotoControlPanelConfiguration">
-			<var name="portlet" value="Virtual Instances" />
-		</execute>
+		WikiNavigator.gotoAllPagesPG();
 
-		<execute macro="PortalInstances#editCP">
-			<var name="mailDomain" value="gmail.com" />
-			<var name="virtualHost" value="localhost" />
-		</execute>
+		WikiNavigator.gotoEntryViaPGTable(wikiPageTitle = "Wiki Page Title");
 
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
-	</set-up>
+		Mentions.addMentionViaComments(
+			entryComment = "Comment mentioning",
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
 
-	<tear-down>
-		<var method="TestPropsUtil#get('test.portal.instance')" name="testPortalInstance" />
+		Mentions.viewCommentMentionTagLink(
+			mentionsUserFullName = "userfn userln",
+			mentionsUserScreenName = "usersn");
+	}
 
-		<if>
-			<equals arg1="${testPortalInstance}" arg2="true" />
-			<then>
-				<execute macro="PortalInstances#tearDownCP" />
-			</then>
-			<else>
-				<execute macro="WikiPage#tearDownCP" />
-
-				<execute macro="User#tearDownCP" />
-
-				<execute macro="Page#tearDownPG" />
-			</else>
-		</if>
-	</tear-down>
-
-	<command name="ViewWikiCommentMentionedUser" priority="5">
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="ProductMenu#gotoSitesContent">
-			<var name="portlet" value="Wiki" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoNode">
-			<var name="wikiNodeName" value="Main" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoAllPagesCP" />
-
-		<execute function="Click" locator1="Button#PLUS" />
-
-		<execute macro="WikiEntry#addPageTitle">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute macro="WikiEntry#addPageContent">
-			<var name="wikiPageContent" value="Wiki Page Content" />
-		</execute>
-
-		<execute macro="PortletEntry#publish" />
-
-		<execute macro="Navigator#openURL" />
-
-		<execute macro="Navigator#gotoPage">
-			<var name="pageName" value="Wiki Page" />
-		</execute>
-
-		<execute macro="WikiNavigator#gotoAllPagesPG" />
-
-		<execute macro="WikiNavigator#gotoEntryViaPGTable">
-			<var name="wikiPageTitle" value="Wiki Page Title" />
-		</execute>
-
-		<execute function="Pause" locator1="30000" />
-
-		<execute macro="Mentions#addMentionViaComments">
-			<var name="entryComment" value="Comment mentioning" />
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-
-		<execute macro="Mentions#viewCommentMentionTagLink">
-			<var name="mentionsUserFullName" value="userfn userln" />
-			<var name="mentionsUserScreenName" value="usersn" />
-		</execute>
-	</command>
-</definition>
+}

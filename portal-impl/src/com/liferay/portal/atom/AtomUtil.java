@@ -14,16 +14,18 @@
 
 package com.liferay.portal.atom;
 
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.atom.AtomRequestContext;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
-import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -82,7 +84,11 @@ public class AtomUtil {
 
 			portletTitle = company.getName();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return null;
 		}
 
@@ -104,27 +110,24 @@ public class AtomUtil {
 		try {
 			company = getCompany();
 		}
-		catch (Exception e) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return StringPool.BLANK;
 		}
 
-		StringBundler sb = new StringBundler(5);
-
-		sb.append("tag:");
-		sb.append(company.getWebId());
-		sb.append(StringPool.COLON);
-		sb.append(title);
-		sb.append(StringPool.COLON);
-
-		String idTagPrefix = sb.toString();
+		String idTagPrefix = StringBundler.concat(
+			"tag:", company.getWebId(), StringPool.COLON, title,
+			StringPool.COLON);
 
 		return StringUtil.toLowerCase(idTagPrefix);
 	}
 
 	public static Company getCompany() throws PortalException {
-		long companyId = CompanyThreadLocal.getCompanyId();
-
-		return CompanyLocalServiceUtil.getCompanyById(companyId);
+		return CompanyLocalServiceUtil.getCompanyById(
+			CompanyThreadLocal.getCompanyId());
 	}
 
 	public static AtomPager getPager(RequestContext requestContext) {
@@ -170,9 +173,9 @@ public class AtomUtil {
 	}
 
 	public static void saveUserInRequest(
-		HttpServletRequest request, User user) {
+		HttpServletRequest httpServletRequest, User user) {
 
-		request.setAttribute(_USER, user);
+		httpServletRequest.setAttribute(_USER, user);
 	}
 
 	public static String setPageInUrl(String url, int page) {
@@ -210,5 +213,7 @@ public class AtomUtil {
 	private static final String _PAGER = AtomUtil.class.getName() + ".pager";
 
 	private static final String _USER = AtomUtil.class.getName() + ".user";
+
+	private static final Log _log = LogFactoryUtil.getLog(AtomUtil.class);
 
 }

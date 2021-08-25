@@ -14,8 +14,10 @@
 
 package com.liferay.source.formatter;
 
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
+import com.liferay.source.formatter.util.CheckType;
 
 /**
  * @author Hugo Huijser
@@ -24,15 +26,19 @@ public class SourceFormatterMessage
 	implements Comparable<SourceFormatterMessage> {
 
 	public SourceFormatterMessage(String fileName, String message) {
-		this(fileName, message, -1);
+		this(fileName, message, null, null, null, -1);
 	}
 
 	public SourceFormatterMessage(
-		String fileName, String message, int lineCount) {
+		String fileName, String message, CheckType checkType, String checkName,
+		String documentationURLString, int lineNumber) {
 
 		_fileName = fileName;
 		_message = message;
-		_lineCount = lineCount;
+		_checkType = checkType;
+		_checkName = checkName;
+		_documentationURLString = documentationURLString;
+		_lineNumber = lineNumber;
 	}
 
 	@Override
@@ -41,21 +47,31 @@ public class SourceFormatterMessage
 			return _fileName.compareTo(sourceFormatterMessage.getFileName());
 		}
 
-		if ((_lineCount != -1) ||
-			(sourceFormatterMessage.getLineCount() != -1)) {
-
-			return _lineCount - sourceFormatterMessage.getLineCount();
+		if (_lineNumber != sourceFormatterMessage.getLineNumber()) {
+			return _lineNumber - sourceFormatterMessage.getLineNumber();
 		}
 
 		return _message.compareTo(sourceFormatterMessage.getMessage());
+	}
+
+	public String getCheckName() {
+		return _checkName;
+	}
+
+	public CheckType getCheckType() {
+		return _checkType;
+	}
+
+	public String getDocumentationURLString() {
+		return _documentationURLString;
 	}
 
 	public String getFileName() {
 		return _fileName;
 	}
 
-	public int getLineCount() {
-		return _lineCount;
+	public int getLineNumber() {
+		return _lineNumber;
 	}
 
 	public String getMessage() {
@@ -64,22 +80,44 @@ public class SourceFormatterMessage
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(5);
+		StringBundler sb = new StringBundler(13);
 
 		sb.append(_message);
+
+		if (_documentationURLString != null) {
+			sb.append(", see ");
+			sb.append(_documentationURLString);
+		}
+
 		sb.append(": ");
 		sb.append(_fileName);
 
-		if (_lineCount > -1) {
+		if (_lineNumber > -1) {
 			sb.append(StringPool.SPACE);
-			sb.append(_lineCount);
+			sb.append(_lineNumber);
+		}
+
+		if (_checkName != null) {
+			sb.append(CharPool.SPACE);
+			sb.append(CharPool.OPEN_PARENTHESIS);
+
+			if (_checkType != null) {
+				sb.append(_checkType.getValue());
+				sb.append(CharPool.COLON);
+			}
+
+			sb.append(_checkName);
+			sb.append(CharPool.CLOSE_PARENTHESIS);
 		}
 
 		return sb.toString();
 	}
 
+	private final String _checkName;
+	private final CheckType _checkType;
+	private final String _documentationURLString;
 	private final String _fileName;
-	private final int _lineCount;
+	private final int _lineNumber;
 	private final String _message;
 
 }

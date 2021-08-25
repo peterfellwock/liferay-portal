@@ -14,11 +14,11 @@
 
 package com.liferay.exportimport.kernel.lifecycle;
 
-import aQute.bnd.annotation.ProviderType;
-
 import java.io.Serializable;
 
 import java.util.List;
+
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * @author Daniel Kocsis
@@ -32,10 +32,14 @@ public interface ExportImportLifecycleEvent extends Serializable {
 
 	public int getProcessFlag();
 
+	public String getProcessId();
+
 	public void setAttributes(Serializable... attributes);
 
 	public void setCode(int eventCode);
 
 	public void setProcessFlag(int processFlag);
+
+	public void setProcessId(String processId);
 
 }

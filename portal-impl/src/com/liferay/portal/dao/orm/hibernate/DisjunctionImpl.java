@@ -14,10 +14,10 @@
 
 package com.liferay.portal.dao.orm.hibernate;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.dao.orm.Criterion;
 import com.liferay.portal.kernel.dao.orm.Disjunction;
 import com.liferay.portal.kernel.dao.orm.Junction;
-import com.liferay.portal.kernel.util.StringBundler;
 
 /**
  * @author Raymond Augé
@@ -45,13 +45,7 @@ public class DisjunctionImpl extends CriterionImpl implements Disjunction {
 
 	@Override
 	public String toString() {
-		StringBundler sb = new StringBundler(3);
-
-		sb.append("{_disjunction=");
-		sb.append(String.valueOf(_disjunction));
-		sb.append("}");
-
-		return sb.toString();
+		return StringBundler.concat("{_disjunction=", _disjunction, "}");
 	}
 
 	private final org.hibernate.criterion.Disjunction _disjunction;

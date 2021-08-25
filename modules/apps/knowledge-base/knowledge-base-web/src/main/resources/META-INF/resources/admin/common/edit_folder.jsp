@@ -41,7 +41,9 @@ renderResponse.setTitle((kbFolder == null) ? LanguageUtil.get(resourceBundle, "n
 
 <liferay-portlet:actionURL name="updateKBFolder" var="updateKBFolderURL" />
 
-<div class="container-fluid-1280">
+<clay:container-fluid
+	cssClass="container-form-lg"
+>
 	<aui:form action="<%= updateKBFolderURL %>" method="post" name="fm">
 		<aui:input name="mvcPath" type="hidden" value="/admin/common/edit_folder.jsp" />
 		<aui:input name="<%= Constants.CMD %>" type="hidden" value="<%= (kbFolder == null) ? Constants.ADD : Constants.UPDATE %>" />
@@ -62,6 +64,19 @@ renderResponse.setTitle((kbFolder == null) ? LanguageUtil.get(resourceBundle, "n
 				<aui:input name="description" />
 			</aui:fieldset>
 
+			<liferay-expando:custom-attributes-available
+				className="<%= KBFolder.class.getName() %>"
+			>
+				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="custom-fields">
+					<liferay-expando:custom-attribute-list
+						className="<%= KBFolder.class.getName() %>"
+						classPK="<%= (kbFolder != null) ? kbFolder.getKbFolderId() : 0 %>"
+						editable="<%= true %>"
+						label="<%= true %>"
+					/>
+				</aui:fieldset>
+			</liferay-expando:custom-attributes-available>
+
 			<c:if test="<%= kbFolder == null %>">
 				<aui:fieldset collapsed="<%= true %>" collapsible="<%= true %>" label="permissions">
 					<aui:field-wrapper>
@@ -71,12 +86,12 @@ renderResponse.setTitle((kbFolder == null) ? LanguageUtil.get(resourceBundle, "n
 					</aui:field-wrapper>
 				</aui:fieldset>
 			</c:if>
+
+			<div class="sheet-footer">
+				<aui:button type="submit" value="save" />
+
+				<aui:button href="<%= redirect %>" type="cancel" />
+			</div>
 		</aui:fieldset-group>
-
-		<aui:button-row>
-			<aui:button cssClass="btn-lg" type="submit" value="save" />
-
-			<aui:button cssClass="btn-lg" href="<%= redirect %>" type="cancel" />
-		</aui:button-row>
 	</aui:form>
-</div>
+</clay:container-fluid>

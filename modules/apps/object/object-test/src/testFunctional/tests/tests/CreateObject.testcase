@@ -1,0 +1,50 @@
+@component-name = "portal-object"
+definition {
+
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Object";
+
+	setUp {
+		TestCase.setUpPortalInstance();
+
+		User.firstLoginPG();
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			ObjectAdmin.deleteAllCustomObjectsViaAPI();
+		}
+	}
+
+	@description = "LPS-135548 - Verify that user can view custom objects"
+	@priority = "5"
+	test ViewCustomObjects {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "CreateObject#ViewCustomObjects";
+
+		ObjectAdmin.openObjectAdmin();
+
+		ObjectAdmin.createCustomObject(name = "CustomObject");
+
+		ObjectAdmin.viewCustomObject(name = "CustomObject");
+	}
+
+	@description = "LPS-135548 - Verify that user can view system objects"
+	@priority = "5"
+	test ViewSystemObjects {
+		property portal.acceptance = "true";
+		property test.name.skip.portal.instance = "CreateObject#ViewSystemObjects";
+
+		ObjectAdmin.openObjectAdmin();
+
+		ObjectAdmin.viewSystemObject(name = "CommerceOrder");
+		ObjectAdmin.viewSystemObject(name = "User");
+	}
+
+}

@@ -16,6 +16,7 @@
 
 <%
 String displayStyle = ParamUtil.getString(request, "displayStyle", "list");
+
 String orderByCol = ParamUtil.getString(request, "orderByCol", "platform");
 String orderByType = ParamUtil.getString(request, "orderByType", "asc");
 
@@ -36,12 +37,6 @@ ResourceBundleLoaderProvider resourceBundleLoaderProvider = (ResourceBundleLoade
 			/>
 		</liferay-frontend:management-bar-buttons>
 
-		<%
-		PortletURL iteratorURL = renderResponse.createRenderURL();
-
-		iteratorURL.setParameter("displayStyle", displayStyle);
-		%>
-
 		<liferay-frontend:management-bar-filters>
 			<liferay-frontend:management-bar-navigation
 				navigationKeys='<%= new String[] {"all"} %>'
@@ -52,13 +47,19 @@ ResourceBundleLoaderProvider resourceBundleLoaderProvider = (ResourceBundleLoade
 				orderByCol="<%= orderByCol %>"
 				orderByType="<%= orderByType %>"
 				orderColumns='<%= new String[] {"platform"} %>'
-				portletURL="<%= iteratorURL %>"
+				portletURL='<%=
+					PortletURLBuilder.createRenderURL(
+						renderResponse
+					).setParameter(
+						"displayStyle", displayStyle
+					).buildPortletURL()
+				%>'
 			/>
 		</liferay-frontend:management-bar-filters>
 	</liferay-frontend:management-bar>
 </c:if>
 
-<div class="container-fluid-1280">
+<div class="container-fluid container-fluid-max-xl">
 	<liferay-ui:search-container
 		emptyResultsMessage="there-are-no-devices"
 		iteratorURL="<%= portletURL %>"
@@ -91,7 +92,7 @@ ResourceBundleLoaderProvider resourceBundleLoaderProvider = (ResourceBundleLoade
 			<%
 			ResourceBundleLoader platformResourceBundleLoader = resourceBundleLoaderProvider.getResourceBundleLoader(pushNotificationsDevice.getPlatform());
 
-			ResourceBundle platformResourceBundle = platformResourceBundleLoader.loadResourceBundle(LanguageUtil.getLanguageId(request));
+			ResourceBundle platformResourceBundle = platformResourceBundleLoader.loadResourceBundle(PortalUtil.getLocale(request));
 			%>
 
 			<liferay-ui:search-container-column-text
@@ -100,11 +101,13 @@ ResourceBundleLoaderProvider resourceBundleLoaderProvider = (ResourceBundleLoade
 			/>
 
 			<liferay-ui:search-container-column-jsp
-				cssClass="list-group-item-field"
+				cssClass="autofit-col"
 				path="/push_notifications_device_action.jsp"
 			/>
 		</liferay-ui:search-container-row>
 
-		<liferay-ui:search-iterator markupView="lexicon" />
+		<liferay-ui:search-iterator
+			markupView="lexicon"
+		/>
 	</liferay-ui:search-container>
 </div>

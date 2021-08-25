@@ -31,7 +31,7 @@ import org.apache.jasper.runtime.TagHandlerPool;
 /**
  * @author Shuyang Zhou
  * @author Preston Crary
- * @see com.liferay.support.tomcat.jasper.runtime.TagHandlerPool
+ * @see    com.liferay.support.tomcat.jasper.runtime.TagHandlerPool
  */
 public class JspTagHandlerPool extends TagHandlerPool {
 
@@ -45,8 +45,8 @@ public class JspTagHandlerPool extends TagHandlerPool {
 			try {
 				jspTag = jspTagClass.newInstance();
 			}
-			catch (Exception e) {
-				throw new JspException(e);
+			catch (Exception exception) {
+				throw new JspException(exception);
 			}
 		}
 		else {

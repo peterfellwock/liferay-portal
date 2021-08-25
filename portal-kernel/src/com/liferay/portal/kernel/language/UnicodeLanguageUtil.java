@@ -14,10 +14,6 @@
 
 package com.liferay.portal.kernel.language;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -26,171 +22,174 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * @author Brian Wing Shun Chan
  */
-@ProviderType
 public class UnicodeLanguageUtil {
 
 	public static String format(
-		HttpServletRequest request, String pattern, LanguageWrapper argument) {
+		HttpServletRequest httpServletRequest, String pattern,
+		LanguageWrapper argument) {
 
-		return getUnicodeLanguage().format(request, pattern, argument);
+		return _unicodeLanguage.format(httpServletRequest, pattern, argument);
 	}
 
 	public static String format(
-		HttpServletRequest request, String pattern, LanguageWrapper argument,
-		boolean translateArguments) {
+		HttpServletRequest httpServletRequest, String pattern,
+		LanguageWrapper argument, boolean translateArguments) {
 
-		return getUnicodeLanguage().format(
-			request, pattern, argument, translateArguments);
+		return _unicodeLanguage.format(
+			httpServletRequest, pattern, argument, translateArguments);
 	}
 
 	public static String format(
-		HttpServletRequest request, String pattern,
+		HttpServletRequest httpServletRequest, String pattern,
 		LanguageWrapper[] arguments) {
 
-		return getUnicodeLanguage().format(request, pattern, arguments);
+		return _unicodeLanguage.format(httpServletRequest, pattern, arguments);
 	}
 
 	public static String format(
-		HttpServletRequest request, String pattern, LanguageWrapper[] arguments,
+		HttpServletRequest httpServletRequest, String pattern,
+		LanguageWrapper[] arguments, boolean translateArguments) {
+
+		return _unicodeLanguage.format(
+			httpServletRequest, pattern, arguments, translateArguments);
+	}
+
+	public static String format(
+		HttpServletRequest httpServletRequest, String pattern,
+		Object argument) {
+
+		return _unicodeLanguage.format(httpServletRequest, pattern, argument);
+	}
+
+	public static String format(
+		HttpServletRequest httpServletRequest, String pattern, Object argument,
 		boolean translateArguments) {
 
-		return getUnicodeLanguage().format(
-			request, pattern, arguments, translateArguments);
+		return _unicodeLanguage.format(
+			httpServletRequest, pattern, argument, translateArguments);
 	}
 
 	public static String format(
-		HttpServletRequest request, String pattern, Object argument) {
+		HttpServletRequest httpServletRequest, String pattern,
+		Object[] arguments) {
 
-		return getUnicodeLanguage().format(request, pattern, argument);
+		return _unicodeLanguage.format(httpServletRequest, pattern, arguments);
 	}
 
 	public static String format(
-		HttpServletRequest request, String pattern, Object argument,
-		boolean translateArguments) {
+		HttpServletRequest httpServletRequest, String pattern,
+		Object[] arguments, boolean translateArguments) {
 
-		return getUnicodeLanguage().format(
-			request, pattern, argument, translateArguments);
-	}
-
-	public static String format(
-		HttpServletRequest request, String pattern, Object[] arguments) {
-
-		return getUnicodeLanguage().format(request, pattern, arguments);
-	}
-
-	public static String format(
-		HttpServletRequest request, String pattern, Object[] arguments,
-		boolean translateArguments) {
-
-		return getUnicodeLanguage().format(
-			request, pattern, arguments, translateArguments);
+		return _unicodeLanguage.format(
+			httpServletRequest, pattern, arguments, translateArguments);
 	}
 
 	public static String format(
 		Locale locale, String pattern, Object argument) {
 
-		return getUnicodeLanguage().format(locale, pattern, argument);
+		return _unicodeLanguage.format(locale, pattern, argument);
 	}
 
 	public static String format(
 		Locale locale, String pattern, Object argument,
 		boolean translateArguments) {
 
-		return getUnicodeLanguage().format(
+		return _unicodeLanguage.format(
 			locale, pattern, argument, translateArguments);
 	}
 
 	public static String format(
 		Locale locale, String pattern, Object[] arguments) {
 
-		return getUnicodeLanguage().format(locale, pattern, arguments);
+		return _unicodeLanguage.format(locale, pattern, arguments);
 	}
 
 	public static String format(
 		Locale locale, String pattern, Object[] arguments,
 		boolean translateArguments) {
 
-		return getUnicodeLanguage().format(
+		return _unicodeLanguage.format(
 			locale, pattern, arguments, translateArguments);
 	}
 
 	public static String format(
 		ResourceBundle resourceBundle, String pattern, Object argument) {
 
-		return getUnicodeLanguage().format(resourceBundle, pattern, argument);
+		return _unicodeLanguage.format(resourceBundle, pattern, argument);
 	}
 
 	public static String format(
 		ResourceBundle resourceBundle, String pattern, Object argument,
 		boolean translateArguments) {
 
-		return getUnicodeLanguage().format(
+		return _unicodeLanguage.format(
 			resourceBundle, pattern, argument, translateArguments);
 	}
 
 	public static String format(
 		ResourceBundle resourceBundle, String pattern, Object[] arguments) {
 
-		return getUnicodeLanguage().format(resourceBundle, pattern, arguments);
+		return _unicodeLanguage.format(resourceBundle, pattern, arguments);
 	}
 
 	public static String format(
 		ResourceBundle resourceBundle, String pattern, Object[] arguments,
 		boolean translateArguments) {
 
-		return getUnicodeLanguage().format(
+		return _unicodeLanguage.format(
 			resourceBundle, pattern, arguments, translateArguments);
 	}
 
-	public static String get(HttpServletRequest request, String key) {
-		return getUnicodeLanguage().get(request, key);
+	public static String get(
+		HttpServletRequest httpServletRequest, String key) {
+
+		return _unicodeLanguage.get(httpServletRequest, key);
 	}
 
 	public static String get(
-		HttpServletRequest request, String key, String defaultValue) {
+		HttpServletRequest httpServletRequest, String key,
+		String defaultValue) {
 
-		return getUnicodeLanguage().get(request, key, defaultValue);
+		return _unicodeLanguage.get(httpServletRequest, key, defaultValue);
 	}
 
 	public static String get(Locale locale, String key) {
-		return getUnicodeLanguage().get(locale, key);
+		return _unicodeLanguage.get(locale, key);
 	}
 
 	public static String get(Locale locale, String key, String defaultValue) {
-		return getUnicodeLanguage().get(locale, key, defaultValue);
+		return _unicodeLanguage.get(locale, key, defaultValue);
 	}
 
 	public static String get(ResourceBundle resourceBundle, String key) {
-		return getUnicodeLanguage().get(resourceBundle, key);
+		return _unicodeLanguage.get(resourceBundle, key);
 	}
 
 	public static String get(
 		ResourceBundle resourceBundle, String key, String defaultValue) {
 
-		return getUnicodeLanguage().get(resourceBundle, key, defaultValue);
+		return _unicodeLanguage.get(resourceBundle, key, defaultValue);
 	}
 
 	public static String getTimeDescription(
-		HttpServletRequest request, long milliseconds) {
+		HttpServletRequest httpServletRequest, long milliseconds) {
 
-		return getUnicodeLanguage().getTimeDescription(request, milliseconds);
+		return _unicodeLanguage.getTimeDescription(
+			httpServletRequest, milliseconds);
 	}
 
 	public static String getTimeDescription(
-		HttpServletRequest request, Long milliseconds) {
+		HttpServletRequest httpServletRequest, Long milliseconds) {
 
-		return getUnicodeLanguage().getTimeDescription(request, milliseconds);
+		return _unicodeLanguage.getTimeDescription(
+			httpServletRequest, milliseconds);
 	}
 
 	public static UnicodeLanguage getUnicodeLanguage() {
-		PortalRuntimePermission.checkGetBeanProperty(UnicodeLanguageUtil.class);
-
 		return _unicodeLanguage;
 	}
 
 	public void setUnicodeLanguage(UnicodeLanguage unicodeLanguage) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_unicodeLanguage = unicodeLanguage;
 	}
 

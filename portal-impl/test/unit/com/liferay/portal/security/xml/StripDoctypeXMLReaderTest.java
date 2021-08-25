@@ -14,7 +14,8 @@
 
 package com.liferay.portal.security.xml;
 
-import com.liferay.portal.kernel.util.StringBundler;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -22,12 +23,19 @@ import java.io.Reader;
 import java.io.StringReader;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
  * @author Tomas Polesovsky
  */
 public class StripDoctypeXMLReaderTest {
+
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@Test
 	public void testInternalBufferWithInputStream() throws Exception {
@@ -37,12 +45,14 @@ public class StripDoctypeXMLReaderTest {
 
 		byte[] bytes = new byte[prologue.length() + 1];
 
-		InputStream is = new ByteArrayInputStream(xml.getBytes());
+		InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
 
-		StripDoctypeFilter stripDoctypeFilter = new StripDoctypeFilter(is);
+		StripDoctypeFilter stripDoctypeFilter = new StripDoctypeFilter(
+			inputStream);
 
 		StringBundler sb = new StringBundler();
 		int length;
+
 		while ((length = stripDoctypeFilter.read(bytes, 0, bytes.length)) > 0) {
 			sb.append(new String(bytes, 0, length));
 		}
@@ -66,6 +76,7 @@ public class StripDoctypeXMLReaderTest {
 
 		StringBundler sb = new StringBundler();
 		int length;
+
 		while ((length = stripDoctypeFilter.read(chars, 0, chars.length)) > 0) {
 			sb.append(new String(chars, 0, length));
 		}
@@ -82,9 +93,10 @@ public class StripDoctypeXMLReaderTest {
 		for (int i = 0; i < _ORIGINAL_XML.length; i++) {
 			String xml = _ORIGINAL_XML[i];
 
-			InputStream is = new ByteArrayInputStream(xml.getBytes());
+			InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
 
-			StripDoctypeFilter stripDoctypeFilter = new StripDoctypeFilter(is);
+			StripDoctypeFilter stripDoctypeFilter = new StripDoctypeFilter(
+				inputStream);
 
 			int length = stripDoctypeFilter.read(buff, 0, buff.length);
 
@@ -114,7 +126,7 @@ public class StripDoctypeXMLReaderTest {
 		}
 	}
 
-	private static final String[] _ORIGINAL_XML = new String[] {
+	private static final String[] _ORIGINAL_XML = {
 		"<?xml version=\"1.0\"?><!DOCTYPE root><root />",
 		"<!DOCTYPE root [<!ELEMENT root ANY >]><root />",
 		"<!-- comment --><!DOCTYPE root [<!ELEMENT root ANY >]><root />",
@@ -124,7 +136,7 @@ public class StripDoctypeXMLReaderTest {
 		"<?xml version=\"1.0\"?><root attribute=\"<!DOCTYPE root>\"/>"
 	};
 
-	private static final String[] _SANITIZED_XML = new String[] {
+	private static final String[] _SANITIZED_XML = {
 		"<?xml version=\"1.0\"?><root />", "<root />",
 		"<!-- comment --><root />",
 		"<?xml version=\"1.0\"?><!-- comment --><root />",

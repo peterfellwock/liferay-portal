@@ -14,7 +14,7 @@
 
 package com.liferay.portal.osgi.web.wab.extender.internal.registration;
 
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.string.StringPool;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +31,7 @@ import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
 
 /**
- * @author Juan Gonzalez
+ * @author Juan González
  */
 public class FilterRegistrationImpl implements FilterRegistration.Dynamic {
 
@@ -120,8 +120,8 @@ public class FilterRegistrationImpl implements FilterRegistration.Dynamic {
 	}
 
 	@Override
-	public void setAsyncSupported(boolean isAsyncSupported) {
-		_asyncSupported = isAsyncSupported;
+	public void setAsyncSupported(boolean asyncSupported) {
+		_asyncSupported = asyncSupported;
 	}
 
 	public void setClassName(String className) {

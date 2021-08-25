@@ -25,10 +25,14 @@
 	</c:if>
 </form>
 
+<%
+String fullName = namespace + HtmlUtil.escapeJS(name);
+%>
+
 <aui:script use="liferay-form">
 	Liferay.Form.register(
 		{
-			id: '<%= namespace + HtmlUtil.escapeJS(name) %>'
+			id: '<%= fullName %>'
 
 			<c:if test="<%= validatorTagsMap != null %>">
 				, fieldRules: [
@@ -38,19 +42,20 @@
 
 					for (Map.Entry<String, List<ValidatorTag>> entry : validatorTagsMap.entrySet()) {
 						String fieldName = entry.getKey();
+
 						List<ValidatorTag> validatorTags = entry.getValue();
 
 						for (ValidatorTag validatorTag : validatorTags) {
 					%>
 
-							<%= i != 0 ? StringPool.COMMA : StringPool.BLANK %>
+							<%= (i != 0) ? StringPool.COMMA : StringPool.BLANK %>
 
 							{
 								body: <%= validatorTag.getBody() %>,
 								custom: <%= validatorTag.isCustom() %>,
 								errorMessage: '<%= UnicodeLanguageUtil.get(resourceBundle, validatorTag.getErrorMessage()) %>',
 								fieldName: '<%= namespace + HtmlUtil.escapeJS(fieldName) %>',
-								validatorName: '<%= validatorTag.getName() %>'
+								validatorName: '<%= HtmlUtil.escapeJS(validatorTag.getName()) %>'
 							}
 
 					<%
@@ -67,20 +72,27 @@
 					<%= onSubmit %>
 				}
 			</c:if>
+
+			, validateOnBlur: <%= validateOnBlur %>
 		}
 	);
 
 	var onDestroyPortlet = function(event) {
-		if (event.portletId === '<%= portletDisplay.getRootPortletId() %>') {
-			delete Liferay.Form._INSTANCES['<%= namespace + HtmlUtil.escapeJS(name) %>'];
+		if (event.portletId === '<%= portletDisplay.getId() %>') {
+			delete Liferay.Form._INSTANCES['<%= fullName %>'];
 		}
 	};
 
 	Liferay.on('destroyPortlet', onDestroyPortlet);
 
 	<c:if test="<%= Validator.isNotNull(onSubmit) %>">
-		A.all('#<%= namespace + HtmlUtil.escapeJS(name) %> .input-container').removeAttribute('disabled');
+		A.all('#<%= fullName %> .input-container').removeAttribute('disabled');
 	</c:if>
 
-	Liferay.fire('<portlet:namespace />formReady');
+	Liferay.fire(
+		'<portlet:namespace />formReady',
+		{
+			formName: '<%= fullName %>'
+		}
+	);
 </aui:script>

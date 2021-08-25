@@ -3,6 +3,8 @@
 The Theme Builder Gradle plugin lets you run the [Liferay Theme Builder](https://github.com/liferay/liferay-portal/tree/master/modules/util/portal-tools-theme-builder)
 tool to build the Liferay theme files in your project.
 
+The plugin has been successfully tested with Gradle 5.6.4 and 6.6.1.
+
 ## Usage
 
 To use the plugin, include it in your build script:
@@ -10,12 +12,12 @@ To use the plugin, include it in your build script:
 ```gradle
 buildscript {
 	dependencies {
-		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.theme.builder", version: "2.0.0"
+		classpath group: "com.liferay", name: "com.liferay.gradle.plugins.theme.builder", version: "2.0.16"
 	}
 
 	repositories {
 		maven {
-			url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+			url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 		}
 	}
 }
@@ -34,7 +36,7 @@ transitive dependencies. The Liferay CDN repository hosts them all:
 ```gradle
 repositories {
 	maven {
-		url "https://cdn.lfrs.sl/repository.liferay.com/nexus/content/groups/public"
+		url "https://repository-cdn.liferay.com/nexus/content/groups/public"
 	}
 }
 ```
@@ -71,7 +73,7 @@ Property Name | Default Value
 ------------- | -------------
 [`diffsDir`](#diffsdir) | `project.webAppDir`
 [`outputDir`](#outputdir) | `"${project.buildDir}/buildTheme"`
-[`parentFile`](#parentfile) | The first JAR file in the [`parentThemes`](#parent-theme-dependencies) configuration that contains a `META-INF/resources/${buildTheme.parentName}` directory.
+[`parentFile`](#parentfile) | The first JAR file in the [`parentThemes`](#parent-theme-dependencies) configuration that contains a `META-INF/resources/${buildTheme.parentName}` directory, or the first WAR file in the `parentThemes` configuration whose name starts with `${parentName}-theme-`.
 [`parentName`](#parentname) | `"_styled"`
 [`templateExtension`](#templateextension) | `"ftl"`
 [`themeName`](#themename) | `project.name`
@@ -99,10 +101,10 @@ Property Name | Type | Default Value | Description
 <a name="parentdir"></a>`parentDir` | `File` | `null` | The directory of the parent theme. It sets the `--parent-path` argument.
 <a name="parentfile"></a>`parentFile` | `File` | `null` | The JAR file of the parent theme. If `parentDir` is specified, this property has no effect. It sets the `--parent-path` argument.
 <a name="parentname"></a>`parentName` | `String` | `null` | The name of the parent theme. It sets the `--parent-name` argument.
-<a name="templateextenstion"></a>`templateExtension` | `String` | `null` | The extension of the template files, usually `"ftl"` or `"vm"`. It sets the `--template-extension` argument.
+<a name="templateextension"></a>`templateExtension` | `String` | `null` | The extension of the template files, usually `"ftl"` or `"vm"`. It sets the `--template-extension` argument.
 <a name="themename"></a>`themeName` | `String` | `null` | The name of the new theme. It sets the `--name` argument.
-<a name="unstyleddir"></a>`unstyledDir` | `File` | `null` | The directory of [Liferay Frontend Theme Unstyled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/foundation/frontend-theme/frontend-theme-unstyled). It sets the `--unstyled-dir` argument.
-<a name="unstyledfile"></a>`unstyledFile` | `File` | `null` | The JAR file of [Liferay Frontend Theme Unstyled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/foundation/frontend-theme/frontend-theme-unstyled). If `unstyledDir` is specified, this property has no effect. It sets the `--unstyled-dir` argument.
+<a name="unstyleddir"></a>`unstyledDir` | `File` | `null` | The directory of [Liferay Frontend Theme Unstyled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/frontend-theme/frontend-theme-unstyled). It sets the `--unstyled-dir` argument.
+<a name="unstyledfile"></a>`unstyledFile` | `File` | `null` | The JAR file of [Liferay Frontend Theme Unstyled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/frontend-theme/frontend-theme-unstyled). If `unstyledDir` is specified, this property has no effect. It sets the `--unstyled-dir` argument.
 
 The properties of type `File` support any type that can be resolved by [`project.file`](https://docs.gradle.org/current/dsl/org.gradle.api.Project.html#org.gradle.api.Project:file(java.css.Object)).
 Moreover, it is possible to use Closures and Callables as values for the
@@ -121,7 +123,7 @@ manually adding a dependency to the `themeBuilder` configuration:
 
 ```gradle
 dependencies {
-	themeBuilder group: "com.liferay", name: "com.liferay.portal.tools.theme.builder", version: "1.0.2"
+	themeBuilder group: "com.liferay", name: "com.liferay.portal.tools.theme.builder", version: "1.1.8"
 }
 ```
 
@@ -129,8 +131,9 @@ dependencies {
 
 By default, the plugin creates a configuration called `parentThemes` and adds
 dependencies to the latest released versions of the
-[Liferay Frontend Theme Styled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/foundation/frontend-theme/frontend-theme-styled)
-and [Liferay Frontend Theme Unstyled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/foundation/frontend-theme/frontend-theme-unstyled)
+[Liferay Frontend Theme Styled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/frontend-theme/frontend-theme-styled),
+[Liferay Frontend Theme Unstyled](https://github.com/liferay/liferay-portal/tree/master/modules/apps/frontend-theme/frontend-theme-unstyled),
+and [Liferay Frontend Theme Classic](https://github.com/liferay/liferay-portal/tree/master/modules/apps/frontend-theme/frontend-theme-classic)
 artifacts. It is possible to override this setting and use a specific version of
 the artifacts by manually adding dependencies to the `parentThemes`
 configuration:
@@ -139,5 +142,6 @@ configuration:
 dependencies {
 	parentThemes group: "com.liferay", name: "com.liferay.frontend.theme.styled", version: "2.0.13"
 	parentThemes group: "com.liferay", name: "com.liferay.frontend.theme.unstyled", version: "2.0.13"
+	parentThemes group: "com.liferay.plugins", name: "classic-theme", version: "1.0.29"
 }
 ```

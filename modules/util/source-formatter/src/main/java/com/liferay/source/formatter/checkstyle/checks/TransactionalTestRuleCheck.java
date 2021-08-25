@@ -14,17 +14,13 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
-import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 /**
  * @author Hugo Huijser
  */
-public class TransactionalTestRuleCheck extends AbstractCheck {
-
-	public static final String MSG_INVALID_IMPORT = "import.invalid";
+public class TransactionalTestRuleCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -32,7 +28,7 @@ public class TransactionalTestRuleCheck extends AbstractCheck {
 	}
 
 	@Override
-	public void visitToken(DetailAST detailAST) {
+	protected void doVisitToken(DetailAST detailAST) {
 		String line = getLine(detailAST.getLineNo());
 
 		if (!line.contains(
@@ -41,13 +37,13 @@ public class TransactionalTestRuleCheck extends AbstractCheck {
 			return;
 		}
 
-		FileContents fileContents = getFileContents();
+		String absolutePath = getAbsolutePath();
 
-		String fileName = fileContents.getFileName();
-
-		if (fileName.endsWith("StagedModelDataHandlerTest.java")) {
-			log(detailAST.getLineNo(), MSG_INVALID_IMPORT);
+		if (absolutePath.endsWith("StagedModelDataHandlerTest.java")) {
+			log(detailAST, _MSG_INVALID_IMPORT);
 		}
 	}
+
+	private static final String _MSG_INVALID_IMPORT = "import.invalid";
 
 }

@@ -1,0 +1,97 @@
+@component-name = "portal-upgrades"
+definition {
+
+	property database.types = "db2,mariadb,mysql,oracle,postgresql,sybase";
+	property portal.release = "true";
+	property portal.upstream = "true";
+	property testray.component.names = "Message Boards";
+	property testray.main.component.name = "Upgrades Collaboration";
+
+	setUp {
+		SignIn.signIn();
+
+		var portalURL = PropsUtil.get("portal.url");
+
+		AssertLocation.assertPartialLocation(value1 = "${portalURL}/web/guest");
+
+		ApplicationsMenu.gotoPortlet(
+			category = "Configuration",
+			panel = "Control Panel",
+			portlet = "Search");
+
+		SearchAdministration.executeSearchActions(actionsDescription = "Reindex all search indexes.");
+	}
+
+	@priority = "5"
+	@refactorneeded
+	test ViewMessageBoardsArchive625 {
+		property data.archive.type = "data-archive-message-boards";
+		property database.types = "mariadb,mysql,postgresql";
+		property portal.version = "6.2.5";
+
+		Upgrade.addMessageBoards();
+
+		Upgrade.viewMessageBoards();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive71105 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.1.10.5";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive72104 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.2.10.4";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive73101 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.3.10.1";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive621015 {
+		property data.archive.type = "data-archive-message-boards";
+		property portal.version = "6.2.10.15";
+
+		Upgrade.addMessageBoards();
+
+		Upgrade.viewMessageBoards();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive621021 {
+		property data.archive.type = "data-archive-message-boards";
+		property portal.version = "6.2.10.21";
+
+		Upgrade.addMessageBoards();
+
+		Upgrade.viewMessageBoards();
+	}
+
+	@priority = "5"
+	test ViewMessageBoardsArchive701015 {
+		property data.archive.type = "data-archive-collaboration";
+		property portal.version = "7.0.10.15";
+
+		Upgrade.viewAndAddMessageBoard();
+
+		Upgrade.editAndDeleteMessageBoard();
+	}
+
+}

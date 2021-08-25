@@ -14,44 +14,18 @@
 
 package com.liferay.exportimport.kernel.lar;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.portal.kernel.model.StagedModel;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
  * @author Michael C. Han
  */
-@ProviderType
 public class PortletDataHandlerStatusMessageSenderUtil {
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getPortletDataHandlerStatusMessageSender()}
-	 */
-	@Deprecated
-	public static PortletDataHandlerStatusMessageSender
-		getPortletDataHandlerStatusMessageSender() {
-
-		return _getPortletDataHandlerStatusMessageSender();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #sendStatusMessage(String,
-	 *             String[], ManifestSummary)}
-	 */
-	@Deprecated
-	public static void sendStatusMessage(
-		String messageType, ManifestSummary manifestSummary) {
-
-		_getPortletDataHandlerStatusMessageSender().sendStatusMessage(
-			messageType, manifestSummary);
-	}
 
 	public static void sendStatusMessage(
 		String messageType, String portletId, ManifestSummary manifestSummary) {
 
-		_getPortletDataHandlerStatusMessageSender().sendStatusMessage(
+		_dataHandlerStatusMessageSender.sendStatusMessage(
 			messageType, portletId, manifestSummary);
 	}
 
@@ -59,24 +33,15 @@ public class PortletDataHandlerStatusMessageSenderUtil {
 		String messageType, String[] portletIds,
 		ManifestSummary manifestSummary) {
 
-		_getPortletDataHandlerStatusMessageSender().sendStatusMessage(
+		_dataHandlerStatusMessageSender.sendStatusMessage(
 			messageType, portletIds, manifestSummary);
 	}
 
 	public static <T extends StagedModel> void sendStatusMessage(
 		String messageType, T stagedModel, ManifestSummary manifestSummary) {
 
-		_getPortletDataHandlerStatusMessageSender().sendStatusMessage(
+		_dataHandlerStatusMessageSender.sendStatusMessage(
 			messageType, stagedModel, manifestSummary);
-	}
-
-	private static PortletDataHandlerStatusMessageSender
-		_getPortletDataHandlerStatusMessageSender() {
-
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortletDataHandlerStatusMessageSenderUtil.class);
-
-		return _dataHandlerStatusMessageSender;
 	}
 
 	private static volatile PortletDataHandlerStatusMessageSender

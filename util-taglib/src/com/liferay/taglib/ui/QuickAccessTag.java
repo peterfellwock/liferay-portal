@@ -24,10 +24,12 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eudaldo Alonso
- * @deprecated As of 7.0.0, with no direct replacement
  */
-@Deprecated
 public class QuickAccessTag extends IncludeTag {
+
+	public String getContentId() {
+		return _contentId;
+	}
 
 	public void setContentId(String contentId) {
 		_contentId = contentId;
@@ -39,13 +41,14 @@ public class QuickAccessTag extends IncludeTag {
 	}
 
 	@Override
-	protected void setAttributes(HttpServletRequest request) {
+	protected void setAttributes(HttpServletRequest httpServletRequest) {
 		List<QuickAccessEntry> quickAccessEntries =
-			(List<QuickAccessEntry>)request.getAttribute(
+			(List<QuickAccessEntry>)httpServletRequest.getAttribute(
 				WebKeys.PORTLET_QUICK_ACCESS_ENTRIES);
 
-		request.setAttribute("liferay-ui:quick-access:contentId", _contentId);
-		request.setAttribute(
+		httpServletRequest.setAttribute(
+			"liferay-ui:quick-access:contentId", _contentId);
+		httpServletRequest.setAttribute(
 			"liferay-ui:quick-access:quickAccessEntries", quickAccessEntries);
 	}
 

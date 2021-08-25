@@ -14,15 +14,12 @@
 
 package com.liferay.portal.kernel.util;
 
-import aQute.bnd.annotation.ProviderType;
-
 import com.liferay.expando.kernel.model.ExpandoBridge;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.LayoutFriendlyURLComposite;
 import com.liferay.portal.kernel.model.LayoutQueryStringComposite;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
@@ -30,12 +27,11 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.InvokerPortlet;
+import com.liferay.portal.kernel.portlet.LayoutFriendlyURLSeparatorComposite;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletInstanceFactoryUtil;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
-import com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbEntry;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.upload.UploadPortletRequest;
@@ -54,6 +50,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -66,8 +63,6 @@ import javax.portlet.PortletResponse;
 import javax.portlet.PortletURL;
 import javax.portlet.PreferencesValidator;
 import javax.portlet.RenderRequest;
-import javax.portlet.ResourceRequest;
-import javax.portlet.ResourceResponse;
 import javax.portlet.ValidatorException;
 import javax.portlet.WindowState;
 
@@ -82,7 +77,6 @@ import javax.servlet.http.HttpSession;
  * @author Eduardo Lundgren
  * @author Juan Fernández
  */
-@ProviderType
 public class PortalUtil {
 
 	/**
@@ -91,12 +85,12 @@ public class PortalUtil {
 	 *
 	 * @param description the description to append to the current meta
 	 *        description
-	 * @param request the servlet request for the page
+	 * @param httpServletRequest the servlet request for the page
 	 */
 	public static void addPageDescription(
-		String description, HttpServletRequest request) {
+		String description, HttpServletRequest httpServletRequest) {
 
-		getPortal().addPageDescription(description, request);
+		_portal.addPageDescription(description, httpServletRequest);
 	}
 
 	/**
@@ -105,123 +99,112 @@ public class PortalUtil {
 	 *
 	 * @param keywords the keywords to add to the current meta keywords
 	 *        (comma-separated)
-	 * @param request the servlet request for the page
+	 * @param httpServletRequest the servlet request for the page
 	 */
 	public static void addPageKeywords(
-		String keywords, HttpServletRequest request) {
+		String keywords, HttpServletRequest httpServletRequest) {
 
-		getPortal().addPageKeywords(keywords, request);
+		_portal.addPageKeywords(keywords, httpServletRequest);
 	}
 
 	/**
 	 * Appends the subtitle to the current subtitle of the page in the request.
 	 *
 	 * @param subtitle the subtitle to append to the current subtitle
-	 * @param request the servlet request for the page
+	 * @param httpServletRequest the servlet request for the page
 	 */
 	public static void addPageSubtitle(
-		String subtitle, HttpServletRequest request) {
+		String subtitle, HttpServletRequest httpServletRequest) {
 
-		getPortal().addPageSubtitle(subtitle, request);
+		_portal.addPageSubtitle(subtitle, httpServletRequest);
 	}
 
 	/**
 	 * Appends the title to the current title of the page in the request.
 	 *
 	 * @param title the title to append to the current title
-	 * @param request the servlet request for the page
+	 * @param httpServletRequest the servlet request for the page
 	 */
-	public static void addPageTitle(String title, HttpServletRequest request) {
-		getPortal().addPageTitle(title, request);
+	public static void addPageTitle(
+		String title, HttpServletRequest httpServletRequest) {
+
+		_portal.addPageTitle(title, httpServletRequest);
 	}
 
 	public static boolean addPortalInetSocketAddressEventListener(
 		PortalInetSocketAddressEventListener
 			portalInetSocketAddressEventListener) {
 
-		return getPortal().addPortalInetSocketAddressEventListener(
+		return _portal.addPortalInetSocketAddressEventListener(
 			portalInetSocketAddressEventListener);
 	}
 
 	/**
-	 * Adds the portal port event listener to the portal. The listener is
-	 * notified whenever the portal port is set.
-	 *
-	 * @param      portalPortEventListener the portal port event listener to add
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #addPortalInetSocketAddressEventListener(
-	 *             PortalInetSocketAddressEventListener)}
-	 */
-	@Deprecated
-	public static void addPortalPortEventListener(
-		PortalPortEventListener portalPortEventListener) {
-
-		getPortal().addPortalPortEventListener(portalPortEventListener);
-	}
-
-	/**
 	 * Adds an entry to the portlet breadcrumbs for the page in the request.
 	 *
-	 * @param request the servlet request for the page
+	 * @param httpServletRequest the servlet request for the page
 	 * @param title the title of the new breadcrumb entry
 	 * @param url the URL of the new breadcrumb entry
 	 */
 	public static void addPortletBreadcrumbEntry(
-		HttpServletRequest request, String title, String url) {
+		HttpServletRequest httpServletRequest, String title, String url) {
 
-		getPortal().addPortletBreadcrumbEntry(request, title, url);
+		_portal.addPortletBreadcrumbEntry(httpServletRequest, title, url);
 	}
 
 	/**
 	 * Adds an entry to the portlet breadcrumbs for the page in the request.
 	 *
-	 * @param request the servlet request for the page
+	 * @param httpServletRequest the servlet request for the page
 	 * @param title the title of the new breadcrumb entry
 	 * @param url the URL of the new breadcrumb entry
 	 * @param data the HTML5 data parameters of the new breadcrumb entry
 	 */
 	public static void addPortletBreadcrumbEntry(
-		HttpServletRequest request, String title, String url,
+		HttpServletRequest httpServletRequest, String title, String url,
 		Map<String, Object> data) {
 
-		getPortal().addPortletBreadcrumbEntry(request, title, url, data);
+		_portal.addPortletBreadcrumbEntry(httpServletRequest, title, url, data);
 	}
 
 	/**
 	 * Adds an entry to the portlet breadcrumbs for the page in the request.
 	 *
-	 * @param request the servlet request for the page
+	 * @param httpServletRequest the servlet request for the page
 	 * @param title the title of the new breadcrumb entry
 	 * @param url the URL of the new breadcrumb entry
 	 * @param data the HTML5 data parameters of the new breadcrumb entry
+	 * @param portletBreadcrumbEntry whether the entry is a portlet breadcrumb
+	 *        entry
 	 */
 	public static void addPortletBreadcrumbEntry(
-		HttpServletRequest request, String title, String url,
+		HttpServletRequest httpServletRequest, String title, String url,
 		Map<String, Object> data, boolean portletBreadcrumbEntry) {
 
-		getPortal().addPortletBreadcrumbEntry(
-			request, title, url, data, portletBreadcrumbEntry);
+		_portal.addPortletBreadcrumbEntry(
+			httpServletRequest, title, url, data, portletBreadcrumbEntry);
 	}
 
 	/**
 	 * Adds the default resource permissions for the portlet to the page in the
 	 * request.
 	 *
-	 * @param request the servlet request for the page
-	 * @param portlet the portlet
+	 * @param  httpServletRequest the servlet request for the page
+	 * @param  portlet the portlet
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static void addPortletDefaultResource(
-			HttpServletRequest request, Portlet portlet)
+			HttpServletRequest httpServletRequest, Portlet portlet)
 		throws PortalException {
 
-		getPortal().addPortletDefaultResource(request, portlet);
+		_portal.addPortletDefaultResource(httpServletRequest, portlet);
 	}
 
 	public static void addPortletDefaultResource(
 			long companyId, Layout layout, Portlet portlet)
 		throws PortalException {
 
-		getPortal().addPortletDefaultResource(companyId, layout, portlet);
+		_portal.addPortletDefaultResource(companyId, layout, portlet);
 	}
 
 	/**
@@ -245,7 +228,7 @@ public class PortalUtil {
 		ThemeDisplay themeDisplay, Layout layout, String url,
 		boolean doAsUser) {
 
-		return getPortal().addPreservedParameters(
+		return _portal.addPreservedParameters(
 			themeDisplay, layout, url, doAsUser);
 	}
 
@@ -260,11 +243,25 @@ public class PortalUtil {
 	public static String addPreservedParameters(
 		ThemeDisplay themeDisplay, String url) {
 
-		return getPortal().addPreservedParameters(themeDisplay, url);
+		return _portal.addPreservedParameters(themeDisplay, url);
 	}
 
-	public static void addUserLocaleOptionsMessage(HttpServletRequest request) {
-		getPortal().addUserLocaleOptionsMessage(request);
+	public static String addPreservedParameters(
+		ThemeDisplay themeDisplay, String url, boolean typeControlPanel,
+		boolean doAsUser) {
+
+		return _portal.addPreservedParameters(
+			themeDisplay, url, typeControlPanel, doAsUser);
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
+	 */
+	@Deprecated
+	public static void addUserLocaleOptionsMessage(
+		HttpServletRequest httpServletRequest) {
+
+		_portal.addUserLocaleOptionsMessage(httpServletRequest);
 	}
 
 	/**
@@ -274,7 +271,7 @@ public class PortalUtil {
 	 * @param renderRequest the render request
 	 */
 	public static void clearRequestParameters(RenderRequest renderRequest) {
-		getPortal().clearRequestParameters(renderRequest);
+		_portal.clearRequestParameters(renderRequest);
 	}
 
 	/**
@@ -287,7 +284,7 @@ public class PortalUtil {
 	public static void copyRequestParameters(
 		ActionRequest actionRequest, ActionResponse actionResponse) {
 
-		getPortal().copyRequestParameters(actionRequest, actionResponse);
+		_portal.copyRequestParameters(actionRequest, actionResponse);
 	}
 
 	/**
@@ -299,26 +296,26 @@ public class PortalUtil {
 	 *         for redirects
 	 */
 	public static String escapeRedirect(String url) {
-		return getPortal().escapeRedirect(url);
+		return _portal.escapeRedirect(url);
 	}
 
 	/**
 	 * Generates a random key to identify the request based on the input string.
 	 *
-	 * @param  request the servlet request for the page
+	 * @param  httpServletRequest the servlet request for the page
 	 * @param  input the input string
 	 * @return the generated key
 	 */
 	public static String generateRandomKey(
-		HttpServletRequest request, String input) {
+		HttpServletRequest httpServletRequest, String input) {
 
-		return getPortal().generateRandomKey(request, input);
+		return _portal.generateRandomKey(httpServletRequest, input);
 	}
 
 	public static String getAbsoluteURL(
-		HttpServletRequest request, String url) {
+		HttpServletRequest httpServletRequest, String url) {
 
-		return getPortal().getAbsoluteURL(request, url);
+		return _portal.getAbsoluteURL(httpServletRequest, url);
 	}
 
 	public static LayoutQueryStringComposite
@@ -328,7 +325,7 @@ public class PortalUtil {
 				Map<String, Object> requestContext)
 		throws PortalException {
 
-		return getPortal().getActualLayoutQueryStringComposite(
+		return _portal.getActualLayoutQueryStringComposite(
 			groupId, privateLayout, friendlyURL, params, requestContext);
 	}
 
@@ -338,7 +335,7 @@ public class PortalUtil {
 			Map<String, Object> requestContext)
 		throws PortalException {
 
-		return getPortal().getActualURL(
+		return _portal.getActualURL(
 			groupId, privateLayout, mainPath, friendlyURL, params,
 			requestContext);
 	}
@@ -360,20 +357,26 @@ public class PortalUtil {
 	 * @param  layout the page being requested
 	 * @return the alternate URL for the requested canonical URL in the given
 	 *         locale
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static String getAlternateURL(
 			String canonicalURL, ThemeDisplay themeDisplay, Locale locale,
 			Layout layout)
 		throws PortalException {
 
-		return getPortal().getAlternateURL(
+		return _portal.getAlternateURL(
 			canonicalURL, themeDisplay, locale, layout);
 	}
 
-	public static long[] getAncestorSiteGroupIds(long groupId)
+	public static Map<Locale, String> getAlternateURLs(
+			String canonicalURL, ThemeDisplay themeDisplay, Layout layout)
 		throws PortalException {
 
-		return getPortal().getAncestorSiteGroupIds(groupId);
+		return _portal.getAlternateURLs(canonicalURL, themeDisplay, layout);
+	}
+
+	public static long[] getAncestorSiteGroupIds(long groupId) {
+		return _portal.getAncestorSiteGroupIds(groupId);
 	}
 
 	/**
@@ -383,12 +386,13 @@ public class PortalUtil {
 	 * @return the base model instance, or <code>null</code> if the resource
 	 *         permission does not have a base model instance (such as if it's a
 	 *         portlet)
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static BaseModel<?> getBaseModel(
 			ResourcePermission resourcePermission)
 		throws PortalException {
 
-		return getPortal().getBaseModel(resourcePermission);
+		return _portal.getBaseModel(resourcePermission);
 	}
 
 	/**
@@ -398,43 +402,19 @@ public class PortalUtil {
 	 * @param  primKey the primary key of the model instance to get
 	 * @return the base model instance, or <code>null</code> if the model does
 	 *         not have a base model instance (such as if it's a portlet)
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static BaseModel<?> getBaseModel(String modelName, String primKey)
 		throws PortalException {
 
-		return getPortal().getBaseModel(modelName, primKey);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getBasicUserId(
-	 *             HttpServletRequest)}
-	 */
-	@Deprecated
-	public static long getBasicAuthUserId(HttpServletRequest request)
-		throws PortalException {
-
-		return getPortal().getBasicAuthUserId(request);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getBasicUserId(
-	 *             HttpServletRequest)}
-	 */
-	@Deprecated
-	public static long getBasicAuthUserId(
-			HttpServletRequest request, long companyId)
-		throws PortalException {
-
-		return getPortal().getBasicAuthUserId(request, companyId);
+		return _portal.getBaseModel(modelName, primKey);
 	}
 
 	public static List<Group> getBrowsableScopeGroups(
 			long userId, long companyId, long groupId, String portletId)
 		throws PortalException {
 
-		return getPortal().getBrowsableScopeGroups(
+		return _portal.getBrowsableScopeGroups(
 			userId, companyId, groupId, portletId);
 	}
 
@@ -457,12 +437,13 @@ public class PortalUtil {
 	 * @param  layout the page being requested (optionally <code>null</code>).
 	 *         If <code>null</code> is specified, the current page is used.
 	 * @return the canonical URL for the page
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static String getCanonicalURL(
 			String completeURL, ThemeDisplay themeDisplay, Layout layout)
 		throws PortalException {
 
-		return getPortal().getCanonicalURL(completeURL, themeDisplay, layout);
+		return _portal.getCanonicalURL(completeURL, themeDisplay, layout);
 	}
 
 	/**
@@ -487,14 +468,50 @@ public class PortalUtil {
 	 * @param  forceLayoutFriendlyURL whether to add the page's friendly URL to
 	 *         the canonical URL
 	 * @return the canonical URL of the page
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static String getCanonicalURL(
 			String completeURL, ThemeDisplay themeDisplay, Layout layout,
 			boolean forceLayoutFriendlyURL)
 		throws PortalException {
 
-		return getPortal().getCanonicalURL(
+		return _portal.getCanonicalURL(
 			completeURL, themeDisplay, layout, forceLayoutFriendlyURL);
+	}
+
+	/**
+	 * Returns the canonical URL of the page. The canonical URL is often used to
+	 * distinguish a preferred page from its translations.
+	 *
+	 * <p>
+	 * A page's canonical URL is the preferred URL to specify for a set of pages
+	 * with similar or identical content. The canonical URL is used to inform
+	 * search engines that several URLs point to the same page. It is also used
+	 * to generate the URLs for site maps, the URLs that social bookmarks
+	 * publish (Twitter, Facebook links, etc.), and the URLs in sent email. For
+	 * more information, see <a
+	 * href="https://support.google.com/webmasters/answer/139394?hl=en">https://support.google.com/webmasters/answer/139394?hl=en</a>.
+	 * </p>
+	 *
+	 * @param  completeURL the complete URL of the page
+	 * @param  themeDisplay the theme display
+	 * @param  layout the page being requested (optionally <code>null</code>).
+	 *         If <code>null</code> is specified, the current page is used.
+	 * @param  forceLayoutFriendlyURL whether to add the page's friendly URL to
+	 *         the canonical URL
+	 * @param  includeQueryString whether to add the URL query string to the
+	 *         canonical URL
+	 * @return the canonical URL
+	 * @throws PortalException if a portal exception occurred
+	 */
+	public static String getCanonicalURL(
+			String completeURL, ThemeDisplay themeDisplay, Layout layout,
+			boolean forceLayoutFriendlyURL, boolean includeQueryString)
+		throws PortalException {
+
+		return _portal.getCanonicalURL(
+			completeURL, themeDisplay, layout, forceLayoutFriendlyURL,
+			includeQueryString);
 	}
 
 	/**
@@ -505,13 +522,13 @@ public class PortalUtil {
 	 * @return the CDN host address
 	 */
 	public static String getCDNHost(boolean secure) {
-		return getPortal().getCDNHost(secure);
+		return _portal.getCDNHost(secure);
 	}
 
-	public static String getCDNHost(HttpServletRequest request)
+	public static String getCDNHost(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getCDNHost(request);
+		return _portal.getCDNHost(httpServletRequest);
 	}
 
 	/**
@@ -522,7 +539,7 @@ public class PortalUtil {
 	 * @return the CDN host address
 	 */
 	public static String getCDNHostHttp(long companyId) {
-		return getPortal().getCDNHostHttp(companyId);
+		return _portal.getCDNHostHttp(companyId);
 	}
 
 	/**
@@ -533,7 +550,7 @@ public class PortalUtil {
 	 * @return the CDN host address
 	 */
 	public static String getCDNHostHttps(long companyId) {
-		return getPortal().getCDNHostHttps(companyId);
+		return _portal.getCDNHostHttps(companyId);
 	}
 
 	/**
@@ -543,7 +560,7 @@ public class PortalUtil {
 	 * @return the fully qualified name of the class
 	 */
 	public static String getClassName(long classNameId) {
-		return getPortal().getClassName(classNameId);
+		return _portal.getClassName(classNameId);
 	}
 
 	/**
@@ -553,7 +570,7 @@ public class PortalUtil {
 	 * @return the ID of the class
 	 */
 	public static long getClassNameId(Class<?> clazz) {
-		return getPortal().getClassNameId(clazz);
+		return _portal.getClassNameId(clazz);
 	}
 
 	/**
@@ -563,80 +580,82 @@ public class PortalUtil {
 	 * @return the ID of the class
 	 */
 	public static long getClassNameId(String value) {
-		return getPortal().getClassNameId(value);
+		return _portal.getClassNameId(value);
 	}
 
-	public static Company getCompany(HttpServletRequest request)
+	public static Company getCompany(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getCompany(request);
+		return _portal.getCompany(httpServletRequest);
 	}
 
 	public static Company getCompany(PortletRequest portletRequest)
 		throws PortalException {
 
-		return getPortal().getCompany(portletRequest);
+		return _portal.getCompany(portletRequest);
 	}
 
-	public static long getCompanyId(HttpServletRequest request) {
-		return getPortal().getCompanyId(request);
+	public static long getCompanyId(HttpServletRequest httpServletRequest) {
+		return _portal.getCompanyId(httpServletRequest);
 	}
 
 	public static long getCompanyId(PortletRequest portletRequest) {
-		return getPortal().getCompanyId(portletRequest);
+		return _portal.getCompanyId(portletRequest);
 	}
 
 	public static long[] getCompanyIds() {
-		return getPortal().getCompanyIds();
+		return _portal.getCompanyIds();
 	}
 
 	public static Set<String> getComputerAddresses() {
-		return getPortal().getComputerAddresses();
+		return _portal.getComputerAddresses();
 	}
 
 	public static String getComputerName() {
-		return getPortal().getComputerName();
+		return _portal.getComputerName();
 	}
 
 	public static String getControlPanelFullURL(
 			long scopeGroupId, String ppid, Map<String, String[]> params)
 		throws PortalException {
 
-		return getPortal().getControlPanelFullURL(scopeGroupId, ppid, params);
+		return _portal.getControlPanelFullURL(scopeGroupId, ppid, params);
 	}
 
 	public static long getControlPanelPlid(long companyId)
 		throws PortalException {
 
-		return getPortal().getControlPanelPlid(companyId);
+		return _portal.getControlPanelPlid(companyId);
 	}
 
 	public static long getControlPanelPlid(PortletRequest portletRequest)
 		throws PortalException {
 
-		return getPortal().getControlPanelPlid(portletRequest);
+		return _portal.getControlPanelPlid(portletRequest);
 	}
 
 	public static PortletURL getControlPanelPortletURL(
-		HttpServletRequest request, Group group, String portletId,
+		HttpServletRequest httpServletRequest, Group group, String portletId,
 		long refererGroupId, long refererPlid, String lifecycle) {
 
-		return getPortal().getControlPanelPortletURL(
-			request, group, portletId, refererGroupId, refererPlid, lifecycle);
+		return _portal.getControlPanelPortletURL(
+			httpServletRequest, group, portletId, refererGroupId, refererPlid,
+			lifecycle);
 	}
 
 	public static PortletURL getControlPanelPortletURL(
-		HttpServletRequest request, String portletId, String lifecycle) {
+		HttpServletRequest httpServletRequest, String portletId,
+		String lifecycle) {
 
-		return getPortal().getControlPanelPortletURL(
-			request, portletId, lifecycle);
+		return _portal.getControlPanelPortletURL(
+			httpServletRequest, portletId, lifecycle);
 	}
 
 	public static PortletURL getControlPanelPortletURL(
 		PortletRequest portletRequest, Group group, String portletId,
 		long refererGroupId, long refererPlid, String lifecycle) {
 
-		return getPortal().getControlPanelPortletURL(
+		return _portal.getControlPanelPortletURL(
 			portletRequest, group, portletId, refererGroupId, refererPlid,
 			lifecycle);
 	}
@@ -644,91 +663,93 @@ public class PortalUtil {
 	public static PortletURL getControlPanelPortletURL(
 		PortletRequest portletRequest, String portletId, String lifecycle) {
 
-		return getPortal().getControlPanelPortletURL(
+		return _portal.getControlPanelPortletURL(
 			portletRequest, portletId, lifecycle);
 	}
 
 	public static String getCreateAccountURL(
-			HttpServletRequest request, ThemeDisplay themeDisplay)
+			HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay)
 		throws Exception {
 
-		return getPortal().getCreateAccountURL(request, themeDisplay);
+		return _portal.getCreateAccountURL(httpServletRequest, themeDisplay);
 	}
 
 	public static long[] getCurrentAndAncestorSiteGroupIds(long groupId)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroupIds(groupId);
+		return _portal.getCurrentAndAncestorSiteGroupIds(groupId);
 	}
 
 	public static long[] getCurrentAndAncestorSiteGroupIds(
 			long groupId, boolean checkContentSharingWithChildrenEnabled)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroupIds(
+		return _portal.getCurrentAndAncestorSiteGroupIds(
 			groupId, checkContentSharingWithChildrenEnabled);
 	}
 
 	public static long[] getCurrentAndAncestorSiteGroupIds(long[] groupIds)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroupIds(groupIds);
+		return _portal.getCurrentAndAncestorSiteGroupIds(groupIds);
 	}
 
 	public static long[] getCurrentAndAncestorSiteGroupIds(
 			long[] groupIds, boolean checkContentSharingWithChildrenEnabled)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroupIds(
+		return _portal.getCurrentAndAncestorSiteGroupIds(
 			groupIds, checkContentSharingWithChildrenEnabled);
 	}
 
 	public static List<Group> getCurrentAndAncestorSiteGroups(long groupId)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroups(groupId);
+		return _portal.getCurrentAndAncestorSiteGroups(groupId);
 	}
 
 	public static List<Group> getCurrentAndAncestorSiteGroups(
 			long groupId, boolean checkContentSharingWithChildrenEnabled)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroups(
+		return _portal.getCurrentAndAncestorSiteGroups(
 			groupId, checkContentSharingWithChildrenEnabled);
 	}
 
 	public static List<Group> getCurrentAndAncestorSiteGroups(long[] groupIds)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroups(groupIds);
+		return _portal.getCurrentAndAncestorSiteGroups(groupIds);
 	}
 
 	public static List<Group> getCurrentAndAncestorSiteGroups(
 			long[] groupIds, boolean checkContentSharingWithChildrenEnabled)
 		throws PortalException {
 
-		return getPortal().getCurrentAndAncestorSiteGroups(
+		return _portal.getCurrentAndAncestorSiteGroups(
 			groupIds, checkContentSharingWithChildrenEnabled);
 	}
 
-	public static String getCurrentCompleteURL(HttpServletRequest request) {
-		return getPortal().getCurrentCompleteURL(request);
+	public static String getCurrentCompleteURL(
+		HttpServletRequest httpServletRequest) {
+
+		return _portal.getCurrentCompleteURL(httpServletRequest);
 	}
 
-	public static String getCurrentURL(HttpServletRequest request) {
-		return getPortal().getCurrentURL(request);
+	public static String getCurrentURL(HttpServletRequest httpServletRequest) {
+		return _portal.getCurrentURL(httpServletRequest);
 	}
 
 	public static String getCurrentURL(PortletRequest portletRequest) {
-		return getPortal().getCurrentURL(portletRequest);
+		return _portal.getCurrentURL(portletRequest);
 	}
 
 	public static String getCustomSQLFunctionIsNotNull() {
-		return getPortal().getCustomSQLFunctionIsNotNull();
+		return _portal.getCustomSQLFunctionIsNotNull();
 	}
 
 	public static String getCustomSQLFunctionIsNull() {
-		return getPortal().getCustomSQLFunctionIsNull();
+		return _portal.getCustomSQLFunctionIsNull();
 	}
 
 	/**
@@ -741,7 +762,7 @@ public class PortalUtil {
 	 * @return the date object, or <code>null</code> if the date is invalid
 	 */
 	public static Date getDate(int month, int day, int year) {
-		return getPortal().getDate(month, day, year);
+		return _portal.getDate(month, day, year);
 	}
 
 	/**
@@ -756,13 +777,14 @@ public class PortalUtil {
 	 *         date.
 	 * @return the date object, or <code>null</code> if the date is invalid and
 	 *         no exception to throw was provided
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static Date getDate(
 			int month, int day, int year,
 			Class<? extends PortalException> clazz)
 		throws PortalException {
 
-		return getPortal().getDate(month, day, year, clazz);
+		return _portal.getDate(month, day, year, clazz);
 	}
 
 	/**
@@ -779,13 +801,14 @@ public class PortalUtil {
 	 *         date.
 	 * @return the date object, or <code>null</code> if the date is invalid and
 	 *         no exception to throw was provided
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static Date getDate(
 			int month, int day, int year, int hour, int min,
 			Class<? extends PortalException> clazz)
 		throws PortalException {
 
-		return getPortal().getDate(month, day, year, hour, min, clazz);
+		return _portal.getDate(month, day, year, hour, min, clazz);
 	}
 
 	/**
@@ -803,14 +826,14 @@ public class PortalUtil {
 	 *         date.
 	 * @return the date object, or <code>null</code> if the date is invalid and
 	 *         no exception to throw was provided
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static Date getDate(
 			int month, int day, int year, int hour, int min, TimeZone timeZone,
 			Class<? extends PortalException> clazz)
 		throws PortalException {
 
-		return getPortal().getDate(
-			month, day, year, hour, min, timeZone, clazz);
+		return _portal.getDate(month, day, year, hour, min, timeZone, clazz);
 	}
 
 	/**
@@ -826,57 +849,46 @@ public class PortalUtil {
 	 *         date.
 	 * @return the date object, or <code>null</code> if the date is invalid and
 	 *         no exception to throw was provided
+	 * @throws PortalException if a portal exception occurred
 	 */
 	public static Date getDate(
 			int month, int day, int year, TimeZone timeZone,
 			Class<? extends PortalException> clazz)
 		throws PortalException {
 
-		return getPortal().getDate(month, day, year, timeZone, clazz);
+		return _portal.getDate(month, day, year, timeZone, clazz);
 	}
 
 	public static long getDefaultCompanyId() {
-		return getPortal().getDefaultCompanyId();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             com.liferay.portal.kernel.security.auth.http.HttpAuthManagerUtil#getDigestUserId(
-	 *             HttpServletRequest)}
-	 */
-	@Deprecated
-	public static long getDigestAuthUserId(HttpServletRequest request)
-		throws PortalException {
-
-		return getPortal().getDigestAuthUserId(request);
+		return _portal.getDefaultCompanyId();
 	}
 
 	public static String getEmailFromAddress(
 		PortletPreferences preferences, long companyId, String defaultValue) {
 
-		return getPortal().getEmailFromAddress(
+		return _portal.getEmailFromAddress(
 			preferences, companyId, defaultValue);
 	}
 
 	public static String getEmailFromName(
 		PortletPreferences preferences, long companyId, String defaultValue) {
 
-		return getPortal().getEmailFromName(
-			preferences, companyId, defaultValue);
+		return _portal.getEmailFromName(preferences, companyId, defaultValue);
 	}
 
 	public static Map<String, Serializable> getExpandoBridgeAttributes(
-			ExpandoBridge expandoBridge, HttpServletRequest request)
+			ExpandoBridge expandoBridge, HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getExpandoBridgeAttributes(expandoBridge, request);
+		return _portal.getExpandoBridgeAttributes(
+			expandoBridge, httpServletRequest);
 	}
 
 	public static Map<String, Serializable> getExpandoBridgeAttributes(
 			ExpandoBridge expandoBridge, PortletRequest portletRequest)
 		throws PortalException {
 
-		return getPortal().getExpandoBridgeAttributes(
+		return _portal.getExpandoBridgeAttributes(
 			expandoBridge, portletRequest);
 	}
 
@@ -885,16 +897,17 @@ public class PortalUtil {
 			UploadPortletRequest uploadPortletRequest)
 		throws PortalException {
 
-		return getPortal().getExpandoBridgeAttributes(
+		return _portal.getExpandoBridgeAttributes(
 			expandoBridge, uploadPortletRequest);
 	}
 
 	public static Serializable getExpandoValue(
-			HttpServletRequest request, String name, int type,
+			HttpServletRequest httpServletRequest, String name, int type,
 			String displayType)
 		throws PortalException {
 
-		return getPortal().getExpandoValue(request, name, type, displayType);
+		return _portal.getExpandoValue(
+			httpServletRequest, name, type, displayType);
 	}
 
 	public static Serializable getExpandoValue(
@@ -902,8 +915,7 @@ public class PortalUtil {
 			String displayType)
 		throws PortalException {
 
-		return getPortal().getExpandoValue(
-			portletRequest, name, type, displayType);
+		return _portal.getExpandoValue(portletRequest, name, type, displayType);
 	}
 
 	public static Serializable getExpandoValue(
@@ -911,176 +923,103 @@ public class PortalUtil {
 			String displayType)
 		throws PortalException {
 
-		return getPortal().getExpandoValue(
+		return _portal.getExpandoValue(
 			uploadPortletRequest, name, type, displayType);
 	}
 
-	public static String getFacebookURL(
-			Portlet portlet, String facebookCanvasPageURL,
-			ThemeDisplay themeDisplay)
-		throws PortalException {
+	public static String getFirstPageLayoutTypes(
+		HttpServletRequest httpServletRequest) {
 
-		return getPortal().getFacebookURL(
-			portlet, facebookCanvasPageURL, themeDisplay);
+		return _portal.getFirstPageLayoutTypes(httpServletRequest);
 	}
 
-	public static String getFirstPageLayoutTypes(HttpServletRequest request) {
-		return getPortal().getFirstPageLayoutTypes(request);
+	public static String getForwardedHost(
+		HttpServletRequest httpServletRequest) {
+
+		return _portal.getForwardedHost(httpServletRequest);
 	}
 
-	public static String getForwardedHost(HttpServletRequest request) {
-		return getPortal().getForwardedHost(request);
-	}
-
-	public static int getForwardedPort(HttpServletRequest request) {
-		return getPortal().getForwardedPort(request);
+	public static int getForwardedPort(HttpServletRequest httpServletRequest) {
+		return _portal.getForwardedPort(httpServletRequest);
 	}
 
 	public static String getFullName(
 		String firstName, String middleName, String lastName) {
 
-		return getPortal().getFullName(firstName, middleName, lastName);
+		return _portal.getFullName(firstName, middleName, lastName);
 	}
 
 	public static String getGlobalLibDir() {
-		return getPortal().getGlobalLibDir();
+		return _portal.getGlobalLibDir();
 	}
 
 	public static String getGoogleGadgetURL(
 			Portlet portlet, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getGoogleGadgetURL(portlet, themeDisplay);
+		return _portal.getGoogleGadgetURL(portlet, themeDisplay);
 	}
 
 	public static String getGroupFriendlyURL(
 			LayoutSet layoutSet, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getGroupFriendlyURL(layoutSet, themeDisplay);
+		return _portal.getGroupFriendlyURL(layoutSet, themeDisplay);
 	}
 
 	public static String getGroupFriendlyURL(
 			LayoutSet layoutSet, ThemeDisplay themeDisplay, Locale locale)
 		throws PortalException {
 
-		return getPortal().getGroupFriendlyURL(layoutSet, themeDisplay, locale);
+		return _portal.getGroupFriendlyURL(layoutSet, themeDisplay, locale);
 	}
 
 	public static int[] getGroupFriendlyURLIndex(String requestURI) {
-		return getPortal().getGroupFriendlyURLIndex(requestURI);
+		return _portal.getGroupFriendlyURLIndex(requestURI);
 	}
 
-	public static String[] getGroupPermissions(HttpServletRequest request) {
-		return getPortal().getGroupPermissions(request);
-	}
-
-	public static String[] getGroupPermissions(
-		HttpServletRequest request, String className) {
-
-		return getPortal().getGroupPermissions(request, className);
-	}
-
-	public static String[] getGroupPermissions(PortletRequest portletRequest) {
-		return getPortal().getGroupPermissions(portletRequest);
-	}
-
-	public static String[] getGroupPermissions(
-		PortletRequest portletRequest, String className) {
-
-		return getPortal().getGroupPermissions(portletRequest, className);
-	}
-
-	public static String[] getGuestPermissions(HttpServletRequest request) {
-		return getPortal().getGuestPermissions(request);
-	}
-
-	public static String[] getGuestPermissions(
-		HttpServletRequest request, String className) {
-
-		return getPortal().getGuestPermissions(request, className);
-	}
-
-	public static String[] getGuestPermissions(PortletRequest portletRequest) {
-		return getPortal().getGuestPermissions(portletRequest);
-	}
-
-	public static String[] getGuestPermissions(
-		PortletRequest portletRequest, String className) {
-
-		return getPortal().getGuestPermissions(portletRequest, className);
-	}
-
-	public static String getHomeURL(HttpServletRequest request)
+	public static String getHomeURL(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getHomeURL(request);
+		return _portal.getHomeURL(httpServletRequest);
 	}
 
-	public static String getHost(HttpServletRequest request) {
-		return getPortal().getHost(request);
+	public static String getHost(HttpServletRequest httpServletRequest) {
+		return _portal.getHost(httpServletRequest);
 	}
 
 	public static String getHost(PortletRequest portletRequest) {
-		return getPortal().getHost(portletRequest);
+		return _portal.getHost(portletRequest);
 	}
 
 	public static HttpServletRequest getHttpServletRequest(
 		PortletRequest portletRequest) {
 
-		return getPortal().getHttpServletRequest(portletRequest);
+		return _portal.getHttpServletRequest(portletRequest);
 	}
 
 	public static HttpServletResponse getHttpServletResponse(
 		PortletResponse portletResponse) {
 
-		return getPortal().getHttpServletResponse(portletResponse);
+		return _portal.getHttpServletResponse(portletResponse);
 	}
 
 	public static String getI18nPathLanguageId(
 		Locale locale, String defaultI18nPathLanguageId) {
 
-		return getPortal().getI18nPathLanguageId(
-			locale, defaultI18nPathLanguageId);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public static String getJournalArticleActualURL(
-			long groupId, boolean privateLayout, String mainPath,
-			String friendlyURL, Map<String, String[]> params,
-			Map<String, Object> requestContext)
-		throws PortalException {
-
-		return getPortal().getJournalArticleActualURL(
-			groupId, privateLayout, mainPath, friendlyURL, params,
-			requestContext);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public static Layout getJournalArticleLayout(
-			long groupId, boolean privateLayout, String friendlyURL)
-		throws PortalException {
-
-		return getPortal().getJournalArticleLayout(
-			groupId, privateLayout, friendlyURL);
+		return _portal.getI18nPathLanguageId(locale, defaultI18nPathLanguageId);
 	}
 
 	public static String getJsSafePortletId(String portletId) {
-		return getPortal().getJsSafePortletId(portletId);
+		return _portal.getJsSafePortletId(portletId);
 	}
 
 	public static String getLayoutActualURL(Layout layout) {
-		return getPortal().getLayoutActualURL(layout);
+		return _portal.getLayoutActualURL(layout);
 	}
 
 	public static String getLayoutActualURL(Layout layout, String mainPath) {
-		return getPortal().getLayoutActualURL(layout, mainPath);
+		return _portal.getLayoutActualURL(layout, mainPath);
 	}
 
 	public static String getLayoutActualURL(
@@ -1088,7 +1027,7 @@ public class PortalUtil {
 			String friendlyURL)
 		throws PortalException {
 
-		return getPortal().getLayoutActualURL(
+		return _portal.getLayoutActualURL(
 			groupId, privateLayout, mainPath, friendlyURL);
 	}
 
@@ -1098,7 +1037,7 @@ public class PortalUtil {
 			Map<String, Object> requestContext)
 		throws PortalException {
 
-		return getPortal().getLayoutActualURL(
+		return _portal.getLayoutActualURL(
 			groupId, privateLayout, mainPath, friendlyURL, params,
 			requestContext);
 	}
@@ -1107,22 +1046,30 @@ public class PortalUtil {
 			Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutFriendlyURL(layout, themeDisplay);
+		return _portal.getLayoutFriendlyURL(layout, themeDisplay);
 	}
 
 	public static String getLayoutFriendlyURL(
 			Layout layout, ThemeDisplay themeDisplay, Locale locale)
 		throws PortalException {
 
-		return getPortal().getLayoutFriendlyURL(layout, themeDisplay, locale);
+		return _portal.getLayoutFriendlyURL(layout, themeDisplay, locale);
 	}
 
-	public static LayoutFriendlyURLComposite getLayoutFriendlyURLComposite(
-			long groupId, boolean privateLayout, String friendlyURL,
-			Map<String, String[]> params, Map<String, Object> requestContext)
+	public static String getLayoutFriendlyURL(ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutFriendlyURLComposite(
+		return _portal.getLayoutFriendlyURL(themeDisplay);
+	}
+
+	public static LayoutFriendlyURLSeparatorComposite
+			getLayoutFriendlyURLSeparatorComposite(
+				long groupId, boolean privateLayout, String friendlyURL,
+				Map<String, String[]> params,
+				Map<String, Object> requestContext)
+		throws PortalException {
+
+		return _portal.getLayoutFriendlyURLSeparatorComposite(
 			groupId, privateLayout, friendlyURL, params, requestContext);
 	}
 
@@ -1130,322 +1077,298 @@ public class PortalUtil {
 			Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutFullURL(layout, themeDisplay);
+		return _portal.getLayoutFullURL(layout, themeDisplay);
 	}
 
 	public static String getLayoutFullURL(
 			Layout layout, ThemeDisplay themeDisplay, boolean doAsUser)
 		throws PortalException {
 
-		return getPortal().getLayoutFullURL(layout, themeDisplay, doAsUser);
+		return _portal.getLayoutFullURL(layout, themeDisplay, doAsUser);
 	}
 
 	public static String getLayoutFullURL(long groupId, String portletId)
 		throws PortalException {
 
-		return getPortal().getLayoutFullURL(groupId, portletId);
+		return _portal.getLayoutFullURL(groupId, portletId);
 	}
 
 	public static String getLayoutFullURL(
 			long groupId, String portletId, boolean secure)
 		throws PortalException {
 
-		return getPortal().getLayoutFullURL(groupId, portletId, secure);
+		return _portal.getLayoutFullURL(groupId, portletId, secure);
 	}
 
 	public static String getLayoutFullURL(ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutFullURL(themeDisplay);
+		return _portal.getLayoutFullURL(themeDisplay);
 	}
 
 	public static String getLayoutRelativeURL(
 			Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutRelativeURL(layout, themeDisplay);
+		return _portal.getLayoutRelativeURL(layout, themeDisplay);
 	}
 
 	public static String getLayoutRelativeURL(
 			Layout layout, ThemeDisplay themeDisplay, boolean doAsUser)
 		throws PortalException {
 
-		return getPortal().getLayoutRelativeURL(layout, themeDisplay, doAsUser);
+		return _portal.getLayoutRelativeURL(layout, themeDisplay, doAsUser);
 	}
 
 	public static String getLayoutSetDisplayURL(
 			LayoutSet layoutSet, boolean secureConnection)
 		throws PortalException {
 
-		return getPortal().getLayoutSetDisplayURL(layoutSet, secureConnection);
+		return _portal.getLayoutSetDisplayURL(layoutSet, secureConnection);
 	}
 
 	public static String getLayoutSetFriendlyURL(
 			LayoutSet layoutSet, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutSetFriendlyURL(layoutSet, themeDisplay);
+		return _portal.getLayoutSetFriendlyURL(layoutSet, themeDisplay);
 	}
 
 	public static String getLayoutTarget(Layout layout) {
-		return getPortal().getLayoutTarget(layout);
+		return _portal.getLayoutTarget(layout);
 	}
 
 	public static String getLayoutURL(Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutURL(layout, themeDisplay);
+		return _portal.getLayoutURL(layout, themeDisplay);
 	}
 
 	public static String getLayoutURL(
 			Layout layout, ThemeDisplay themeDisplay, boolean doAsUser)
 		throws PortalException {
 
-		return getPortal().getLayoutURL(layout, themeDisplay, doAsUser);
+		return _portal.getLayoutURL(layout, themeDisplay, doAsUser);
 	}
 
 	public static String getLayoutURL(
 			Layout layout, ThemeDisplay themeDisplay, Locale locale)
 		throws PortalException {
 
-		return getPortal().getLayoutURL(layout, themeDisplay, locale);
+		return _portal.getLayoutURL(layout, themeDisplay, locale);
 	}
 
 	public static String getLayoutURL(ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getLayoutURL(themeDisplay);
+		return _portal.getLayoutURL(themeDisplay);
 	}
 
 	public static LiferayPortletRequest getLiferayPortletRequest(
 		PortletRequest portletRequest) {
 
-		return getPortal().getLiferayPortletRequest(portletRequest);
+		return _portal.getLiferayPortletRequest(portletRequest);
 	}
 
 	public static LiferayPortletResponse getLiferayPortletResponse(
 		PortletResponse portletResponse) {
 
-		return getPortal().getLiferayPortletResponse(portletResponse);
+		return _portal.getLiferayPortletResponse(portletResponse);
 	}
 
-	public static Locale getLocale(HttpServletRequest request) {
-		return getPortal().getLocale(request);
+	public static Locale getLocale(HttpServletRequest httpServletRequest) {
+		return _portal.getLocale(httpServletRequest);
 	}
 
 	public static Locale getLocale(
-		HttpServletRequest request, HttpServletResponse response,
-		boolean initialize) {
+		HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, boolean initialize) {
 
-		return getPortal().getLocale(request, response, initialize);
+		return _portal.getLocale(
+			httpServletRequest, httpServletResponse, initialize);
 	}
 
 	public static Locale getLocale(PortletRequest portletRequest) {
-		return getPortal().getLocale(portletRequest);
+		return _portal.getLocale(portletRequest);
 	}
 
 	public static String getLocalizedFriendlyURL(
-			HttpServletRequest request, Layout layout, Locale locale,
-			Locale originalLocale)
-		throws Exception {
+		HttpServletRequest httpServletRequest, Layout layout, Locale locale,
+		Locale originalLocale) {
 
-		return getPortal().getLocalizedFriendlyURL(
-			request, layout, locale, originalLocale);
+		return _portal.getLocalizedFriendlyURL(
+			httpServletRequest, layout, locale, originalLocale);
 	}
 
 	public static String getMailId(
 		String mx, String popPortletPrefix, Object... ids) {
 
-		return getPortal().getMailId(mx, popPortletPrefix, ids);
+		return _portal.getMailId(mx, popPortletPrefix, ids);
 	}
 
 	public static String getNetvibesURL(
 			Portlet portlet, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getNetvibesURL(portlet, themeDisplay);
+		return _portal.getNetvibesURL(portlet, themeDisplay);
 	}
 
 	public static String getNewPortletTitle(
 		String portletTitle, String oldScopeName, String newScopeName) {
 
-		return getPortal().getNewPortletTitle(
+		return _portal.getNewPortletTitle(
 			portletTitle, oldScopeName, newScopeName);
 	}
 
 	public static HttpServletRequest getOriginalServletRequest(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		return getPortal().getOriginalServletRequest(request);
+		return _portal.getOriginalServletRequest(httpServletRequest);
 	}
 
 	public static String getPathContext() {
-		return getPortal().getPathContext();
+		return _portal.getPathContext();
 	}
 
-	public static String getPathContext(HttpServletRequest request) {
-		return getPortal().getPathContext(request);
+	public static String getPathContext(HttpServletRequest httpServletRequest) {
+		return _portal.getPathContext(httpServletRequest);
 	}
 
 	public static String getPathContext(PortletRequest portletRequest) {
-		return getPortal().getPathContext(portletRequest);
+		return _portal.getPathContext(portletRequest);
 	}
 
 	public static String getPathContext(String contextPath) {
-		return getPortal().getPathContext(contextPath);
+		return _portal.getPathContext(contextPath);
 	}
 
 	public static String getPathFriendlyURLPrivateGroup() {
-		return getPortal().getPathFriendlyURLPrivateGroup();
+		return _portal.getPathFriendlyURLPrivateGroup();
 	}
 
 	public static String getPathFriendlyURLPrivateUser() {
-		return getPortal().getPathFriendlyURLPrivateUser();
+		return _portal.getPathFriendlyURLPrivateUser();
 	}
 
 	public static String getPathFriendlyURLPublic() {
-		return getPortal().getPathFriendlyURLPublic();
+		return _portal.getPathFriendlyURLPublic();
 	}
 
 	public static String getPathImage() {
-		return getPortal().getPathImage();
+		return _portal.getPathImage();
 	}
 
 	public static String getPathMain() {
-		return getPortal().getPathMain();
+		return _portal.getPathMain();
 	}
 
 	public static String getPathModule() {
-		return getPortal().getPathModule();
+		return _portal.getPathModule();
 	}
 
 	public static String getPathProxy() {
-		return getPortal().getPathProxy();
+		return _portal.getPathProxy();
 	}
 
 	public static long getPlidFromFriendlyURL(
 		long companyId, String friendlyURL) {
 
-		return getPortal().getPlidFromFriendlyURL(companyId, friendlyURL);
+		return _portal.getPlidFromFriendlyURL(companyId, friendlyURL);
 	}
 
 	public static long getPlidFromPortletId(
 			long groupId, boolean privateLayout, String portletId)
 		throws PortalException {
 
-		return getPortal().getPlidFromPortletId(
-			groupId, privateLayout, portletId);
+		return _portal.getPlidFromPortletId(groupId, privateLayout, portletId);
 	}
 
 	public static long getPlidFromPortletId(long groupId, String portletId)
 		throws PortalException {
 
-		return getPortal().getPlidFromPortletId(groupId, portletId);
+		return _portal.getPlidFromPortletId(groupId, portletId);
 	}
 
 	public static Portal getPortal() {
-		PortalRuntimePermission.checkGetBeanProperty(PortalUtil.class);
-
 		return _portal;
 	}
 
 	public static PortalInetSocketAddressEventListener[]
 		getPortalInetSocketAddressEventListeners() {
 
-		return getPortal().getPortalInetSocketAddressEventListeners();
+		return _portal.getPortalInetSocketAddressEventListeners();
 	}
 
 	public static String getPortalLibDir() {
-		return getPortal().getPortalLibDir();
+		return _portal.getPortalLibDir();
 	}
 
 	public static InetAddress getPortalLocalInetAddress(boolean secure) {
-		return getPortal().getPortalLocalInetAddress(secure);
+		return _portal.getPortalLocalInetAddress(secure);
 	}
 
 	public static int getPortalLocalPort(boolean secure) {
-		return getPortal().getPortalLocalPort(secure);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getPortalServerPort(boolean)}
-	 */
-	@Deprecated
-	public static int getPortalPort(boolean secure) {
-		return getPortal().getPortalPort(secure);
+		return _portal.getPortalLocalPort(secure);
 	}
 
 	public static Properties getPortalProperties() {
-		return getPortal().getPortalProperties();
+		return _portal.getPortalProperties();
 	}
 
 	public static InetAddress getPortalServerInetAddress(boolean secure) {
-		return getPortal().getPortalServerInetAddress(secure);
+		return _portal.getPortalServerInetAddress(secure);
 	}
 
 	public static int getPortalServerPort(boolean secure) {
-		return getPortal().getPortalServerPort(secure);
+		return _portal.getPortalServerPort(secure);
 	}
 
-	public static String getPortalURL(HttpServletRequest request) {
-		return getPortal().getPortalURL(request);
+	public static String getPortalURL(HttpServletRequest httpServletRequest) {
+		return _portal.getPortalURL(httpServletRequest);
 	}
 
 	public static String getPortalURL(
-		HttpServletRequest request, boolean secure) {
+		HttpServletRequest httpServletRequest, boolean secure) {
 
-		return getPortal().getPortalURL(request, secure);
+		return _portal.getPortalURL(httpServletRequest, secure);
 	}
 
 	public static String getPortalURL(Layout layout, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getPortalURL(layout, themeDisplay);
+		return _portal.getPortalURL(layout, themeDisplay);
 	}
 
 	public static String getPortalURL(
 		LayoutSet layoutSet, ThemeDisplay themeDisplay) {
 
-		return getPortal().getPortalURL(layoutSet, themeDisplay);
+		return _portal.getPortalURL(layoutSet, themeDisplay);
 	}
 
 	public static String getPortalURL(PortletRequest portletRequest) {
-		return getPortal().getPortalURL(portletRequest);
+		return _portal.getPortalURL(portletRequest);
 	}
 
 	public static String getPortalURL(
 		PortletRequest portletRequest, boolean secure) {
 
-		return getPortal().getPortalURL(portletRequest, secure);
+		return _portal.getPortalURL(portletRequest, secure);
 	}
 
 	public static String getPortalURL(
 		String serverName, int serverPort, boolean secure) {
 
-		return getPortal().getPortalURL(serverName, serverPort, secure);
+		return _portal.getPortalURL(serverName, serverPort, secure);
 	}
 
 	public static String getPortalURL(ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getPortalURL(themeDisplay);
+		return _portal.getPortalURL(themeDisplay);
 	}
 
 	public static String getPortalWebDir() {
-		return getPortal().getPortalWebDir();
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             com.liferay.portal.kernel.servlet.taglib.ui.BreadcrumbUtil#getPortletBreadcrumbEntries(
-	 *             HttpServletRequest)}
-	 */
-	@Deprecated
-	public static List<BreadcrumbEntry> getPortletBreadcrumbs(
-		HttpServletRequest request) {
-
-		return getPortal().getPortletBreadcrumbs(request);
+		return _portal.getPortalWebDir();
 	}
 
 	public static PortletConfig getPortletConfig(
@@ -1464,547 +1387,472 @@ public class PortalUtil {
 	public static String getPortletDescription(
 		Portlet portlet, ServletContext servletContext, Locale locale) {
 
-		return getPortal().getPortletDescription(
-			portlet, servletContext, locale);
+		return _portal.getPortletDescription(portlet, servletContext, locale);
 	}
 
 	public static String getPortletDescription(Portlet portlet, User user) {
-		return getPortal().getPortletDescription(portlet, user);
+		return _portal.getPortletDescription(portlet, user);
 	}
 
 	public static String getPortletDescription(
 		String portletId, Locale locale) {
 
-		return getPortal().getPortletDescription(portletId, locale);
+		return _portal.getPortletDescription(portletId, locale);
 	}
 
 	public static String getPortletDescription(
 		String portletId, String languageId) {
 
-		return getPortal().getPortletDescription(portletId, languageId);
+		return _portal.getPortletDescription(portletId, languageId);
 	}
 
 	public static String getPortletDescription(String portletId, User user) {
-		return getPortal().getPortletDescription(portletId, user);
+		return _portal.getPortletDescription(portletId, user);
 	}
 
-	public static String getPortletId(HttpServletRequest request) {
-		return getPortal().getPortletId(request);
+	public static String getPortletId(HttpServletRequest httpServletRequest) {
+		return _portal.getPortletId(httpServletRequest);
 	}
 
 	public static String getPortletId(PortletRequest portletRequest) {
-		return getPortal().getPortletId(portletRequest);
+		return _portal.getPortletId(portletRequest);
 	}
 
 	public static String getPortletLongTitle(Portlet portlet, Locale locale) {
-		return getPortal().getPortletLongTitle(portlet, locale);
+		return _portal.getPortletLongTitle(portlet, locale);
 	}
 
 	public static String getPortletLongTitle(
 		Portlet portlet, ServletContext servletContext, Locale locale) {
 
-		return getPortal().getPortletLongTitle(portlet, servletContext, locale);
+		return _portal.getPortletLongTitle(portlet, servletContext, locale);
 	}
 
 	public static String getPortletLongTitle(
 		Portlet portlet, String languageId) {
 
-		return getPortal().getPortletLongTitle(portlet, languageId);
+		return _portal.getPortletLongTitle(portlet, languageId);
 	}
 
 	public static String getPortletLongTitle(Portlet portlet, User user) {
-		return getPortal().getPortletLongTitle(portlet, user);
+		return _portal.getPortletLongTitle(portlet, user);
 	}
 
 	public static String getPortletLongTitle(String portletId, Locale locale) {
-		return getPortal().getPortletLongTitle(portletId, locale);
+		return _portal.getPortletLongTitle(portletId, locale);
 	}
 
 	public static String getPortletLongTitle(
 		String portletId, String languageId) {
 
-		return getPortal().getPortletLongTitle(portletId, languageId);
+		return _portal.getPortletLongTitle(portletId, languageId);
 	}
 
 	public static String getPortletLongTitle(String portletId, User user) {
-		return getPortal().getPortletLongTitle(portletId, user);
+		return _portal.getPortletLongTitle(portletId, user);
 	}
 
 	public static String getPortletNamespace(String portletId) {
-		return getPortal().getPortletNamespace(portletId);
+		return _portal.getPortletNamespace(portletId);
 	}
 
 	public static String getPortletTitle(Portlet portlet, Locale locale) {
-		return getPortal().getPortletTitle(portlet, locale);
+		return _portal.getPortletTitle(portlet, locale);
 	}
 
 	public static String getPortletTitle(
 		Portlet portlet, ServletContext servletContext, Locale locale) {
 
-		return getPortal().getPortletTitle(portlet, servletContext, locale);
+		return _portal.getPortletTitle(portlet, servletContext, locale);
 	}
 
 	public static String getPortletTitle(Portlet portlet, String languageId) {
-		return getPortal().getPortletTitle(portlet, languageId);
+		return _portal.getPortletTitle(portlet, languageId);
 	}
 
 	public static String getPortletTitle(Portlet portlet, User user) {
-		return getPortal().getPortletTitle(portlet, user);
+		return _portal.getPortletTitle(portlet, user);
 	}
 
 	public static String getPortletTitle(PortletRequest portletRequest) {
-		return getPortal().getPortletTitle(portletRequest);
+		return _portal.getPortletTitle(portletRequest);
 	}
 
 	public static String getPortletTitle(PortletResponse portletResponse) {
-		return getPortal().getPortletTitle(portletResponse);
+		return _portal.getPortletTitle(portletResponse);
 	}
 
 	public static String getPortletTitle(String portletId, Locale locale) {
-		return getPortal().getPortletTitle(portletId, locale);
+		return _portal.getPortletTitle(portletId, locale);
 	}
 
 	public static String getPortletTitle(
 		String portletId, ResourceBundle resourceBundle) {
 
-		return getPortal().getPortletTitle(portletId, resourceBundle);
+		return _portal.getPortletTitle(portletId, resourceBundle);
 	}
 
 	public static String getPortletTitle(String portletId, String languageId) {
-		return getPortal().getPortletTitle(portletId, languageId);
+		return _portal.getPortletTitle(portletId, languageId);
 	}
 
 	public static String getPortletTitle(String portletId, User user) {
-		return getPortal().getPortletTitle(portletId, user);
+		return _portal.getPortletTitle(portletId, user);
 	}
 
 	public static String getPortletXmlFileName() {
-		return getPortal().getPortletXmlFileName();
+		return _portal.getPortletXmlFileName();
 	}
 
 	public static PortletPreferences getPreferences(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		return getPortal().getPreferences(request);
+		return _portal.getPreferences(httpServletRequest);
 	}
 
 	public static PreferencesValidator getPreferencesValidator(
 		Portlet portlet) {
 
-		return getPortal().getPreferencesValidator(portlet);
+		return _portal.getPreferencesValidator(portlet);
 	}
 
-	public static String getRelativeHomeURL(HttpServletRequest request)
+	public static String getRelativeHomeURL(
+			HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getRelativeHomeURL(request);
+		return _portal.getRelativeHomeURL(httpServletRequest);
 	}
 
 	public static ResourceBundle getResourceBundle(Locale locale) {
-		return getPortal().getResourceBundle(locale);
+		return _portal.getResourceBundle(locale);
 	}
 
-	public static long getScopeGroupId(HttpServletRequest request)
+	public static long getScopeGroupId(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getScopeGroupId(request);
+		return _portal.getScopeGroupId(httpServletRequest);
 	}
 
 	public static long getScopeGroupId(
-			HttpServletRequest request, String portletId)
+			HttpServletRequest httpServletRequest, String portletId)
 		throws PortalException {
 
-		return getPortal().getScopeGroupId(request, portletId);
+		return _portal.getScopeGroupId(httpServletRequest, portletId);
 	}
 
 	public static long getScopeGroupId(
-			HttpServletRequest request, String portletId,
+			HttpServletRequest httpServletRequest, String portletId,
 			boolean checkStagingGroup)
 		throws PortalException {
 
-		return getPortal().getScopeGroupId(
-			request, portletId, checkStagingGroup);
+		return _portal.getScopeGroupId(
+			httpServletRequest, portletId, checkStagingGroup);
 	}
 
 	public static long getScopeGroupId(Layout layout) {
-		return getPortal().getScopeGroupId(layout);
+		return _portal.getScopeGroupId(layout);
 	}
 
 	public static long getScopeGroupId(Layout layout, String portletId) {
-		return getPortal().getScopeGroupId(layout, portletId);
+		return _portal.getScopeGroupId(layout, portletId);
 	}
 
 	public static long getScopeGroupId(long plid) {
-		return getPortal().getScopeGroupId(plid);
+		return _portal.getScopeGroupId(plid);
 	}
 
 	public static long getScopeGroupId(PortletRequest portletRequest)
 		throws PortalException {
 
-		return getPortal().getScopeGroupId(portletRequest);
+		return _portal.getScopeGroupId(portletRequest);
 	}
 
-	public static User getSelectedUser(HttpServletRequest request)
+	public static User getSelectedUser(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getSelectedUser(request);
+		return _portal.getSelectedUser(httpServletRequest);
 	}
 
 	public static User getSelectedUser(
-			HttpServletRequest request, boolean checkPermission)
+			HttpServletRequest httpServletRequest, boolean checkPermission)
 		throws PortalException {
 
-		return getPortal().getSelectedUser(request, checkPermission);
+		return _portal.getSelectedUser(httpServletRequest, checkPermission);
 	}
 
 	public static User getSelectedUser(PortletRequest portletRequest)
 		throws PortalException {
 
-		return getPortal().getSelectedUser(portletRequest);
+		return _portal.getSelectedUser(portletRequest);
 	}
 
 	public static User getSelectedUser(
 			PortletRequest portletRequest, boolean checkPermission)
 		throws PortalException {
 
-		return getPortal().getSelectedUser(portletRequest, checkPermission);
+		return _portal.getSelectedUser(portletRequest, checkPermission);
 	}
 
 	public static String getServletContextName() {
-		return getPortal().getServletContextName();
+		return _portal.getServletContextName();
 	}
 
 	public static long[] getSharedContentSiteGroupIds(
 			long companyId, long groupId, long userId)
 		throws PortalException {
 
-		return getPortal().getSharedContentSiteGroupIds(
-			companyId, groupId, userId);
+		return _portal.getSharedContentSiteGroupIds(companyId, groupId, userId);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getControlPanelPortletURL(PortletRequest, Group, String,
-	 *             long, String)}
-	 */
-	@Deprecated
-	public static PortletURL getSiteAdministrationURL(
-		HttpServletRequest request, ThemeDisplay themeDisplay,
-		String portletId) {
-
-		return getPortal().getSiteAdministrationURL(
-			request, themeDisplay, portletId);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getControlPanelPortletURL(PortletRequest, Group, String,
-	 *             long, String)}
-	 */
-	@Deprecated
-	public static PortletURL getSiteAdministrationURL(
-		PortletResponse portletResponse, ThemeDisplay themeDisplay,
-		String portletName) {
-
-		return getPortal().getSiteAdministrationURL(
-			portletResponse, themeDisplay, portletName);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getCurrentAndAncestorSiteGroupIds(long)}
-	 */
-	@Deprecated
-	public static long[] getSiteAndCompanyGroupIds(long groupId)
+	public static String getSiteAdminURL(
+			ThemeDisplay themeDisplay, String ppid,
+			Map<String, String[]> params)
 		throws PortalException {
 
-		return getPortal().getSiteAndCompanyGroupIds(groupId);
+		return _portal.getSiteAdminURL(themeDisplay, ppid, params);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #getCurrentAndAncestorSiteGroupIds(long)}
-	 */
-	@Deprecated
-	public static long[] getSiteAndCompanyGroupIds(ThemeDisplay themeDisplay)
+	public static Locale getSiteDefaultLocale(Group group)
 		throws PortalException {
 
-		return getPortal().getSiteAndCompanyGroupIds(themeDisplay);
+		return _portal.getSiteDefaultLocale(group);
 	}
 
 	public static Locale getSiteDefaultLocale(long groupId)
 		throws PortalException {
 
-		return getPortal().getSiteDefaultLocale(groupId);
+		return _portal.getSiteDefaultLocale(groupId);
 	}
 
 	public static long getSiteGroupId(long scopeGroupId) {
-		return getPortal().getSiteGroupId(scopeGroupId);
+		return _portal.getSiteGroupId(scopeGroupId);
 	}
 
 	public static String getSiteLoginURL(ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getSiteLoginURL(themeDisplay);
+		return _portal.getSiteLoginURL(themeDisplay);
 	}
 
 	public static String getStaticResourceURL(
-		HttpServletRequest request, String uri) {
+		HttpServletRequest httpServletRequest, String uri) {
 
-		return getPortal().getStaticResourceURL(request, uri);
+		return _portal.getStaticResourceURL(httpServletRequest, uri);
 	}
 
 	public static String getStaticResourceURL(
-		HttpServletRequest request, String uri, long timestamp) {
+		HttpServletRequest httpServletRequest, String uri, long timestamp) {
 
-		return getPortal().getStaticResourceURL(request, uri, timestamp);
+		return _portal.getStaticResourceURL(httpServletRequest, uri, timestamp);
 	}
 
 	public static String getStaticResourceURL(
-		HttpServletRequest request, String uri, String queryString) {
+		HttpServletRequest httpServletRequest, String uri, String queryString) {
 
-		return getPortal().getStaticResourceURL(request, uri, queryString);
+		return _portal.getStaticResourceURL(
+			httpServletRequest, uri, queryString);
 	}
 
 	public static String getStaticResourceURL(
-		HttpServletRequest request, String uri, String queryString,
+		HttpServletRequest httpServletRequest, String uri, String queryString,
 		long timestamp) {
 
-		return getPortal().getStaticResourceURL(
-			request, uri, queryString, timestamp);
+		return _portal.getStaticResourceURL(
+			httpServletRequest, uri, queryString, timestamp);
 	}
 
-	public static String getStrutsAction(HttpServletRequest request) {
-		return getPortal().getStrutsAction(request);
+	public static String getStrutsAction(
+		HttpServletRequest httpServletRequest) {
+
+		return _portal.getStrutsAction(httpServletRequest);
 	}
 
 	public static String[] getSystemGroups() {
-		return getPortal().getSystemGroups();
+		return _portal.getSystemGroups();
 	}
 
 	public static String[] getSystemOrganizationRoles() {
-		return getPortal().getSystemOrganizationRoles();
+		return _portal.getSystemOrganizationRoles();
 	}
 
 	public static String[] getSystemRoles() {
-		return getPortal().getSystemRoles();
+		return _portal.getSystemRoles();
 	}
 
 	public static String[] getSystemSiteRoles() {
-		return getPortal().getSystemSiteRoles();
+		return _portal.getSystemSiteRoles();
 	}
 
 	public static String getUniqueElementId(
-		HttpServletRequest request, String namespace, String id) {
+		HttpServletRequest httpServletRequest, String namespace, String id) {
 
-		return getPortal().getUniqueElementId(request, namespace, id);
+		return _portal.getUniqueElementId(httpServletRequest, namespace, id);
 	}
 
 	public static String getUniqueElementId(
 		PortletRequest request, String namespace, String id) {
 
-		return getPortal().getUniqueElementId(request, namespace, id);
+		return _portal.getUniqueElementId(request, namespace, id);
 	}
 
 	public static UploadPortletRequest getUploadPortletRequest(
 		PortletRequest portletRequest) {
 
-		return getPortal().getUploadPortletRequest(portletRequest);
+		return _portal.getUploadPortletRequest(portletRequest);
 	}
 
 	public static UploadServletRequest getUploadServletRequest(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		return getPortal().getUploadServletRequest(request);
+		return _portal.getUploadServletRequest(httpServletRequest);
+	}
+
+	public static UploadServletRequest getUploadServletRequest(
+		HttpServletRequest httpServletRequest, int fileSizeThreshold,
+		String location, long maxRequestSize, long maxFileSize) {
+
+		return _portal.getUploadServletRequest(
+			httpServletRequest, fileSizeThreshold, location, maxRequestSize,
+			maxFileSize);
 	}
 
 	public static Date getUptime() {
-		return getPortal().getUptime();
+		return _portal.getUptime();
 	}
 
 	public static String getURLWithSessionId(String url, String sessionId) {
-		return getPortal().getURLWithSessionId(url, sessionId);
+		return _portal.getURLWithSessionId(url, sessionId);
 	}
 
-	public static User getUser(HttpServletRequest request)
+	public static User getUser(HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().getUser(request);
+		return _portal.getUser(httpServletRequest);
 	}
 
 	public static User getUser(PortletRequest portletRequest)
 		throws PortalException {
 
-		return getPortal().getUser(portletRequest);
+		return _portal.getUser(portletRequest);
 	}
 
 	public static String getUserEmailAddress(long userId) {
-		return getPortal().getUserEmailAddress(userId);
+		return _portal.getUserEmailAddress(userId);
 	}
 
-	public static long getUserId(HttpServletRequest request) {
-		return getPortal().getUserId(request);
+	public static long getUserId(HttpServletRequest httpServletRequest) {
+		return _portal.getUserId(httpServletRequest);
 	}
 
 	public static long getUserId(PortletRequest portletRequest) {
-		return getPortal().getUserId(portletRequest);
+		return _portal.getUserId(portletRequest);
 	}
 
 	public static String getUserName(BaseModel<?> baseModel) {
-		return getPortal().getUserName(baseModel);
+		return _portal.getUserName(baseModel);
 	}
 
 	public static String getUserName(long userId, String defaultUserName) {
-		return getPortal().getUserName(userId, defaultUserName);
+		return _portal.getUserName(userId, defaultUserName);
 	}
 
 	public static String getUserName(
-		long userId, String defaultUserName, HttpServletRequest request) {
+		long userId, String defaultUserName,
+		HttpServletRequest httpServletRequest) {
 
-		return getPortal().getUserName(userId, defaultUserName, request);
+		return _portal.getUserName(userId, defaultUserName, httpServletRequest);
 	}
 
 	public static String getUserName(
 		long userId, String defaultUserName, String userAttribute) {
 
-		return getPortal().getUserName(userId, defaultUserName, userAttribute);
+		return _portal.getUserName(userId, defaultUserName, userAttribute);
 	}
 
 	public static String getUserName(
 		long userId, String defaultUserName, String userAttribute,
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		return getPortal().getUserName(
-			userId, defaultUserName, userAttribute, request);
+		return _portal.getUserName(
+			userId, defaultUserName, userAttribute, httpServletRequest);
 	}
 
-	public static String getUserPassword(HttpServletRequest request) {
-		return getPortal().getUserPassword(request);
+	public static String getUserPassword(
+		HttpServletRequest httpServletRequest) {
+
+		return _portal.getUserPassword(httpServletRequest);
 	}
 
 	public static String getUserPassword(HttpSession session) {
-		return getPortal().getUserPassword(session);
+		return _portal.getUserPassword(session);
 	}
 
 	public static String getUserPassword(PortletRequest portletRequest) {
-		return getPortal().getUserPassword(portletRequest);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public static String getUserValue(
-		long userId, String param, String defaultValue) {
-
-		return getPortal().getUserValue(userId, param, defaultValue);
+		return _portal.getUserPassword(portletRequest);
 	}
 
 	public static String getValidPortalDomain(long companyId, String domain) {
-		return getPortal().getValidPortalDomain(companyId, domain);
+		return _portal.getValidPortalDomain(companyId, domain);
 	}
 
 	public static long getValidUserId(long companyId, long userId)
 		throws PortalException {
 
-		return getPortal().getValidUserId(companyId, userId);
+		return _portal.getValidUserId(companyId, userId);
 	}
 
+	/**
+	 * @deprecated As of Mueller (7.2.x), replaced by {@link
+	 *             #getVirtualHostnames(LayoutSet)}
+	 */
+	@Deprecated
 	public static String getVirtualHostname(LayoutSet layoutSet) {
-		return getPortal().getVirtualHostname(layoutSet);
+		return _portal.getVirtualHostname(layoutSet);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public static String getVirtualLayoutActualURL(
-			long groupId, boolean privateLayout, String mainPath,
-			String friendlyURL, Map<String, String[]> params,
-			Map<String, Object> requestContext)
-		throws PortalException {
+	public static TreeMap<String, String> getVirtualHostnames(
+		LayoutSet layoutSet) {
 
-		return getPortal().getVirtualLayoutActualURL(
-			groupId, privateLayout, mainPath, friendlyURL, params,
-			requestContext);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public static LayoutFriendlyURLComposite
-			getVirtualLayoutFriendlyURLComposite(
-				boolean privateLayout, String friendlyURL,
-				Map<String, String[]> params,
-				Map<String, Object> requestContext)
-		throws PortalException {
-
-		return getPortal().getVirtualLayoutFriendlyURLComposite(
-			privateLayout, friendlyURL, params, requestContext);
+		return _portal.getVirtualHostnames(layoutSet);
 	}
 
 	public static String getWidgetURL(
 			Portlet portlet, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().getWidgetURL(portlet, themeDisplay);
+		return _portal.getWidgetURL(portlet, themeDisplay);
 	}
 
 	public static void initCustomSQL() {
-		getPortal().initCustomSQL();
+		_portal.initCustomSQL();
 	}
 
-	public static User initUser(HttpServletRequest request) throws Exception {
-		return getPortal().initUser(request);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public static void invokeTaglibDiscussion(
-			PortletConfig portletConfig, ActionRequest actionRequest,
-			ActionResponse actionResponse)
+	public static User initUser(HttpServletRequest httpServletRequest)
 		throws Exception {
 
-		getPortal().invokeTaglibDiscussion(
-			portletConfig, actionRequest, actionResponse);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public static void invokeTaglibDiscussionPagination(
-			PortletConfig portletConfig, ResourceRequest resourceRequest,
-			ResourceResponse resourceResponse)
-		throws IOException, PortletException {
-
-		getPortal().invokeTaglibDiscussionPagination(
-			portletConfig, resourceRequest, resourceResponse);
+		return _portal.initUser(httpServletRequest);
 	}
 
 	public static boolean isCDNDynamicResourcesEnabled(
-			HttpServletRequest request)
+			HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().isCDNDynamicResourcesEnabled(request);
+		return _portal.isCDNDynamicResourcesEnabled(httpServletRequest);
 	}
 
 	public static boolean isCDNDynamicResourcesEnabled(long companyId) {
-		return getPortal().isCDNDynamicResourcesEnabled(companyId);
+		return _portal.isCDNDynamicResourcesEnabled(companyId);
 	}
 
 	public static boolean isCompanyAdmin(User user) throws Exception {
-		return getPortal().isCompanyAdmin(user);
+		return _portal.isCompanyAdmin(user);
 	}
 
 	public static boolean isCompanyControlPanelPortlet(
 			String portletId, String category, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().isCompanyControlPanelPortlet(
+		return _portal.isCompanyControlPanelPortlet(
 			portletId, category, themeDisplay);
 	}
 
@@ -2012,191 +1860,192 @@ public class PortalUtil {
 			String portletId, ThemeDisplay themeDisplay)
 		throws PortalException {
 
-		return getPortal().isCompanyControlPanelPortlet(
-			portletId, themeDisplay);
+		return _portal.isCompanyControlPanelPortlet(portletId, themeDisplay);
 	}
 
 	public static boolean isControlPanelPortlet(
 		String portletId, String category, ThemeDisplay themeDisplay) {
 
-		return getPortal().isControlPanelPortlet(
-			portletId, category, themeDisplay);
+		return _portal.isControlPanelPortlet(portletId, category, themeDisplay);
 	}
 
 	public static boolean isControlPanelPortlet(
 		String portletId, ThemeDisplay themeDisplay) {
 
-		return getPortal().isControlPanelPortlet(portletId, themeDisplay);
+		return _portal.isControlPanelPortlet(portletId, themeDisplay);
 	}
 
-	public static boolean isForwardedSecure(HttpServletRequest request) {
-		return getPortal().isForwardedSecure(request);
+	public static boolean isCustomPortletMode(PortletMode portletMode) {
+		return _portal.isCustomPortletMode(portletMode);
+	}
+
+	public static boolean isForwardedSecure(
+		HttpServletRequest httpServletRequest) {
+
+		return _portal.isForwardedSecure(httpServletRequest);
 	}
 
 	public static boolean isGroupAdmin(User user, long groupId)
 		throws Exception {
 
-		return getPortal().isGroupAdmin(user, groupId);
+		return _portal.isGroupAdmin(user, groupId);
 	}
 
 	public static boolean isGroupFriendlyURL(
 		String fullURL, String groupFriendlyURL, String layoutFriendlyURL) {
 
-		return getPortal().isGroupFriendlyURL(
+		return _portal.isGroupFriendlyURL(
 			fullURL, groupFriendlyURL, layoutFriendlyURL);
 	}
 
 	public static boolean isGroupOwner(User user, long groupId)
 		throws Exception {
 
-		return getPortal().isGroupOwner(user, groupId);
+		return _portal.isGroupOwner(user, groupId);
 	}
 
 	public static boolean isLayoutDescendant(Layout layout, long layoutId)
 		throws PortalException {
 
-		return getPortal().isLayoutDescendant(layout, layoutId);
+		return _portal.isLayoutDescendant(layout, layoutId);
 	}
 
 	public static boolean isLayoutSitemapable(Layout layout) {
-		return getPortal().isLayoutSitemapable(layout);
+		return _portal.isLayoutSitemapable(layout);
 	}
 
-	public static boolean isLoginRedirectRequired(HttpServletRequest request) {
-		return getPortal().isLoginRedirectRequired(request);
+	public static boolean isLoginRedirectRequired(
+		HttpServletRequest httpServletRequest) {
+
+		return _portal.isLoginRedirectRequired(httpServletRequest);
 	}
 
 	public static boolean isMethodGet(PortletRequest portletRequest) {
-		return getPortal().isMethodGet(portletRequest);
+		return _portal.isMethodGet(portletRequest);
 	}
 
 	public static boolean isMethodPost(PortletRequest portletRequest) {
-		return getPortal().isMethodPost(portletRequest);
+		return _portal.isMethodPost(portletRequest);
 	}
 
-	public static boolean isMultipartRequest(HttpServletRequest request) {
-		return getPortal().isMultipartRequest(request);
+	public static boolean isMultipartRequest(
+		HttpServletRequest httpServletRequest) {
+
+		return _portal.isMultipartRequest(httpServletRequest);
 	}
 
 	public static boolean isOmniadmin(long userId) {
-		return getPortal().isOmniadmin(userId);
+		return _portal.isOmniadmin(userId);
 	}
 
 	public static boolean isOmniadmin(User user) {
-		return getPortal().isOmniadmin(user);
+		return _portal.isOmniadmin(user);
 	}
 
 	public static boolean isReservedParameter(String name) {
-		return getPortal().isReservedParameter(name);
+		return _portal.isReservedParameter(name);
 	}
 
-	public static boolean isRightToLeft(HttpServletRequest request) {
-		return getPortal().isRightToLeft(request);
+	public static boolean isRightToLeft(HttpServletRequest httpServletRequest) {
+		return _portal.isRightToLeft(httpServletRequest);
 	}
 
 	public static boolean isRSSFeedsEnabled() {
-		return getPortal().isRSSFeedsEnabled();
+		return _portal.isRSSFeedsEnabled();
 	}
 
-	public static boolean isSecure(HttpServletRequest request) {
-		return getPortal().isSecure(request);
-	}
-
-	public static boolean isSkipPortletContentProcesssing(
-			Group group, HttpServletRequest htpServletRequest,
-			LayoutTypePortlet layoutTypePortlet, PortletDisplay portletDisplay,
-			String portletName)
-		throws Exception {
-
-		return getPortal().isSkipPortletContentProcessing(
-			group, htpServletRequest, layoutTypePortlet, portletDisplay,
-			portletName);
+	public static boolean isSecure(HttpServletRequest httpServletRequest) {
+		return _portal.isSecure(httpServletRequest);
 	}
 
 	public static boolean isSkipPortletContentRendering(
 		Group group, LayoutTypePortlet layoutTypePortlet,
 		PortletDisplay portletDisplay, String portletName) {
 
-		return getPortal().isSkipPortletContentRendering(
+		return _portal.isSkipPortletContentRendering(
 			group, layoutTypePortlet, portletDisplay, portletName);
 	}
 
 	public static boolean isSystemGroup(String groupName) {
-		return getPortal().isSystemGroup(groupName);
+		return _portal.isSystemGroup(groupName);
 	}
 
 	public static boolean isSystemRole(String roleName) {
-		return getPortal().isSystemRole(roleName);
+		return _portal.isSystemRole(roleName);
 	}
 
 	public static boolean isUpdateAvailable() {
-		return getPortal().isUpdateAvailable();
+		return _portal.isUpdateAvailable();
 	}
 
 	public static boolean isValidResourceId(String resourceId) {
-		return getPortal().isValidResourceId(resourceId);
+		return _portal.isValidResourceId(resourceId);
 	}
 
 	public static boolean removePortalEventListener(
 		PortalInetSocketAddressEventListener
 			portalInetSocketAddressEventListener) {
 
-		return getPortal().removePortalInetSocketAddressEventListener(
+		return _portal.removePortalInetSocketAddressEventListener(
 			portalInetSocketAddressEventListener);
 	}
 
 	public static void resetCDNHosts() {
-		getPortal().resetCDNHosts();
+		_portal.resetCDNHosts();
 	}
 
 	public static String resetPortletParameters(String url, String portletId) {
-		return getPortal().resetPortletParameters(url, portletId);
+		return _portal.resetPortletParameters(url, portletId);
 	}
 
 	public static void sendError(
-			Exception e, ActionRequest actionRequest,
+			Exception exception, ActionRequest actionRequest,
 			ActionResponse actionResponse)
 		throws IOException {
 
-		getPortal().sendError(e, actionRequest, actionResponse);
+		_portal.sendError(exception, actionRequest, actionResponse);
 	}
 
 	public static void sendError(
-			Exception e, HttpServletRequest request,
-			HttpServletResponse response)
+			Exception exception, HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
-		getPortal().sendError(e, request, response);
+		_portal.sendError(exception, httpServletRequest, httpServletResponse);
 	}
 
 	public static void sendError(
-			int status, Exception e, ActionRequest actionRequest,
+			int status, Exception exception, ActionRequest actionRequest,
 			ActionResponse actionResponse)
 		throws IOException {
 
-		getPortal().sendError(status, e, actionRequest, actionResponse);
+		_portal.sendError(status, exception, actionRequest, actionResponse);
 	}
 
 	public static void sendError(
-			int status, Exception e, HttpServletRequest request,
-			HttpServletResponse response)
+			int status, Exception exception,
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
-		getPortal().sendError(status, e, request, response);
+		_portal.sendError(
+			status, exception, httpServletRequest, httpServletResponse);
 	}
 
 	public static void sendRSSFeedsDisabledError(
-			HttpServletRequest request, HttpServletResponse response)
+			HttpServletRequest httpServletRequest,
+			HttpServletResponse httpServletResponse)
 		throws IOException, ServletException {
 
-		getPortal().sendRSSFeedsDisabledError(request, response);
+		_portal.sendRSSFeedsDisabledError(
+			httpServletRequest, httpServletResponse);
 	}
 
 	public static void sendRSSFeedsDisabledError(
 			PortletRequest portletRequest, PortletResponse portletResponse)
 		throws IOException, ServletException {
 
-		getPortal().sendRSSFeedsDisabledError(portletRequest, portletResponse);
+		_portal.sendRSSFeedsDisabledError(portletRequest, portletResponse);
 	}
 
 	/**
@@ -2204,70 +2053,61 @@ public class PortalUtil {
 	 * description.
 	 */
 	public static void setPageDescription(
-		String description, HttpServletRequest request) {
+		String description, HttpServletRequest httpServletRequest) {
 
-		getPortal().setPageDescription(description, request);
+		_portal.setPageDescription(description, httpServletRequest);
 	}
 
 	/**
 	 * Sets the keywords for a page. This overrides the existing page keywords.
 	 */
 	public static void setPageKeywords(
-		String keywords, HttpServletRequest request) {
+		String keywords, HttpServletRequest httpServletRequest) {
 
-		getPortal().setPageKeywords(keywords, request);
+		_portal.setPageKeywords(keywords, httpServletRequest);
 	}
 
 	/**
 	 * Sets the subtitle for a page. This overrides the existing page subtitle.
 	 */
 	public static void setPageSubtitle(
-		String subtitle, HttpServletRequest request) {
+		String subtitle, HttpServletRequest httpServletRequest) {
 
-		getPortal().setPageSubtitle(subtitle, request);
+		_portal.setPageSubtitle(subtitle, httpServletRequest);
 	}
 
 	/**
 	 * Sets the whole title for a page. This overrides the existing page whole
 	 * title.
 	 */
-	public static void setPageTitle(String title, HttpServletRequest request) {
-		getPortal().setPageTitle(title, request);
+	public static void setPageTitle(
+		String title, HttpServletRequest httpServletRequest) {
+
+		_portal.setPageTitle(title, httpServletRequest);
 	}
 
 	public static void setPortalInetSocketAddresses(
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		getPortal().setPortalInetSocketAddresses(request);
-	}
-
-	/**
-	 * Sets the port obtained on the first request to the portal.
-	 *
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #setPortalInetSocketAddresses(HttpServletRequest)}
-	 */
-	@Deprecated
-	public static void setPortalPort(HttpServletRequest request) {
-		getPortal().setPortalPort(request);
+		_portal.setPortalInetSocketAddresses(httpServletRequest);
 	}
 
 	public static void storePreferences(PortletPreferences portletPreferences)
 		throws IOException, ValidatorException {
 
-		getPortal().storePreferences(portletPreferences);
+		_portal.storePreferences(portletPreferences);
 	}
 
 	public static String[] stripURLAnchor(String url, String separator) {
-		return getPortal().stripURLAnchor(url, separator);
+		return _portal.stripURLAnchor(url, separator);
 	}
 
 	public static String transformCustomSQL(String sql) {
-		return getPortal().transformCustomSQL(sql);
+		return _portal.transformCustomSQL(sql);
 	}
 
 	public static String transformSQL(String sql) {
-		return getPortal().transformSQL(sql);
+		return _portal.transformSQL(sql);
 	}
 
 	public static void updateImageId(
@@ -2275,49 +2115,35 @@ public class PortalUtil {
 			String fieldName, long maxSize, int maxHeight, int maxWidth)
 		throws PortalException {
 
-		getPortal().updateImageId(
+		_portal.updateImageId(
 			baseModel, hasImage, bytes, fieldName, maxSize, maxHeight,
 			maxWidth);
 	}
 
 	public static PortletMode updatePortletMode(
 			String portletId, User user, Layout layout, PortletMode portletMode,
-			HttpServletRequest request)
+			HttpServletRequest httpServletRequest)
 		throws PortalException {
 
-		return getPortal().updatePortletMode(
-			portletId, user, layout, portletMode, request);
+		return _portal.updatePortletMode(
+			portletId, user, layout, portletMode, httpServletRequest);
 	}
 
 	public static String updateRedirect(
 		String redirect, String oldPath, String newPath) {
 
-		return getPortal().updateRedirect(redirect, oldPath, newPath);
+		return _portal.updateRedirect(redirect, oldPath, newPath);
 	}
 
 	public static WindowState updateWindowState(
 		String portletId, User user, Layout layout, WindowState windowState,
-		HttpServletRequest request) {
+		HttpServletRequest httpServletRequest) {
 
-		return getPortal().updateWindowState(
-			portletId, user, layout, windowState, request);
-	}
-
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link
-	 *             #removePortalEventListener(
-	 *             PortalInetSocketAddressEventListener)}
-	 */
-	@Deprecated
-	public void removePortalPortEventListener(
-		PortalPortEventListener portalPortEventListener) {
-
-		getPortal().removePortalPortEventListener(portalPortEventListener);
+		return _portal.updateWindowState(
+			portletId, user, layout, windowState, httpServletRequest);
 	}
 
 	public void setPortal(Portal portal) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_portal = portal;
 	}
 

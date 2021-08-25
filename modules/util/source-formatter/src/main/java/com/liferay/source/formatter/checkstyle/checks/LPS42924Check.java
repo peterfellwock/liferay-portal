@@ -14,11 +14,7 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.source.formatter.checkstyle.util.DetailASTUtil;
-
-import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
-import com.puppycrawl.tools.checkstyle.api.FileContents;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
 import java.util.List;
@@ -26,9 +22,7 @@ import java.util.List;
 /**
  * @author Hugo Huijser
  */
-public class LPS42924Check extends AbstractCheck {
-
-	public static final String MSG_LPS_42924 = "lps42924";
+public class LPS42924Check extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -36,21 +30,21 @@ public class LPS42924Check extends AbstractCheck {
 	}
 
 	@Override
-	public void visitToken(DetailAST detailAST) {
-		FileContents fileContents = getFileContents();
+	protected void doVisitToken(DetailAST detailAST) {
+		String absolutePath = getAbsolutePath();
 
-		String fileName = fileContents.getFileName();
-
-		if (!fileName.endsWith("ServiceImpl.java")) {
+		if (!absolutePath.endsWith("ServiceImpl.java")) {
 			return;
 		}
 
-		List<DetailAST> methodCallASTList = DetailASTUtil.getMethodCalls(
+		List<DetailAST> methodCallDetailASTList = getMethodCalls(
 			detailAST, "PortalUtil", "getClassNameId");
 
-		for (DetailAST methodCallAST : methodCallASTList) {
-			log(methodCallAST.getLineNo(), MSG_LPS_42924);
+		for (DetailAST methodCallDetailAST : methodCallDetailASTList) {
+			log(methodCallDetailAST, _MSG_LPS_42924);
 		}
 	}
+
+	private static final String _MSG_LPS_42924 = "lps42924";
 
 }

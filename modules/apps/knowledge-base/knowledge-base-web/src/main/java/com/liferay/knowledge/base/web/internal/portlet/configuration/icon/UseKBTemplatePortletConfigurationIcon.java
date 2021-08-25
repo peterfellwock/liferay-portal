@@ -15,15 +15,17 @@
 package com.liferay.knowledge.base.web.internal.portlet.configuration.icon;
 
 import com.liferay.knowledge.base.constants.KBActionKeys;
+import com.liferay.knowledge.base.constants.KBConstants;
 import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBTemplate;
-import com.liferay.knowledge.base.service.permission.AdminPermission;
 import com.liferay.knowledge.base.web.internal.constants.KBWebKeys;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.configuration.icon.BasePortletConfigurationIcon;
 import com.liferay.portal.kernel.portlet.configuration.icon.PortletConfigurationIcon;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
@@ -31,12 +33,12 @@ import java.util.ResourceBundle;
 
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletResponse;
-import javax.portlet.PortletURL;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
- * @author Ambrin Chaudhary
+ * @author Ambrín Chaudhary
  */
 @Component(
 	immediate = true,
@@ -61,21 +63,23 @@ public class UseKBTemplatePortletConfigurationIcon
 	public String getURL(
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		PortletURL portletURL = PortalUtil.getControlPanelPortletURL(
-			portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
-			PortletRequest.RENDER_PHASE);
+		return PortletURLBuilder.create(
+			_portal.getControlPanelPortletURL(
+				portletRequest, KBPortletKeys.KNOWLEDGE_BASE_ADMIN,
+				PortletRequest.RENDER_PHASE)
+		).setMVCPath(
+			"/admin/edit_article.jsp"
+		).setRedirect(
+			_portal.getCurrentURL(portletRequest)
+		).setParameter(
+			"kbTemplateId",
+			() -> {
+				KBTemplate kbTemplate = (KBTemplate)portletRequest.getAttribute(
+					KBWebKeys.KNOWLEDGE_BASE_KB_TEMPLATE);
 
-		portletURL.setParameter("mvcPath", "/admin/edit_article.jsp");
-		portletURL.setParameter(
-			"redirect", PortalUtil.getCurrentURL(portletRequest));
-
-		KBTemplate kbTemplate = (KBTemplate)portletRequest.getAttribute(
-			KBWebKeys.KNOWLEDGE_BASE_KB_TEMPLATE);
-
-		portletURL.setParameter(
-			"kbTemplateId", String.valueOf(kbTemplate.getKbTemplateId()));
-
-		return portletURL.toString();
+				return kbTemplate.getKbTemplateId();
+			}
+		).buildString();
 	}
 
 	@Override
@@ -88,9 +92,17 @@ public class UseKBTemplatePortletConfigurationIcon
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		return AdminPermission.contains(
-			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroupId(),
+		return _portletResourcePermission.contains(
+			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroup(),
 			KBActionKeys.ADD_KB_ARTICLE);
 	}
+
+	@Reference
+	private Portal _portal;
+
+	@Reference(
+		target = "(resource.name=" + KBConstants.RESOURCE_NAME_ADMIN + ")"
+	)
+	private PortletResourcePermission _portletResourcePermission;
 
 }

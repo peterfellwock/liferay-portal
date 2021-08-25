@@ -21,6 +21,7 @@ import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.service.base.TicketLocalServiceBaseImpl;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Mika Koivisto
@@ -32,9 +33,9 @@ public class TicketLocalServiceImpl extends TicketLocalServiceBaseImpl {
 		long companyId, String className, long classPK, int type,
 		String extraInfo, Date expirationDate, ServiceContext serviceContext) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		ticketPersistence.removeByC_C_T(classNameId, classPK, type);
+		ticketPersistence.removeByC_C_C_T(
+			companyId, classNameLocalService.getClassNameId(className), classPK,
+			type);
 
 		return addTicket(
 			companyId, className, classPK, type, extraInfo, expirationDate,
@@ -61,9 +62,7 @@ public class TicketLocalServiceImpl extends TicketLocalServiceBaseImpl {
 		ticket.setExtraInfo(extraInfo);
 		ticket.setExpirationDate(expirationDate);
 
-		ticketPersistence.update(ticket);
-
-		return ticket;
+		return ticketPersistence.update(ticket);
 	}
 
 	@Override
@@ -74,6 +73,40 @@ public class TicketLocalServiceImpl extends TicketLocalServiceBaseImpl {
 	@Override
 	public Ticket getTicket(String key) throws PortalException {
 		return ticketPersistence.findByKey(key);
+	}
+
+	@Override
+	public List<Ticket> getTickets(
+		long companyId, String className, long classPK, int type) {
+
+		return ticketPersistence.findByC_C_C_T(
+			companyId, classNameLocalService.getClassNameId(className), classPK,
+			type);
+	}
+
+	@Override
+	public List<Ticket> getTickets(String className, long classPK, int type) {
+		return ticketPersistence.findByC_C_T(
+			classNameLocalService.getClassNameId(className), classPK, type);
+	}
+
+	@Override
+	public Ticket updateTicket(
+			long ticketId, String className, long classPK, int type,
+			String extraInfo, Date expirationDate)
+		throws PortalException {
+
+		long classNameId = classNameLocalService.getClassNameId(className);
+
+		Ticket ticket = ticketPersistence.findByPrimaryKey(ticketId);
+
+		ticket.setClassNameId(classNameId);
+		ticket.setClassPK(classPK);
+		ticket.setType(type);
+		ticket.setExtraInfo(extraInfo);
+		ticket.setExpirationDate(expirationDate);
+
+		return ticketPersistence.update(ticket);
 	}
 
 }

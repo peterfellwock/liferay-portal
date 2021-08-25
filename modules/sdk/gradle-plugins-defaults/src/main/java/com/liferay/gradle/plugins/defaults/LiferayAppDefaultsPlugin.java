@@ -14,30 +14,55 @@
 
 package com.liferay.gradle.plugins.defaults;
 
+import com.liferay.gradle.plugins.NodeDefaultsPlugin;
 import com.liferay.gradle.plugins.app.javadoc.builder.AppJavadocBuilderExtension;
 import com.liferay.gradle.plugins.app.javadoc.builder.AppJavadocBuilderPlugin;
 import com.liferay.gradle.plugins.defaults.internal.LiferayRelengPlugin;
+import com.liferay.gradle.plugins.defaults.internal.util.FileUtil;
+import com.liferay.gradle.plugins.defaults.internal.util.GradlePluginsDefaultsUtil;
 import com.liferay.gradle.plugins.defaults.internal.util.GradleUtil;
+import com.liferay.gradle.plugins.defaults.internal.util.LiferayRelengUtil;
 import com.liferay.gradle.plugins.defaults.tasks.WritePropertiesTask;
+import com.liferay.gradle.plugins.jsdoc.AppJSDocConfigurationExtension;
+import com.liferay.gradle.plugins.jsdoc.AppJSDocPlugin;
+import com.liferay.gradle.plugins.jsdoc.JSDocTask;
 import com.liferay.gradle.plugins.tlddoc.builder.AppTLDDocBuilderExtension;
 import com.liferay.gradle.plugins.tlddoc.builder.AppTLDDocBuilderPlugin;
+import com.liferay.gradle.plugins.tlddoc.builder.tasks.TLDDocTask;
 import com.liferay.gradle.util.Validator;
+
+import groovy.json.JsonOutput;
 
 import groovy.lang.Closure;
 
 import java.io.File;
+import java.io.IOException;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 
 import org.gradle.StartParameter;
+import org.gradle.api.Action;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
+import org.gradle.api.Task;
+import org.gradle.api.UncheckedIOException;
 import org.gradle.api.internal.GradleInternal;
 import org.gradle.api.internal.project.ProjectInternal;
 import org.gradle.api.invocation.Gradle;
+import org.gradle.api.resources.ResourceHandler;
+import org.gradle.api.resources.TextResourceFactory;
 import org.gradle.api.specs.Spec;
 import org.gradle.api.tasks.TaskContainer;
+import org.gradle.api.tasks.TaskInputs;
+import org.gradle.api.tasks.TaskOutputs;
 import org.gradle.api.tasks.javadoc.Javadoc;
 import org.gradle.execution.ProjectConfigurer;
 import org.gradle.external.javadoc.StandardJavadocDocletOptions;
@@ -48,6 +73,9 @@ import org.gradle.util.GUtil;
  * @author Andrea Di Giorgi
  */
 public class LiferayAppDefaultsPlugin implements Plugin<Project> {
+
+	public static final String WRITE_APP_PACKAGE_JSON_FILE_TASK_NAME =
+		"writeAppPackageJsonFile";
 
 	@Override
 	public void apply(Project project) {
@@ -95,12 +123,21 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 		_applyPlugins(project);
 
-		LiferayOSGiDefaultsPlugin.configureRepositories(project);
+		File portalRootDir = GradleUtil.getRootDir(
+			project.getRootProject(), "portal-impl");
 
+		GradlePluginsDefaultsUtil.configureRepositories(project, portalRootDir);
+
+		Task writeAppPackageJsonFileTask = _addTaskWriteAppPackageJsonFile(
+			project, appTitle, appDescription, appVersion);
+
+		_configureAppJSDoc(project, privateProject);
 		_configureAppJavadocBuilder(project, privateProject);
 		_configureAppTLDDocBuilder(project, privateProject);
 		_configureProject(project, appDescription, appVersion);
-		_configureTaskAppJavadoc(project, appTitle, appVersion);
+		_configureTaskAppJSDoc(writeAppPackageJsonFileTask);
+		_configureTaskAppJavadoc(project, portalRootDir, appTitle, appVersion);
+		_configureTaskAppTlddoc(project, portalRootDir);
 
 		if (privateProject != null) {
 			Gradle gradle = project.getGradle();
@@ -109,7 +146,9 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 			List<String> taskNames = startParameter.getTaskNames();
 
-			if (taskNames.contains(
+			if (taskNames.contains(AppJSDocPlugin.APP_JSDOC_TASK_NAME) ||
+				taskNames.contains(AppJSDocPlugin.JAR_APP_JSDOC_TASK_NAME) ||
+				taskNames.contains(
 					AppJavadocBuilderPlugin.APP_JAVADOC_TASK_NAME) ||
 				taskNames.contains(
 					AppJavadocBuilderPlugin.JAR_APP_JAVADOC_TASK_NAME) ||
@@ -123,11 +162,73 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		}
 	}
 
-	private void _applyPlugins(Project project) {
-		GradleUtil.applyPlugin(project, AppJavadocBuilderPlugin.class);
-		GradleUtil.applyPlugin(project, AppTLDDocBuilderPlugin.class);
+	private Task _addTaskWriteAppPackageJsonFile(
+		final Project project, String appTitle, String appDescription,
+		String appVersion) {
+
+		Task task = project.task(WRITE_APP_PACKAGE_JSON_FILE_TASK_NAME);
+
+		final Map<String, String> packageJsonMap = new HashMap<>();
+
+		packageJsonMap.put("description", appDescription);
+		packageJsonMap.put("name", appTitle);
+		packageJsonMap.put("version", appVersion);
+
+		task.doLast(
+			new Action<Task>() {
+
+				@Override
+				public void execute(Task task) {
+					String packageJSON = JsonOutput.toJson(packageJsonMap);
+
+					File file = GradleUtil.getOutputFile(task);
+
+					Path path = file.toPath();
+
+					try {
+						Files.createDirectories(path.getParent());
+
+						Files.write(
+							file.toPath(),
+							packageJSON.getBytes(StandardCharsets.UTF_8));
+					}
+					catch (IOException ioException) {
+						throw new UncheckedIOException(ioException);
+					}
+				}
+
+			});
+
+		task.setDescription(
+			"Writes a temporary package.json file for the app.");
+
+		TaskInputs taskInputs = task.getInputs();
+
+		taskInputs.properties(packageJsonMap);
+
+		TaskOutputs taskOutputs = task.getOutputs();
+
+		taskOutputs.file(
+			new Callable<File>() {
+
+				@Override
+				public File call() throws Exception {
+					return new File(project.getBuildDir(), "app-package.json");
+				}
+
+			});
+
+		return task;
 	}
 
+	private void _applyPlugins(Project project) {
+		GradleUtil.applyPlugin(project, AppJSDocPlugin.class);
+		GradleUtil.applyPlugin(project, AppJavadocBuilderPlugin.class);
+		GradleUtil.applyPlugin(project, AppTLDDocBuilderPlugin.class);
+		GradleUtil.applyPlugin(project, NodeDefaultsPlugin.class);
+	}
+
+	@SuppressWarnings("serial")
 	private void _configureAppJavadocBuilder(
 		Project project, Project privateProject) {
 
@@ -175,6 +276,19 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		}
 	}
 
+	private void _configureAppJSDoc(Project project, Project privateProject) {
+		if (privateProject == null) {
+			return;
+		}
+
+		AppJSDocConfigurationExtension appJSDocConfigurationExtension =
+			GradleUtil.getExtension(
+				project, AppJSDocConfigurationExtension.class);
+
+		appJSDocConfigurationExtension.subprojects(
+			privateProject.getSubprojects());
+	}
+
 	private void _configureAppTLDDocBuilder(
 		Project project, Project privateProject) {
 
@@ -201,13 +315,11 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private void _configureTaskAppJavadoc(
-		Project project, String appTitle, String appVersion) {
+		Project project, File portalRootDir, String appTitle,
+		String appVersion) {
 
 		Javadoc javadoc = (Javadoc)GradleUtil.getTask(
 			project, AppJavadocBuilderPlugin.APP_JAVADOC_TASK_NAME);
-
-		File portalRootDir = GradleUtil.getRootDir(
-			project.getRootProject(), "portal-impl");
 
 		if (portalRootDir != null) {
 			File stylesheetFile = new File(
@@ -222,10 +334,52 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		}
 
 		if (Validator.isNotNull(appTitle) && Validator.isNotNull(appVersion)) {
-			String title = String.format("%s %s API", appTitle, appVersion);
-
-			javadoc.setTitle(title);
+			javadoc.setTitle(String.format("%s %s API", appTitle, appVersion));
 		}
+	}
+
+	private void _configureTaskAppJSDoc(
+		final Task writeAppPackageJsonFileTask) {
+
+		Project project = writeAppPackageJsonFileTask.getProject();
+
+		JSDocTask jsDocTask = (JSDocTask)GradleUtil.getTask(
+			project, AppJSDocPlugin.APP_JSDOC_TASK_NAME);
+
+		ResourceHandler resourceHandler = project.getResources();
+
+		TextResourceFactory textResourceFactory = resourceHandler.getText();
+
+		jsDocTask.setConfiguration(
+			textResourceFactory.fromString(_APP_JSDOC_CONFIG_JSON));
+
+		if (jsDocTask.getPackageJsonFile() == null) {
+			jsDocTask.dependsOn(writeAppPackageJsonFileTask);
+
+			jsDocTask.setPackageJsonFile(
+				new Callable<File>() {
+
+					@Override
+					public File call() throws Exception {
+						return GradleUtil.getOutputFile(
+							writeAppPackageJsonFileTask);
+					}
+
+				});
+		}
+	}
+
+	private void _configureTaskAppTlddoc(Project project, File portalRootDir) {
+		if (portalRootDir == null) {
+			return;
+		}
+
+		TLDDocTask tldDocTask = (TLDDocTask)GradleUtil.getTask(
+			project, AppTLDDocBuilderPlugin.APP_TLDDOC_TASK_NAME);
+
+		File xsltDir = new File(portalRootDir, "tools/styles/taglibs");
+
+		tldDocTask.setXsltDir(xsltDir);
 	}
 
 	private void _forceProjectHierarchyEvaluation(Project project) {
@@ -275,12 +429,11 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 
 				StringBuilder sb = new StringBuilder();
 
-				sb.append("Module ");
-				sb.append(moduleName);
-				sb.append(' ');
-				sb.append(moduleVersion);
-				sb.append(" - ");
 				sb.append(groupName);
+				sb.append(" - com.liferay:");
+				sb.append(moduleName);
+				sb.append(':');
+				sb.append(moduleVersion);
 
 				groupName = sb.toString();
 			}
@@ -290,7 +443,7 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 	}
 
 	private Properties _getAppProperties(Project project) {
-		File relengDir = LiferayRelengPlugin.getRelengDir(project);
+		File relengDir = LiferayRelengUtil.getRelengDir(project);
 
 		if (relengDir != null) {
 			File appPropertiesFile = new File(relengDir, "app.properties");
@@ -301,6 +454,19 @@ public class LiferayAppDefaultsPlugin implements Plugin<Project> {
 		}
 
 		return null;
+	}
+
+	private static final String _APP_JSDOC_CONFIG_JSON;
+
+	static {
+		try {
+			_APP_JSDOC_CONFIG_JSON = FileUtil.read(
+				"com/liferay/gradle/plugins/defaults/internal/dependencies" +
+					"/config-jsdoc.json");
+		}
+		catch (IOException ioException) {
+			throw new ExceptionInInitializerError(ioException);
+		}
 	}
 
 }

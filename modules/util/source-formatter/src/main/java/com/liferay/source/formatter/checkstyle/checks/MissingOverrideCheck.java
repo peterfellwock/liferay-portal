@@ -14,50 +14,45 @@
 
 package com.liferay.source.formatter.checkstyle.checks;
 
-import com.liferay.portal.kernel.io.unsync.UnsyncStringReader;
-import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.petra.string.CharPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
-import com.liferay.source.formatter.util.ThreadSafeClassLibrary;
+import com.liferay.source.formatter.ExcludeSyntaxPattern;
+import com.liferay.source.formatter.SourceFormatter;
+import com.liferay.source.formatter.SourceFormatterExcludes;
+import com.liferay.source.formatter.checks.util.SourceUtil;
+import com.liferay.source.formatter.util.SourceFormatterUtil;
+import com.liferay.source.formatter.util.ThreadSafeSortedClassLibraryBuilder;
 
-import com.puppycrawl.tools.checkstyle.api.AbstractCheck;
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
-import com.puppycrawl.tools.checkstyle.api.FileContents;
-import com.puppycrawl.tools.checkstyle.api.FileText;
 import com.puppycrawl.tools.checkstyle.api.FullIdent;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
 
-import com.thoughtworks.qdox.JavaDocBuilder;
-import com.thoughtworks.qdox.model.AbstractBaseJavaEntity;
-import com.thoughtworks.qdox.model.Annotation;
-import com.thoughtworks.qdox.model.DefaultDocletTagFactory;
+import com.thoughtworks.qdox.JavaProjectBuilder;
+import com.thoughtworks.qdox.model.JavaAnnotation;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaPackage;
-import com.thoughtworks.qdox.model.JavaParameter;
-import com.thoughtworks.qdox.model.Type;
-import com.thoughtworks.qdox.model.annotation.AnnotationValue;
-import com.thoughtworks.qdox.parser.ParseException;
+import com.thoughtworks.qdox.model.JavaType;
+import com.thoughtworks.qdox.model.expression.AnnotationValue;
+import com.thoughtworks.qdox.model.impl.DefaultJavaParameterizedType;
 
 import java.io.File;
-import java.io.FilenameFilter;
-
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Hugo Huijser
  */
-public class MissingOverrideCheck extends AbstractCheck {
-
-	public static final String MSG_MISSING_OVERRIDE = "override.missing";
+public class MissingOverrideCheck extends BaseCheck {
 
 	@Override
 	public int[] getDefaultTokens() {
@@ -65,39 +60,50 @@ public class MissingOverrideCheck extends AbstractCheck {
 	}
 
 	@Override
-	public void visitToken(DetailAST detailAST) {
-		FileContents fileContents = getFileContents();
+	protected void doVisitToken(DetailAST detailAST) {
+		String absolutePath = getAbsolutePath();
 
-		String fileName = StringUtil.replace(
-			fileContents.getFileName(), '\\', '/');
-
-		JavaDocBuilder javaDocBuilder = _getJavaDocBuilder(fileName);
+		JavaProjectBuilder javaProjectBuilder = null;
 
 		try {
-			javaDocBuilder.addSource(new UnsyncStringReader(_getContent()));
+			javaProjectBuilder = _getJavaProjectBuilder(absolutePath);
 		}
-		catch (ParseException pe) {
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+
 			return;
 		}
 
-		JavaClass javaClass = javaDocBuilder.getClassByName(
-			_getPackagePath(detailAST) + "." + _getClassName(fileName));
+		if (javaProjectBuilder == null) {
+			return;
+		}
+
+		JavaClass javaClass = javaProjectBuilder.getClassByName(
+			_getPackageName(detailAST) + "." + _getClassName(absolutePath));
 
 		List<Tuple> ancestorJavaClassTuples = _addAncestorJavaClassTuples(
-			javaClass, new ArrayList<Tuple>());
+			javaClass, javaProjectBuilder, new ArrayList<Tuple>());
 
 		for (JavaMethod javaMethod : javaClass.getMethods()) {
+			if (javaMethod.getLineNumber() == 0) {
+				continue;
+			}
+
 			if (!_hasAnnotation(javaMethod, "Override") &&
 				_isOverrideMethod(
-					javaClass, javaMethod, ancestorJavaClassTuples)) {
+					javaClass, javaMethod, javaProjectBuilder,
+					ancestorJavaClassTuples)) {
 
-				log(javaMethod.getLineNumber(), MSG_MISSING_OVERRIDE);
+				log(javaMethod.getLineNumber(), _MSG_MISSING_OVERRIDE);
 			}
 		}
 	}
 
 	private List<Tuple> _addAncestorJavaClassTuples(
-		JavaClass javaClass, List<Tuple> ancestorJavaClassTuples) {
+		JavaClass javaClass, JavaProjectBuilder javaProjectBuilder,
+		List<Tuple> ancestorJavaClassTuples) {
 
 		JavaClass superJavaClass = javaClass.getSuperJavaClass();
 
@@ -105,134 +111,114 @@ public class MissingOverrideCheck extends AbstractCheck {
 			ancestorJavaClassTuples.add(new Tuple(superJavaClass));
 
 			ancestorJavaClassTuples = _addAncestorJavaClassTuples(
-				superJavaClass, ancestorJavaClassTuples);
+				superJavaClass, javaProjectBuilder, ancestorJavaClassTuples);
 		}
 
-		Type[] implementz = javaClass.getImplements();
+		for (JavaClass interfaceClass : javaClass.getInterfaces()) {
+			if (!(interfaceClass instanceof DefaultJavaParameterizedType)) {
+				continue;
+			}
 
-		for (Type implement : implementz) {
-			Type[] actualTypeArguments = implement.getActualTypeArguments();
-			JavaClass implementedInterface = implement.getJavaClass();
+			DefaultJavaParameterizedType defaultJavaParameterizedType =
+				(DefaultJavaParameterizedType)interfaceClass;
+
+			List<JavaType> actualTypeArguments =
+				defaultJavaParameterizedType.getActualTypeArguments();
 
 			if (actualTypeArguments == null) {
-				ancestorJavaClassTuples.add(new Tuple(implementedInterface));
+				ancestorJavaClassTuples.add(new Tuple(interfaceClass));
 			}
 			else {
 				ancestorJavaClassTuples.add(
-					new Tuple(implementedInterface, actualTypeArguments));
+					new Tuple(interfaceClass, actualTypeArguments));
 			}
 
 			ancestorJavaClassTuples = _addAncestorJavaClassTuples(
-				implementedInterface, ancestorJavaClassTuples);
+				interfaceClass, javaProjectBuilder, ancestorJavaClassTuples);
 		}
 
 		return ancestorJavaClassTuples;
 	}
 
-	private URL[] _addJarFiles(URL[] urls, String dirName) {
-		File dirFile = new File(dirName);
+	private String _getClassName(String absolutePath) {
+		int pos = absolutePath.lastIndexOf(CharPool.SLASH);
 
-		if (!dirFile.exists()) {
-			return urls;
+		return absolutePath.substring(pos + 1, absolutePath.length() - 5);
+	}
+
+	private JavaProjectBuilder _getJavaProjectBuilder(String absolutePath)
+		throws IOException {
+
+		if (_javaProjectBuilder != null) {
+			return _javaProjectBuilder;
 		}
 
-		File[] files = dirFile.listFiles(
-			new FilenameFilter() {
+		while (true) {
+			int x = absolutePath.lastIndexOf("/");
 
-				@Override
-				public boolean accept(File dir, String name) {
-					if (name.endsWith(".jar")) {
-						return true;
-					}
+			if (x == -1) {
+				return null;
+			}
 
-					return false;
-				}
+			absolutePath = absolutePath.substring(0, x);
 
-			});
+			File file = new File(absolutePath + "/portal-impl");
 
-		for (File file : files) {
+			if (file.exists()) {
+				break;
+			}
+		}
+
+		JavaProjectBuilder javaProjectBuilder = new JavaProjectBuilder(
+			new ThreadSafeSortedClassLibraryBuilder());
+
+		Set<ExcludeSyntaxPattern> defaultExcludeSyntaxPatterns =
+			SetUtil.fromArray(SourceFormatter.DEFAULT_EXCLUDE_SYNTAX_PATTERNS);
+
+		List<String> fileNames = SourceFormatterUtil.scanForFiles(
+			absolutePath + "/", new String[0], new String[] {"**/*.java"},
+			new SourceFormatterExcludes(defaultExcludeSyntaxPatterns), true);
+
+		for (String curFileName : fileNames) {
+			curFileName = StringUtil.replace(
+				curFileName, CharPool.BACK_SLASH, CharPool.SLASH);
+
 			try {
-				URI uri = file.toURI();
-
-				urls = ArrayUtil.append(urls, uri.toURL());
+				javaProjectBuilder.addSource(
+					new File(SourceUtil.getAbsolutePath(curFileName)));
 			}
-			catch (MalformedURLException murle) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
 		}
 
-		return urls;
+		_javaProjectBuilder = javaProjectBuilder;
+
+		return _javaProjectBuilder;
 	}
 
-	private String _getClassName(String fileName) {
-		int pos = fileName.lastIndexOf('/');
+	private String _getPackageName(DetailAST packageDefinitionDetailAST) {
+		DetailAST dotDetailAST = packageDefinitionDetailAST.findFirstToken(
+			TokenTypes.DOT);
 
-		return fileName.substring(pos + 1, fileName.length() - 5);
-	}
-
-	private String _getContent() {
-		FileContents fileContents = getFileContents();
-
-		FileText fileText = fileContents.getText();
-
-		return (String)fileText.getFullText();
-	}
-
-	private JavaDocBuilder _getJavaDocBuilder(String fileName) {
-		int pos = fileName.lastIndexOf("/modules/");
-
-		if (pos != -1) {
-			return _getModulesJavaDocBuilder(fileName.substring(0, pos));
-		}
-
-		if (_javaDocBuilder != null) {
-			return _javaDocBuilder;
-		}
-
-		_javaDocBuilder = new JavaDocBuilder(
-			new DefaultDocletTagFactory(), new ThreadSafeClassLibrary());
-
-		return _javaDocBuilder;
-	}
-
-	private JavaDocBuilder _getModulesJavaDocBuilder(String rootDir) {
-		if (_modulesJavaDocBuilder != null) {
-			return _modulesJavaDocBuilder;
-		}
-
-		ThreadSafeClassLibrary threadSafeClassLibrary =
-			new ThreadSafeClassLibrary();
-
-		URL[] urls = _addJarFiles(new URL[0], rootDir + "/tools/sdk/dist");
-
-		threadSafeClassLibrary.addClassLoader(new URLClassLoader(urls));
-
-		_modulesJavaDocBuilder = new JavaDocBuilder(
-			new DefaultDocletTagFactory(), threadSafeClassLibrary);
-
-		return _modulesJavaDocBuilder;
-	}
-
-	private String _getPackagePath(DetailAST packageDefAST) {
-		DetailAST dotAST = packageDefAST.findFirstToken(TokenTypes.DOT);
-
-		FullIdent fullIdent = FullIdent.createFullIdent(dotAST);
+		FullIdent fullIdent = FullIdent.createFullIdent(dotDetailAST);
 
 		return fullIdent.getText();
 	}
 
 	private boolean _hasAnnotation(
-		AbstractBaseJavaEntity abstractBaseJavaEntity, String annotationName) {
+		JavaMethod javaMethod, String annotationName) {
 
-		Annotation[] annotations = abstractBaseJavaEntity.getAnnotations();
+		List<JavaAnnotation> annotations = javaMethod.getAnnotations();
 
 		if (annotations == null) {
 			return false;
 		}
 
-		for (int i = 0; i < annotations.length; i++) {
-			Type type = annotations[i].getType();
-
-			JavaClass javaClass = type.getJavaClass();
+		for (JavaAnnotation javaAnnotation : annotations) {
+			JavaClass javaClass = javaAnnotation.getType();
 
 			if (annotationName.equals(javaClass.getName())) {
 				return true;
@@ -244,10 +230,10 @@ public class MissingOverrideCheck extends AbstractCheck {
 
 	private boolean _isOverrideMethod(
 		JavaClass javaClass, JavaMethod javaMethod,
+		JavaProjectBuilder javaProjectBuilder,
 		Collection<Tuple> ancestorJavaClassTuples) {
 
-		if (javaMethod.isConstructor() || javaMethod.isPrivate() ||
-			javaMethod.isStatic() ||
+		if (javaMethod.isPrivate() || javaMethod.isStatic() ||
 			_overridesHigherJavaAPIVersion(javaMethod)) {
 
 			return false;
@@ -255,13 +241,7 @@ public class MissingOverrideCheck extends AbstractCheck {
 
 		String methodName = javaMethod.getName();
 
-		JavaParameter[] javaParameters = javaMethod.getParameters();
-
-		Type[] types = new Type[javaParameters.length];
-
-		for (int i = 0; i < javaParameters.length; i++) {
-			types[i] = javaParameters[i].getType();
-		}
+		List<JavaType> parameterTypes = javaMethod.getParameterTypes();
 
 		// Check for matching method in each ancestor
 
@@ -279,29 +259,27 @@ public class MissingOverrideCheck extends AbstractCheck {
 				 methodName.equals("get"))) {
 
 				ancestorJavaMethod = ancestorJavaClass.getMethodBySignature(
-					methodName, types);
+					methodName, parameterTypes);
 			}
 			else {
 
 				// LPS-35613
 
-				Type[] ancestorActualTypeArguments =
-					(Type[])ancestorJavaClassTuple.getObject(1);
+				List<JavaType> ancestorActualTypeArguments =
+					(List<JavaType>)ancestorJavaClassTuple.getObject(1);
 
-				Type[] genericTypes = new Type[types.length];
+				List<JavaType> genericTypes = new ArrayList<>();
 
-				for (int i = 0; i < types.length; i++) {
-					Type type = types[i];
-
-					String typeValue = type.getValue();
+				for (JavaType parameterType : parameterTypes) {
+					String typeValue = parameterType.getValue();
 
 					boolean useGenericType = false;
 
-					for (int j = 0; j < ancestorActualTypeArguments.length;
-						j++) {
+					for (JavaType ancestorActualTypeArgument :
+							ancestorActualTypeArguments) {
 
 						if (typeValue.equals(
-								ancestorActualTypeArguments[j].getValue())) {
+								ancestorActualTypeArgument.getValue())) {
 
 							useGenericType = true;
 
@@ -310,10 +288,12 @@ public class MissingOverrideCheck extends AbstractCheck {
 					}
 
 					if (useGenericType) {
-						genericTypes[i] = new Type("java.lang.Object");
+						genericTypes.add(
+							javaProjectBuilder.getClassByName(
+								"java.lang.Object"));
 					}
 					else {
-						genericTypes[i] = type;
+						genericTypes.add(parameterType);
 					}
 				}
 
@@ -345,25 +325,22 @@ public class MissingOverrideCheck extends AbstractCheck {
 
 				return true;
 			}
-			else {
-				return false;
-			}
+
+			return false;
 		}
 
 		return false;
 	}
 
 	private boolean _overridesHigherJavaAPIVersion(JavaMethod javaMethod) {
-		Annotation[] annotations = javaMethod.getAnnotations();
+		List<JavaAnnotation> annotations = javaMethod.getAnnotations();
 
 		if (annotations == null) {
 			return false;
 		}
 
-		for (Annotation annotation : annotations) {
-			Type type = annotation.getType();
-
-			JavaClass javaClass = type.getJavaClass();
+		for (JavaAnnotation annotation : annotations) {
+			JavaClass javaClass = annotation.getType();
 
 			String javaClassName = javaClass.getFullyQualifiedName();
 
@@ -385,7 +362,11 @@ public class MissingOverrideCheck extends AbstractCheck {
 
 	private static final double _LOWEST_SUPPORTED_JAVA_VERSION = 1.7;
 
-	private JavaDocBuilder _javaDocBuilder;
-	private JavaDocBuilder _modulesJavaDocBuilder;
+	private static final String _MSG_MISSING_OVERRIDE = "override.missing";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		MissingOverrideCheck.class);
+
+	private JavaProjectBuilder _javaProjectBuilder;
 
 }

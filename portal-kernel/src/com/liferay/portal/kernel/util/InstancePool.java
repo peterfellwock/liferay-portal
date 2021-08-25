@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 
@@ -26,40 +27,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InstancePool {
 
 	public static boolean contains(String className) {
-		return _instance._contains(className);
+		return _instances.containsKey(className.trim());
 	}
 
 	public static Object get(String className) {
-		return _instance._get(className);
+		return get(className, true);
 	}
 
 	public static Object get(String className, boolean logErrors) {
-		return _instance._get(className, logErrors);
-	}
-
-	public static void put(String className, Object obj) {
-		_instance._put(className, obj);
-	}
-
-	public static void reset() {
-		_instance._reset();
-	}
-
-	private InstancePool() {
-		_instances = new ConcurrentHashMap<>();
-	}
-
-	private boolean _contains(String className) {
-		className = className.trim();
-
-		return _instances.containsKey(className);
-	}
-
-	private Object _get(String className) {
-		return _get(className, true);
-	}
-
-	private Object _get(String className, boolean logErrors) {
 		className = className.trim();
 
 		Object instance = _instances.get(className);
@@ -77,12 +52,12 @@ public class InstancePool {
 
 			_instances.put(className, instance);
 		}
-		catch (Exception e1) {
+		catch (Exception exception1) {
 			if (logErrors && _log.isWarnEnabled()) {
 				_log.warn(
 					"Unable to load " + className +
 						" with the portal class loader",
-					e1);
+					exception1);
 			}
 
 			Thread currentThread = Thread.currentThread();
@@ -97,13 +72,14 @@ public class InstancePool {
 
 				_instances.put(className, instance);
 			}
-			catch (Exception e2) {
+			catch (Exception exception2) {
 				if (logErrors) {
 					_log.error(
-						"Unable to load " + className +
-							" with the portal class loader or the current " +
-								"context class loader",
-						e2);
+						StringBundler.concat(
+							"Unable to load ", className,
+							" with the portal class loader or the current ",
+							"context class loader"),
+						exception2);
 				}
 			}
 		}
@@ -111,20 +87,20 @@ public class InstancePool {
 		return instance;
 	}
 
-	private void _put(String className, Object obj) {
-		className = className.trim();
-
-		_instances.put(className, obj);
+	public static void put(String className, Object object) {
+		_instances.put(className.trim(), object);
 	}
 
-	private void _reset() {
+	public static void reset() {
 		_instances.clear();
+	}
+
+	private InstancePool() {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(InstancePool.class);
 
-	private static final InstancePool _instance = new InstancePool();
-
-	private final Map<String, Object> _instances;
+	private static final Map<String, Object> _instances =
+		new ConcurrentHashMap<>();
 
 }

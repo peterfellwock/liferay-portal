@@ -14,37 +14,31 @@
 
 package com.liferay.portal.kernel.xmlrpc;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 /**
  * @author Brian Wing Shun Chan
  */
 public class XmlRpcUtil {
 
 	public static Fault createFault(int code, String description) {
-		return getXmlRpc().createFault(code, description);
+		return _xmlRpc.createFault(code, description);
 	}
 
 	public static Success createSuccess(String description) {
-		return getXmlRpc().createSuccess(description);
+		return _xmlRpc.createSuccess(description);
 	}
 
 	public static Response executeMethod(
 			String url, String methodName, Object[] arguments)
 		throws XmlRpcException {
 
-		return getXmlRpc().executeMethod(url, methodName, arguments);
+		return _xmlRpc.executeMethod(url, methodName, arguments);
 	}
 
 	public static XmlRpc getXmlRpc() {
-		PortalRuntimePermission.checkGetBeanProperty(XmlRpcUtil.class);
-
 		return _xmlRpc;
 	}
 
 	public void setXmlRpc(XmlRpc xmlRpc) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_xmlRpc = xmlRpc;
 	}
 

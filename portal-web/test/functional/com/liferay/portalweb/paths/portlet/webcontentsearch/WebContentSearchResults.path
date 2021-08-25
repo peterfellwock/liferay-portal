@@ -2,11 +2,13 @@
 <head>
 <title>WebContentSearchResults</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">WebContentSearchResults</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>TITLE</td>
@@ -16,11 +18,6 @@
 <tr>
 	<td>CONTENT</td>
 	<td>//*[@data-qa-id='row' and contains(.,'${key_webContentTitle}')]//h6[2]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>LANGUAGE</td>
-	<td>//*[@data-qa-id='row' and contains(.,'${key_webContentTitle}')]//h6[1]</td>
 	<td></td>
 </tr>
 </tbody>

@@ -23,7 +23,11 @@ import com.liferay.portal.tools.theme.builder.internal.util.Validator;
 import java.io.File;
 import java.io.IOException;
 
+import java.net.URI;
+
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -31,18 +35,20 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import java.util.Enumeration;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.coobird.thumbnailator.Thumbnails;
-import net.coobird.thumbnailator.Thumbnails.Builder;
 
 /**
  * @author David Truong
  * @author Andrea Di Giorgi
  */
 public class ThemeBuilder {
+
+	public static final String STYLED = "_styled";
+
+	public static final String UNSTYLED = "_unstyled";
 
 	public static void main(String[] args) throws Exception {
 		ThemeBuilderArgs themeBuilderArgs = new ThemeBuilderArgs();
@@ -70,8 +76,8 @@ public class ThemeBuilder {
 				themeBuilder.build();
 			}
 		}
-		catch (ParameterException pe) {
-			System.err.println(pe.getMessage());
+		catch (ParameterException parameterException) {
+			System.err.println(parameterException.getMessage());
 
 			_printHelp(jCommander);
 		}
@@ -141,7 +147,7 @@ public class ThemeBuilder {
 			themeBuilderArgs.getUnstyledDir());
 	}
 
-	public void build() throws IOException {
+	public void build() throws Exception {
 		if (_unstyledDir != null) {
 			_copyTheme(UNSTYLED, _unstyledDir);
 		}
@@ -153,38 +159,36 @@ public class ThemeBuilder {
 		_writeLookAndFeelXml();
 
 		if (_diffsDir != null) {
-			_copyTheme(_diffsDir);
+			_copyTheme(_diffsDir.toPath());
 		}
 
 		_writeScreenshotThumbnail();
 	}
 
-	protected static final String STYLED = "_styled";
-
-	protected static final String UNSTYLED = "_unstyled";
-
 	private static void _printHelp(JCommander jCommander) throws Exception {
 		jCommander.usage();
 	}
 
-	private void _copyTheme(File themeDir) throws IOException {
+	private void _copyTheme(final Path themeDirPath) throws IOException {
 		final Path outputDirPath = _outputDir.toPath();
-		final Path themeDirPath = themeDir.toPath();
 
 		Files.walkFileTree(
 			themeDirPath,
 			new SimpleFileVisitor<Path>() {
 
+				@Override
 				public FileVisitResult visitFile(
 						Path path, BasicFileAttributes basicFileAttributes)
 					throws IOException {
 
-					if (_isIgnoredTemplateFile(path.toString())) {
+					if (_isIgnoredFile(path.toString())) {
 						return FileVisitResult.CONTINUE;
 					}
 
-					Path outputPath = outputDirPath.resolve(
+					String relativePath = String.valueOf(
 						themeDirPath.relativize(path));
+
+					Path outputPath = outputDirPath.resolve(relativePath);
 
 					Files.createDirectories(outputPath.getParent());
 
@@ -197,46 +201,39 @@ public class ThemeBuilder {
 			});
 	}
 
-	private void _copyTheme(String themeName, File themeDir)
-		throws IOException {
+	private void _copyTheme(String themeName, File themeDir) throws Exception {
+		Path themePath = themeDir.toPath();
 
-		if (themeDir.isDirectory()) {
-			_copyTheme(themeDir);
-
-			return;
+		if (Files.isDirectory(themePath)) {
+			_copyTheme(themePath);
 		}
+		else {
+			URI uri = themePath.toUri();
 
-		Path outputDirPath = _outputDir.toPath();
+			Map<String, String> properties = new HashMap<>();
 
-		try (ZipFile zipFile = new ZipFile(themeDir)) {
-			Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+			properties.put("create", "false");
+			properties.put("encoding", StandardCharsets.UTF_8.name());
 
-			while (enumeration.hasMoreElements()) {
-				ZipEntry zipEntry = enumeration.nextElement();
+			try (FileSystem fileSystem = FileSystems.newFileSystem(
+					new URI("jar:" + uri.getScheme(), uri.getPath(), null),
+					properties)) {
 
-				String name = zipEntry.getName();
+				String extension = FileUtil.getExtension(
+					String.valueOf(themePath.getFileName()));
 
-				if (name.endsWith("/") ||
-					!name.startsWith("META-INF/resources/" + themeName) ||
-					_isIgnoredTemplateFile(name)) {
-
-					continue;
+				if (extension.equalsIgnoreCase("jar")) {
+					_copyTheme(
+						fileSystem.getPath("/META-INF/resources/" + themeName));
 				}
-
-				name = name.substring(20 + themeName.length());
-
-				Path path = outputDirPath.resolve(name);
-
-				Files.createDirectories(path.getParent());
-
-				Files.copy(
-					zipFile.getInputStream(zipEntry), path,
-					StandardCopyOption.REPLACE_EXISTING);
+				else {
+					_copyTheme(fileSystem.getPath("/"));
+				}
 			}
 		}
 	}
 
-	private boolean _isIgnoredTemplateFile(String fileName) {
+	private boolean _isIgnoredFile(String fileName) {
 		String extension = FileUtil.getExtension(fileName);
 
 		if ((extension.equalsIgnoreCase("ftl") ||
@@ -246,10 +243,16 @@ public class ThemeBuilder {
 			return true;
 		}
 
+		if (fileName.endsWith("aui.css") || fileName.endsWith("main.css") ||
+			fileName.endsWith("rtl.css")) {
+
+			return true;
+		}
+
 		return false;
 	}
 
-	private void _writeLookAndFeelXml() throws IOException {
+	private void _writeLookAndFeelXml() throws Exception {
 		Path path = _outputDir.toPath();
 
 		path = path.resolve("WEB-INF/liferay-look-and-feel.xml");
@@ -259,8 +262,7 @@ public class ThemeBuilder {
 		}
 
 		String content = FileUtil.read(
-			"com/liferay/portal/tools/theme/builder/dependencies" +
-				"/liferay-look-and-feel.xml");
+			ThemeBuilder.class, "dependencies/liferay-look-and-feel.xml");
 
 		String id = _name.toLowerCase();
 
@@ -276,14 +278,14 @@ public class ThemeBuilder {
 		Files.write(path, content.getBytes(StandardCharsets.UTF_8));
 	}
 
-	private void _writeScreenshotThumbnail() throws IOException {
+	private void _writeScreenshotThumbnail() throws Exception {
 		File file = new File(_outputDir, "images/screenshot.png");
 
 		if (!file.exists()) {
 			return;
 		}
 
-		Builder<File> thumbnailBuilder = Thumbnails.of(file);
+		Thumbnails.Builder<File> thumbnailBuilder = Thumbnails.of(file);
 
 		thumbnailBuilder.outputFormat("png");
 		thumbnailBuilder.size(160, 120);

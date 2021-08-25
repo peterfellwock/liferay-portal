@@ -21,7 +21,4 @@ public interface MicrosoftTranslatorFactory {
 
 	public MicrosoftTranslator getMicrosoftTranslator();
 
-	public MicrosoftTranslator getMicrosoftTranslator(
-		String clientId, String clientSecret);
-
 }

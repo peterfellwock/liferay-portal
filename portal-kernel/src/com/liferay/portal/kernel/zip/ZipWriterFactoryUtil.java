@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.zip;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.io.File;
 
 /**
@@ -24,23 +22,18 @@ import java.io.File;
 public class ZipWriterFactoryUtil {
 
 	public static ZipWriter getZipWriter() {
-		return getZipWriterFactory().getZipWriter();
+		return _zipWriterFactory.getZipWriter();
 	}
 
 	public static ZipWriter getZipWriter(File file) {
-		return getZipWriterFactory().getZipWriter(file);
+		return _zipWriterFactory.getZipWriter(file);
 	}
 
 	public static ZipWriterFactory getZipWriterFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			ZipWriterFactoryUtil.class);
-
 		return _zipWriterFactory;
 	}
 
 	public void setZipWriterFactory(ZipWriterFactory zipWriterFactory) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_zipWriterFactory = zipWriterFactory;
 	}
 

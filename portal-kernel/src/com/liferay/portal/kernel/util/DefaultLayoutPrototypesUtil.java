@@ -14,22 +14,20 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
-import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
-import com.liferay.portal.kernel.service.LayoutPrototypeLocalServiceUtil;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -42,7 +40,7 @@ public class DefaultLayoutPrototypesUtil {
 
 	public static Layout addLayout(
 			LayoutSet layoutSet, String nameKey, String friendlyURL,
-			String layouteTemplateId)
+			String layoutTemplateId)
 		throws Exception {
 
 		Group group = layoutSet.getGroup();
@@ -53,54 +51,20 @@ public class DefaultLayoutPrototypesUtil {
 			nameMap.put(locale, LanguageUtil.get(locale, nameKey));
 		}
 
-		Map<Locale, String> friendlyURLMap = new HashMap<>();
-
-		friendlyURLMap.put(LocaleUtil.getDefault(), friendlyURL);
-
-		ServiceContext serviceContext = new ServiceContext();
-
 		Layout layout = LayoutLocalServiceUtil.addLayout(
 			group.getCreatorUserId(), group.getGroupId(),
 			layoutSet.isPrivateLayout(),
 			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, nameMap, null, null, null,
 			null, LayoutConstants.TYPE_PORTLET, StringPool.BLANK, false,
-			friendlyURLMap, serviceContext);
+			HashMapBuilder.put(
+				LocaleUtil.getDefault(), friendlyURL
+			).build(),
+			new ServiceContext());
 
 		LayoutTypePortlet layoutTypePortlet =
 			(LayoutTypePortlet)layout.getLayoutType();
 
-		layoutTypePortlet.setLayoutTemplateId(0, layouteTemplateId, false);
-
-		return layout;
-	}
-
-	public static Layout addLayoutPrototype(
-			long companyId, long defaultUserId, Map<Locale, String> nameMap,
-			Map<Locale, String> descriptionMap, String layouteTemplateId,
-			List<LayoutPrototype> layoutPrototypes)
-		throws Exception {
-
-		String name = nameMap.get(LocaleUtil.getDefault());
-
-		for (LayoutPrototype layoutPrototype : layoutPrototypes) {
-			String curName = layoutPrototype.getName(LocaleUtil.getDefault());
-
-			if (name.equals(curName)) {
-				return null;
-			}
-		}
-
-		LayoutPrototype layoutPrototype =
-			LayoutPrototypeLocalServiceUtil.addLayoutPrototype(
-				defaultUserId, companyId, nameMap, descriptionMap, true,
-				new ServiceContext());
-
-		Layout layout = layoutPrototype.getLayout();
-
-		LayoutTypePortlet layoutTypePortlet =
-			(LayoutTypePortlet)layout.getLayoutType();
-
-		layoutTypePortlet.setLayoutTemplateId(0, layouteTemplateId, false);
+		layoutTypePortlet.setLayoutTemplateId(0, layoutTemplateId, false);
 
 		return layout;
 	}
@@ -131,10 +95,7 @@ public class DefaultLayoutPrototypesUtil {
 				layout, portletId);
 
 		for (Map.Entry<String, String> entry : preferences.entrySet()) {
-			String key = entry.getKey();
-			String value = entry.getValue();
-
-			portletSetup.setValue(key, value);
+			portletSetup.setValue(entry.getKey(), entry.getValue());
 		}
 
 		portletSetup.store();

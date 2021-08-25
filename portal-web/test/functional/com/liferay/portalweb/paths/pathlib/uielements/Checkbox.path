@@ -2,15 +2,22 @@
 <head>
 <title>Checkbox</title>
 </head>
+
 <body>
-<table cellpadding="1" cellspacing="1" border="1">
+<table border="1" cellpadding="1" cellspacing="1">
 <thead>
 <tr><td rowspan="1" colspan="3">Checkbox</td></tr>
 </thead>
+
 <tbody>
 <tr>
 	<td>ACTIVE</td>
-	<td>//label[contains(.,'Active')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Active')]//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADAPTIVE_MEDIA_IMAGE</td>
+	<td>//td[contains(.,'${key_imageName}')]//..//td/input[contains(@type,'checkbox')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -19,18 +26,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ADD_HIGH_DENSITY_DISPLAY</td>
+	<td>//label/input[contains(@id,'addHighResolution')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ADD_SAMPLE_DATA</td>
 	<td>//label[contains(.,'Add Sample Data')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>ALLOW_DICTIONARY_WORDS</td>
-	<td>//label[contains(.,'Allow Dictionary Words')]/input[@type='checkbox']</td>
+	<td>ADD_TO_NAVIGATION_MENU</td>
+	<td>//label[contains(.,'Add this Page to the following Menus:')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ALLOW_MANUAL_MEMBERSHIP_MANAGEMENT</td>
-	<td>//label[contains(.,'Allow Manual Membership Management')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Allow Manual Membership Management')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -44,18 +56,63 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ANY_CHECKBOX</td>
+	<td>//label[contains(.,'${checkboxName}')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY_CHECKBOX_CHECKED</td>
+	<td>//label[contains(.,'${checkboxName}')]/input[@type='checkbox' and @checked]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ANY_CHECKBOX_UNCHECKED</td>
+	<td>//label[contains(.,'${checkboxName}')]/input[@type='checkbox' and not(@checked)]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ADD_SHIPMENT_ITEMS_CHECKBOX</td>
+	<td>//div[contains(text(), '${key_productSKU}')]/preceding-sibling::div[@class='dnd-td item-selector']//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
 	<td>BLOGS_ENTRY</td>
 	<td>//input[contains(@id,'BlogsEntry')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGEABLE</td>
-	<td>//label[contains(.,'Changeable')]/input[@type='checkbox']</td>
+	<td>CHECKBOX_DISABLED</td>
+	<td>//label[contains(.,'${key_checkboxName}')]/input[@type='checkbox' and contains(@class,'disabled')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>CHANGE_REQUIRED</td>
-	<td>//label[contains(.,'Change Required')]/input[@type='checkbox']</td>
+	<td>CHECKBOX_LABEL</td>
+	<td>//label[input]//*[normalize-space(text())='${key_fieldLabel}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DELETIONS</td>
+	<td>//label[contains(.,'Deletions')]/input[contains(@id,'DELETIONS')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_LANGUAGE_CHECKBOX</td>
+	<td>//div[contains(@class,'custom-control') and contains(.,'${key_language}')]//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_LANGUAGE_CHECKBOX_CHECKED</td>
+	<td>//div[contains(@class,'custom-control') and contains(.,'${key_language}')]//input[@type='checkbox' and @checked]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DEPOT_DEFAULT_LANGUAGE_CHECKBOX_DISABLED</td>
+	<td>//div[contains(@class,'custom-control') and contains(.,'${key_language}')]//input[@disabled and @checked]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>DISABLED_EXPORT_TRANSLATION</td>
+	<td>//label[contains(.,'${key_checkboxName}')]/input[@disabled]</td>
 	<td></td>
 </tr>
 <tr>
@@ -74,13 +131,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>ENABLE_AUTO_TAGGING</td>
+	<td>//label[contains(.,'Enable Auto Tagging')]//input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENABLE_CHECKBOX</td>
+	<td>//tr[contains(@data-name,'${key_checkboxName}')]//input[contains(@type,'checkbox')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>ENABLE_COMMENTS</td>
 	<td>//label[contains(.,'Enable Comments')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENABLE_COMMENT_RATINGS</td>
-	<td>//label[contains(.,'Enable Comment Ratings')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Enable Ratings for Comments')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -114,8 +181,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ENABLE_FLAGS</td>
-	<td>//label[contains(.,'Enable Flags')]/input[@type='checkbox']</td>
+	<td>ENABLE_DIRECTORY_INDEXING</td>
+	<td>//label[contains(.,'Enable Directory Indexing')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -126,11 +193,6 @@
 <tr>
 	<td>ENABLE_GOOGLE_AUTHENTICATION</td>
 	<td>//input[contains(@id,'google-auth')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ENABLE_LOCKOUT</td>
-	<td>//label[contains(.,'Enable Lockout')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -145,7 +207,7 @@
 </tr>
 <tr>
 	<td>ENABLE_PROPAGATION</td>
-	<td>//label[contains(.,'Enable propagation of changes')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'Enable propagation of changes')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -159,23 +221,28 @@
 	<td></td>
 </tr>
 <tr>
-	<td>ENABLE_RELATED_ASSETS</td>
-	<td>//label[contains(.,'Enable Related Assets')]/input[@type='checkbox']</td>
+	<td>SHOW_RELATED_ASSETS</td>
+	<td>//label[contains(.,'Show Related Assets')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENABLE_REPORT_INAPPROPRIATE_CONTENT</td>
+	<td>//label[contains(.,'Enable Report Inappropriate Content')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENABLE_RSS_SUBSCRIPTION</td>
-	<td>//label[contains(.,'RSS Subscription')]/input[@type='checkbox']</td>
+	<td>//label[contains(.,'RSS Subscription')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>ENABLE_SOCIAL_BOOKMARKS</td>
-	<td>//label[contains(.,'Enable Social Bookmarks')]/input[@type='checkbox']</td>
+	<td>//input[@type='checkbox' and contains(@name,'enableSocialBookmarks')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>ENABLE_VIEW_COUNT</td>
-	<td>//label[contains(.,'Enable View Count')]/input[@type='checkbox']</td>
+	<td>SHOW_VIEW_COUNT</td>
+	<td>//label[contains(.,'Show View Count')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -209,28 +276,33 @@
 	<td></td>
 </tr>
 <tr>
-	<td>HIDE_FROM_NAVIGATION_MENU</td>
-	<td>//label[contains(.,'Hide from Navigation Menu')]/input[@type='checkbox']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>HISTORY_ENABLED</td>
 	<td>//label[contains(.,'History Enabled')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LEXICON_SELECT_ALL</td>
-	<td>//div[contains(@class,'collapse on')]//input</td>
+	<td>LEXICON_DESELECT_ALL_BUTTON</td>
+	<td>//button[@type='button' and contains(.,'Deselect all')]</td>
 	<td></td>
 </tr>
 <tr>
-	<td>LOWER_CASE_LETTERS</td>
-	<td>//label[contains(.,'Lower Case Letters')]/input[@type='checkbox']</td>
+	<td>LEXICON_SELECT_ALL_CONTAINER</td>
+	<td>//nav[contains(@class,'management-bar')]//div[contains(@class,'custom-checkbox')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>LEXICON_SELECT_ALL_INPUT</td>
+	<td>//nav[contains(@class,'management-bar')]//input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
 	<td>MAILING</td>
 	<td>//label[contains(.,'Mailing')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>MAKE_PRIMARY</td>
+	<td>//label[contains(.,'Primary')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -264,8 +336,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>NUMBERS</td>
-	<td>//label[contains(.,'Numbers')]/input[@type='checkbox']</td>
+	<td>OPEN_GRAPH_CHECKBOX_DISABLED</td>
+	<td>//div[contains(@class,'open-graph-settings') and contains(@class,'disabled')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -279,8 +351,23 @@
 	<td></td>
 </tr>
 <tr>
+	<td>PRIVATE_PAGES_ENABLE_PROPAGATION</td>
+	<td>//label[contains(.,'Enable propagation of changes')]/input[@type='checkbox' and contains(@id,'privateLayoutSetPrototype')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>RANK_BY_CONTRIBUTION</td>
 	<td>//label[contains(.,'Rank by Contribution')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ALL_FRAGMENTS</td>
+	<td>//label[contains(.,'All Fragments')]/input[@type='checkbox']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ALLOWED_FRAGMENT</td>
+	<td>//label[contains(.,'${key_fragmentName}')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -300,12 +387,12 @@
 </tr>
 <tr>
 	<td>SELECT_ALL</td>
-	<td>//*[@data-qa-id='selectAllCheckbox'] | //div[@class='checkbox']//input[@title='Select All'] | //input[contains(@id,'allRowIds') or contains(@name,'allRowIds') or contains(@class,'select-all-checkboxes')]</td>
+	<td>//*[@data-qa-id='selectAllCheckbox'] | //div[@class='checkbox']//input[@title='Select All'] | //input[contains(@id,'allRowIds') or contains(@name,'allRowIds') or contains(@class,'select-all-checkboxes')] | //input[contains(@id,'selectAllCheckbox')]</td>
 	<td></td>
 </tr>
 <tr>
 	<td>SELECT_ALL_CHECKBOX_TICK</td>
-	<td>//div[@class='portlet-body']//div[contains(@class,'secondary-bar-open')]</td>
+	<td>//div[@class='portlet-body']//nav[contains(@class,'navbar-nowrap')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -339,11 +426,6 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SHOW_NAVIGATION_LINKS_CHECKBOX</td>
-	<td>//label[contains(@for,'showTabs')]//input[@type='checkbox']</td>
-	<td></td>
-</tr>
-<tr>
 	<td>SHOW_SEARCH_CHECKBOX</td>
 	<td>//input[contains(@id,'showFoldersSearch')]</td>
 	<td></td>
@@ -359,8 +441,8 @@
 	<td></td>
 </tr>
 <tr>
-	<td>SITE_OWNER</td>
-	<td>//tr[contains(.,'Site Owner')]//input[@type='checkbox']</td>
+	<td>SITE_TEMPLATE</td>
+	<td>//tr[contains(.,'${key_siteTemplateName}')]//input</td>
 	<td></td>
 </tr>
 <tr>
@@ -370,17 +452,12 @@
 </tr>
 <tr>
 	<td>STAGED_CONTENT</td>
-	<td>//li[contains(.,'${key_contentName}')]//input</td>
+	<td>//label[contains(.,'${key_contentName}')]//input</td>
 	<td></td>
 </tr>
 <tr>
 	<td>STATUS</td>
 	<td>//span[@class='icon-check' and contains(.,'${key_status}')]</td>
-	<td></td>
-</tr>
-<tr>
-	<td>ENABLE_SYNTAX_CHECKING</td>
-	<td>//label[contains(.,'Enable Syntax Checking')]/input[@type='checkbox']</td>
 	<td></td>
 </tr>
 <tr>
@@ -394,8 +471,18 @@
 	<td></td>
 </tr>
 <tr>
-	<td>UPPER_CASE_LETTERS</td>
-	<td>//label[contains(.,'Upper Case Letters')]/input[@type='checkbox']</td>
+	<td>ENABLE_EXPERIMENTAL_INTERFACE</td>
+	<td>//label[contains(@for,'enableExperimentalInterface')]/span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>ENABLE_CHECKBOX_VIA_SPAN</td>
+	<td>//label[contains(.,'${key_checkboxOption}')]/input[@type='checkbox']/../span</td>
+	<td></td>
+</tr>
+<tr>
+	<td>UPLOAD_FILE_ENTRY</td>
+	<td>//li[contains(@class,'upload-file')]//input[@type='checkbox' and contains(@data-title,'${key_fileName}')]</td>
 	<td></td>
 </tr>
 </tbody>

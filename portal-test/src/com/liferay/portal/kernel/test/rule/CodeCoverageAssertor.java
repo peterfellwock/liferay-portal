@@ -14,8 +14,8 @@
 
 package com.liferay.portal.kernel.test.rule;
 
-import com.liferay.portal.kernel.process.ClassPathUtil;
-import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.petra.process.ClassPathUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.lang.reflect.Constructor;
@@ -26,7 +26,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.rules.TestRule;
@@ -51,6 +51,8 @@ public class CodeCoverageAssertor implements TestRule {
 		_includes = includes;
 		_excludes = excludes;
 		_includeInnerClasses = includeInnerClasses;
+
+		_skip = Boolean.getBoolean("junit.code.coverage");
 	}
 
 	public void appendAssertClasses(List<Class<?>> assertClasses) {
@@ -60,7 +62,7 @@ public class CodeCoverageAssertor implements TestRule {
 	public Statement apply(
 		final Statement statement, final Description description) {
 
-		if (description.getMethodName() != null) {
+		if (_skip || (description.getMethodName() != null)) {
 			return statement;
 		}
 
@@ -94,6 +96,10 @@ public class CodeCoverageAssertor implements TestRule {
 		};
 	}
 
+	public List<Method> getAssertMethods() throws ReflectiveOperationException {
+		return Collections.emptyList();
+	}
+
 	protected void afterClass(Description description, String className)
 		throws Throwable {
 
@@ -111,11 +117,10 @@ public class CodeCoverageAssertor implements TestRule {
 
 		try {
 			_ASSERT_COVERAGE_METHOD.invoke(
-				null, _includeInnerClasses,
-				assertClasses.toArray(new Class<?>[assertClasses.size()]));
+				null, _includeInnerClasses, assertClasses, getAssertMethods());
 		}
-		catch (InvocationTargetException ite) {
-			throw ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			throw invocationTargetException.getCause();
 		}
 	}
 
@@ -126,16 +131,15 @@ public class CodeCoverageAssertor implements TestRule {
 			className = className.substring(0, className.length() - 4);
 		}
 
-		String jvmClassPath = ClassPathUtil.getJVMClassPath(false);
-
-		URL[] urls = ClassPathUtil.getClassPathURLs(jvmClassPath);
+		URL[] urls = ClassPathUtil.getClassPathURLs(
+			ClassPathUtil.getJVMClassPath(false));
 
 		ClassLoader classLoader = new URLClassLoader(urls, null);
 
 		try {
 			classLoader.loadClass(className);
 		}
-		catch (ClassNotFoundException cnfe) {
+		catch (ClassNotFoundException classNotFoundException) {
 			className = null;
 		}
 
@@ -148,8 +152,8 @@ public class CodeCoverageAssertor implements TestRule {
 		try {
 			_DYNAMICALLY_INSTRUMENT_METHOD.invoke(null, includes, _excludes);
 		}
-		catch (InvocationTargetException ite) {
-			throw ite.getCause();
+		catch (InvocationTargetException invocationTargetException) {
+			throw invocationTargetException.getCause();
 		}
 
 		return className;
@@ -173,8 +177,8 @@ public class CodeCoverageAssertor implements TestRule {
 			assertClasses.add(mainClass);
 
 			if (_includeInnerClasses) {
-				assertClasses.addAll(
-					Arrays.asList(mainClass.getDeclaredClasses()));
+				Collections.addAll(
+					assertClasses, mainClass.getDeclaredClasses());
 			}
 		}
 
@@ -195,6 +199,22 @@ public class CodeCoverageAssertor implements TestRule {
 			Object reloadedObject = constructor.newInstance();
 
 			appendAssertClassesMethod.invoke(reloadedObject, assertClasses);
+
+			Method getAssertMethodsMethod = reloadedClass.getMethod(
+				"getAssertMethods");
+
+			getAssertMethodsMethod.setAccessible(true);
+
+			List<Method> methods = (List<Method>)getAssertMethodsMethod.invoke(
+				reloadedObject);
+
+			for (Method method : methods) {
+				Class<?> declaringClass = method.getDeclaringClass();
+
+				if (!assertClasses.contains(declaringClass)) {
+					assertClasses.add(declaringClass);
+				}
+			}
 		}
 
 		String[] includes = new String[assertClasses.size()];
@@ -222,18 +242,19 @@ public class CodeCoverageAssertor implements TestRule {
 				"com.liferay.whip.agent.InstrumentationAgent");
 
 			_ASSERT_COVERAGE_METHOD = instrumentationAgentClass.getMethod(
-				"assertCoverage", boolean.class, Class[].class);
+				"assertCoverage", boolean.class, List.class, List.class);
 			_DYNAMICALLY_INSTRUMENT_METHOD =
 				instrumentationAgentClass.getMethod(
 					"dynamicallyInstrument", String[].class, String[].class);
 		}
-		catch (Exception e) {
-			throw new ExceptionInInitializerError(e);
+		catch (Exception exception) {
+			throw new ExceptionInInitializerError(exception);
 		}
 	}
 
 	private final String[] _excludes;
 	private final boolean _includeInnerClasses;
 	private final String[] _includes;
+	private final boolean _skip;
 
 }

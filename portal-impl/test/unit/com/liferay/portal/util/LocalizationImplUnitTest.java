@@ -16,13 +16,15 @@ package com.liferay.portal.util;
 
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.test.CaptureHandler;
-import com.liferay.portal.kernel.test.JDKLoggerTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -30,17 +32,21 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-
-import org.powermock.api.mockito.PowerMockito;
 
 /**
  * @author Manuel de la Peña
  */
-public class LocalizationImplUnitTest extends PowerMockito {
+public class LocalizationImplUnitTest {
+
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@Test
 	public void testGetDefaultImportLocaleUseCase1() {
@@ -59,22 +65,21 @@ public class LocalizationImplUnitTest extends PowerMockito {
 
 	@Test
 	public void testGetDefaultImportLocaleUseCase4() {
-		try (CaptureHandler captureHandler =
-				JDKLoggerTestUtil.configureJDKLogger(
-					LocalizationImpl.class.getName(), Level.WARNING)) {
+		try (LogCapture logCapture = LoggerTestUtil.configureJDKLogger(
+				LocalizationImpl.class.getName(), Level.WARNING)) {
 
 			verifyDefaultImportLocale("bg_BG", "bg_BG,fr_FR", "bg_BG", true);
 
-			List<LogRecord> logRecords = captureHandler.getLogRecords();
+			List<LogEntry> logEntries = logCapture.getLogEntries();
 
-			Assert.assertEquals(1, logRecords.size());
+			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
 
-			LogRecord logRecord = logRecords.get(0);
+			LogEntry logEntry = logEntries.get(0);
 
 			Assert.assertEquals(
 				"Language es_ES is missing for com.liferay.portal.className " +
 					"with primary key 0. Setting default language to bg_BG.",
-				logRecord.getMessage());
+				logEntry.getMessage());
 		}
 	}
 

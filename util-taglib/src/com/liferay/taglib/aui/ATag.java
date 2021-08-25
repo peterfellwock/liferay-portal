@@ -14,19 +14,17 @@
 
 package com.liferay.taglib.aui;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.aui.base.BaseATag;
 import com.liferay.taglib.util.InlineUtil;
 import com.liferay.taglib.util.TagResourceBundleUtil;
-
-import java.io.IOException;
 
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -50,22 +48,33 @@ public class ATag extends BaseATag {
 
 		if (Validator.isNotNull(getHref())) {
 			if (AUIUtil.isOpensNewWindow(getTarget())) {
-				ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
-					WebKeys.THEME_DISPLAY);
+				HttpServletRequest httpServletRequest = getRequest();
+
+				ThemeDisplay themeDisplay =
+					(ThemeDisplay)httpServletRequest.getAttribute(
+						WebKeys.THEME_DISPLAY);
 
 				ResourceBundle resourceBundle =
 					TagResourceBundleUtil.getResourceBundle(pageContext);
 
 				jspWriter.write(StringPool.SPACE);
 				jspWriter.write("<svg class=\"lexicon-icon ");
-				jspWriter.write("lexicon-icon-shortcut\" role=\"img\"><use ");
-				jspWriter.write("xlink:href=\"");
+				jspWriter.write("lexicon-icon-shortcut\" focusable=\"false\" ");
+				jspWriter.write("role=\"img\"><use href=\"");
 				jspWriter.write(themeDisplay.getPathThemeImages());
-				jspWriter.write("/lexicon/icons.svg#shortcut\" /><span ");
+				jspWriter.write("/clay/icons.svg#shortcut\" /><span ");
 				jspWriter.write("class=\"sr-only\">");
-				jspWriter.write(
-					LanguageUtil.get(resourceBundle, "opens-new-window"));
-				jspWriter.write("</span></svg>");
+
+				String opensNewWindowLabel = LanguageUtil.get(
+					resourceBundle, "opens-new-window");
+
+				jspWriter.write(opensNewWindowLabel);
+
+				jspWriter.write("</span>");
+				jspWriter.write("<title>");
+				jspWriter.write(opensNewWindowLabel);
+				jspWriter.write("</title>");
+				jspWriter.write("</svg>");
 			}
 
 			jspWriter.write("</a>");
@@ -89,10 +98,7 @@ public class ATag extends BaseATag {
 		String iconCssClass = getIconCssClass();
 		String label = getLabel();
 		String lang = getLang();
-		Boolean localizeLabel = getLocalizeLabel();
-		String namespace = _getNamespace();
 		String onClick = getOnClick();
-		String target = getTarget();
 		String title = getTitle();
 
 		if (Validator.isNotNull(href)) {
@@ -101,6 +107,8 @@ public class ATag extends BaseATag {
 			jspWriter.write("href=\"");
 			jspWriter.write(HtmlUtil.escapeAttribute(href));
 			jspWriter.write("\" ");
+
+			String target = getTarget();
 
 			if (Validator.isNotNull(target)) {
 				jspWriter.write("target=\"");
@@ -120,7 +128,7 @@ public class ATag extends BaseATag {
 
 		if (Validator.isNotNull(id)) {
 			jspWriter.write("id=\"");
-			jspWriter.write(namespace);
+			jspWriter.write(_getNamespace());
 			jspWriter.write(id);
 			jspWriter.write("\" ");
 		}
@@ -133,7 +141,7 @@ public class ATag extends BaseATag {
 
 		if (Validator.isNotNull(onClick)) {
 			jspWriter.write("onClick=\"");
-			jspWriter.write(onClick);
+			jspWriter.write(HtmlUtil.escapeAttribute(onClick));
 			jspWriter.write("\" ");
 		}
 
@@ -143,27 +151,20 @@ public class ATag extends BaseATag {
 			jspWriter.write("\" ");
 		}
 
-		if (Validator.isNotNull(title) ||
-			AUIUtil.isOpensNewWindow(getTarget())) {
-
-			ResourceBundle resourceBundle =
-				TagResourceBundleUtil.getResourceBundle(pageContext);
-
+		if (Validator.isNotNull(title)) {
 			jspWriter.write("title=\"");
 
 			if (Validator.isNotNull(title)) {
-				jspWriter.write(LanguageUtil.get(resourceBundle, title));
-			}
-
-			if (AUIUtil.isOpensNewWindow(getTarget())) {
 				jspWriter.write(
-					LanguageUtil.get(resourceBundle, "opens-new-window"));
+					LanguageUtil.get(
+						TagResourceBundleUtil.getResourceBundle(pageContext),
+						title));
 			}
 
 			jspWriter.write("\" ");
 		}
 
-		if (data != null) {
+		if ((data != null) && !data.isEmpty()) {
 			jspWriter.write(AUIUtil.buildData(data));
 		}
 
@@ -172,11 +173,11 @@ public class ATag extends BaseATag {
 		jspWriter.write(">");
 
 		if (Validator.isNotNull(label)) {
-			if (localizeLabel) {
-				ResourceBundle resourceBundle =
-					TagResourceBundleUtil.getResourceBundle(pageContext);
-
-				jspWriter.write(LanguageUtil.get(resourceBundle, label));
+			if (getLocalizeLabel()) {
+				jspWriter.write(
+					LanguageUtil.get(
+						TagResourceBundleUtil.getResourceBundle(pageContext),
+						label));
 			}
 			else {
 				jspWriter.write(label);
@@ -193,31 +194,33 @@ public class ATag extends BaseATag {
 	}
 
 	private String _getNamespace() {
-		HttpServletRequest request =
+		HttpServletRequest httpServletRequest =
 			(HttpServletRequest)pageContext.getRequest();
 
-		PortletResponse portletResponse = (PortletResponse)request.getAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE);
+		PortletResponse portletResponse =
+			(PortletResponse)httpServletRequest.getAttribute(
+				JavaConstants.JAVAX_PORTLET_RESPONSE);
 
-		String namespace = StringPool.BLANK;
-
-		boolean useNamespace = GetterUtil.getBoolean(
-			(String)request.getAttribute("aui:form:useNamespace"), true);
-
-		if ((portletResponse != null) && useNamespace) {
-			namespace = portletResponse.getNamespace();
+		if (portletResponse == null) {
+			return StringPool.BLANK;
 		}
 
-		return namespace;
+		if (GetterUtil.getBoolean(
+				(String)httpServletRequest.getAttribute(
+					"aui:form:useNamespace"),
+				true)) {
+
+			return portletResponse.getNamespace();
+		}
+
+		return StringPool.BLANK;
 	}
 
-	private void _writeDynamicAttributes(JspWriter jspWriter)
-		throws IOException {
-
+	private void _writeDynamicAttributes(JspWriter jspWriter) throws Exception {
 		String dynamicAttributesString = InlineUtil.buildDynamicAttributes(
 			getDynamicAttributes());
 
-		if (Validator.isNotNull(dynamicAttributesString)) {
+		if (!dynamicAttributesString.isEmpty()) {
 			jspWriter.write(dynamicAttributesString);
 		}
 	}

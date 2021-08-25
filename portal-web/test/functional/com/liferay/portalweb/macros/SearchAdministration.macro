@@ -1,0 +1,84 @@
+definition {
+
+	macro assertEngineVendorAndVersions {
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchAdmin#SEARCH_ENGINE_VENDOR",
+			value1 = "${engineVendor}");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchAdmin#CLIENT_VERSION",
+			value1 = "${clientVersion}");
+
+		Panel.expandPanel(panel = "Nodes (1)");
+
+		AssertTextEquals.assertPartialText(
+			locator1 = "SearchAdmin#SERVER_VERSION",
+			value1 = "${serverVersion}");
+	}
+
+	macro executeSearchActions {
+		AssertTextEquals(
+			locator1 = "Portlet#HEADER",
+			value1 = "Search");
+
+		var port = Elasticsearch.getServerPort();
+
+		var curl = "http://localhost:${port}/_tasks";
+
+		var reindexElapsedTime = "0";
+
+		while ("${reindexElapsedTime}" == "0" || "${reindexElapsedTime}" == "480" && (maxIterations = "2")) {
+			Navigator.gotoNavItem(navItem = "Index Actions");
+
+			Click(
+				key_actionsDescription = "${actionsDescription}",
+				locator1 = "Button#EXECUTE_ACTION");
+
+			var reindexStartTime = "0";
+
+			while ((!(contains("${elasticsearchTasks}", "indices:data/write/bulk"))) && ("${reindexStartTime}" != "60")) {
+				Pause.pauseNoSPARefresh(locator1 = "1000");
+
+				var reindexStartTime = ${reindexStartTime} + 1;
+
+				echo("Current Elasticsearch Tasks:");
+
+				var elasticsearchTasks = JSONCurlUtil.get("${curl}");
+			}
+
+			if ("${reindexStartTime}" == "60") {
+				echo("Elasticsearch failed to receive reindex request after 60 seconds.");
+
+				takeScreenshot();
+			}
+			else {
+				echo("Started reindexing ${reindexStartTime} second(s) after clicking 'Execute'.");
+			}
+
+			var reindexElapsedTime = "0";
+
+			while (((contains("${elasticsearchTasks}", "indices:data/write/bulk")) || IsElementPresent.isElementPresentNoSPARefresh(locator1 = "ControlMenu#RELOAD_TOOLTIP") || IsElementPresent.isElementPresentNoSPARefresh(locator1 = "//html[contains(@class,'lfr-spa-loading')]")) && ("${reindexElapsedTime}" != "240") && (maxIterations = "24")) {
+				Pause.pauseNoSPARefresh(locator1 = "10000");
+
+				var reindexElapsedTime = ${reindexElapsedTime} + 10;
+
+				echo("Current Elasticsearch Tasks:");
+
+				var elasticsearchTasks = JSONCurlUtil.get("${curl}");
+			}
+
+			if ("${reindexElapsedTime}" == "0") {
+				echo("Elasticsearch failed to receive reindex request.");
+			}
+			else if ("${reindexElapsedTime}" == "240") {
+				echo("Reindex timed out after 240 seconds.");
+
+				takeScreenshot();
+			}
+			else {
+				echo("Finished reindexing after ${reindexElapsedTime} seconds.");
+			}
+		}
+	}
+
+}

@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.portlet.bridges.mvc;
 
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.PortletResponseUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -23,7 +25,7 @@ import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
 
 /**
- * @author Eduardo Garcia
+ * @author Eduardo García
  */
 public abstract class BaseRSSMVCResourceCommand implements MVCResourceCommand {
 
@@ -32,28 +34,30 @@ public abstract class BaseRSSMVCResourceCommand implements MVCResourceCommand {
 			ResourceRequest resourceRequest, ResourceResponse resourceResponse)
 		throws PortletException {
 
-		if (!isRSSFeedsEnabled(resourceRequest)) {
+		if (isRSSFeedsEnabled(resourceRequest)) {
+			try {
+				PortletResponseUtil.sendFile(
+					resourceRequest, resourceResponse, null,
+					getRSS(resourceRequest, resourceResponse),
+					ContentTypes.TEXT_XML_UTF8);
+			}
+			catch (Exception exception) {
+				throw new PortletException(exception);
+			}
+		}
+		else {
 			try {
 				PortalUtil.sendRSSFeedsDisabledError(
 					resourceRequest, resourceResponse);
 			}
-			catch (Exception e) {
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception, exception);
+				}
 			}
-
-			return false;
 		}
 
-		try {
-			PortletResponseUtil.sendFile(
-				resourceRequest, resourceResponse, null,
-				getRSS(resourceRequest, resourceResponse),
-				ContentTypes.TEXT_XML_UTF8);
-		}
-		catch (Exception e) {
-			throw new PortletException(e);
-		}
-
-		return true;
+		return false;
 	}
 
 	protected abstract byte[] getRSS(
@@ -63,5 +67,8 @@ public abstract class BaseRSSMVCResourceCommand implements MVCResourceCommand {
 	protected boolean isRSSFeedsEnabled(ResourceRequest resourceRequest) {
 		return PortalUtil.isRSSFeedsEnabled();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		BaseRSSMVCResourceCommand.class);
 
 }

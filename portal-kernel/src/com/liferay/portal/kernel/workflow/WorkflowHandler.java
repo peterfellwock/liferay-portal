@@ -16,7 +16,9 @@ package com.liferay.portal.kernel.workflow;
 
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
@@ -51,18 +53,12 @@ public interface WorkflowHandler<T> {
 
 	public String getIconCssClass();
 
-	/**
-	 * @deprecated As of 7.0.0, with no direct replacement
-	 */
-	@Deprecated
-	public String getIconPath(LiferayPortletRequest liferayPortletRequest);
+	public default String getNotificationLink(
+			long workflowTaskId, ServiceContext serviceContext)
+		throws PortalException {
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #getSummary(long,
-	 *             PortletRequest, PortletResponse)}
-	 */
-	@Deprecated
-	public String getSummary(long classPK, Locale locale);
+		return StringPool.BLANK;
+	}
 
 	public String getSummary(
 		long classPK, PortletRequest portletRequest,
@@ -76,6 +72,11 @@ public interface WorkflowHandler<T> {
 		long classPK, LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse);
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #getNotificationLink(long, ServiceContext)}}
+	 */
+	@Deprecated
 	public String getURLEditWorkflowTask(
 			long workflowTaskId, ServiceContext serviceContext)
 		throws PortalException;
@@ -94,14 +95,18 @@ public interface WorkflowHandler<T> {
 		throws PortalException;
 
 	public boolean include(
-		long classPK, HttpServletRequest request, HttpServletResponse response,
-		String template);
+		long classPK, HttpServletRequest httpServletRequest,
+		HttpServletResponse httpServletResponse, String template);
 
 	public boolean isAssetTypeSearchable();
 
 	public boolean isScopeable();
 
 	public boolean isVisible();
+
+	public default boolean isVisible(Group group) {
+		return isVisible();
+	}
 
 	public void startWorkflowInstance(
 			long companyId, long groupId, long userId, long classPK, T model,

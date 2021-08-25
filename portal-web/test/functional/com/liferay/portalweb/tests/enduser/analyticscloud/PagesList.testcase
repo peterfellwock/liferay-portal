@@ -1,0 +1,151 @@
+@component-name = "portal-analytics-cloud"
+definition {
+
+	property analytics.cloud.enabled = "true";
+	property minimum.slave.ram = "32";
+	property portal.release = "false";
+	property portal.upstream = "true";
+	property testray.main.component.name = "Analytics Cloud";
+
+	setUp {
+		task ("Copy the token from AC") {
+			ACUtils.launchAC();
+
+			ACSettings.takeTokenFromAnalyticsCloud();
+		}
+
+		task ("Set up instance and sign in DXP") {
+			TestCase.setUpPortalInstance();
+
+			ACUtils.launchDXP();
+		}
+
+		task ("Add a new site and add a blog in this site") {
+			ACUtils.addSiteAndPage();
+
+			ACUtils.createBlogsAndAddToPage();
+		}
+	}
+
+	tearDown {
+		var testPortalInstance = PropsUtil.get("test.portal.instance");
+
+		ACUtils.tearDownDXP();
+
+		if ("${testPortalInstance}" == "true") {
+			PortalInstances.tearDownCP();
+		}
+		else {
+			JSONGroup.deleteGroupByName(groupName = "Site Name");
+		}
+
+		ACUtils.tearDownAC();
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8336 | Test Summary: Search for a Page in Pages list"
+	@priority = "5"
+	test CanSearchPageInPagesList {
+		task ("Add pages") {
+			for (var layoutName : list "AC Page 2,AC Page 3") {
+				ACUtils.addSiteAndPage(layoutName = "${layoutName}");
+			}
+		}
+
+		task ("Get site assigned property name") {
+			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud(siteName = "Site Name");
+		}
+
+		task ("Add a new user in DXP") {
+			JSONUser.addUser(
+				userEmailAddress = "ac@liferay.com",
+				userFirstName = "ac",
+				userLastName = "ac",
+				userScreenName = "ac");
+		}
+
+		task ("Sync the Contact Data") {
+			ACDXPSettings.syncNewContactData();
+		}
+
+		task ("Sign in with the new user to visit the site pages") {
+			User.logoutAndLoginPG(
+				userLoginEmailAddress = "ac@liferay.com",
+				userLoginFullName = "ac ac");
+
+			for (var pageName : list "AC Page,AC Page 2,AC Page 3") {
+				Navigator.gotoSitePage(
+					pageName = "${pageName}",
+					siteName = "Site Name");
+			}
+		}
+
+		task ("Switch to new property in AC") {
+			ACUtils.closeAllSessions();
+
+			Pause(locator1 = "30000");
+
+			ACUtils.launchAC();
+
+			ACProperties.switchProperty(propertyName = "${propertyName}");
+		}
+
+		task ("Go to sites pages tab") {
+			ACNavigation.goToSites();
+
+			ACNavigation.switchTab(tabName = "Pages");
+		}
+
+		task ("Choose Last 24 Hours") {
+			ACTimeFilter.clickTimeFilterButton();
+
+			ACTimeFilter.setLast24Hours();
+		}
+
+		task ("Search the Pages") {
+			ACUtils.searchBar(searchItem = "AC Page");
+
+			for (var assetName : list "AC Page - Site Name - Liferay DXP,AC Page 2 - Site Name - Liferay DXP,AC Page 3 - Site Name - Liferay DXP") {
+				ACAssets.viewAssets(assetName = "${assetName}");
+			}
+
+			ACUtils.searchBar(searchItem = "2");
+
+			ACAssets.viewAssets(assetName = "AC Page 2 - Site Name - Liferay DXP");
+
+			ACUtils.searchBar(searchItem = "3");
+
+			ACAssets.viewAssets(assetName = "AC Page 3 - Site Name - Liferay DXP");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8341 | Test Summary: Filter Page Table by Last Year"
+	@priority = "3"
+	test PeriodFilterLastYearPageTable {
+		property portal.upstream = "quarantine";
+
+		// AC Refactor: Test needs data from past dates to assert
+		// AC Refactor ticket: LRAC-8747
+
+		task ("Open Analytics Cloud as active window") {
+			ACUtils.launchAC();
+		}
+
+		task ("Select Pages tab and set time period filter to Last Year") {
+			ACNavigation.switchTab(tabName = "Pages");
+
+			ACTimeFilter.clickTimeFilterButton();
+
+			ACTimeFilter.setLastYear();
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-8111 | Test Summary: Assert the pages list shows a list of pages"
+	@ignore = "true"
+	@priority = "5"
+	test ShowsListOfPages {
+
+		// TODO LRAC-8111 ShowsListOfPages pending implementation
+
+	}
+
+}

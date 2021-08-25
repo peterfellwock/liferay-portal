@@ -14,8 +14,6 @@
 
 package com.liferay.portal.kernel.image;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
-
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.Future;
@@ -38,11 +36,11 @@ public class ImageMagickUtil {
 	 *         documentation</a>
 	 */
 	public static Future<?> convert(List<String> arguments) throws Exception {
-		return getImageMagick().convert(arguments);
+		return _imageMagick.convert(arguments);
 	}
 
 	public static void destroy() {
-		getImageMagick().destroy();
+		_imageMagick.destroy();
 	}
 
 	/**
@@ -52,12 +50,10 @@ public class ImageMagickUtil {
 	 * @throws Exception if an unexpected error occurred
 	 */
 	public static String getGlobalSearchPath() throws Exception {
-		return getImageMagick().getGlobalSearchPath();
+		return _imageMagick.getGlobalSearchPath();
 	}
 
 	public static ImageMagick getImageMagick() {
-		PortalRuntimePermission.checkGetBeanProperty(ImageMagickUtil.class);
-
 		return _imageMagick;
 	}
 
@@ -68,7 +64,7 @@ public class ImageMagickUtil {
 	 * @throws Exception if an unexpected error occurred
 	 */
 	public static Properties getResourceLimitsProperties() throws Exception {
-		return getImageMagick().getResourceLimitsProperties();
+		return _imageMagick.getResourceLimitsProperties();
 	}
 
 	/**
@@ -82,7 +78,7 @@ public class ImageMagickUtil {
 	 *         documentation</a>
 	 */
 	public static String[] identify(List<String> arguments) throws Exception {
-		return getImageMagick().identify(arguments);
+		return _imageMagick.identify(arguments);
 	}
 
 	/**
@@ -92,19 +88,17 @@ public class ImageMagickUtil {
 	 *         otherwise
 	 */
 	public static boolean isEnabled() {
-		return getImageMagick().isEnabled();
+		return _imageMagick.isEnabled();
 	}
 
 	/**
 	 * Resets the global search path and resource limits for ImageMagick.
 	 */
 	public static void reset() {
-		getImageMagick().reset();
+		_imageMagick.reset();
 	}
 
 	public void setImageMagick(ImageMagick imageMagick) {
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
-
 		_imageMagick = imageMagick;
 	}
 

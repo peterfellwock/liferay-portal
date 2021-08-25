@@ -1,9 +1,0 @@
-;
-; Do not manually edit this file.
-;
-[subrepo]
-	cmdver = liferay
-	commit = ddf997c566236caa8506b3af9b93369a8329ec56
-	mode = push
-	parent = 22c81b413eb7df61e2343d1f12900329cb084ff5
-	remote = git@github.com:liferay/com-liferay-calendar.git

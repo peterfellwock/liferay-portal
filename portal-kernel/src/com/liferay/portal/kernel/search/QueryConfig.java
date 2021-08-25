@@ -14,17 +14,17 @@
 
 package com.liferay.portal.kernel.search;
 
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringPool;
 
 import java.io.Serializable;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -43,24 +43,22 @@ public class QueryConfig implements Serializable {
 		Set<String> highlightFieldNamesSet = SetUtil.fromArray(
 			(String[])_attributes.get(_HIGHLIGHT_FIELD_NAMES));
 
-		highlightFieldNamesSet.addAll(Arrays.asList(highlightFieldNames));
+		Collections.addAll(highlightFieldNamesSet, highlightFieldNames);
 
 		_attributes.put(
 			_HIGHLIGHT_FIELD_NAMES,
-			highlightFieldNamesSet.toArray(
-				new String[highlightFieldNamesSet.size()]));
+			highlightFieldNamesSet.toArray(new String[0]));
 	}
 
 	public void addSelectedFieldNames(String... selectedFieldNames) {
 		Set<String> selectedFieldNamesSet = SetUtil.fromArray(
 			(String[])_attributes.get(_SELECTED_FIELD_NAMES));
 
-		selectedFieldNamesSet.addAll(Arrays.asList(selectedFieldNames));
+		Collections.addAll(selectedFieldNamesSet, selectedFieldNames);
 
 		_attributes.put(
 			_SELECTED_FIELD_NAMES,
-			selectedFieldNamesSet.toArray(
-				new String[selectedFieldNamesSet.size()]));
+			selectedFieldNamesSet.toArray(new String[0]));
 	}
 
 	public String getAlternateUidFieldName() {
@@ -170,12 +168,9 @@ public class QueryConfig implements Serializable {
 	public boolean isAllFieldsSelected() {
 		String[] selectedFieldNames = getSelectedFieldNames();
 
-		if (ArrayUtil.isEmpty(selectedFieldNames)) {
-			return true;
-		}
-
-		if ((selectedFieldNames.length == 1) &&
-			selectedFieldNames[0].equals(Field.ANY)) {
+		if (ArrayUtil.isEmpty(selectedFieldNames) ||
+			((selectedFieldNames.length == 1) &&
+			 selectedFieldNames[0].equals(Field.ANY))) {
 
 			return true;
 		}
@@ -192,8 +187,7 @@ public class QueryConfig implements Serializable {
 
 	public boolean isHighlightEnabled() {
 		return GetterUtil.getBoolean(
-			_attributes.get(PropsKeys.INDEX_SEARCH_HIGHLIGHT_ENABLED),
-			_INDEX_SEARCH_HIGHLIGHT_ENABLED);
+			_attributes.get(_INDEX_SEARCH_HIGHLIGHT_ENABLED));
 	}
 
 	public boolean isHighlightRequireFieldMatch() {
@@ -259,13 +253,7 @@ public class QueryConfig implements Serializable {
 	}
 
 	public void setHighlightEnabled(boolean highlightEnabled) {
-		if (_INDEX_SEARCH_HIGHLIGHT_ENABLED) {
-			_attributes.put(
-				PropsKeys.INDEX_SEARCH_HIGHLIGHT_ENABLED, highlightEnabled);
-		}
-		else {
-			_attributes.put(PropsKeys.INDEX_SEARCH_HIGHLIGHT_ENABLED, false);
-		}
+		_attributes.put(_INDEX_SEARCH_HIGHLIGHT_ENABLED, highlightEnabled);
 	}
 
 	public void setHighlightFieldNames(String... highlightFieldNames) {
@@ -322,6 +310,11 @@ public class QueryConfig implements Serializable {
 			querySuggestionEnabled);
 	}
 
+	public void setQuerySuggestionMax(int querySuggestionMax) {
+		_attributes.put(
+			PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_MAX, querySuggestionMax);
+	}
+
 	public void setQuerySuggestionScoresThreshold(
 		int querySuggestionScoresThreshold) {
 
@@ -330,9 +323,13 @@ public class QueryConfig implements Serializable {
 			querySuggestionScoresThreshold);
 	}
 
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #setQuerySuggestionMax(String)}
+	 */
+	@Deprecated
 	public void setQuerySuggestionsMax(int querySuggestionMax) {
-		_attributes.put(
-			PropsKeys.INDEX_SEARCH_QUERY_SUGGESTION_MAX, querySuggestionMax);
+		setQuerySuggestionMax(querySuggestionMax);
 	}
 
 	public void setScoreEnabled(boolean scoreEnabled) {
@@ -378,9 +375,8 @@ public class QueryConfig implements Serializable {
 						INDEX_SEARCH_COLLATED_SPELL_CHECK_RESULT_SCORES_THRESHOLD),
 				50);
 
-	private static final boolean _INDEX_SEARCH_HIGHLIGHT_ENABLED =
-		GetterUtil.getBoolean(
-			PropsUtil.get(PropsKeys.INDEX_SEARCH_HIGHLIGHT_ENABLED));
+	private static final String _INDEX_SEARCH_HIGHLIGHT_ENABLED =
+		"indexSearchHighlightEnabled";
 
 	private static final int _INDEX_SEARCH_HIGHLIGHT_FRAGMENT_SIZE =
 		GetterUtil.getInteger(

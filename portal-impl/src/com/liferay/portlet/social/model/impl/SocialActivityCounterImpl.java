@@ -24,20 +24,14 @@ public class SocialActivityCounterImpl extends SocialActivityCounterBaseImpl {
 
 	@Override
 	public boolean isActivePeriod(int periodLength) {
-		if (periodLength ==
-				SocialActivityCounterConstants.PERIOD_LENGTH_INFINITE) {
+		if ((periodLength ==
+				SocialActivityCounterConstants.PERIOD_LENGTH_INFINITE) ||
+			((periodLength !=
+				SocialActivityCounterConstants.PERIOD_LENGTH_SYSTEM) &&
+			 ((getStartPeriod() + periodLength) >
+				 SocialCounterPeriodUtil.getActivityDay()))) {
 
 			return true;
-		}
-
-		if (periodLength !=
-				SocialActivityCounterConstants.PERIOD_LENGTH_SYSTEM) {
-
-			if ((getStartPeriod() + periodLength) >
-					SocialCounterPeriodUtil.getActivityDay()) {
-
-				return true;
-			}
 		}
 
 		if ((getStartPeriod() == SocialCounterPeriodUtil.getStartPeriod()) &&

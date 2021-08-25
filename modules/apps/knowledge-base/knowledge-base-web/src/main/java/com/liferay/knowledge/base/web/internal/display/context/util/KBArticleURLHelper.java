@@ -19,6 +19,7 @@ import com.liferay.knowledge.base.constants.KBPortletKeys;
 import com.liferay.knowledge.base.model.KBArticle;
 import com.liferay.knowledge.base.model.KBFolder;
 import com.liferay.knowledge.base.service.KBFolderServiceUtil;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -56,13 +57,6 @@ public class KBArticleURLHelper {
 				"mvcPath", _templatePath + "view_article.jsp");
 		}
 
-		if (portletId.startsWith(KBPortletKeys.KNOWLEDGE_BASE_ADMIN) ||
-			portletId.startsWith(KBPortletKeys.KNOWLEDGE_BASE_SEARCH)) {
-
-			portletURL.setParameter(
-				"redirect", PortalUtil.getCurrentURL(_renderRequest));
-		}
-
 		if (Validator.isNull(kbArticle.getUrlTitle()) ||
 			portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_ADMIN) ||
 			portletId.equals(KBPortletKeys.KNOWLEDGE_BASE_SEARCH)) {
@@ -94,11 +88,11 @@ public class KBArticleURLHelper {
 	public PortletURL createViewWithCommentsURL(KBArticle kbArticle)
 		throws PortalException {
 
-		PortletURL portletURL = createViewURL(kbArticle);
-
-		portletURL.setParameter("expanded", Boolean.TRUE.toString());
-
-		return portletURL;
+		return PortletURLBuilder.create(
+			createViewURL(kbArticle)
+		).setParameter(
+			"expanded", true
+		).buildPortletURL();
 	}
 
 	public PortletURL createViewWithRedirectURL(

@@ -14,18 +14,20 @@
 
 package com.liferay.portlet.social.service.impl;
 
-import com.liferay.portal.kernel.cache.MultiVMPoolUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.PortalCache;
+import com.liferay.portal.kernel.cache.PortalCacheHelperUtil;
+import com.liferay.portal.kernel.cache.PortalCacheManagerNames;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portlet.social.service.base.SocialActivitySettingLocalServiceBaseImpl;
 import com.liferay.social.kernel.model.SocialActivityCounterDefinition;
 import com.liferay.social.kernel.model.SocialActivityDefinition;
@@ -46,12 +48,12 @@ public class SocialActivitySettingLocalServiceImpl
 	public void deleteActivitySetting(
 		long groupId, String className, long classPK) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
 		String name = _PREFIX_CLASS_PK.concat(String.valueOf(classPK));
 
 		SocialActivitySetting activitySetting =
 			socialActivitySettingPersistence.fetchByG_C_A_N(
-				groupId, classNameId, 0, name);
+				groupId, classNameLocalService.getClassNameId(className), 0,
+				name);
 
 		if (activitySetting != null) {
 			socialActivitySettingPersistence.remove(activitySetting);
@@ -69,8 +71,8 @@ public class SocialActivitySettingLocalServiceImpl
 
 		String key = encodeKey(groupId, className, activityType);
 
-		SocialActivityDefinition activityDefinition = _activityDefinitions.get(
-			key);
+		SocialActivityDefinition activityDefinition =
+			_activityDefinitionsPortalCache.get(key);
 
 		if (activityDefinition != null) {
 			return activityDefinition;
@@ -87,7 +89,7 @@ public class SocialActivitySettingLocalServiceImpl
 		activityDefinition = getActivityDefinition(
 			groupId, className, activityType, defaultActivityDefinition);
 
-		_activityDefinitions.put(key, activityDefinition);
+		_activityDefinitionsPortalCache.put(key, activityDefinition);
 
 		return activityDefinition;
 	}
@@ -151,11 +153,11 @@ public class SocialActivitySettingLocalServiceImpl
 
 			return jsonObject.getBoolean("enabled");
 		}
-		catch (JSONException jsone) {
+		catch (JSONException jsonException) {
 			_log.error(
 				"Unable to create JSON object from " +
 					activitySetting.getValue(),
-				jsone);
+				jsonException);
 
 			return false;
 		}
@@ -248,7 +250,7 @@ public class SocialActivitySettingLocalServiceImpl
 
 		String key = encodeKey(groupId, className, activityType);
 
-		_activityDefinitions.remove(key);
+		_activityDefinitionsPortalCache.remove(key);
 	}
 
 	@Override
@@ -277,9 +279,7 @@ public class SocialActivitySettingLocalServiceImpl
 			activitySetting.setName(name);
 		}
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-		jsonObject.put("enabled", enabled);
+		JSONObject jsonObject = JSONUtil.put("enabled", enabled);
 
 		activitySetting.setValue(jsonObject.toString());
 
@@ -303,15 +303,9 @@ public class SocialActivitySettingLocalServiceImpl
 	protected String encodeKey(
 		long groupId, String className, int activityType) {
 
-		StringBundler sb = new StringBundler(5);
-
-		sb.append(groupId);
-		sb.append(StringPool.POUND);
-		sb.append(className);
-		sb.append(StringPool.POUND);
-		sb.append(activityType);
-
-		return sb.toString();
+		return StringBundler.concat(
+			groupId, StringPool.POUND, className, StringPool.POUND,
+			activityType);
 	}
 
 	protected SocialActivityDefinition getActivityDefinition(
@@ -348,7 +342,11 @@ public class SocialActivitySettingLocalServiceImpl
 					jsonObject = JSONFactoryUtil.createJSONObject(
 						activitySetting.getValue());
 				}
-				catch (Exception e) {
+				catch (Exception exception) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(exception, exception);
+					}
+
 					jsonObject = JSONFactoryUtil.createJSONObject();
 				}
 
@@ -385,28 +383,27 @@ public class SocialActivitySettingLocalServiceImpl
 	protected List<SocialActivitySetting> getActivitySettings(
 		long groupId, String className, int activityType) {
 
-		long classNameId = classNameLocalService.getClassNameId(className);
-
-		List<SocialActivitySetting> activitySettings =
-			socialActivitySettingPersistence.findByG_C_A(
-				groupId, classNameId, activityType);
-
-		return activitySettings;
+		return socialActivitySettingPersistence.findByG_C_A(
+			groupId, classNameLocalService.getClassNameId(className),
+			activityType);
 	}
 
 	protected String toJSON(
 		SocialActivityCounterDefinition activityCounterDefinition) {
 
-		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
-
-		jsonObject.put("enabled", activityCounterDefinition.isEnabled());
-		jsonObject.put(
-			"limitEnabled", activityCounterDefinition.isLimitEnabled());
-		jsonObject.put(
-			"limitPeriod", activityCounterDefinition.getLimitPeriod());
-		jsonObject.put("limitValue", activityCounterDefinition.getLimitValue());
-		jsonObject.put("ownerType", activityCounterDefinition.getOwnerType());
-		jsonObject.put("value", activityCounterDefinition.getIncrement());
+		JSONObject jsonObject = JSONUtil.put(
+			"enabled", activityCounterDefinition.isEnabled()
+		).put(
+			"limitEnabled", activityCounterDefinition.isLimitEnabled()
+		).put(
+			"limitPeriod", activityCounterDefinition.getLimitPeriod()
+		).put(
+			"limitValue", activityCounterDefinition.getLimitValue()
+		).put(
+			"ownerType", activityCounterDefinition.getOwnerType()
+		).put(
+			"value", activityCounterDefinition.getIncrement()
+		);
 
 		return jsonObject.toString();
 	}
@@ -417,7 +414,8 @@ public class SocialActivitySettingLocalServiceImpl
 		SocialActivitySettingLocalServiceImpl.class);
 
 	private static final PortalCache<String, SocialActivityDefinition>
-		_activityDefinitions = MultiVMPoolUtil.getPortalCache(
+		_activityDefinitionsPortalCache = PortalCacheHelperUtil.getPortalCache(
+			PortalCacheManagerNames.MULTI_VM,
 			SocialActivitySettingLocalServiceImpl.class.getName());
 
 }

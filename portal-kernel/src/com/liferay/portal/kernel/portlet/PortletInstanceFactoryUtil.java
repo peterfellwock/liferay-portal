@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.portlet;
 
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 
 import javax.portlet.PortletException;
 
@@ -27,18 +26,18 @@ import javax.servlet.ServletContext;
 public class PortletInstanceFactoryUtil {
 
 	public static void clear(Portlet portlet) {
-		getPortletInstanceFactory().clear(portlet);
+		_portletInstanceFactory.clear(portlet);
 	}
 
 	public static void clear(Portlet portlet, boolean resetRemotePortletBag) {
-		getPortletInstanceFactory().clear(portlet, resetRemotePortletBag);
+		_portletInstanceFactory.clear(portlet, resetRemotePortletBag);
 	}
 
 	public static InvokerPortlet create(
 			Portlet portlet, ServletContext servletContext)
 		throws PortletException {
 
-		return getPortletInstanceFactory().create(portlet, servletContext);
+		return _portletInstanceFactory.create(portlet, servletContext);
 	}
 
 	public static InvokerPortlet create(
@@ -46,22 +45,19 @@ public class PortletInstanceFactoryUtil {
 			boolean destroyPrevious)
 		throws PortletException {
 
-		return getPortletInstanceFactory().create(
+		return _portletInstanceFactory.create(
 			portlet, servletContext, destroyPrevious);
 	}
 
 	public static void delete(Portlet portlet) {
-		getPortletInstanceFactory().delete(portlet);
+		_portletInstanceFactory.delete(portlet);
 	}
 
 	public static void destroy(Portlet portlet) {
-		getPortletInstanceFactory().destroy(portlet);
+		_portletInstanceFactory.destroy(portlet);
 	}
 
 	public static PortletInstanceFactory getPortletInstanceFactory() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			PortletInstanceFactoryUtil.class);
-
 		return _portletInstanceFactory;
 	}
 
@@ -73,8 +69,6 @@ public class PortletInstanceFactoryUtil {
 
 	public void setPortletInstanceFactory(
 		PortletInstanceFactory portletInstanceFactory) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_portletInstanceFactory = portletInstanceFactory;
 	}

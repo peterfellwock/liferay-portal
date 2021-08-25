@@ -1,4 +1,5 @@
 create table KBArticle (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	kbArticleId LONG not null primary key,
 	resourcePrimKey LONG,
@@ -8,6 +9,7 @@ create table KBArticle (
 	userName VARCHAR(75) null,
 	createDate DATE null,
 	modifiedDate DATE null,
+	externalReferenceCode VARCHAR(75) null,
 	rootResourcePrimKey LONG,
 	parentResourceClassNameId LONG,
 	parentResourcePrimKey LONG,
@@ -19,7 +21,6 @@ create table KBArticle (
 	description STRING null,
 	priority DOUBLE,
 	sections STRING null,
-	viewCount INTEGER,
 	latest BOOLEAN,
 	main BOOLEAN,
 	sourceURL STRING null,
@@ -31,6 +32,7 @@ create table KBArticle (
 );
 
 create table KBComment (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	kbCommentId LONG not null primary key,
 	groupId LONG,
@@ -48,7 +50,9 @@ create table KBComment (
 );
 
 create table KBFolder (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
+	externalReferenceCode VARCHAR(75) null,
 	kbFolderId LONG not null primary key,
 	groupId LONG,
 	companyId LONG,
@@ -64,6 +68,7 @@ create table KBFolder (
 );
 
 create table KBTemplate (
+	mvccVersion LONG default 0 not null,
 	uuid_ VARCHAR(75) null,
 	kbTemplateId LONG not null primary key,
 	groupId LONG,

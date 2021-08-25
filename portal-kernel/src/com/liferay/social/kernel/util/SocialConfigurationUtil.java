@@ -14,7 +14,6 @@
 
 package com.liferay.social.kernel.util;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.social.kernel.model.SocialActivityDefinition;
 
 import java.util.List;
@@ -25,67 +24,61 @@ import java.util.List;
 public class SocialConfigurationUtil {
 
 	public static List<String> getActivityCounterNames() {
-		return getSocialConfiguration().getActivityCounterNames();
+		return _socialConfiguration.getActivityCounterNames();
 	}
 
 	public static List<String> getActivityCounterNames(
 		boolean transientCounter) {
 
-		return getSocialConfiguration().getActivityCounterNames(
-			transientCounter);
+		return _socialConfiguration.getActivityCounterNames(transientCounter);
 	}
 
 	public static List<String> getActivityCounterNames(int ownerType) {
-		return getSocialConfiguration().getActivityCounterNames(ownerType);
+		return _socialConfiguration.getActivityCounterNames(ownerType);
 	}
 
 	public static List<String> getActivityCounterNames(
 		int ownerType, boolean transientCounter) {
 
-		return getSocialConfiguration().getActivityCounterNames(
+		return _socialConfiguration.getActivityCounterNames(
 			ownerType, transientCounter);
 	}
 
 	public static SocialActivityDefinition getActivityDefinition(
 		String modelName, int activityType) {
 
-		return getSocialConfiguration().getActivityDefinition(
+		return _socialConfiguration.getActivityDefinition(
 			modelName, activityType);
 	}
 
 	public static List<SocialActivityDefinition> getActivityDefinitions(
 		String modelName) {
 
-		return getSocialConfiguration().getActivityDefinitions(modelName);
+		return _socialConfiguration.getActivityDefinitions(modelName);
 	}
 
 	public static String[] getActivityModelNames() {
-		return getSocialConfiguration().getActivityModelNames();
+		return _socialConfiguration.getActivityModelNames();
 	}
 
 	public static SocialConfiguration getSocialConfiguration() {
-		PortalRuntimePermission.checkGetBeanProperty(
-			SocialConfigurationUtil.class);
-
 		return _socialConfiguration;
 	}
 
 	public static List<Object> read(ClassLoader classLoader, String[] xmls)
 		throws Exception {
 
-		return getSocialConfiguration().read(classLoader, xmls);
+		return _socialConfiguration.read(classLoader, xmls);
 	}
 
 	public static void removeActivityDefinition(
 		SocialActivityDefinition activityDefinition) {
 
-		getSocialConfiguration().removeActivityDefinition(activityDefinition);
+		_socialConfiguration.removeActivityDefinition(activityDefinition);
 	}
 
 	public void setSocialConfiguration(
 		SocialConfiguration socialConfiguration) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_socialConfiguration = socialConfiguration;
 	}

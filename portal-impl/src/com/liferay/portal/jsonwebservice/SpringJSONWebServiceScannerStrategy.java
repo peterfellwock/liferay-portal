@@ -16,22 +16,21 @@ package com.liferay.portal.jsonwebservice;
 
 import com.liferay.portal.kernel.bean.ClassLoaderBeanHandler;
 import com.liferay.portal.kernel.jsonwebservice.JSONWebServiceScannerStrategy;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.util.ProxyUtil;
-import com.liferay.portal.spring.aop.AdvisedSupportProxy;
-import com.liferay.portal.spring.aop.ServiceBeanAopProxy;
+import com.liferay.portal.spring.aop.AopInvocationHandler;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-
-import org.springframework.aop.TargetSource;
-import org.springframework.aop.framework.AdvisedSupport;
 
 /**
  * @author Miguel Pastor
@@ -41,14 +40,7 @@ public class SpringJSONWebServiceScannerStrategy
 
 	@Override
 	public MethodDescriptor[] scan(Object service) {
-		Class<?> clazz = null;
-
-		try {
-			clazz = getTargetClass(service);
-		}
-		catch (Exception e) {
-			return new MethodDescriptor[0];
-		}
+		Class<?> clazz = getTargetClass(service);
 
 		Method[] methods = clazz.getMethods();
 
@@ -65,26 +57,23 @@ public class SpringJSONWebServiceScannerStrategy
 			methodDescriptors.add(new MethodDescriptor(method));
 		}
 
-		return methodDescriptors.toArray(
-			new MethodDescriptor[methodDescriptors.size()]);
+		return methodDescriptors.toArray(new MethodDescriptor[0]);
 	}
 
 	/**
 	 * @see com.liferay.portal.remote.json.web.service.extender.internal.ServiceJSONWebServiceScannerStrategy#getTargetClass(
 	 *      Object)
 	 */
-	protected Class<?> getTargetClass(Object service) throws Exception {
+	protected Class<?> getTargetClass(Object service) {
 		while (ProxyUtil.isProxyClass(service.getClass())) {
 			InvocationHandler invocationHandler =
 				ProxyUtil.getInvocationHandler(service);
 
-			if (invocationHandler instanceof AdvisedSupportProxy) {
-				AdvisedSupport advisedSupport =
-					ServiceBeanAopProxy.getAdvisedSupport(service);
+			if (invocationHandler instanceof AopInvocationHandler) {
+				AopInvocationHandler aopInvocationHandler =
+					(AopInvocationHandler)invocationHandler;
 
-				TargetSource targetSource = advisedSupport.getTargetSource();
-
-				service = targetSource.getTarget();
+				service = aopInvocationHandler.getTarget();
 			}
 			else if (invocationHandler instanceof ClassLoaderBeanHandler) {
 				ClassLoaderBeanHandler classLoaderBeanHandler =
@@ -100,6 +89,9 @@ public class SpringJSONWebServiceScannerStrategy
 				else {
 					service = bean;
 				}
+			}
+			else {
+				break;
 			}
 		}
 
@@ -132,11 +124,18 @@ public class SpringJSONWebServiceScannerStrategy
 
 					return true;
 				}
-				catch (ReflectiveOperationException roe) {
+				catch (ReflectiveOperationException
+							reflectiveOperationException) {
+
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							reflectiveOperationException,
+							reflectiveOperationException);
+					}
 				}
 			}
 			else {
-				queue.addAll(Arrays.asList(clazz.getInterfaces()));
+				Collections.addAll(queue, clazz.getInterfaces());
 
 				superClass = clazz.getSuperclass();
 
@@ -148,5 +147,8 @@ public class SpringJSONWebServiceScannerStrategy
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SpringJSONWebServiceScannerStrategy.class);
 
 }

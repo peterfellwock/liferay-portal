@@ -1,9 +1,0 @@
-;
-; Do not manually edit this file.
-;
-[subrepo]
-	cmdver = liferay
-	commit = 8547f30a7c02f64cef48de3d7434986e987e6d0d
-	mode = push
-	parent = 999b065abdd1b7a1cf3d10f834d962eba46eee34
-	remote = git@github.com:liferay/com-liferay-portal-template.git

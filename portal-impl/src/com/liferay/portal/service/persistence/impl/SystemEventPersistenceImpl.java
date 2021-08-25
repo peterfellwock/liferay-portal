@@ -14,9 +14,9 @@
 
 package com.liferay.portal.service.persistence.impl;
 
-import aQute.bnd.annotation.ProviderType;
-
-import com.liferay.portal.kernel.bean.BeanReference;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.change.tracking.CTColumnResolutionType;
+import com.liferay.portal.kernel.dao.orm.ArgumentsResolver;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.EntityCacheUtil;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
@@ -29,27 +29,39 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.exception.NoSuchSystemEventException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.SystemEvent;
-import com.liferay.portal.kernel.service.persistence.CompanyProvider;
-import com.liferay.portal.kernel.service.persistence.CompanyProviderWrapper;
+import com.liferay.portal.kernel.model.SystemEventTable;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.persistence.SystemEventPersistence;
+import com.liferay.portal.kernel.service.persistence.change.tracking.helper.CTPersistenceHelperUtil;
 import com.liferay.portal.kernel.service.persistence.impl.BasePersistenceImpl;
 import com.liferay.portal.kernel.util.OrderByComparator;
+import com.liferay.portal.kernel.util.ProxyUtil;
 import com.liferay.portal.kernel.util.SetUtil;
-import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.impl.SystemEventImpl;
 import com.liferay.portal.model.impl.SystemEventModelImpl;
+import com.liferay.registry.Registry;
+import com.liferay.registry.RegistryUtil;
+import com.liferay.registry.ServiceRegistration;
 
 import java.io.Serializable;
 
+import java.lang.reflect.InvocationHandler;
+
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The persistence implementation for the system event service.
@@ -59,52 +71,31 @@ import java.util.Set;
  * </p>
  *
  * @author Brian Wing Shun Chan
- * @see SystemEventPersistence
- * @see com.liferay.portal.kernel.service.persistence.SystemEventUtil
  * @generated
  */
-@ProviderType
-public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
-	implements SystemEventPersistence {
+public class SystemEventPersistenceImpl
+	extends BasePersistenceImpl<SystemEvent> implements SystemEventPersistence {
+
 	/*
 	 * NOTE FOR DEVELOPERS:
 	 *
-	 * Never modify or reference this class directly. Always use {@link SystemEventUtil} to access the system event persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
+	 * Never modify or reference this class directly. Always use <code>SystemEventUtil</code> to access the system event persistence. Modify <code>service.xml</code> and rerun ServiceBuilder to regenerate this class.
 	 */
-	public static final String FINDER_CLASS_NAME_ENTITY = SystemEventImpl.class.getName();
-	public static final String FINDER_CLASS_NAME_LIST_WITH_PAGINATION = FINDER_CLASS_NAME_ENTITY +
-		".List1";
-	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION = FINDER_CLASS_NAME_ENTITY +
-		".List2";
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_ALL = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0]);
-	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0]);
-	public static final FinderPath FINDER_PATH_COUNT_ALL = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll", new String[0]);
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_GROUPID = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
-			new String[] {
-				Long.class.getName(),
-				
-			Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			});
-	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID =
-		new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
-			new String[] { Long.class.getName() },
-			SystemEventModelImpl.GROUPID_COLUMN_BITMASK |
-			SystemEventModelImpl.CREATEDATE_COLUMN_BITMASK);
-	public static final FinderPath FINDER_PATH_COUNT_BY_GROUPID = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
-			new String[] { Long.class.getName() });
+	public static final String FINDER_CLASS_NAME_ENTITY =
+		SystemEventImpl.class.getName();
+
+	public static final String FINDER_CLASS_NAME_LIST_WITH_PAGINATION =
+		FINDER_CLASS_NAME_ENTITY + ".List1";
+
+	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
+		FINDER_CLASS_NAME_ENTITY + ".List2";
+
+	private FinderPath _finderPathWithPaginationFindAll;
+	private FinderPath _finderPathWithoutPaginationFindAll;
+	private FinderPath _finderPathCountAll;
+	private FinderPath _finderPathWithPaginationFindByGroupId;
+	private FinderPath _finderPathWithoutPaginationFindByGroupId;
+	private FinderPath _finderPathCountByGroupId;
 
 	/**
 	 * Returns all the system events where groupId = &#63;.
@@ -114,14 +105,15 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public List<SystemEvent> findByGroupId(long groupId) {
-		return findByGroupId(groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+		return findByGroupId(
+			groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 	}
 
 	/**
 	 * Returns a range of all the system events where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -138,7 +130,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Returns an ordered range of all the system events where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -148,8 +140,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByGroupId(long groupId, int start, int end,
+	public List<SystemEvent> findByGroupId(
+		long groupId, int start, int end,
 		OrderByComparator<SystemEvent> orderByComparator) {
+
 		return findByGroupId(groupId, start, end, orderByComparator, true);
 	}
 
@@ -157,44 +151,50 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Returns an ordered range of all the system events where groupId = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByGroupId(long groupId, int start, int end,
+	public List<SystemEvent> findByGroupId(
+		long groupId, int start, int end,
 		OrderByComparator<SystemEvent> orderByComparator,
-		boolean retrieveFromCache) {
-		boolean pagination = true;
+		boolean useFinderCache) {
+
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-			pagination = false;
-			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID;
-			finderArgs = new Object[] { groupId };
+			(orderByComparator == null)) {
+
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByGroupId;
+				finderArgs = new Object[] {groupId};
+			}
 		}
-		else {
-			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_GROUPID;
-			finderArgs = new Object[] { groupId, start, end, orderByComparator };
+		else if (useFinderCache && productionMode) {
+			finderPath = _finderPathWithPaginationFindByGroupId;
+			finderArgs = new Object[] {groupId, start, end, orderByComparator};
 		}
 
 		List<SystemEvent> list = null;
 
-		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
-					finderArgs, this);
+		if (useFinderCache && productionMode) {
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (SystemEvent systemEvent : list) {
-					if ((groupId != systemEvent.getGroupId())) {
+					if (groupId != systemEvent.getGroupId()) {
 						list = null;
 
 						break;
@@ -204,63 +204,52 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(3 +
-						(orderByComparator.getOrderByFields().length * 2));
+				sb = new StringBundler(
+					3 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(3);
+				sb = new StringBundler(3);
 			}
 
-			query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 			if (orderByComparator != null) {
-				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
-					orderByComparator);
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else
-			 if (pagination) {
-				query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				if (!pagination) {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end);
-				}
+				list = (List<SystemEvent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -279,26 +268,27 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByGroupId_First(long groupId,
-		OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByGroupId_First(
+			long groupId, OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByGroupId_First(groupId,
-				orderByComparator);
+
+		SystemEvent systemEvent = fetchByGroupId_First(
+			groupId, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -309,9 +299,11 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the first matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByGroupId_First(long groupId,
-		OrderByComparator<SystemEvent> orderByComparator) {
-		List<SystemEvent> list = findByGroupId(groupId, 0, 1, orderByComparator);
+	public SystemEvent fetchByGroupId_First(
+		long groupId, OrderByComparator<SystemEvent> orderByComparator) {
+
+		List<SystemEvent> list = findByGroupId(
+			groupId, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -329,25 +321,27 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByGroupId_Last(long groupId,
-		OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByGroupId_Last(
+			long groupId, OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByGroupId_Last(groupId, orderByComparator);
+
+		SystemEvent systemEvent = fetchByGroupId_Last(
+			groupId, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(4);
+		StringBundler sb = new StringBundler(4);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -358,16 +352,17 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the last matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByGroupId_Last(long groupId,
-		OrderByComparator<SystemEvent> orderByComparator) {
+	public SystemEvent fetchByGroupId_Last(
+		long groupId, OrderByComparator<SystemEvent> orderByComparator) {
+
 		int count = countByGroupId(groupId);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<SystemEvent> list = findByGroupId(groupId, count - 1, count,
-				orderByComparator);
+		List<SystemEvent> list = findByGroupId(
+			groupId, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -386,9 +381,11 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @throws NoSuchSystemEventException if a system event with the primary key could not be found
 	 */
 	@Override
-	public SystemEvent[] findByGroupId_PrevAndNext(long systemEventId,
-		long groupId, OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent[] findByGroupId_PrevAndNext(
+			long systemEventId, long groupId,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
+
 		SystemEvent systemEvent = findByPrimaryKey(systemEventId);
 
 		Session session = null;
@@ -398,121 +395,123 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 			SystemEvent[] array = new SystemEventImpl[3];
 
-			array[0] = getByGroupId_PrevAndNext(session, systemEvent, groupId,
-					orderByComparator, true);
+			array[0] = getByGroupId_PrevAndNext(
+				session, systemEvent, groupId, orderByComparator, true);
 
 			array[1] = systemEvent;
 
-			array[2] = getByGroupId_PrevAndNext(session, systemEvent, groupId,
-					orderByComparator, false);
+			array[2] = getByGroupId_PrevAndNext(
+				session, systemEvent, groupId, orderByComparator, false);
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 	}
 
-	protected SystemEvent getByGroupId_PrevAndNext(Session session,
-		SystemEvent systemEvent, long groupId,
+	protected SystemEvent getByGroupId_PrevAndNext(
+		Session session, SystemEvent systemEvent, long groupId,
 		OrderByComparator<SystemEvent> orderByComparator, boolean previous) {
-		StringBundler query = null;
+
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(4 +
-					(orderByComparator.getOrderByConditionFields().length * 3) +
+			sb = new StringBundler(
+				4 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(3);
+			sb = new StringBundler(3);
 		}
 
-		query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+		sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-		query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+		sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
 		if (orderByComparator != null) {
-			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
 		if (orderByComparator != null) {
-			Object[] values = orderByComparator.getOrderByConditionValues(systemEvent);
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(systemEvent)) {
 
-			for (Object value : values) {
-				qPos.add(value);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SystemEvent> list = q.list();
+		List<SystemEvent> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -529,8 +528,10 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public void removeByGroupId(long groupId) {
-		for (SystemEvent systemEvent : findByGroupId(groupId,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+		for (SystemEvent systemEvent :
+				findByGroupId(
+					groupId, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+
 			remove(systemEvent);
 		}
 	}
@@ -543,40 +544,50 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public int countByGroupId(long groupId) {
-		FinderPath finderPath = FINDER_PATH_COUNT_BY_GROUPID;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
 
-		Object[] finderArgs = new Object[] { groupId };
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByGroupId;
+
+			finderArgs = new Object[] {groupId};
+
+			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(2);
+			StringBundler sb = new StringBundler(2);
 
-			query.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
+			sb.append(_FINDER_COLUMN_GROUPID_GROUPID_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -586,27 +597,12 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 = "systemEvent.groupId = ?";
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_G_S = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
-			new String[] {
-				Long.class.getName(), Long.class.getName(),
-				
-			Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			});
-	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
-			new String[] { Long.class.getName(), Long.class.getName() },
-			SystemEventModelImpl.GROUPID_COLUMN_BITMASK |
-			SystemEventModelImpl.SYSTEMEVENTSETKEY_COLUMN_BITMASK |
-			SystemEventModelImpl.CREATEDATE_COLUMN_BITMASK);
-	public static final FinderPath FINDER_PATH_COUNT_BY_G_S = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
-			new String[] { Long.class.getName(), Long.class.getName() });
+	private static final String _FINDER_COLUMN_GROUPID_GROUPID_2 =
+		"systemEvent.groupId = ?";
+
+	private FinderPath _finderPathWithPaginationFindByG_S;
+	private FinderPath _finderPathWithoutPaginationFindByG_S;
+	private FinderPath _finderPathCountByG_S;
 
 	/**
 	 * Returns all the system events where groupId = &#63; and systemEventSetKey = &#63;.
@@ -617,15 +613,16 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public List<SystemEvent> findByG_S(long groupId, long systemEventSetKey) {
-		return findByG_S(groupId, systemEventSetKey, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
+		return findByG_S(
+			groupId, systemEventSetKey, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
 	}
 
 	/**
 	 * Returns a range of all the system events where groupId = &#63; and systemEventSetKey = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -635,8 +632,9 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_S(long groupId, long systemEventSetKey,
-		int start, int end) {
+	public List<SystemEvent> findByG_S(
+		long groupId, long systemEventSetKey, int start, int end) {
+
 		return findByG_S(groupId, systemEventSetKey, start, end, null);
 	}
 
@@ -644,7 +642,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Returns an ordered range of all the system events where groupId = &#63; and systemEventSetKey = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -655,17 +653,19 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_S(long groupId, long systemEventSetKey,
-		int start, int end, OrderByComparator<SystemEvent> orderByComparator) {
-		return findByG_S(groupId, systemEventSetKey, start, end,
-			orderByComparator, true);
+	public List<SystemEvent> findByG_S(
+		long groupId, long systemEventSetKey, int start, int end,
+		OrderByComparator<SystemEvent> orderByComparator) {
+
+		return findByG_S(
+			groupId, systemEventSetKey, start, end, orderByComparator, true);
 	}
 
 	/**
 	 * Returns an ordered range of all the system events where groupId = &#63; and systemEventSetKey = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -673,42 +673,48 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_S(long groupId, long systemEventSetKey,
-		int start, int end, OrderByComparator<SystemEvent> orderByComparator,
-		boolean retrieveFromCache) {
-		boolean pagination = true;
+	public List<SystemEvent> findByG_S(
+		long groupId, long systemEventSetKey, int start, int end,
+		OrderByComparator<SystemEvent> orderByComparator,
+		boolean useFinderCache) {
+
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-			pagination = false;
-			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S;
-			finderArgs = new Object[] { groupId, systemEventSetKey };
+			(orderByComparator == null)) {
+
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_S;
+				finderArgs = new Object[] {groupId, systemEventSetKey};
+			}
 		}
-		else {
-			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_G_S;
+		else if (useFinderCache && productionMode) {
+			finderPath = _finderPathWithPaginationFindByG_S;
 			finderArgs = new Object[] {
-					groupId, systemEventSetKey,
-					
-					start, end, orderByComparator
-				};
+				groupId, systemEventSetKey, start, end, orderByComparator
+			};
 		}
 
 		List<SystemEvent> list = null;
 
-		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
-					finderArgs, this);
+		if (useFinderCache && productionMode) {
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (SystemEvent systemEvent : list) {
 					if ((groupId != systemEvent.getGroupId()) ||
-							(systemEventSetKey != systemEvent.getSystemEventSetKey())) {
+						(systemEventSetKey !=
+							systemEvent.getSystemEventSetKey())) {
+
 						list = null;
 
 						break;
@@ -718,67 +724,56 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(4 +
-						(orderByComparator.getOrderByFields().length * 2));
+				sb = new StringBundler(
+					4 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(4);
+				sb = new StringBundler(4);
 			}
 
-			query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2);
+			sb.append(_FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2);
 
 			if (orderByComparator != null) {
-				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
-					orderByComparator);
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else
-			 if (pagination) {
-				query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(systemEventSetKey);
+				queryPos.add(systemEventSetKey);
 
-				if (!pagination) {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end);
-				}
+				list = (List<SystemEvent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -798,29 +793,31 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByG_S_First(long groupId, long systemEventSetKey,
-		OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByG_S_First(
+			long groupId, long systemEventSetKey,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByG_S_First(groupId, systemEventSetKey,
-				orderByComparator);
+
+		SystemEvent systemEvent = fetchByG_S_First(
+			groupId, systemEventSetKey, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", systemEventSetKey=");
-		msg.append(systemEventSetKey);
+		sb.append(", systemEventSetKey=");
+		sb.append(systemEventSetKey);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -832,10 +829,12 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the first matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByG_S_First(long groupId, long systemEventSetKey,
+	public SystemEvent fetchByG_S_First(
+		long groupId, long systemEventSetKey,
 		OrderByComparator<SystemEvent> orderByComparator) {
-		List<SystemEvent> list = findByG_S(groupId, systemEventSetKey, 0, 1,
-				orderByComparator);
+
+		List<SystemEvent> list = findByG_S(
+			groupId, systemEventSetKey, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -854,29 +853,31 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByG_S_Last(long groupId, long systemEventSetKey,
-		OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByG_S_Last(
+			long groupId, long systemEventSetKey,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByG_S_Last(groupId, systemEventSetKey,
-				orderByComparator);
+
+		SystemEvent systemEvent = fetchByG_S_Last(
+			groupId, systemEventSetKey, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(6);
+		StringBundler sb = new StringBundler(6);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", systemEventSetKey=");
-		msg.append(systemEventSetKey);
+		sb.append(", systemEventSetKey=");
+		sb.append(systemEventSetKey);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -888,16 +889,18 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the last matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByG_S_Last(long groupId, long systemEventSetKey,
+	public SystemEvent fetchByG_S_Last(
+		long groupId, long systemEventSetKey,
 		OrderByComparator<SystemEvent> orderByComparator) {
+
 		int count = countByG_S(groupId, systemEventSetKey);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<SystemEvent> list = findByG_S(groupId, systemEventSetKey,
-				count - 1, count, orderByComparator);
+		List<SystemEvent> list = findByG_S(
+			groupId, systemEventSetKey, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -917,10 +920,11 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @throws NoSuchSystemEventException if a system event with the primary key could not be found
 	 */
 	@Override
-	public SystemEvent[] findByG_S_PrevAndNext(long systemEventId,
-		long groupId, long systemEventSetKey,
-		OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent[] findByG_S_PrevAndNext(
+			long systemEventId, long groupId, long systemEventSetKey,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
+
 		SystemEvent systemEvent = findByPrimaryKey(systemEventId);
 
 		Session session = null;
@@ -930,125 +934,130 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 			SystemEvent[] array = new SystemEventImpl[3];
 
-			array[0] = getByG_S_PrevAndNext(session, systemEvent, groupId,
-					systemEventSetKey, orderByComparator, true);
+			array[0] = getByG_S_PrevAndNext(
+				session, systemEvent, groupId, systemEventSetKey,
+				orderByComparator, true);
 
 			array[1] = systemEvent;
 
-			array[2] = getByG_S_PrevAndNext(session, systemEvent, groupId,
-					systemEventSetKey, orderByComparator, false);
+			array[2] = getByG_S_PrevAndNext(
+				session, systemEvent, groupId, systemEventSetKey,
+				orderByComparator, false);
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 	}
 
-	protected SystemEvent getByG_S_PrevAndNext(Session session,
-		SystemEvent systemEvent, long groupId, long systemEventSetKey,
+	protected SystemEvent getByG_S_PrevAndNext(
+		Session session, SystemEvent systemEvent, long groupId,
+		long systemEventSetKey,
 		OrderByComparator<SystemEvent> orderByComparator, boolean previous) {
-		StringBundler query = null;
+
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(5 +
-					(orderByComparator.getOrderByConditionFields().length * 3) +
+			sb = new StringBundler(
+				5 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(4);
+			sb = new StringBundler(4);
 		}
 
-		query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+		sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-		query.append(_FINDER_COLUMN_G_S_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2);
+		sb.append(_FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2);
 
 		if (orderByComparator != null) {
-			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(systemEventSetKey);
+		queryPos.add(systemEventSetKey);
 
 		if (orderByComparator != null) {
-			Object[] values = orderByComparator.getOrderByConditionValues(systemEvent);
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(systemEvent)) {
 
-			for (Object value : values) {
-				qPos.add(value);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SystemEvent> list = q.list();
+		List<SystemEvent> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1066,8 +1075,11 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public void removeByG_S(long groupId, long systemEventSetKey) {
-		for (SystemEvent systemEvent : findByG_S(groupId, systemEventSetKey,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+		for (SystemEvent systemEvent :
+				findByG_S(
+					groupId, systemEventSetKey, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS, null)) {
+
 			remove(systemEvent);
 		}
 	}
@@ -1081,44 +1093,54 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public int countByG_S(long groupId, long systemEventSetKey) {
-		FinderPath finderPath = FINDER_PATH_COUNT_BY_G_S;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
 
-		Object[] finderArgs = new Object[] { groupId, systemEventSetKey };
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_S;
+
+			finderArgs = new Object[] {groupId, systemEventSetKey};
+
+			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(3);
+			StringBundler sb = new StringBundler(3);
 
-			query.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_S_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_S_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2);
+			sb.append(_FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(systemEventSetKey);
+				queryPos.add(systemEventSetKey);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1128,66 +1150,51 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_G_S_GROUPID_2 = "systemEvent.groupId = ? AND ";
-	private static final String _FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2 = "systemEvent.systemEventSetKey = ?";
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_C = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName(),
-				
-			Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			});
-	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			},
-			SystemEventModelImpl.GROUPID_COLUMN_BITMASK |
-			SystemEventModelImpl.CLASSNAMEID_COLUMN_BITMASK |
-			SystemEventModelImpl.CLASSPK_COLUMN_BITMASK |
-			SystemEventModelImpl.CREATEDATE_COLUMN_BITMASK);
-	public static final FinderPath FINDER_PATH_COUNT_BY_G_C_C = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName()
-			});
+	private static final String _FINDER_COLUMN_G_S_GROUPID_2 =
+		"systemEvent.groupId = ? AND ";
+
+	private static final String _FINDER_COLUMN_G_S_SYSTEMEVENTSETKEY_2 =
+		"systemEvent.systemEventSetKey = ?";
+
+	private FinderPath _finderPathWithPaginationFindByG_C_C;
+	private FinderPath _finderPathWithoutPaginationFindByG_C_C;
+	private FinderPath _finderPathCountByG_C_C;
 
 	/**
 	 * Returns all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63;.
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @return the matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C(long groupId, long classNameId,
-		long classPK) {
-		return findByG_C_C(groupId, classNameId, classPK, QueryUtil.ALL_POS,
-			QueryUtil.ALL_POS, null);
+	public List<SystemEvent> findByG_C_C(
+		long groupId, long classNameId, long classPK) {
+
+		return findByG_C_C(
+			groupId, classNameId, classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+			null);
 	}
 
 	/**
 	 * Returns a range of all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @return the range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C(long groupId, long classNameId,
-		long classPK, int start, int end) {
+	public List<SystemEvent> findByG_C_C(
+		long groupId, long classNameId, long classPK, int start, int end) {
+
 		return findByG_C_C(groupId, classNameId, classPK, start, end, null);
 	}
 
@@ -1195,76 +1202,81 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Returns an ordered range of all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C(long groupId, long classNameId,
-		long classPK, int start, int end,
+	public List<SystemEvent> findByG_C_C(
+		long groupId, long classNameId, long classPK, int start, int end,
 		OrderByComparator<SystemEvent> orderByComparator) {
-		return findByG_C_C(groupId, classNameId, classPK, start, end,
-			orderByComparator, true);
+
+		return findByG_C_C(
+			groupId, classNameId, classPK, start, end, orderByComparator, true);
 	}
 
 	/**
 	 * Returns an ordered range of all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C(long groupId, long classNameId,
-		long classPK, int start, int end,
+	public List<SystemEvent> findByG_C_C(
+		long groupId, long classNameId, long classPK, int start, int end,
 		OrderByComparator<SystemEvent> orderByComparator,
-		boolean retrieveFromCache) {
-		boolean pagination = true;
+		boolean useFinderCache) {
+
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-			pagination = false;
-			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C;
-			finderArgs = new Object[] { groupId, classNameId, classPK };
+			(orderByComparator == null)) {
+
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_C_C;
+				finderArgs = new Object[] {groupId, classNameId, classPK};
+			}
 		}
-		else {
-			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_C;
+		else if (useFinderCache && productionMode) {
+			finderPath = _finderPathWithPaginationFindByG_C_C;
 			finderArgs = new Object[] {
-					groupId, classNameId, classPK,
-					
-					start, end, orderByComparator
-				};
+				groupId, classNameId, classPK, start, end, orderByComparator
+			};
 		}
 
 		List<SystemEvent> list = null;
 
-		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
-					finderArgs, this);
+		if (useFinderCache && productionMode) {
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (SystemEvent systemEvent : list) {
 					if ((groupId != systemEvent.getGroupId()) ||
-							(classNameId != systemEvent.getClassNameId()) ||
-							(classPK != systemEvent.getClassPK())) {
+						(classNameId != systemEvent.getClassNameId()) ||
+						(classPK != systemEvent.getClassPK())) {
+
 						list = null;
 
 						break;
@@ -1274,71 +1286,60 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(5 +
-						(orderByComparator.getOrderByFields().length * 2));
+				sb = new StringBundler(
+					5 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(5);
+				sb = new StringBundler(5);
 			}
 
-			query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_C_C_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_CLASSNAMEID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_CLASSNAMEID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_CLASSPK_2);
+			sb.append(_FINDER_COLUMN_G_C_C_CLASSPK_2);
 
 			if (orderByComparator != null) {
-				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
-					orderByComparator);
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else
-			 if (pagination) {
-				query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(classNameId);
+				queryPos.add(classNameId);
 
-				qPos.add(classPK);
+				queryPos.add(classPK);
 
-				if (!pagination) {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end);
-				}
+				list = (List<SystemEvent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1353,38 +1354,40 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching system event
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByG_C_C_First(long groupId, long classNameId,
-		long classPK, OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByG_C_C_First(
+			long groupId, long classNameId, long classPK,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByG_C_C_First(groupId, classNameId,
-				classPK, orderByComparator);
+
+		SystemEvent systemEvent = fetchByG_C_C_First(
+			groupId, classNameId, classPK, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", classNameId=");
-		msg.append(classNameId);
+		sb.append(", classNameId=");
+		sb.append(classNameId);
 
-		msg.append(", classPK=");
-		msg.append(classPK);
+		sb.append(", classPK=");
+		sb.append(classPK);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -1392,15 +1395,17 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByG_C_C_First(long groupId, long classNameId,
-		long classPK, OrderByComparator<SystemEvent> orderByComparator) {
-		List<SystemEvent> list = findByG_C_C(groupId, classNameId, classPK, 0,
-				1, orderByComparator);
+	public SystemEvent fetchByG_C_C_First(
+		long groupId, long classNameId, long classPK,
+		OrderByComparator<SystemEvent> orderByComparator) {
+
+		List<SystemEvent> list = findByG_C_C(
+			groupId, classNameId, classPK, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -1414,38 +1419,40 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching system event
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByG_C_C_Last(long groupId, long classNameId,
-		long classPK, OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByG_C_C_Last(
+			long groupId, long classNameId, long classPK,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByG_C_C_Last(groupId, classNameId,
-				classPK, orderByComparator);
+
+		SystemEvent systemEvent = fetchByG_C_C_Last(
+			groupId, classNameId, classPK, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(8);
+		StringBundler sb = new StringBundler(8);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", classNameId=");
-		msg.append(classNameId);
+		sb.append(", classNameId=");
+		sb.append(classNameId);
 
-		msg.append(", classPK=");
-		msg.append(classPK);
+		sb.append(", classPK=");
+		sb.append(classPK);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -1453,21 +1460,23 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByG_C_C_Last(long groupId, long classNameId,
-		long classPK, OrderByComparator<SystemEvent> orderByComparator) {
+	public SystemEvent fetchByG_C_C_Last(
+		long groupId, long classNameId, long classPK,
+		OrderByComparator<SystemEvent> orderByComparator) {
+
 		int count = countByG_C_C(groupId, classNameId, classPK);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<SystemEvent> list = findByG_C_C(groupId, classNameId, classPK,
-				count - 1, count, orderByComparator);
+		List<SystemEvent> list = findByG_C_C(
+			groupId, classNameId, classPK, count - 1, count, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -1482,16 +1491,17 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @param systemEventId the primary key of the current system event
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next system event
 	 * @throws NoSuchSystemEventException if a system event with the primary key could not be found
 	 */
 	@Override
-	public SystemEvent[] findByG_C_C_PrevAndNext(long systemEventId,
-		long groupId, long classNameId, long classPK,
-		OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent[] findByG_C_C_PrevAndNext(
+			long systemEventId, long groupId, long classNameId, long classPK,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
+
 		SystemEvent systemEvent = findByPrimaryKey(systemEventId);
 
 		Session session = null;
@@ -1501,129 +1511,134 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 			SystemEvent[] array = new SystemEventImpl[3];
 
-			array[0] = getByG_C_C_PrevAndNext(session, systemEvent, groupId,
-					classNameId, classPK, orderByComparator, true);
+			array[0] = getByG_C_C_PrevAndNext(
+				session, systemEvent, groupId, classNameId, classPK,
+				orderByComparator, true);
 
 			array[1] = systemEvent;
 
-			array[2] = getByG_C_C_PrevAndNext(session, systemEvent, groupId,
-					classNameId, classPK, orderByComparator, false);
+			array[2] = getByG_C_C_PrevAndNext(
+				session, systemEvent, groupId, classNameId, classPK,
+				orderByComparator, false);
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 	}
 
-	protected SystemEvent getByG_C_C_PrevAndNext(Session session,
-		SystemEvent systemEvent, long groupId, long classNameId, long classPK,
+	protected SystemEvent getByG_C_C_PrevAndNext(
+		Session session, SystemEvent systemEvent, long groupId,
+		long classNameId, long classPK,
 		OrderByComparator<SystemEvent> orderByComparator, boolean previous) {
-		StringBundler query = null;
+
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(6 +
-					(orderByComparator.getOrderByConditionFields().length * 3) +
+			sb = new StringBundler(
+				6 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(5);
+			sb = new StringBundler(5);
 		}
 
-		query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+		sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-		query.append(_FINDER_COLUMN_G_C_C_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_C_C_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_C_C_CLASSNAMEID_2);
+		sb.append(_FINDER_COLUMN_G_C_C_CLASSNAMEID_2);
 
-		query.append(_FINDER_COLUMN_G_C_C_CLASSPK_2);
+		sb.append(_FINDER_COLUMN_G_C_C_CLASSPK_2);
 
 		if (orderByComparator != null) {
-			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(classNameId);
+		queryPos.add(classNameId);
 
-		qPos.add(classPK);
+		queryPos.add(classPK);
 
 		if (orderByComparator != null) {
-			Object[] values = orderByComparator.getOrderByConditionValues(systemEvent);
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(systemEvent)) {
 
-			for (Object value : values) {
-				qPos.add(value);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SystemEvent> list = q.list();
+		List<SystemEvent> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -1638,12 +1653,15 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 */
 	@Override
 	public void removeByG_C_C(long groupId, long classNameId, long classPK) {
-		for (SystemEvent systemEvent : findByG_C_C(groupId, classNameId,
-				classPK, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+		for (SystemEvent systemEvent :
+				findByG_C_C(
+					groupId, classNameId, classPK, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS, null)) {
+
 			remove(systemEvent);
 		}
 	}
@@ -1653,53 +1671,63 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @return the number of matching system events
 	 */
 	@Override
 	public int countByG_C_C(long groupId, long classNameId, long classPK) {
-		FinderPath finderPath = FINDER_PATH_COUNT_BY_G_C_C;
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
 
-		Object[] finderArgs = new Object[] { groupId, classNameId, classPK };
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_C_C;
+
+			finderArgs = new Object[] {groupId, classNameId, classPK};
+
+			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(4);
+			StringBundler sb = new StringBundler(4);
 
-			query.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_C_C_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_CLASSNAMEID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_CLASSNAMEID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_CLASSPK_2);
+			sb.append(_FINDER_COLUMN_G_C_C_CLASSPK_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(classNameId);
+				queryPos.add(classNameId);
 
-				qPos.add(classPK);
+				queryPos.add(classPK);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1709,88 +1737,71 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_G_C_C_GROUPID_2 = "systemEvent.groupId = ? AND ";
-	private static final String _FINDER_COLUMN_G_C_C_CLASSNAMEID_2 = "systemEvent.classNameId = ? AND ";
-	private static final String _FINDER_COLUMN_G_C_C_CLASSPK_2 = "systemEvent.classPK = ?";
-	public static final FinderPath FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_C_T = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName(),
-				Integer.class.getName(),
-				
-			Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			});
-	public static final FinderPath FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T =
-		new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, SystemEventImpl.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			},
-			SystemEventModelImpl.GROUPID_COLUMN_BITMASK |
-			SystemEventModelImpl.CLASSNAMEID_COLUMN_BITMASK |
-			SystemEventModelImpl.CLASSPK_COLUMN_BITMASK |
-			SystemEventModelImpl.TYPE_COLUMN_BITMASK |
-			SystemEventModelImpl.CREATEDATE_COLUMN_BITMASK);
-	public static final FinderPath FINDER_PATH_COUNT_BY_G_C_C_T = new FinderPath(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventModelImpl.FINDER_CACHE_ENABLED, Long.class,
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C_T",
-			new String[] {
-				Long.class.getName(), Long.class.getName(), Long.class.getName(),
-				Integer.class.getName()
-			});
+	private static final String _FINDER_COLUMN_G_C_C_GROUPID_2 =
+		"systemEvent.groupId = ? AND ";
+
+	private static final String _FINDER_COLUMN_G_C_C_CLASSNAMEID_2 =
+		"systemEvent.classNameId = ? AND ";
+
+	private static final String _FINDER_COLUMN_G_C_C_CLASSPK_2 =
+		"systemEvent.classPK = ?";
+
+	private FinderPath _finderPathWithPaginationFindByG_C_C_T;
+	private FinderPath _finderPathWithoutPaginationFindByG_C_C_T;
+	private FinderPath _finderPathCountByG_C_C_T;
 
 	/**
 	 * Returns all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @return the matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C_T(long groupId, long classNameId,
-		long classPK, int type) {
-		return findByG_C_C_T(groupId, classNameId, classPK, type,
-			QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+	public List<SystemEvent> findByG_C_C_T(
+		long groupId, long classNameId, long classPK, int type) {
+
+		return findByG_C_C_T(
+			groupId, classNameId, classPK, type, QueryUtil.ALL_POS,
+			QueryUtil.ALL_POS, null);
 	}
 
 	/**
 	 * Returns a range of all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @return the range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C_T(long groupId, long classNameId,
-		long classPK, int type, int start, int end) {
-		return findByG_C_C_T(groupId, classNameId, classPK, type, start, end,
-			null);
+	public List<SystemEvent> findByG_C_C_T(
+		long groupId, long classNameId, long classPK, int type, int start,
+		int end) {
+
+		return findByG_C_C_T(
+			groupId, classNameId, classPK, type, start, end, null);
 	}
 
 	/**
 	 * Returns an ordered range of all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
@@ -1798,66 +1809,73 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C_T(long groupId, long classNameId,
-		long classPK, int type, int start, int end,
-		OrderByComparator<SystemEvent> orderByComparator) {
-		return findByG_C_C_T(groupId, classNameId, classPK, type, start, end,
-			orderByComparator, true);
+	public List<SystemEvent> findByG_C_C_T(
+		long groupId, long classNameId, long classPK, int type, int start,
+		int end, OrderByComparator<SystemEvent> orderByComparator) {
+
+		return findByG_C_C_T(
+			groupId, classNameId, classPK, type, start, end, orderByComparator,
+			true);
 	}
 
 	/**
 	 * Returns an ordered range of all the system events where groupId = &#63; and classNameId = &#63; and classPK = &#63; and type = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of matching system events
 	 */
 	@Override
-	public List<SystemEvent> findByG_C_C_T(long groupId, long classNameId,
-		long classPK, int type, int start, int end,
-		OrderByComparator<SystemEvent> orderByComparator,
-		boolean retrieveFromCache) {
-		boolean pagination = true;
+	public List<SystemEvent> findByG_C_C_T(
+		long groupId, long classNameId, long classPK, int type, int start,
+		int end, OrderByComparator<SystemEvent> orderByComparator,
+		boolean useFinderCache) {
+
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-			pagination = false;
-			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T;
-			finderArgs = new Object[] { groupId, classNameId, classPK, type };
+			(orderByComparator == null)) {
+
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindByG_C_C_T;
+				finderArgs = new Object[] {groupId, classNameId, classPK, type};
+			}
 		}
-		else {
-			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_BY_G_C_C_T;
+		else if (useFinderCache && productionMode) {
+			finderPath = _finderPathWithPaginationFindByG_C_C_T;
 			finderArgs = new Object[] {
-					groupId, classNameId, classPK, type,
-					
-					start, end, orderByComparator
-				};
+				groupId, classNameId, classPK, type, start, end,
+				orderByComparator
+			};
 		}
 
 		List<SystemEvent> list = null;
 
-		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
-					finderArgs, this);
+		if (useFinderCache && productionMode) {
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(
+				finderPath, finderArgs);
 
 			if ((list != null) && !list.isEmpty()) {
 				for (SystemEvent systemEvent : list) {
 					if ((groupId != systemEvent.getGroupId()) ||
-							(classNameId != systemEvent.getClassNameId()) ||
-							(classPK != systemEvent.getClassPK()) ||
-							(type != systemEvent.getType())) {
+						(classNameId != systemEvent.getClassNameId()) ||
+						(classPK != systemEvent.getClassPK()) ||
+						(type != systemEvent.getType())) {
+
 						list = null;
 
 						break;
@@ -1867,75 +1885,64 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(6 +
-						(orderByComparator.getOrderByFields().length * 2));
+				sb = new StringBundler(
+					6 + (orderByComparator.getOrderByFields().length * 2));
 			}
 			else {
-				query = new StringBundler(6);
+				sb = new StringBundler(6);
 			}
 
-			query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_CLASSPK_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_CLASSPK_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_TYPE_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_TYPE_2);
 
 			if (orderByComparator != null) {
-				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
-					orderByComparator);
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 			}
-			else
-			 if (pagination) {
-				query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			else {
+				sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 			}
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(classNameId);
+				queryPos.add(classNameId);
 
-				qPos.add(classPK);
+				queryPos.add(classPK);
 
-				qPos.add(type);
+				queryPos.add(type);
 
-				if (!pagination) {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end);
-				}
+				list = (List<SystemEvent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -1950,42 +1957,44 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching system event
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByG_C_C_T_First(long groupId, long classNameId,
-		long classPK, int type, OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByG_C_C_T_First(
+			long groupId, long classNameId, long classPK, int type,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByG_C_C_T_First(groupId, classNameId,
-				classPK, type, orderByComparator);
+
+		SystemEvent systemEvent = fetchByG_C_C_T_First(
+			groupId, classNameId, classPK, type, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", classNameId=");
-		msg.append(classNameId);
+		sb.append(", classNameId=");
+		sb.append(classNameId);
 
-		msg.append(", classPK=");
-		msg.append(classPK);
+		sb.append(", classPK=");
+		sb.append(classPK);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -1993,16 +2002,18 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the first matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByG_C_C_T_First(long groupId, long classNameId,
-		long classPK, int type, OrderByComparator<SystemEvent> orderByComparator) {
-		List<SystemEvent> list = findByG_C_C_T(groupId, classNameId, classPK,
-				type, 0, 1, orderByComparator);
+	public SystemEvent fetchByG_C_C_T_First(
+		long groupId, long classNameId, long classPK, int type,
+		OrderByComparator<SystemEvent> orderByComparator) {
+
+		List<SystemEvent> list = findByG_C_C_T(
+			groupId, classNameId, classPK, type, 0, 1, orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -2016,42 +2027,44 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching system event
 	 * @throws NoSuchSystemEventException if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent findByG_C_C_T_Last(long groupId, long classNameId,
-		long classPK, int type, OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent findByG_C_C_T_Last(
+			long groupId, long classNameId, long classPK, int type,
+			OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
-		SystemEvent systemEvent = fetchByG_C_C_T_Last(groupId, classNameId,
-				classPK, type, orderByComparator);
+
+		SystemEvent systemEvent = fetchByG_C_C_T_Last(
+			groupId, classNameId, classPK, type, orderByComparator);
 
 		if (systemEvent != null) {
 			return systemEvent;
 		}
 
-		StringBundler msg = new StringBundler(10);
+		StringBundler sb = new StringBundler(10);
 
-		msg.append(_NO_SUCH_ENTITY_WITH_KEY);
+		sb.append(_NO_SUCH_ENTITY_WITH_KEY);
 
-		msg.append("groupId=");
-		msg.append(groupId);
+		sb.append("groupId=");
+		sb.append(groupId);
 
-		msg.append(", classNameId=");
-		msg.append(classNameId);
+		sb.append(", classNameId=");
+		sb.append(classNameId);
 
-		msg.append(", classPK=");
-		msg.append(classPK);
+		sb.append(", classPK=");
+		sb.append(classPK);
 
-		msg.append(", type=");
-		msg.append(type);
+		sb.append(", type=");
+		sb.append(type);
 
-		msg.append(StringPool.CLOSE_CURLY_BRACE);
+		sb.append("}");
 
-		throw new NoSuchSystemEventException(msg.toString());
+		throw new NoSuchSystemEventException(sb.toString());
 	}
 
 	/**
@@ -2059,22 +2072,25 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the last matching system event, or <code>null</code> if a matching system event could not be found
 	 */
 	@Override
-	public SystemEvent fetchByG_C_C_T_Last(long groupId, long classNameId,
-		long classPK, int type, OrderByComparator<SystemEvent> orderByComparator) {
+	public SystemEvent fetchByG_C_C_T_Last(
+		long groupId, long classNameId, long classPK, int type,
+		OrderByComparator<SystemEvent> orderByComparator) {
+
 		int count = countByG_C_C_T(groupId, classNameId, classPK, type);
 
 		if (count == 0) {
 			return null;
 		}
 
-		List<SystemEvent> list = findByG_C_C_T(groupId, classNameId, classPK,
-				type, count - 1, count, orderByComparator);
+		List<SystemEvent> list = findByG_C_C_T(
+			groupId, classNameId, classPK, type, count - 1, count,
+			orderByComparator);
 
 		if (!list.isEmpty()) {
 			return list.get(0);
@@ -2089,17 +2105,18 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @param systemEventId the primary key of the current system event
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @param orderByComparator the comparator to order the set by (optionally <code>null</code>)
 	 * @return the previous, current, and next system event
 	 * @throws NoSuchSystemEventException if a system event with the primary key could not be found
 	 */
 	@Override
-	public SystemEvent[] findByG_C_C_T_PrevAndNext(long systemEventId,
-		long groupId, long classNameId, long classPK, int type,
-		OrderByComparator<SystemEvent> orderByComparator)
+	public SystemEvent[] findByG_C_C_T_PrevAndNext(
+			long systemEventId, long groupId, long classNameId, long classPK,
+			int type, OrderByComparator<SystemEvent> orderByComparator)
 		throws NoSuchSystemEventException {
+
 		SystemEvent systemEvent = findByPrimaryKey(systemEventId);
 
 		Session session = null;
@@ -2109,134 +2126,138 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 			SystemEvent[] array = new SystemEventImpl[3];
 
-			array[0] = getByG_C_C_T_PrevAndNext(session, systemEvent, groupId,
-					classNameId, classPK, type, orderByComparator, true);
+			array[0] = getByG_C_C_T_PrevAndNext(
+				session, systemEvent, groupId, classNameId, classPK, type,
+				orderByComparator, true);
 
 			array[1] = systemEvent;
 
-			array[2] = getByG_C_C_T_PrevAndNext(session, systemEvent, groupId,
-					classNameId, classPK, type, orderByComparator, false);
+			array[2] = getByG_C_C_T_PrevAndNext(
+				session, systemEvent, groupId, classNameId, classPK, type,
+				orderByComparator, false);
 
 			return array;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 	}
 
-	protected SystemEvent getByG_C_C_T_PrevAndNext(Session session,
-		SystemEvent systemEvent, long groupId, long classNameId, long classPK,
-		int type, OrderByComparator<SystemEvent> orderByComparator,
-		boolean previous) {
-		StringBundler query = null;
+	protected SystemEvent getByG_C_C_T_PrevAndNext(
+		Session session, SystemEvent systemEvent, long groupId,
+		long classNameId, long classPK, int type,
+		OrderByComparator<SystemEvent> orderByComparator, boolean previous) {
+
+		StringBundler sb = null;
 
 		if (orderByComparator != null) {
-			query = new StringBundler(7 +
-					(orderByComparator.getOrderByConditionFields().length * 3) +
+			sb = new StringBundler(
+				7 + (orderByComparator.getOrderByConditionFields().length * 3) +
 					(orderByComparator.getOrderByFields().length * 3));
 		}
 		else {
-			query = new StringBundler(6);
+			sb = new StringBundler(6);
 		}
 
-		query.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
+		sb.append(_SQL_SELECT_SYSTEMEVENT_WHERE);
 
-		query.append(_FINDER_COLUMN_G_C_C_T_GROUPID_2);
+		sb.append(_FINDER_COLUMN_G_C_C_T_GROUPID_2);
 
-		query.append(_FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2);
+		sb.append(_FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2);
 
-		query.append(_FINDER_COLUMN_G_C_C_T_CLASSPK_2);
+		sb.append(_FINDER_COLUMN_G_C_C_T_CLASSPK_2);
 
-		query.append(_FINDER_COLUMN_G_C_C_T_TYPE_2);
+		sb.append(_FINDER_COLUMN_G_C_C_T_TYPE_2);
 
 		if (orderByComparator != null) {
-			String[] orderByConditionFields = orderByComparator.getOrderByConditionFields();
+			String[] orderByConditionFields =
+				orderByComparator.getOrderByConditionFields();
 
 			if (orderByConditionFields.length > 0) {
-				query.append(WHERE_AND);
+				sb.append(WHERE_AND);
 			}
 
 			for (int i = 0; i < orderByConditionFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByConditionFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByConditionFields[i]);
 
 				if ((i + 1) < orderByConditionFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN_HAS_NEXT);
+						sb.append(WHERE_GREATER_THAN_HAS_NEXT);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN_HAS_NEXT);
+						sb.append(WHERE_LESSER_THAN_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(WHERE_GREATER_THAN);
+						sb.append(WHERE_GREATER_THAN);
 					}
 					else {
-						query.append(WHERE_LESSER_THAN);
+						sb.append(WHERE_LESSER_THAN);
 					}
 				}
 			}
 
-			query.append(ORDER_BY_CLAUSE);
+			sb.append(ORDER_BY_CLAUSE);
 
 			String[] orderByFields = orderByComparator.getOrderByFields();
 
 			for (int i = 0; i < orderByFields.length; i++) {
-				query.append(_ORDER_BY_ENTITY_ALIAS);
-				query.append(orderByFields[i]);
+				sb.append(_ORDER_BY_ENTITY_ALIAS);
+				sb.append(orderByFields[i]);
 
 				if ((i + 1) < orderByFields.length) {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC_HAS_NEXT);
+						sb.append(ORDER_BY_ASC_HAS_NEXT);
 					}
 					else {
-						query.append(ORDER_BY_DESC_HAS_NEXT);
+						sb.append(ORDER_BY_DESC_HAS_NEXT);
 					}
 				}
 				else {
 					if (orderByComparator.isAscending() ^ previous) {
-						query.append(ORDER_BY_ASC);
+						sb.append(ORDER_BY_ASC);
 					}
 					else {
-						query.append(ORDER_BY_DESC);
+						sb.append(ORDER_BY_DESC);
 					}
 				}
 			}
 		}
 		else {
-			query.append(SystemEventModelImpl.ORDER_BY_JPQL);
+			sb.append(SystemEventModelImpl.ORDER_BY_JPQL);
 		}
 
-		String sql = query.toString();
+		String sql = sb.toString();
 
-		Query q = session.createQuery(sql);
+		Query query = session.createQuery(sql);
 
-		q.setFirstResult(0);
-		q.setMaxResults(2);
+		query.setFirstResult(0);
+		query.setMaxResults(2);
 
-		QueryPos qPos = QueryPos.getInstance(q);
+		QueryPos queryPos = QueryPos.getInstance(query);
 
-		qPos.add(groupId);
+		queryPos.add(groupId);
 
-		qPos.add(classNameId);
+		queryPos.add(classNameId);
 
-		qPos.add(classPK);
+		queryPos.add(classPK);
 
-		qPos.add(type);
+		queryPos.add(type);
 
 		if (orderByComparator != null) {
-			Object[] values = orderByComparator.getOrderByConditionValues(systemEvent);
+			for (Object orderByConditionValue :
+					orderByComparator.getOrderByConditionValues(systemEvent)) {
 
-			for (Object value : values) {
-				qPos.add(value);
+				queryPos.add(orderByConditionValue);
 			}
 		}
 
-		List<SystemEvent> list = q.list();
+		List<SystemEvent> list = query.list();
 
 		if (list.size() == 2) {
 			return list.get(1);
@@ -2251,14 +2272,18 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 */
 	@Override
-	public void removeByG_C_C_T(long groupId, long classNameId, long classPK,
-		int type) {
-		for (SystemEvent systemEvent : findByG_C_C_T(groupId, classNameId,
-				classPK, type, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null)) {
+	public void removeByG_C_C_T(
+		long groupId, long classNameId, long classPK, int type) {
+
+		for (SystemEvent systemEvent :
+				findByG_C_C_T(
+					groupId, classNameId, classPK, type, QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS, null)) {
+
 			remove(systemEvent);
 		}
 	}
@@ -2268,59 +2293,70 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 *
 	 * @param groupId the group ID
 	 * @param classNameId the class name ID
-	 * @param classPK the class p k
+	 * @param classPK the class pk
 	 * @param type the type
 	 * @return the number of matching system events
 	 */
 	@Override
-	public int countByG_C_C_T(long groupId, long classNameId, long classPK,
-		int type) {
-		FinderPath finderPath = FINDER_PATH_COUNT_BY_G_C_C_T;
+	public int countByG_C_C_T(
+		long groupId, long classNameId, long classPK, int type) {
 
-		Object[] finderArgs = new Object[] { groupId, classNameId, classPK, type };
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
 
-		Long count = (Long)finderCache.getResult(finderPath, finderArgs, this);
+		FinderPath finderPath = null;
+		Object[] finderArgs = null;
+
+		Long count = null;
+
+		if (productionMode) {
+			finderPath = _finderPathCountByG_C_C_T;
+
+			finderArgs = new Object[] {groupId, classNameId, classPK, type};
+
+			count = (Long)FinderCacheUtil.getResult(finderPath, finderArgs);
+		}
 
 		if (count == null) {
-			StringBundler query = new StringBundler(5);
+			StringBundler sb = new StringBundler(5);
 
-			query.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
+			sb.append(_SQL_COUNT_SYSTEMEVENT_WHERE);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_GROUPID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_GROUPID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_CLASSPK_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_CLASSPK_2);
 
-			query.append(_FINDER_COLUMN_G_C_C_T_TYPE_2);
+			sb.append(_FINDER_COLUMN_G_C_C_T_TYPE_2);
 
-			String sql = query.toString();
+			String sql = sb.toString();
 
 			Session session = null;
 
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				QueryPos qPos = QueryPos.getInstance(q);
+				QueryPos queryPos = QueryPos.getInstance(query);
 
-				qPos.add(groupId);
+				queryPos.add(groupId);
 
-				qPos.add(classNameId);
+				queryPos.add(classNameId);
 
-				qPos.add(classPK);
+				queryPos.add(classPK);
 
-				qPos.add(type);
+				queryPos.add(type);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(finderPath, finderArgs, count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -2330,13 +2366,31 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		return count.intValue();
 	}
 
-	private static final String _FINDER_COLUMN_G_C_C_T_GROUPID_2 = "systemEvent.groupId = ? AND ";
-	private static final String _FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2 = "systemEvent.classNameId = ? AND ";
-	private static final String _FINDER_COLUMN_G_C_C_T_CLASSPK_2 = "systemEvent.classPK = ? AND ";
-	private static final String _FINDER_COLUMN_G_C_C_T_TYPE_2 = "systemEvent.type = ?";
+	private static final String _FINDER_COLUMN_G_C_C_T_GROUPID_2 =
+		"systemEvent.groupId = ? AND ";
+
+	private static final String _FINDER_COLUMN_G_C_C_T_CLASSNAMEID_2 =
+		"systemEvent.classNameId = ? AND ";
+
+	private static final String _FINDER_COLUMN_G_C_C_T_CLASSPK_2 =
+		"systemEvent.classPK = ? AND ";
+
+	private static final String _FINDER_COLUMN_G_C_C_T_TYPE_2 =
+		"systemEvent.type = ?";
 
 	public SystemEventPersistenceImpl() {
+		Map<String, String> dbColumnNames = new HashMap<String, String>();
+
+		dbColumnNames.put("type", "type_");
+
+		setDBColumnNames(dbColumnNames);
+
 		setModelClass(SystemEvent.class);
+
+		setModelImplClass(SystemEventImpl.class);
+		setModelPKClass(long.class);
+
+		setTable(SystemEventTable.INSTANCE);
 	}
 
 	/**
@@ -2346,10 +2400,12 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public void cacheResult(SystemEvent systemEvent) {
-		entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventImpl.class, systemEvent.getPrimaryKey(), systemEvent);
+		if (systemEvent.getCtCollectionId() != 0) {
+			return;
+		}
 
-		systemEvent.resetOriginalValues();
+		EntityCacheUtil.putResult(
+			SystemEventImpl.class, systemEvent.getPrimaryKey(), systemEvent);
 	}
 
 	/**
@@ -2360,13 +2416,15 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	@Override
 	public void cacheResult(List<SystemEvent> systemEvents) {
 		for (SystemEvent systemEvent : systemEvents) {
-			if (entityCache.getResult(
-						SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-						SystemEventImpl.class, systemEvent.getPrimaryKey()) == null) {
-				cacheResult(systemEvent);
+			if (systemEvent.getCtCollectionId() != 0) {
+				continue;
 			}
-			else {
-				systemEvent.resetOriginalValues();
+
+			if (EntityCacheUtil.getResult(
+					SystemEventImpl.class, systemEvent.getPrimaryKey()) ==
+						null) {
+
+				cacheResult(systemEvent);
 			}
 		}
 	}
@@ -2375,42 +2433,41 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Clears the cache for all system events.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The <code>EntityCache</code> and <code>FinderCache</code> are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache() {
-		entityCache.clearCache(SystemEventImpl.class);
+		EntityCacheUtil.clearCache(SystemEventImpl.class);
 
-		finderCache.clearCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		FinderCacheUtil.clearCache(SystemEventImpl.class);
 	}
 
 	/**
 	 * Clears the cache for the system event.
 	 *
 	 * <p>
-	 * The {@link EntityCache} and {@link FinderCache} are both cleared by this method.
+	 * The <code>EntityCache</code> and <code>FinderCache</code> are both cleared by this method.
 	 * </p>
 	 */
 	@Override
 	public void clearCache(SystemEvent systemEvent) {
-		entityCache.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventImpl.class, systemEvent.getPrimaryKey());
-
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeResult(SystemEventImpl.class, systemEvent);
 	}
 
 	@Override
 	public void clearCache(List<SystemEvent> systemEvents) {
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
-
 		for (SystemEvent systemEvent : systemEvents) {
-			entityCache.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-				SystemEventImpl.class, systemEvent.getPrimaryKey());
+			EntityCacheUtil.removeResult(SystemEventImpl.class, systemEvent);
+		}
+	}
+
+	@Override
+	public void clearCache(Set<Serializable> primaryKeys) {
+		FinderCacheUtil.clearCache(SystemEventImpl.class);
+
+		for (Serializable primaryKey : primaryKeys) {
+			EntityCacheUtil.removeResult(SystemEventImpl.class, primaryKey);
 		}
 	}
 
@@ -2427,7 +2484,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 		systemEvent.setNew(true);
 		systemEvent.setPrimaryKey(systemEventId);
 
-		systemEvent.setCompanyId(companyProvider.getCompanyId());
+		systemEvent.setCompanyId(CompanyThreadLocal.getCompanyId());
 
 		return systemEvent;
 	}
@@ -2442,6 +2499,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	@Override
 	public SystemEvent remove(long systemEventId)
 		throws NoSuchSystemEventException {
+
 		return remove((Serializable)systemEventId);
 	}
 
@@ -2455,30 +2513,31 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	@Override
 	public SystemEvent remove(Serializable primaryKey)
 		throws NoSuchSystemEventException {
+
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			SystemEvent systemEvent = (SystemEvent)session.get(SystemEventImpl.class,
-					primaryKey);
+			SystemEvent systemEvent = (SystemEvent)session.get(
+				SystemEventImpl.class, primaryKey);
 
 			if (systemEvent == null) {
 				if (_log.isDebugEnabled()) {
 					_log.debug(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 				}
 
-				throw new NoSuchSystemEventException(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY +
-					primaryKey);
+				throw new NoSuchSystemEventException(
+					_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 			}
 
 			return remove(systemEvent);
 		}
-		catch (NoSuchSystemEventException nsee) {
-			throw nsee;
+		catch (NoSuchSystemEventException noSuchEntityException) {
+			throw noSuchEntityException;
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2487,24 +2546,24 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 	@Override
 	protected SystemEvent removeImpl(SystemEvent systemEvent) {
-		systemEvent = toUnwrappedModel(systemEvent);
-
 		Session session = null;
 
 		try {
 			session = openSession();
 
 			if (!session.contains(systemEvent)) {
-				systemEvent = (SystemEvent)session.get(SystemEventImpl.class,
-						systemEvent.getPrimaryKeyObj());
+				systemEvent = (SystemEvent)session.get(
+					SystemEventImpl.class, systemEvent.getPrimaryKeyObj());
 			}
 
-			if (systemEvent != null) {
+			if ((systemEvent != null) &&
+				CTPersistenceHelperUtil.isRemove(systemEvent)) {
+
 				session.delete(systemEvent);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2519,167 +2578,89 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 
 	@Override
 	public SystemEvent updateImpl(SystemEvent systemEvent) {
-		systemEvent = toUnwrappedModel(systemEvent);
-
 		boolean isNew = systemEvent.isNew();
 
-		SystemEventModelImpl systemEventModelImpl = (SystemEventModelImpl)systemEvent;
+		if (!(systemEvent instanceof SystemEventModelImpl)) {
+			InvocationHandler invocationHandler = null;
+
+			if (ProxyUtil.isProxyClass(systemEvent.getClass())) {
+				invocationHandler = ProxyUtil.getInvocationHandler(systemEvent);
+
+				throw new IllegalArgumentException(
+					"Implement ModelWrapper in systemEvent proxy " +
+						invocationHandler.getClass());
+			}
+
+			throw new IllegalArgumentException(
+				"Implement ModelWrapper in custom SystemEvent implementation " +
+					systemEvent.getClass());
+		}
+
+		SystemEventModelImpl systemEventModelImpl =
+			(SystemEventModelImpl)systemEvent;
+
+		if (isNew && (systemEvent.getCreateDate() == null)) {
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
+			Date date = new Date();
+
+			if (serviceContext == null) {
+				systemEvent.setCreateDate(date);
+			}
+			else {
+				systemEvent.setCreateDate(serviceContext.getCreateDate(date));
+			}
+		}
 
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			if (systemEvent.isNew()) {
-				session.save(systemEvent);
+			if (CTPersistenceHelperUtil.isInsert(systemEvent)) {
+				if (!isNew) {
+					session.evict(
+						SystemEventImpl.class, systemEvent.getPrimaryKeyObj());
+				}
 
-				systemEvent.setNew(false);
+				session.save(systemEvent);
 			}
 			else {
 				systemEvent = (SystemEvent)session.merge(systemEvent);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
 		}
 
-		finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
+		if (systemEvent.getCtCollectionId() != 0) {
+			if (isNew) {
+				systemEvent.setNew(false);
+			}
 
-		if (isNew || !SystemEventModelImpl.COLUMN_BITMASK_ENABLED) {
-			finderCache.clearCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+			systemEvent.resetOriginalValues();
+
+			return systemEvent;
 		}
 
-		else {
-			if ((systemEventModelImpl.getColumnBitmask() &
-					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						systemEventModelImpl.getOriginalGroupId()
-					};
+		EntityCacheUtil.putResult(
+			SystemEventImpl.class, systemEventModelImpl, false, true);
 
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
-					args);
-
-				args = new Object[] { systemEventModelImpl.getGroupId() };
-
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_GROUPID, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_GROUPID,
-					args);
-			}
-
-			if ((systemEventModelImpl.getColumnBitmask() &
-					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						systemEventModelImpl.getOriginalGroupId(),
-						systemEventModelImpl.getOriginalSystemEventSetKey()
-					};
-
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_S, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S,
-					args);
-
-				args = new Object[] {
-						systemEventModelImpl.getGroupId(),
-						systemEventModelImpl.getSystemEventSetKey()
-					};
-
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_S, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_S,
-					args);
-			}
-
-			if ((systemEventModelImpl.getColumnBitmask() &
-					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						systemEventModelImpl.getOriginalGroupId(),
-						systemEventModelImpl.getOriginalClassNameId(),
-						systemEventModelImpl.getOriginalClassPK()
-					};
-
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
-					args);
-
-				args = new Object[] {
-						systemEventModelImpl.getGroupId(),
-						systemEventModelImpl.getClassNameId(),
-						systemEventModelImpl.getClassPK()
-					};
-
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C,
-					args);
-			}
-
-			if ((systemEventModelImpl.getColumnBitmask() &
-					FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T.getColumnBitmask()) != 0) {
-				Object[] args = new Object[] {
-						systemEventModelImpl.getOriginalGroupId(),
-						systemEventModelImpl.getOriginalClassNameId(),
-						systemEventModelImpl.getOriginalClassPK(),
-						systemEventModelImpl.getOriginalType()
-					};
-
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C_T, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T,
-					args);
-
-				args = new Object[] {
-						systemEventModelImpl.getGroupId(),
-						systemEventModelImpl.getClassNameId(),
-						systemEventModelImpl.getClassPK(),
-						systemEventModelImpl.getType()
-					};
-
-				finderCache.removeResult(FINDER_PATH_COUNT_BY_G_C_C_T, args);
-				finderCache.removeResult(FINDER_PATH_WITHOUT_PAGINATION_FIND_BY_G_C_C_T,
-					args);
-			}
+		if (isNew) {
+			systemEvent.setNew(false);
 		}
-
-		entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-			SystemEventImpl.class, systemEvent.getPrimaryKey(), systemEvent,
-			false);
 
 		systemEvent.resetOriginalValues();
 
 		return systemEvent;
 	}
 
-	protected SystemEvent toUnwrappedModel(SystemEvent systemEvent) {
-		if (systemEvent instanceof SystemEventImpl) {
-			return systemEvent;
-		}
-
-		SystemEventImpl systemEventImpl = new SystemEventImpl();
-
-		systemEventImpl.setNew(systemEvent.isNew());
-		systemEventImpl.setPrimaryKey(systemEvent.getPrimaryKey());
-
-		systemEventImpl.setMvccVersion(systemEvent.getMvccVersion());
-		systemEventImpl.setSystemEventId(systemEvent.getSystemEventId());
-		systemEventImpl.setGroupId(systemEvent.getGroupId());
-		systemEventImpl.setCompanyId(systemEvent.getCompanyId());
-		systemEventImpl.setUserId(systemEvent.getUserId());
-		systemEventImpl.setUserName(systemEvent.getUserName());
-		systemEventImpl.setCreateDate(systemEvent.getCreateDate());
-		systemEventImpl.setClassNameId(systemEvent.getClassNameId());
-		systemEventImpl.setClassPK(systemEvent.getClassPK());
-		systemEventImpl.setClassUuid(systemEvent.getClassUuid());
-		systemEventImpl.setReferrerClassNameId(systemEvent.getReferrerClassNameId());
-		systemEventImpl.setParentSystemEventId(systemEvent.getParentSystemEventId());
-		systemEventImpl.setSystemEventSetKey(systemEvent.getSystemEventSetKey());
-		systemEventImpl.setType(systemEvent.getType());
-		systemEventImpl.setExtraData(systemEvent.getExtraData());
-
-		return systemEventImpl;
-	}
-
 	/**
-	 * Returns the system event with the primary key or throws a {@link com.liferay.portal.kernel.exception.NoSuchModelException} if it could not be found.
+	 * Returns the system event with the primary key or throws a <code>com.liferay.portal.kernel.exception.NoSuchModelException</code> if it could not be found.
 	 *
 	 * @param primaryKey the primary key of the system event
 	 * @return the system event
@@ -2688,6 +2669,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	@Override
 	public SystemEvent findByPrimaryKey(Serializable primaryKey)
 		throws NoSuchSystemEventException {
+
 		SystemEvent systemEvent = fetchByPrimaryKey(primaryKey);
 
 		if (systemEvent == null) {
@@ -2695,15 +2677,15 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 				_log.debug(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 			}
 
-			throw new NoSuchSystemEventException(_NO_SUCH_ENTITY_WITH_PRIMARY_KEY +
-				primaryKey);
+			throw new NoSuchSystemEventException(
+				_NO_SUCH_ENTITY_WITH_PRIMARY_KEY + primaryKey);
 		}
 
 		return systemEvent;
 	}
 
 	/**
-	 * Returns the system event with the primary key or throws a {@link NoSuchSystemEventException} if it could not be found.
+	 * Returns the system event with the primary key or throws a <code>NoSuchSystemEventException</code> if it could not be found.
 	 *
 	 * @param systemEventId the primary key of the system event
 	 * @return the system event
@@ -2712,6 +2694,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	@Override
 	public SystemEvent findByPrimaryKey(long systemEventId)
 		throws NoSuchSystemEventException {
+
 		return findByPrimaryKey((Serializable)systemEventId);
 	}
 
@@ -2723,41 +2706,29 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public SystemEvent fetchByPrimaryKey(Serializable primaryKey) {
-		Serializable serializable = entityCache.getResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-				SystemEventImpl.class, primaryKey);
-
-		if (serializable == nullModel) {
-			return null;
+		if (CTPersistenceHelperUtil.isProductionMode(SystemEvent.class)) {
+			return super.fetchByPrimaryKey(primaryKey);
 		}
 
-		SystemEvent systemEvent = (SystemEvent)serializable;
+		SystemEvent systemEvent = null;
 
-		if (systemEvent == null) {
-			Session session = null;
+		Session session = null;
 
-			try {
-				session = openSession();
+		try {
+			session = openSession();
 
-				systemEvent = (SystemEvent)session.get(SystemEventImpl.class,
-						primaryKey);
+			systemEvent = (SystemEvent)session.get(
+				SystemEventImpl.class, primaryKey);
 
-				if (systemEvent != null) {
-					cacheResult(systemEvent);
-				}
-				else {
-					entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-						SystemEventImpl.class, primaryKey, nullModel);
-				}
+			if (systemEvent != null) {
+				cacheResult(systemEvent);
 			}
-			catch (Exception e) {
-				entityCache.removeResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-					SystemEventImpl.class, primaryKey);
-
-				throw processException(e);
-			}
-			finally {
-				closeSession(session);
-			}
+		}
+		catch (Exception exception) {
+			throw processException(exception);
+		}
+		finally {
+			closeSession(session);
 		}
 
 		return systemEvent;
@@ -2777,11 +2748,17 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	@Override
 	public Map<Serializable, SystemEvent> fetchByPrimaryKeys(
 		Set<Serializable> primaryKeys) {
+
+		if (CTPersistenceHelperUtil.isProductionMode(SystemEvent.class)) {
+			return super.fetchByPrimaryKeys(primaryKeys);
+		}
+
 		if (primaryKeys.isEmpty()) {
 			return Collections.emptyMap();
 		}
 
-		Map<Serializable, SystemEvent> map = new HashMap<Serializable, SystemEvent>();
+		Map<Serializable, SystemEvent> map =
+			new HashMap<Serializable, SystemEvent>();
 
 		if (primaryKeys.size() == 1) {
 			Iterator<Serializable> iterator = primaryKeys.iterator();
@@ -2797,69 +2774,40 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 			return map;
 		}
 
-		Set<Serializable> uncachedPrimaryKeys = null;
+		StringBundler sb = new StringBundler((primaryKeys.size() * 2) + 1);
+
+		sb.append(getSelectSQL());
+		sb.append(" WHERE ");
+		sb.append(getPKDBName());
+		sb.append(" IN (");
 
 		for (Serializable primaryKey : primaryKeys) {
-			Serializable serializable = entityCache.getResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-					SystemEventImpl.class, primaryKey);
+			sb.append((long)primaryKey);
 
-			if (serializable != nullModel) {
-				if (serializable == null) {
-					if (uncachedPrimaryKeys == null) {
-						uncachedPrimaryKeys = new HashSet<Serializable>();
-					}
-
-					uncachedPrimaryKeys.add(primaryKey);
-				}
-				else {
-					map.put(primaryKey, (SystemEvent)serializable);
-				}
-			}
+			sb.append(",");
 		}
 
-		if (uncachedPrimaryKeys == null) {
-			return map;
-		}
+		sb.setIndex(sb.index() - 1);
 
-		StringBundler query = new StringBundler((uncachedPrimaryKeys.size() * 2) +
-				1);
+		sb.append(")");
 
-		query.append(_SQL_SELECT_SYSTEMEVENT_WHERE_PKS_IN);
-
-		for (Serializable primaryKey : uncachedPrimaryKeys) {
-			query.append(String.valueOf(primaryKey));
-
-			query.append(StringPool.COMMA);
-		}
-
-		query.setIndex(query.index() - 1);
-
-		query.append(StringPool.CLOSE_PARENTHESIS);
-
-		String sql = query.toString();
+		String sql = sb.toString();
 
 		Session session = null;
 
 		try {
 			session = openSession();
 
-			Query q = session.createQuery(sql);
+			Query query = session.createQuery(sql);
 
-			for (SystemEvent systemEvent : (List<SystemEvent>)q.list()) {
+			for (SystemEvent systemEvent : (List<SystemEvent>)query.list()) {
 				map.put(systemEvent.getPrimaryKeyObj(), systemEvent);
 
 				cacheResult(systemEvent);
-
-				uncachedPrimaryKeys.remove(systemEvent.getPrimaryKeyObj());
-			}
-
-			for (Serializable primaryKey : uncachedPrimaryKeys) {
-				entityCache.putResult(SystemEventModelImpl.ENTITY_CACHE_ENABLED,
-					SystemEventImpl.class, primaryKey, nullModel);
 			}
 		}
-		catch (Exception e) {
-			throw processException(e);
+		catch (Exception exception) {
+			throw processException(exception);
 		}
 		finally {
 			closeSession(session);
@@ -2882,7 +2830,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Returns a range of all the system events.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of system events
@@ -2898,7 +2846,7 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Returns an ordered range of all the system events.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of system events
@@ -2907,8 +2855,9 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * @return the ordered range of system events
 	 */
 	@Override
-	public List<SystemEvent> findAll(int start, int end,
-		OrderByComparator<SystemEvent> orderByComparator) {
+	public List<SystemEvent> findAll(
+		int start, int end, OrderByComparator<SystemEvent> orderByComparator) {
+
 		return findAll(start, end, orderByComparator, true);
 	}
 
@@ -2916,62 +2865,65 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 * Returns an ordered range of all the system events.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to {@link QueryUtil#ALL_POS} will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent and pagination is required (<code>start</code> and <code>end</code> are not {@link QueryUtil#ALL_POS}), then the query will include the default ORDER BY logic from {@link SystemEventModelImpl}. If both <code>orderByComparator</code> and pagination are absent, for performance reasons, the query will not have an ORDER BY clause and the returned result set will be sorted on by the primary key in an ascending order.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>SystemEventModelImpl</code>.
 	 * </p>
 	 *
 	 * @param start the lower bound of the range of system events
 	 * @param end the upper bound of the range of system events (not inclusive)
 	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @param retrieveFromCache whether to retrieve from the finder cache
+	 * @param useFinderCache whether to use the finder cache
 	 * @return the ordered range of system events
 	 */
 	@Override
-	public List<SystemEvent> findAll(int start, int end,
-		OrderByComparator<SystemEvent> orderByComparator,
-		boolean retrieveFromCache) {
-		boolean pagination = true;
+	public List<SystemEvent> findAll(
+		int start, int end, OrderByComparator<SystemEvent> orderByComparator,
+		boolean useFinderCache) {
+
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
+
 		FinderPath finderPath = null;
 		Object[] finderArgs = null;
 
 		if ((start == QueryUtil.ALL_POS) && (end == QueryUtil.ALL_POS) &&
-				(orderByComparator == null)) {
-			pagination = false;
-			finderPath = FINDER_PATH_WITHOUT_PAGINATION_FIND_ALL;
-			finderArgs = FINDER_ARGS_EMPTY;
+			(orderByComparator == null)) {
+
+			if (useFinderCache && productionMode) {
+				finderPath = _finderPathWithoutPaginationFindAll;
+				finderArgs = FINDER_ARGS_EMPTY;
+			}
 		}
-		else {
-			finderPath = FINDER_PATH_WITH_PAGINATION_FIND_ALL;
-			finderArgs = new Object[] { start, end, orderByComparator };
+		else if (useFinderCache && productionMode) {
+			finderPath = _finderPathWithPaginationFindAll;
+			finderArgs = new Object[] {start, end, orderByComparator};
 		}
 
 		List<SystemEvent> list = null;
 
-		if (retrieveFromCache) {
-			list = (List<SystemEvent>)finderCache.getResult(finderPath,
-					finderArgs, this);
+		if (useFinderCache && productionMode) {
+			list = (List<SystemEvent>)FinderCacheUtil.getResult(
+				finderPath, finderArgs);
 		}
 
 		if (list == null) {
-			StringBundler query = null;
+			StringBundler sb = null;
 			String sql = null;
 
 			if (orderByComparator != null) {
-				query = new StringBundler(2 +
-						(orderByComparator.getOrderByFields().length * 2));
+				sb = new StringBundler(
+					2 + (orderByComparator.getOrderByFields().length * 2));
 
-				query.append(_SQL_SELECT_SYSTEMEVENT);
+				sb.append(_SQL_SELECT_SYSTEMEVENT);
 
-				appendOrderByComparator(query, _ORDER_BY_ENTITY_ALIAS,
-					orderByComparator);
+				appendOrderByComparator(
+					sb, _ORDER_BY_ENTITY_ALIAS, orderByComparator);
 
-				sql = query.toString();
+				sql = sb.toString();
 			}
 			else {
 				sql = _SQL_SELECT_SYSTEMEVENT;
 
-				if (pagination) {
-					sql = sql.concat(SystemEventModelImpl.ORDER_BY_JPQL);
-				}
+				sql = sql.concat(SystemEventModelImpl.ORDER_BY_JPQL);
 			}
 
 			Session session = null;
@@ -2979,29 +2931,19 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(sql);
+				Query query = session.createQuery(sql);
 
-				if (!pagination) {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end, false);
-
-					Collections.sort(list);
-
-					list = Collections.unmodifiableList(list);
-				}
-				else {
-					list = (List<SystemEvent>)QueryUtil.list(q, getDialect(),
-							start, end);
-				}
+				list = (List<SystemEvent>)QueryUtil.list(
+					query, getDialect(), start, end);
 
 				cacheResult(list);
 
-				finderCache.putResult(finderPath, finderArgs, list);
+				if (useFinderCache && productionMode) {
+					FinderCacheUtil.putResult(finderPath, finderArgs, list);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(finderPath, finderArgs);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3029,8 +2971,15 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	 */
 	@Override
 	public int countAll() {
-		Long count = (Long)finderCache.getResult(FINDER_PATH_COUNT_ALL,
-				FINDER_ARGS_EMPTY, this);
+		boolean productionMode = CTPersistenceHelperUtil.isProductionMode(
+			SystemEvent.class);
+
+		Long count = null;
+
+		if (productionMode) {
+			count = (Long)FinderCacheUtil.getResult(
+				_finderPathCountAll, FINDER_ARGS_EMPTY);
+		}
 
 		if (count == null) {
 			Session session = null;
@@ -3038,18 +2987,17 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 			try {
 				session = openSession();
 
-				Query q = session.createQuery(_SQL_COUNT_SYSTEMEVENT);
+				Query query = session.createQuery(_SQL_COUNT_SYSTEMEVENT);
 
-				count = (Long)q.uniqueResult();
+				count = (Long)query.uniqueResult();
 
-				finderCache.putResult(FINDER_PATH_COUNT_ALL, FINDER_ARGS_EMPTY,
-					count);
+				if (productionMode) {
+					FinderCacheUtil.putResult(
+						_finderPathCountAll, FINDER_ARGS_EMPTY, count);
+				}
 			}
-			catch (Exception e) {
-				finderCache.removeResult(FINDER_PATH_COUNT_ALL,
-					FINDER_ARGS_EMPTY);
-
-				throw processException(e);
+			catch (Exception exception) {
+				throw processException(exception);
 			}
 			finally {
 				closeSession(session);
@@ -3065,37 +3013,334 @@ public class SystemEventPersistenceImpl extends BasePersistenceImpl<SystemEvent>
 	}
 
 	@Override
-	protected Map<String, Integer> getTableColumnsMap() {
+	protected EntityCache getEntityCache() {
+		return EntityCacheUtil.getEntityCache();
+	}
+
+	@Override
+	protected String getPKDBName() {
+		return "systemEventId";
+	}
+
+	@Override
+	protected String getSelectSQL() {
+		return _SQL_SELECT_SYSTEMEVENT;
+	}
+
+	@Override
+	public Set<String> getCTColumnNames(
+		CTColumnResolutionType ctColumnResolutionType) {
+
+		return _ctColumnNamesMap.getOrDefault(
+			ctColumnResolutionType, Collections.emptySet());
+	}
+
+	@Override
+	public List<String> getMappingTableNames() {
+		return _mappingTableNames;
+	}
+
+	@Override
+	public Map<String, Integer> getTableColumnsMap() {
 		return SystemEventModelImpl.TABLE_COLUMNS_MAP;
+	}
+
+	@Override
+	public String getTableName() {
+		return "SystemEvent";
+	}
+
+	@Override
+	public List<String[]> getUniqueIndexColumnNames() {
+		return _uniqueIndexColumnNames;
+	}
+
+	private static final Map<CTColumnResolutionType, Set<String>>
+		_ctColumnNamesMap = new EnumMap<CTColumnResolutionType, Set<String>>(
+			CTColumnResolutionType.class);
+	private static final List<String> _mappingTableNames =
+		new ArrayList<String>();
+	private static final List<String[]> _uniqueIndexColumnNames =
+		new ArrayList<String[]>();
+
+	static {
+		Set<String> ctControlColumnNames = new HashSet<String>();
+		Set<String> ctStrictColumnNames = new HashSet<String>();
+
+		ctControlColumnNames.add("mvccVersion");
+		ctControlColumnNames.add("ctCollectionId");
+		ctStrictColumnNames.add("groupId");
+		ctStrictColumnNames.add("companyId");
+		ctStrictColumnNames.add("userId");
+		ctStrictColumnNames.add("userName");
+		ctStrictColumnNames.add("createDate");
+		ctStrictColumnNames.add("classNameId");
+		ctStrictColumnNames.add("classPK");
+		ctStrictColumnNames.add("classUuid");
+		ctStrictColumnNames.add("referrerClassNameId");
+		ctStrictColumnNames.add("parentSystemEventId");
+		ctStrictColumnNames.add("systemEventSetKey");
+		ctStrictColumnNames.add("type_");
+		ctStrictColumnNames.add("extraData");
+
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.CONTROL, ctControlColumnNames);
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.PK, Collections.singleton("systemEventId"));
+		_ctColumnNamesMap.put(
+			CTColumnResolutionType.STRICT, ctStrictColumnNames);
 	}
 
 	/**
 	 * Initializes the system event persistence.
 	 */
 	public void afterPropertiesSet() {
+		Registry registry = RegistryUtil.getRegistry();
+
+		_argumentsResolverServiceRegistration = registry.registerService(
+			ArgumentsResolver.class, new SystemEventModelArgumentsResolver());
+
+		_finderPathWithPaginationFindAll = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findAll", new String[0],
+			new String[0], true);
+
+		_finderPathWithoutPaginationFindAll = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findAll", new String[0],
+			new String[0], true);
+
+		_finderPathCountAll = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countAll",
+			new String[0], new String[0], false);
+
+		_finderPathWithPaginationFindByGroupId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByGroupId",
+			new String[] {
+				Long.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), OrderByComparator.class.getName()
+			},
+			new String[] {"groupId"}, true);
+
+		_finderPathWithoutPaginationFindByGroupId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByGroupId",
+			new String[] {Long.class.getName()}, new String[] {"groupId"},
+			true);
+
+		_finderPathCountByGroupId = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByGroupId",
+			new String[] {Long.class.getName()}, new String[] {"groupId"},
+			false);
+
+		_finderPathWithPaginationFindByG_S = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			},
+			new String[] {"groupId", "systemEventSetKey"}, true);
+
+		_finderPathWithoutPaginationFindByG_S = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
+			new String[] {Long.class.getName(), Long.class.getName()},
+			new String[] {"groupId", "systemEventSetKey"}, true);
+
+		_finderPathCountByG_S = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
+			new String[] {Long.class.getName(), Long.class.getName()},
+			new String[] {"groupId", "systemEventSetKey"}, false);
+
+		_finderPathWithPaginationFindByG_C_C = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Long.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), OrderByComparator.class.getName()
+			},
+			new String[] {"groupId", "classNameId", "classPK"}, true);
+
+		_finderPathWithoutPaginationFindByG_C_C = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C",
+			new String[] {
+				Long.class.getName(), Long.class.getName(), Long.class.getName()
+			},
+			new String[] {"groupId", "classNameId", "classPK"}, true);
+
+		_finderPathCountByG_C_C = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C",
+			new String[] {
+				Long.class.getName(), Long.class.getName(), Long.class.getName()
+			},
+			new String[] {"groupId", "classNameId", "classPK"}, false);
+
+		_finderPathWithPaginationFindByG_C_C_T = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_C_C_T",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Long.class.getName(), Integer.class.getName(),
+				Integer.class.getName(), Integer.class.getName(),
+				OrderByComparator.class.getName()
+			},
+			new String[] {"groupId", "classNameId", "classPK", "type_"}, true);
+
+		_finderPathWithoutPaginationFindByG_C_C_T = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_C_C_T",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Long.class.getName(), Integer.class.getName()
+			},
+			new String[] {"groupId", "classNameId", "classPK", "type_"}, true);
+
+		_finderPathCountByG_C_C_T = new FinderPath(
+			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_C_C_T",
+			new String[] {
+				Long.class.getName(), Long.class.getName(),
+				Long.class.getName(), Integer.class.getName()
+			},
+			new String[] {"groupId", "classNameId", "classPK", "type_"}, false);
 	}
 
 	public void destroy() {
-		entityCache.removeCache(SystemEventImpl.class.getName());
-		finderCache.removeCache(FINDER_CLASS_NAME_ENTITY);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITH_PAGINATION);
-		finderCache.removeCache(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION);
+		EntityCacheUtil.removeCache(SystemEventImpl.class.getName());
+
+		_argumentsResolverServiceRegistration.unregister();
 	}
 
-	@BeanReference(type = CompanyProviderWrapper.class)
-	protected CompanyProvider companyProvider;
-	protected EntityCache entityCache = EntityCacheUtil.getEntityCache();
-	protected FinderCache finderCache = FinderCacheUtil.getFinderCache();
-	private static final String _SQL_SELECT_SYSTEMEVENT = "SELECT systemEvent FROM SystemEvent systemEvent";
-	private static final String _SQL_SELECT_SYSTEMEVENT_WHERE_PKS_IN = "SELECT systemEvent FROM SystemEvent systemEvent WHERE systemEventId IN (";
-	private static final String _SQL_SELECT_SYSTEMEVENT_WHERE = "SELECT systemEvent FROM SystemEvent systemEvent WHERE ";
-	private static final String _SQL_COUNT_SYSTEMEVENT = "SELECT COUNT(systemEvent) FROM SystemEvent systemEvent";
-	private static final String _SQL_COUNT_SYSTEMEVENT_WHERE = "SELECT COUNT(systemEvent) FROM SystemEvent systemEvent WHERE ";
+	private static final String _SQL_SELECT_SYSTEMEVENT =
+		"SELECT systemEvent FROM SystemEvent systemEvent";
+
+	private static final String _SQL_SELECT_SYSTEMEVENT_WHERE =
+		"SELECT systemEvent FROM SystemEvent systemEvent WHERE ";
+
+	private static final String _SQL_COUNT_SYSTEMEVENT =
+		"SELECT COUNT(systemEvent) FROM SystemEvent systemEvent";
+
+	private static final String _SQL_COUNT_SYSTEMEVENT_WHERE =
+		"SELECT COUNT(systemEvent) FROM SystemEvent systemEvent WHERE ";
+
 	private static final String _ORDER_BY_ENTITY_ALIAS = "systemEvent.";
-	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY = "No SystemEvent exists with the primary key ";
-	private static final String _NO_SUCH_ENTITY_WITH_KEY = "No SystemEvent exists with the key {";
-	private static final Log _log = LogFactoryUtil.getLog(SystemEventPersistenceImpl.class);
-	private static final Set<String> _badColumnNames = SetUtil.fromArray(new String[] {
-				"type"
-			});
+
+	private static final String _NO_SUCH_ENTITY_WITH_PRIMARY_KEY =
+		"No SystemEvent exists with the primary key ";
+
+	private static final String _NO_SUCH_ENTITY_WITH_KEY =
+		"No SystemEvent exists with the key {";
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		SystemEventPersistenceImpl.class);
+
+	private static final Set<String> _badColumnNames = SetUtil.fromArray(
+		new String[] {"type"});
+
+	@Override
+	protected FinderCache getFinderCache() {
+		return FinderCacheUtil.getFinderCache();
+	}
+
+	private ServiceRegistration<ArgumentsResolver>
+		_argumentsResolverServiceRegistration;
+
+	private static class SystemEventModelArgumentsResolver
+		implements ArgumentsResolver {
+
+		@Override
+		public Object[] getArguments(
+			FinderPath finderPath, BaseModel<?> baseModel, boolean checkColumn,
+			boolean original) {
+
+			String[] columnNames = finderPath.getColumnNames();
+
+			if ((columnNames == null) || (columnNames.length == 0)) {
+				if (baseModel.isNew()) {
+					return FINDER_ARGS_EMPTY;
+				}
+
+				return null;
+			}
+
+			SystemEventModelImpl systemEventModelImpl =
+				(SystemEventModelImpl)baseModel;
+
+			long columnBitmask = systemEventModelImpl.getColumnBitmask();
+
+			if (!checkColumn || (columnBitmask == 0)) {
+				return _getValue(systemEventModelImpl, columnNames, original);
+			}
+
+			Long finderPathColumnBitmask = _finderPathColumnBitmasksCache.get(
+				finderPath);
+
+			if (finderPathColumnBitmask == null) {
+				finderPathColumnBitmask = 0L;
+
+				for (String columnName : columnNames) {
+					finderPathColumnBitmask |=
+						systemEventModelImpl.getColumnBitmask(columnName);
+				}
+
+				if (finderPath.isBaseModelResult() &&
+					(FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION ==
+						finderPath.getCacheName())) {
+
+					finderPathColumnBitmask |= _ORDER_BY_COLUMNS_BITMASK;
+				}
+
+				_finderPathColumnBitmasksCache.put(
+					finderPath, finderPathColumnBitmask);
+			}
+
+			if ((columnBitmask & finderPathColumnBitmask) != 0) {
+				return _getValue(systemEventModelImpl, columnNames, original);
+			}
+
+			return null;
+		}
+
+		@Override
+		public String getClassName() {
+			return SystemEventImpl.class.getName();
+		}
+
+		@Override
+		public String getTableName() {
+			return SystemEventTable.INSTANCE.getTableName();
+		}
+
+		private static Object[] _getValue(
+			SystemEventModelImpl systemEventModelImpl, String[] columnNames,
+			boolean original) {
+
+			Object[] arguments = new Object[columnNames.length];
+
+			for (int i = 0; i < arguments.length; i++) {
+				String columnName = columnNames[i];
+
+				if (original) {
+					arguments[i] = systemEventModelImpl.getColumnOriginalValue(
+						columnName);
+				}
+				else {
+					arguments[i] = systemEventModelImpl.getColumnValue(
+						columnName);
+				}
+			}
+
+			return arguments;
+		}
+
+		private static final Map<FinderPath, Long>
+			_finderPathColumnBitmasksCache = new ConcurrentHashMap<>();
+
+		private static final long _ORDER_BY_COLUMNS_BITMASK;
+
+		static {
+			long orderByColumnsBitmask = 0;
+
+			orderByColumnsBitmask |= SystemEventModelImpl.getColumnBitmask(
+				"createDate");
+
+			_ORDER_BY_COLUMNS_BITMASK = orderByColumnsBitmask;
+		}
+
+	}
+
 }

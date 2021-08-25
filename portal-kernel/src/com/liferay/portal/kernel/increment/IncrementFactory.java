@@ -44,21 +44,22 @@ public class IncrementFactory {
 
 					return constructor.newInstance(value);
 				}
-				catch (NoSuchMethodException nsme) {
+				catch (NoSuchMethodException noSuchMethodException) {
 					valueClass = valueClass.getSuperclass();
 
 					if (valueClass.equals(Object.class)) {
 						throw new SystemException(
 							counterClass.getName() +
 								" is unable to increment " +
-									ClassUtil.getClassName(value));
+									ClassUtil.getClassName(value),
+							noSuchMethodException);
 					}
 				}
 			}
 			while (true);
 		}
-		catch (Exception e) {
-			throw new SystemException(e);
+		catch (Exception exception) {
+			throw new SystemException(exception);
 		}
 	}
 

@@ -14,17 +14,24 @@
 
 package com.liferay.portal.upgrade.v7_0_0;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.upgrade.BaseCompanyIdUpgradeProcess;
+import com.liferay.portal.kernel.util.PortletKeys;
+
 import java.io.IOException;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Brian Wing Shun Chan
  */
-@SuppressWarnings("deprecation")
-public class UpgradeCompanyId
-	extends com.liferay.portal.upgrade.util.UpgradeCompanyId {
+public class UpgradeCompanyId extends BaseCompanyIdUpgradeProcess {
 
 	@Override
 	protected TableUpdater[] getTableUpdaters() {
@@ -129,45 +136,112 @@ public class UpgradeCompanyId
 		public void update(Connection connection)
 			throws IOException, SQLException {
 
+			List<Long> companyIds = getCompanyIds(connection);
+
+			if (companyIds.size() == 1) {
+				String selectSQL = String.valueOf(companyIds.get(0));
+
+				runSQL(connection, getUpdateSQL(selectSQL));
+
+				return;
+			}
+
 			// Company
 
-			String selectSQL =
-				"select companyId from Company where Company.companyId = " +
-					"PortletPreferences.ownerId";
+			String updateSQL = _getUpdateSQL(
+				"Company", "companyId", "ownerId",
+				PortletKeys.PREFS_OWNER_TYPE_COMPANY);
 
-			runSQL(connection, getUpdateSQL(selectSQL));
+			runSQL(connection, updateSQL);
 
 			// Group
 
-			selectSQL =
-				"select companyId from Group_ where Group_.groupId = " +
-					"PortletPreferences.ownerId";
+			updateSQL = _getUpdateSQL(
+				"Group_", "groupId", "ownerId",
+				PortletKeys.PREFS_OWNER_TYPE_GROUP);
 
-			runSQL(connection, getUpdateSQL(selectSQL));
+			runSQL(connection, updateSQL);
 
 			// Layout
 
-			selectSQL =
-				"select companyId from Layout where Layout.plid = " +
-					"PortletPreferences.ownerId";
+			updateSQL = _getUpdateSQL(
+				"Layout", "plid", "plid", PortletKeys.PREFS_OWNER_TYPE_LAYOUT);
 
-			runSQL(connection, getUpdateSQL(selectSQL));
+			runSQL(connection, updateSQL);
+
+			// LayoutRevision
+
+			updateSQL = _getUpdateSQL(
+				"LayoutRevision", "layoutRevisionId", "plid",
+				PortletKeys.PREFS_OWNER_TYPE_LAYOUT);
+
+			runSQL(connection, updateSQL);
 
 			// Organization
 
-			selectSQL =
-				"select companyId from Organization_ where " +
-					"Organization_.organizationId = PortletPreferences.ownerId";
+			updateSQL = _getUpdateSQL(
+				"Organization_", "organizationId", "ownerId",
+				PortletKeys.PREFS_OWNER_TYPE_ORGANIZATION);
 
-			runSQL(connection, getUpdateSQL(selectSQL));
+			runSQL(connection, updateSQL);
+
+			// PortletItem
+
+			updateSQL = _getUpdateSQL(
+				"PortletItem", "portletItemId", "ownerId",
+				PortletKeys.PREFS_OWNER_TYPE_ARCHIVED);
+
+			runSQL(connection, updateSQL);
 
 			// User_
 
-			selectSQL =
-				"select companyId from User_ where User_.userId = " +
-					"PortletPreferences.ownerId";
+			updateSQL = _getUpdateSQL(
+				"User_", "userId", "ownerId",
+				PortletKeys.PREFS_OWNER_TYPE_USER);
 
-			runSQL(connection, getUpdateSQL(selectSQL));
+			runSQL(connection, updateSQL);
+		}
+
+		private String _getSelectSQL(
+				String foreignTableName, String foreignColumnName,
+				String columnName)
+			throws SQLException {
+
+			List<Long> companyIds = new ArrayList<>();
+
+			try (PreparedStatement preparedStatement =
+					connection.prepareStatement(
+						"select distinct companyId from " + foreignTableName);
+				ResultSet resultSet = preparedStatement.executeQuery()) {
+
+				while (resultSet.next()) {
+					long companyId = resultSet.getLong(1);
+
+					companyIds.add(companyId);
+				}
+			}
+
+			if (companyIds.size() == 1) {
+				return String.valueOf(companyIds.get(0));
+			}
+
+			return StringBundler.concat(
+				"select companyId from ", foreignTableName, " where ",
+				foreignTableName, ".", foreignColumnName, " = ", getTableName(),
+				".", columnName);
+		}
+
+		private String _getUpdateSQL(
+				String foreignTableName, String foreignColumnName,
+				String columnName, int ownerType)
+			throws IOException, SQLException {
+
+			String selectSQL = _getSelectSQL(
+				foreignTableName, foreignColumnName, columnName);
+
+			return StringBundler.concat(
+				getUpdateSQL(selectSQL), " where ownerType = ", ownerType,
+				" and (companyId is null or companyId = 0)");
 		}
 
 	}

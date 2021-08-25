@@ -14,6 +14,7 @@
 
 package com.liferay.portal.upgrade.util;
 
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.upgrade.StagnantRowException;
 import com.liferay.portal.kernel.upgrade.util.UpgradeColumn;
 import com.liferay.portal.kernel.upgrade.util.UpgradeTable;
@@ -44,7 +45,7 @@ public class DefaultUpgradeTableImpl
 	}
 
 	@Override
-	public String getExportedData(ResultSet rs) throws Exception {
+	public String getExportedData(ResultSet resultSet) throws Exception {
 		StringBuilder sb = new StringBuilder();
 
 		Object[][] columns = getColumns();
@@ -58,8 +59,8 @@ public class DefaultUpgradeTableImpl
 
 			if (_upgradeColumns[i] == null) {
 				appendColumn(
-					sb, rs, (String)columns[i][0], (Integer)columns[i][1],
-					last);
+					sb, resultSet, (String)columns[i][0],
+					(Integer)columns[i][1], last);
 			}
 			else {
 				try {
@@ -67,7 +68,7 @@ public class DefaultUpgradeTableImpl
 						(Integer)columns[i][1]);
 
 					Object oldValue = getValue(
-						rs, (String)columns[i][0], columnType);
+						resultSet, (String)columns[i][0], columnType);
 
 					_upgradeColumns[i].setOldValue(oldValue);
 
@@ -77,13 +78,14 @@ public class DefaultUpgradeTableImpl
 
 					appendColumn(sb, newValue, last);
 				}
-				catch (StagnantRowException sre) {
+				catch (StagnantRowException stagnantRowException) {
 					_upgradeColumns[i].setNewValue(null);
 
 					throw new StagnantRowException(
-						"Column " + columns[i][0] + " with value " +
-							sre.getMessage(),
-						sre);
+						StringBundler.concat(
+							"Column ", columns[i][0], " with value ",
+							stagnantRowException.getMessage()),
+						stagnantRowException);
 				}
 			}
 		}
@@ -93,7 +95,8 @@ public class DefaultUpgradeTableImpl
 
 	@Override
 	public void setColumn(
-			PreparedStatement ps, int index, Integer type, String value)
+			PreparedStatement preparedStatement, int index, Integer type,
+			String value)
 		throws Exception {
 
 		if (_upgradeColumns[index] != null) {
@@ -105,7 +108,7 @@ public class DefaultUpgradeTableImpl
 			}
 		}
 
-		super.setColumn(ps, index, type, value);
+		super.setColumn(preparedStatement, index, type, value);
 	}
 
 	protected DefaultUpgradeTableImpl(

@@ -33,6 +33,20 @@ public class NaturalOrderStringComparatorTest {
 	}
 
 	@Test
+	public void testSortJarVersions() {
+		testSort(
+			new String[] {
+				"com.liferay.module-2.0.7.jar", "com.liferay.module-2.0.11.jar",
+				"com.liferay.module-2.0.1.jar"
+			},
+			new String[] {
+				"com.liferay.module-2.0.1.jar", "com.liferay.module-2.0.7.jar",
+				"com.liferay.module-2.0.11.jar"
+			},
+			false);
+	}
+
+	@Test
 	public void testSortNumericalString() {
 		testSort(
 			new String[] {
@@ -71,7 +85,8 @@ public class NaturalOrderStringComparatorTest {
 		Arrays.sort(
 			array, new NaturalOrderStringComparator(true, caseSensitive));
 
-		Assert.assertEquals(array.length, sortedArray.length);
+		Assert.assertEquals(
+			Arrays.toString(sortedArray), array.length, sortedArray.length);
 
 		for (int i = 0; i < array.length; i++) {
 			Assert.assertEquals(array[i], sortedArray[i]);

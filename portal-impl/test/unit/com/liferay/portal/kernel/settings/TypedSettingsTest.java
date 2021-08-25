@@ -14,8 +14,14 @@
 
 package com.liferay.portal.kernel.settings;
 
+import com.liferay.portal.json.JSONFactoryImpl;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.LocalizationImpl;
 
 import java.util.Arrays;
@@ -23,16 +29,79 @@ import java.util.List;
 import java.util.Locale;
 
 import org.junit.Assert;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
-
-import org.powermock.api.mockito.PowerMockito;
 
 /**
  * @author Iván Zaera
  */
-public class TypedSettingsTest extends PowerMockito {
+public class TypedSettingsTest {
 
-	public TypedSettingsTest() {
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
+
+	@Test
+	public void testGetLocalizedValue() {
+		_setUpPropertiesLocalizedValues();
+
+		LocalizedValuesMap localizedValuesMap =
+			_typedSettings.getLocalizedValuesMap(_KEY);
+
+		Assert.assertEquals(
+			"value_en_GB", localizedValuesMap.get(LocaleUtil.UK));
+		Assert.assertEquals(
+			"value_en_US", localizedValuesMap.get(LocaleUtil.US));
+		Assert.assertEquals(
+			"value_es_ES", localizedValuesMap.get(LocaleUtil.SPAIN));
+		Assert.assertEquals(
+			"valueDefault", localizedValuesMap.get(LocaleUtil.BRAZIL));
+	}
+
+	@Test
+	public void testGetLocalizedValueFromJSON() {
+		_setUpJSONLocalizedValues();
+
+		LocalizedValuesMap localizedValuesMap =
+			_typedSettings.getLocalizedValuesMap(_KEY);
+
+		Assert.assertEquals(
+			"value_en_GB", localizedValuesMap.get(LocaleUtil.UK));
+		Assert.assertEquals(
+			"value_en_US", localizedValuesMap.get(LocaleUtil.US));
+		Assert.assertEquals(
+			"value_es_ES", localizedValuesMap.get(LocaleUtil.SPAIN));
+		Assert.assertEquals(
+			"value_en_US", localizedValuesMap.get(LocaleUtil.BRAZIL));
+	}
+
+	private void _setUpJSONLocalizedValues() {
+		LocalizationUtil localizationUtil = new LocalizationUtil();
+
+		localizationUtil.setLocalization(new LocalizationImpl());
+
+		ModifiableSettings modifiableSettings = new MemorySettings();
+
+		ReflectionTestUtil.setFieldValue(
+			JSONFactoryUtil.class, "_jsonFactory", new JSONFactoryImpl());
+
+		JSONObject jsonObject = JSONUtil.put(
+			"en_GB", "value_en_GB"
+		).put(
+			"en_US", "value_en_US"
+		).put(
+			"es_ES", "value_es_ES"
+		);
+
+		modifiableSettings.setValue(_KEY, jsonObject.toJSONString());
+
+		_typedSettings = new TypedSettings(
+			modifiableSettings, _availableLocales);
+	}
+
+	private void _setUpPropertiesLocalizedValues() {
 		LocalizationUtil localizationUtil = new LocalizationUtil();
 
 		localizationUtil.setLocalization(new LocalizationImpl());
@@ -48,26 +117,11 @@ public class TypedSettingsTest extends PowerMockito {
 			modifiableSettings, _availableLocales);
 	}
 
-	@Test
-	public void testGetLocalizedValue() {
-		LocalizedValuesMap localizedValuesMap =
-			_typedSettings.getLocalizedValuesMap(_KEY);
-
-		Assert.assertEquals(
-			"value_en_GB", localizedValuesMap.get(LocaleUtil.UK));
-		Assert.assertEquals(
-			"value_en_US", localizedValuesMap.get(LocaleUtil.US));
-		Assert.assertEquals(
-			"value_es_ES", localizedValuesMap.get(LocaleUtil.SPAIN));
-		Assert.assertEquals(
-			"valueDefault", localizedValuesMap.get(LocaleUtil.BRAZIL));
-	}
-
 	private static final String _KEY = "key";
 
 	private static final List<Locale> _availableLocales = Arrays.asList(
 		LocaleUtil.SPAIN, LocaleUtil.UK, LocaleUtil.US);
 
-	private final TypedSettings _typedSettings;
+	private TypedSettings _typedSettings;
 
 }

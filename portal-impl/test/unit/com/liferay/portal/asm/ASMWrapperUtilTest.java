@@ -14,13 +14,16 @@
 
 package com.liferay.portal.asm;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.CodeCoverageAssertor;
 import com.liferay.portal.kernel.test.rule.NewEnv;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.test.aspects.ReflectionUtilAdvice;
 import com.liferay.portal.test.rule.AdviseWith;
-import com.liferay.portal.test.rule.AspectJNewEnvTestRule;
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -42,12 +45,13 @@ public class ASMWrapperUtilTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new AggregateTestRule(
-			CodeCoverageAssertor.INSTANCE, AspectJNewEnvTestRule.INSTANCE);
+			CodeCoverageAssertor.INSTANCE, LiferayUnitTestRule.INSTANCE);
 
 	@Test
 	public void testASMWrapper() throws Exception {
 		Object asmWrapper = ASMWrapperUtil.createASMWrapper(
-			TestInterface.class, new TestDelegate(), new TestDefault());
+			TestInterface.class.getClassLoader(), TestInterface.class,
+			new TestDelegate(), new TestDefault());
 
 		Class<?> asmWrapperClass = asmWrapper.getClass();
 
@@ -63,6 +67,28 @@ public class ASMWrapperUtilTest {
 		int randomInt = RandomTestUtil.randomInt();
 
 		Assert.assertEquals(randomInt, method.invoke(asmWrapper, randomInt));
+	}
+
+	@AdviseWith(adviceClasses = ReflectionUtilAdvice.class)
+	@NewEnv(type = NewEnv.Type.CLASSLOADER)
+	@Test
+	public void testClassInitializationFailure() throws Exception {
+		Throwable throwable = new Throwable();
+
+		ReflectionUtilAdvice.setDeclaredMethodThrowable(throwable);
+
+		try {
+			ASMWrapperUtil.createASMWrapper(
+				TestInterface.class.getClassLoader(), TestInterface.class,
+				new TestDelegate(), new TestDefault());
+
+			Assert.fail();
+		}
+		catch (ExceptionInInitializerError eiie) {
+			Assert.assertSame(throwable, eiie.getCause());
+		}
+
+		ReflectionUtilAdvice.setDeclaredFieldThrowable(null);
 	}
 
 	@Test
@@ -82,22 +108,35 @@ public class ASMWrapperUtilTest {
 	@Test
 	public void testCreateASMWrapper() throws Exception {
 		Object asmWrapper = ASMWrapperUtil.createASMWrapper(
-			TestInterface.class, new TestDelegate(), new TestDefault());
+			TestInterface.class.getClassLoader(), TestInterface.class,
+			new TestDelegate(), new TestDefault());
 
 		Class<?> asmWrapperClass = asmWrapper.getClass();
 
 		Assert.assertEquals(Modifier.PUBLIC, asmWrapperClass.getModifiers());
+
+		Package pkg = TestDelegate.class.getPackage();
+
 		Assert.assertEquals(
-			TestInterface.class.getName() + "ASMWrapper",
+			StringBundler.concat(
+				pkg.getName(), ".", TestInterface.class.getSimpleName(),
+				"ASMWrapper"),
 			asmWrapperClass.getName());
+
 		Assert.assertSame(Object.class, asmWrapperClass.getSuperclass());
 
 		Method[] expectedMethods = _getDeclaredMethods(TestInterface.class);
 		Method[] actualMethods = _getDeclaredMethods(asmWrapperClass);
 
+		// See LPS-71495
+
+		Assert.assertTrue(asmWrapper.equals(null));
+		Assert.assertEquals(0, asmWrapper.hashCode());
+		Assert.assertEquals("test", asmWrapper.toString());
 		Assert.assertEquals(
-			"Expected: " + Arrays.toString(expectedMethods) + ", actual: " +
-				Arrays.toString(actualMethods),
+			StringBundler.concat(
+				"Expected: ", Arrays.toString(expectedMethods), ", actual: ",
+				Arrays.toString(actualMethods)),
 			expectedMethods.length, actualMethods.length);
 
 		for (int i = 0; i < expectedMethods.length; i++) {
@@ -105,36 +144,41 @@ public class ASMWrapperUtilTest {
 		}
 	}
 
-	@AdviseWith(adviceClasses = {ReflectionUtilAdvice.class})
 	@NewEnv(type = NewEnv.Type.CLASSLOADER)
 	@Test
 	public void testErrorCreateASMWrapper() throws Exception {
+		Method defineClassMethod = ReflectionTestUtil.getAndSetFieldValue(
+			ASMWrapperUtil.class, "_defineClassMethod", null);
+
 		try {
 			ASMWrapperUtil.createASMWrapper(
-				Object.class, new Object(), Object.class);
+				TestInterface.class.getClassLoader(), TestInterface.class,
+				new TestDelegate(), new TestDefault());
 
 			Assert.fail();
 		}
-		catch (IllegalArgumentException iae) {
+		catch (RuntimeException runtimeException) {
+			Throwable throwable = runtimeException.getCause();
+
+			Assert.assertSame(NullPointerException.class, throwable.getClass());
+		}
+		finally {
+			ReflectionTestUtil.setFieldValue(
+				ASMWrapperUtil.class, "_defineClassMethod", defineClassMethod);
+		}
+
+		try {
+			ASMWrapperUtil.createASMWrapper(
+				ClassLoader.getSystemClassLoader(), Object.class, new Object(),
+				Object.class);
+
+			Assert.fail();
+		}
+		catch (IllegalArgumentException illegalArgumentException) {
 			Assert.assertEquals(
-				Object.class + " is not an interface", iae.getMessage());
+				Object.class + " is not an interface",
+				illegalArgumentException.getMessage());
 		}
-
-		Throwable throwable = new Throwable();
-
-		ReflectionUtilAdvice.setDeclaredMethodThrowable(throwable);
-
-		try {
-			ASMWrapperUtil.createASMWrapper(
-				TestInterface.class, new TestDelegate(), new TestDefault());
-
-			Assert.fail();
-		}
-		catch (RuntimeException re) {
-			Assert.assertSame(throwable, re.getCause());
-		}
-
-		ReflectionUtilAdvice.setDeclaredMethodThrowable(null);
 	}
 
 	public static class TestDefault implements TestInterface {
@@ -192,8 +236,23 @@ public class ASMWrapperUtilTest {
 
 	public static class TestDelegate {
 
+		@Override
+		public boolean equals(Object object) {
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			return 0;
+		}
+
 		public Object objectMethod(Object object) {
 			return new Object();
+		}
+
+		@Override
+		public String toString() {
+			return "test";
 		}
 
 	}
@@ -224,27 +283,46 @@ public class ASMWrapperUtilTest {
 
 	private void _assertEquals(Method expectedMethod, Method actualMethod) {
 		Assert.assertEquals(
-			"Expected:" + expectedMethod + ", actual: " + actualMethod,
+			StringBundler.concat(
+				"Expected:", expectedMethod, ", actual: ", actualMethod),
 			expectedMethod.getModifiers() - Modifier.ABSTRACT,
 			actualMethod.getModifiers());
 		Assert.assertSame(
-			"Expected:" + expectedMethod + ", actual: " + actualMethod,
+			StringBundler.concat(
+				"Expected:", expectedMethod, ", actual: ", actualMethod),
 			expectedMethod.getReturnType(), actualMethod.getReturnType());
 		Assert.assertEquals(
-			"Expected:" + expectedMethod + ", actual: " + actualMethod,
+			StringBundler.concat(
+				"Expected:", expectedMethod, ", actual: ", actualMethod),
 			expectedMethod.getName(), actualMethod.getName());
 		Assert.assertArrayEquals(
-			"Expected:" + expectedMethod + ", actual: " + actualMethod,
+			StringBundler.concat(
+				"Expected:", expectedMethod, ", actual: ", actualMethod),
 			expectedMethod.getParameterTypes(),
 			actualMethod.getParameterTypes());
 		Assert.assertArrayEquals(
-			"Expected:" + expectedMethod + ", actual: " + actualMethod,
+			StringBundler.concat(
+				"Expected:", expectedMethod, ", actual: ", actualMethod),
 			expectedMethod.getExceptionTypes(),
 			actualMethod.getExceptionTypes());
 	}
 
 	private Method[] _getDeclaredMethods(Class<?> clazz) {
 		Method[] methods = clazz.getDeclaredMethods();
+
+		methods = ArrayUtil.<Method>filter(
+			methods,
+			method -> {
+				String name = method.getName();
+
+				if (name.equals("equals") || name.equals("hashCode") ||
+					name.equals("toString")) {
+
+					return false;
+				}
+
+				return true;
+			});
 
 		Arrays.sort(
 			methods,

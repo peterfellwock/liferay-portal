@@ -14,16 +14,25 @@
 
 package com.liferay.registry;
 
+import com.liferay.portal.test.rule.LiferayUnitTestRule;
+
 import java.util.Collection;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
  * @author Michael C. Han
  */
 public class ServiceRegistrarTest {
+
+	@ClassRule
+	@Rule
+	public static final LiferayUnitTestRule liferayUnitTestRule =
+		LiferayUnitTestRule.INSTANCE;
 
 	@BeforeClass
 	public static void setUpClass() throws Exception {
@@ -49,17 +58,19 @@ public class ServiceRegistrarTest {
 			Collection<ServiceRegistration<Foo>> serviceRegistrations =
 				serviceRegistrar.getServiceRegistrations();
 
-			Assert.assertEquals(2, serviceRegistrations.size());
+			Assert.assertEquals(
+				serviceRegistrations.toString(), 2,
+				serviceRegistrations.size());
 
 			Collection<Foo> services = registry.getServices(Foo.class, null);
 
-			Assert.assertEquals(2, services.size());
+			Assert.assertEquals(services.toString(), 2, services.size());
 
 			serviceRegistrar.destroy();
 
 			services = registry.getServices(Foo.class, null);
 
-			Assert.assertTrue(services.isEmpty());
+			Assert.assertTrue(services.toString(), services.isEmpty());
 		}
 		finally {
 			if (serviceRegistration1 != null) {

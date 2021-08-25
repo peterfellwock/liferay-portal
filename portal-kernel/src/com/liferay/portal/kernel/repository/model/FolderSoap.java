@@ -79,10 +79,7 @@ public class FolderSoap implements Serializable {
 			soapModels.add(toSoapModel(model));
 		}
 
-		return soapModels.toArray(new FolderSoap[soapModels.size()]);
-	}
-
-	public FolderSoap() {
+		return soapModels.toArray(new FolderSoap[0]);
 	}
 
 	public long getCompanyId() {

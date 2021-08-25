@@ -1,0 +1,59 @@
+definition {
+
+	macro addApp {
+		LexiconEntry.gotoAdd();
+
+		RemoteAppsEntry.addEntry(
+			entryName = "${entryName}",
+			entryURL = "${entryURL}");
+
+		PortletEntry.save();
+	}
+
+	macro deleteRemoteApp {
+		Click(locator1 = "RemoteApps#REMOTE_TABLE_ELLIPSIS");
+
+		Click(locator1 = "RemoteApps#REMOTE_TABLE_DELETE");
+	}
+
+	macro tearDown {
+		ApplicationsMenu.gotoPortlet(
+			category = "Custom Apps",
+			panel = "Applications",
+			portlet = "Remote Apps");
+
+		Search.searchCP(searchTerm = "App");
+
+		while (IsElementPresent.pauseIsElementPresent(locator1 = "Icon#SVG_ELLIPSIS")) {
+			Click(locator1 = "Icon#SVG_ELLIPSIS");
+
+			MenuItem.clickNoError(menuItem = "Delete");
+		}
+	}
+
+	macro viewEmptyRemoteTable {
+		AssertElementPresent(locator1 = "RemoteApps#EMPTY_REMOTE_TABLE_MESSAGE");
+	}
+
+	macro viewTableEntryName {
+		AssertTextEquals(
+			key_tableEntryName = "${entryName}",
+			locator1 = "RemoteApps#TABLE_ENTRY_NAME_REMOTE_TABLE",
+			value1 = "${entryName}");
+	}
+
+	macro viewTableEntryNameNotPresent {
+		AssertElementNotPresent(
+			key_tableEntryName = "${entryName}",
+			locator1 = "RemoteApps#TABLE_ENTRY_NAME_REMOTE_TABLE",
+			value1 = "${entryName}");
+	}
+
+	macro viewTableEntryURL {
+		AssertTextEquals(
+			key_tableEntryURL = "${entryURL}",
+			locator1 = "RemoteApps#TABLE_ENTRY_URL_REMOTE_TABLE",
+			value1 = "${entryURL}");
+	}
+
+}

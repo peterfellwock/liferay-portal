@@ -1,13 +1,13 @@
-<#assign companyModel = dataFactory.companyModel />
+<#assign companyModel = dataFactory.newCompanyModel() />
 
-insert into Company values (${companyModel.mvccVersion}, ${companyModel.companyId}, ${companyModel.accountId}, '${companyModel.webId}', '${companyModel.key}', '${companyModel.mx}', '${companyModel.homeURL}', ${companyModel.logoId}, ${companyModel.system?string}, ${companyModel.maxUsers}, ${companyModel.active?string});
+${dataFactory.toInsertSQL(companyModel)}
 
-<#assign accountModel = dataFactory.accountModel />
+${dataFactory.toInsertSQL(dataFactory.newAccountModel())}
 
-insert into Account_ values (${accountModel.mvccVersion}, ${accountModel.accountId}, ${accountModel.companyId}, ${accountModel.userId}, '${accountModel.userName}', '${dataFactory.getDateString(accountModel.createDate)}', '${dataFactory.getDateString(accountModel.modifiedDate)}', '${accountModel.parentAccountId}', '${accountModel.name}', '${accountModel.legalName}', '${accountModel.legalId}', '${accountModel.legalType}', '${accountModel.sicCode}', '${accountModel.tickerSymbol}', '${accountModel.industry}', '${accountModel.type}', '${accountModel.size}');
+${dataFactory.toInsertSQL(dataFactory.newVirtualHostModel())}
 
-<#assign virtualHostModel = dataFactory.virtualHostModel />
+<#list dataFactory.newPortalPreferencesModels() as portalPreferencesModel>
+	${dataFactory.toInsertSQL(portalPreferencesModel)}
+</#list>
 
-insert into VirtualHost values (${virtualHostModel.mvccVersion}, ${virtualHostModel.virtualHostId}, ${virtualHostModel.companyId}, ${virtualHostModel.layoutSetId}, '${virtualHostModel.hostname}');
-
-${companyCSVWriter.write(companyModel.companyId + "\n")}
+${csvFileWriter.write("company", companyModel.companyId + "\n")}

@@ -14,7 +14,7 @@
 
 package com.liferay.portal.kernel.dao.db;
 
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -24,27 +24,37 @@ import javax.sql.DataSource;
 public class DBManagerUtil {
 
 	public static DB getDB() {
-		return getDBManager().getDB();
+		DBManager dbManager = _dbManager;
+
+		return dbManager.getDB();
 	}
 
 	public static DB getDB(DBType dbType, DataSource dataSource) {
-		return getDBManager().getDB(dbType, dataSource);
+		DBManager dbManager = _dbManager;
+
+		return dbManager.getDB(dbType, dataSource);
 	}
 
 	public static DB getDB(Object dialect, DataSource dataSource) {
-		DBManager dbManager = getDBManager();
+		DBManager dbManager = _dbManager;
 
 		return dbManager.getDB(dbManager.getDBType(dialect), dataSource);
 	}
 
 	public static DBManager getDBManager() {
-		PortalRuntimePermission.checkGetBeanProperty(DBManagerUtil.class);
-
 		return _dbManager;
 	}
 
 	public static DBType getDBType(Object dialect) {
-		return getDBManager().getDBType(dialect);
+		DBManager dbManager = _dbManager;
+
+		return dbManager.getDBType(dialect);
+	}
+
+	public static Set<DBType> getDBTypes() {
+		DBManager dbManager = _dbManager;
+
+		return dbManager.getDBTypes();
 	}
 
 	public static void reset() {
@@ -52,21 +62,19 @@ public class DBManagerUtil {
 	}
 
 	public static void setDB(DBType dbType, DataSource dataSource) {
-		DBManager dbManager = getDBManager();
+		DBManager dbManager = _dbManager;
 
 		dbManager.setDB(dbManager.getDB(dbType, dataSource));
 	}
 
 	public static void setDB(Object dialect, DataSource dataSource) {
-		DBManager dbManager = getDBManager();
+		DBManager dbManager = _dbManager;
 
 		dbManager.setDB(
 			dbManager.getDB(dbManager.getDBType(dialect), dataSource));
 	}
 
 	public static void setDBManager(DBManager dbManager) {
-		PortalRuntimePermission.checkSetBeanProperty(DBManagerUtil.class);
-
 		_dbManager = dbManager;
 	}
 

@@ -15,7 +15,6 @@
 package com.liferay.portal.kernel.cluster;
 
 import com.liferay.portal.kernel.messaging.Message;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.util.ServiceProxyFactory;
 
 /**
@@ -28,18 +27,10 @@ public class ClusterLinkUtil {
 		return (Address)message.get(_ADDRESS);
 	}
 
-	/**
-	 * @deprecated As of 7.0.0, replaced by {@link #_getClusterLink()}
-	 */
-	@Deprecated
-	public static ClusterLink getClusterLink() {
-		return _getClusterLink();
-	}
-
 	public static void sendMulticastMessage(
 		Message message, Priority priority) {
 
-		_getClusterLink().sendMulticastMessage(message, priority);
+		_clusterLink.sendMulticastMessage(message, priority);
 	}
 
 	public static void sendMulticastMessage(Object payload, Priority priority) {
@@ -53,19 +44,13 @@ public class ClusterLinkUtil {
 	public static void sendUnicastMessage(
 		Address address, Message message, Priority priority) {
 
-		_getClusterLink().sendUnicastMessage(address, message, priority);
+		_clusterLink.sendUnicastMessage(address, message, priority);
 	}
 
 	public static Message setAddress(Message message, Address address) {
 		message.put(_ADDRESS, address);
 
 		return message;
-	}
-
-	private static ClusterLink _getClusterLink() {
-		PortalRuntimePermission.checkGetBeanProperty(ClusterLinkUtil.class);
-
-		return _clusterLink;
 	}
 
 	private static final String _ADDRESS = "CLUSTER_ADDRESS";

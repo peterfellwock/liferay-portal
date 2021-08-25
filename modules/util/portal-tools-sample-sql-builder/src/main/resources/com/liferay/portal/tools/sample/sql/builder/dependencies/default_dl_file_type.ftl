@@ -1,9 +1,9 @@
-<#assign dlFileEntryTypeModel = dataFactory.defaultDLFileEntryTypeModel />
+${dataFactory.toInsertSQL(dataFactory.newDLFileEntryTypeModel())}
 
-insert into DLFileEntryType values ('${dlFileEntryTypeModel.uuid}', ${dlFileEntryTypeModel.fileEntryTypeId}, ${dlFileEntryTypeModel.groupId}, ${dlFileEntryTypeModel.companyId}, ${dlFileEntryTypeModel.userId}, '${dlFileEntryTypeModel.userName}', '${dataFactory.getDateString(dlFileEntryTypeModel.createDate)}', '${dataFactory.getDateString(dlFileEntryTypeModel.modifiedDate)}', '${dlFileEntryTypeModel.fileEntryTypeKey}', '${dlFileEntryTypeModel.name}', '${dlFileEntryTypeModel.description}', '${dataFactory.getDateString(dlFileEntryTypeModel.lastPublishDate)}');
+<#assign defaultDLDDMStructureModel = dataFactory.newDefaultDLDDMStructureModel() />
 
 <@insertDDMStructure
-	_ddmStructureModel = dataFactory.defaultDLDDMStructureModel
-	_ddmStructureLayoutModel = dataFactory.defaultDLDDMStructureLayoutModel
-	_ddmStructureVersionModel = dataFactory.defaultDLDDMStructureVersionModel
+	_ddmStructureLayoutModel=dataFactory.newDefaultDLDDMStructureLayoutModel()
+	_ddmStructureModel=defaultDLDDMStructureModel
+	_ddmStructureVersionModel=dataFactory.newDefaultDLDDMStructureVersionModel(defaultDLDDMStructureModel)
 />

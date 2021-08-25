@@ -16,7 +16,6 @@ package com.liferay.expando.kernel.service.permission;
 
 import com.liferay.expando.kernel.model.ExpandoColumn;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.security.pacl.permission.PortalRuntimePermission;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 /**
@@ -29,15 +28,14 @@ public class ExpandoColumnPermissionUtil {
 			String actionId)
 		throws PortalException {
 
-		getExpandoColumnPermission().check(permissionChecker, column, actionId);
+		_expandoColumnPermission.check(permissionChecker, column, actionId);
 	}
 
 	public static void check(
 			PermissionChecker permissionChecker, long columnId, String actionId)
 		throws PortalException {
 
-		getExpandoColumnPermission().check(
-			permissionChecker, columnId, actionId);
+		_expandoColumnPermission.check(permissionChecker, columnId, actionId);
 	}
 
 	public static void check(
@@ -46,7 +44,7 @@ public class ExpandoColumnPermissionUtil {
 			String actionId)
 		throws PortalException {
 
-		getExpandoColumnPermission().check(
+		_expandoColumnPermission.check(
 			permissionChecker, companyId, className, tableName, columnName,
 			actionId);
 	}
@@ -55,7 +53,7 @@ public class ExpandoColumnPermissionUtil {
 		PermissionChecker permissionChecker, ExpandoColumn column,
 		String actionId) {
 
-		return getExpandoColumnPermission().contains(
+		return _expandoColumnPermission.contains(
 			permissionChecker, column, actionId);
 	}
 
@@ -63,7 +61,7 @@ public class ExpandoColumnPermissionUtil {
 			PermissionChecker permissionChecker, long columnId, String actionId)
 		throws PortalException {
 
-		return getExpandoColumnPermission().contains(
+		return _expandoColumnPermission.contains(
 			permissionChecker, columnId, actionId);
 	}
 
@@ -71,7 +69,7 @@ public class ExpandoColumnPermissionUtil {
 		PermissionChecker permissionChecker, long companyId, String className,
 		String tableName, String columnName, String actionId) {
 
-		return getExpandoColumnPermission().contains(
+		return _expandoColumnPermission.contains(
 			permissionChecker, companyId, className, tableName, columnName,
 			actionId);
 	}
@@ -82,8 +80,6 @@ public class ExpandoColumnPermissionUtil {
 
 	public void setExpandoColumnPermission(
 		ExpandoColumnPermission expandoColumnPermission) {
-
-		PortalRuntimePermission.checkSetBeanProperty(getClass());
 
 		_expandoColumnPermission = expandoColumnPermission;
 	}

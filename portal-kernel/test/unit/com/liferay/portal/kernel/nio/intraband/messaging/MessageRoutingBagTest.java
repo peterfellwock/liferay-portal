@@ -91,7 +91,7 @@ public class MessageRoutingBagTest {
 		List<String> routingTrace = ReflectionTestUtil.getFieldValue(
 			newMessageRoutingBag, "_routingTrace");
 
-		Assert.assertEquals(2, routingTrace.size());
+		Assert.assertEquals(routingTrace.toString(), 2, routingTrace.size());
 		Assert.assertEquals(routingId1, routingTrace.get(0));
 		Assert.assertEquals(routingId2, routingTrace.get(1));
 
@@ -153,7 +153,7 @@ public class MessageRoutingBagTest {
 		List<String> routingTrace = ReflectionTestUtil.getFieldValue(
 			newMessageRoutingBag, "_routingTrace");
 
-		Assert.assertEquals(2, routingTrace.size());
+		Assert.assertEquals(routingTrace.toString(), 2, routingTrace.size());
 		Assert.assertEquals(routingId1, routingTrace.get(0));
 		Assert.assertEquals(routingId2, routingTrace.get(1));
 
@@ -207,12 +207,12 @@ public class MessageRoutingBagTest {
 
 			Assert.fail();
 		}
-		catch (RuntimeException re) {
+		catch (RuntimeException runtimeException) {
 			message.remove(MessageRoutingBag.MESSAGE_ROUTING_BAG);
 
 			Assert.assertEquals(
 				"Unable to write ordinary serializable object " + message,
-				re.getMessage());
+				runtimeException.getMessage());
 		}
 	}
 

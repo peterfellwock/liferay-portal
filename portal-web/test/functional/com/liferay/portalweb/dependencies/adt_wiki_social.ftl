@@ -26,13 +26,6 @@
 	</div>
 
 	<div class="wiki-content">
-		<@liferay_ui["social-bookmarks"]
-			displayStyle="normal"
-			target="_blank"
-			title=entry.getTitle()
-			url=viewURL
-		/>
-
 		${formattedContent}
 	</div>
 
@@ -61,7 +54,7 @@
 		${viewCategorizedPagesURL.setParameter("struts_action", "/wiki/view_categorized_pages")}
 		${viewCategorizedPagesURL.setParameter("nodeId", entry.getNodeId()?string)}
 
-		<@liferay_ui["asset-categories-summary"]
+		<@liferay_asset["asset-categories-summary"]
 			className=wikiPageClassName
 			classPK=entry.getResourcePrimKey()
 			portletURL=viewCategorizedPagesURL
@@ -74,7 +67,7 @@
 		${viewTaggedPagesURL.setParameter("struts_action", "/wiki/view_tagged_pages")}
 		${viewTaggedPagesURL.setParameter("nodeId", entry.getNodeId()?string)}
 
-		<@liferay_ui["asset-tags-summary"]
+		<@liferay_asset["asset-tags-summary"]
 			className=wikiPageClassName
 			classPK=entry.getResourcePrimKey()
 			portletURL=viewTaggedPagesURL
@@ -166,19 +159,19 @@
 </#macro>
 
 <#macro getDiscussion>
-	<#if validator.isNotNull(assetRenderer.getDiscussionPath()) && wikiPortletInstanceOverriddenConfiguration.enableComments()>
+	<#if validator.isNotNull(assetRenderer.getDiscussionPath()) && wikiPortletInstanceConfiguration.enableComments()>
 		<br />
 
 		<#assign discussionURL = renderResponse.createActionURL() />
 
 		${discussionURL.setParameter("struts_action", "/wiki/" + assetRenderer.getDiscussionPath())}
 
-		<@liferay_ui["discussion"]
+		<@liferay_comment["discussion"]
 			className=wikiPageClassName
 			classPK=entry.getResourcePrimKey()
 			formAction=discussionURL?string
 			formName="fm2"
-			ratingsEnabled=wikiPortletInstanceOverriddenConfiguration.enableCommentRatings()
+			ratingsEnabled=wikiPortletInstanceConfiguration.enableCommentRatings()
 			redirect=currentURL
 			subject=assetRenderer.getTitle(locale)
 			userId=assetRenderer.getUserId()
@@ -238,9 +231,9 @@
 	cssClass
 	entry
 >
-	<#if wikiPortletInstanceOverriddenConfiguration.enablePageRatings()>
+	<#if wikiPortletInstanceConfiguration.enablePageRatings()>
 		<div class="${cssClass}">
-			<@liferay_ui["ratings"]
+			<@liferay_ratings["ratings"]
 				className=wikiPageClassName
 				classPK=entry.getResourcePrimKey()
 			/>
@@ -249,9 +242,7 @@
 </#macro>
 
 <#macro getRelatedAssets>
-	<#if assetEntry?? && wikiPortletInstanceOverriddenConfiguration.enableRelatedAssets()>
-		<@liferay_ui["asset-links"]
-			assetEntryId=assetEntry.getEntryId()
-		/>
+	<#if assetEntry?? && wikiPortletInstanceConfiguration.enableRelatedAssets()>
+		<@liferay_asset["asset-links"] assetEntryId=assetEntry.getEntryId() />
 	</#if>
 </#macro>

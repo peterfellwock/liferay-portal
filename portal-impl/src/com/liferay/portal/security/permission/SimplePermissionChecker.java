@@ -14,6 +14,7 @@
 
 package com.liferay.portal.security.permission;
 
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.UserBag;
 
@@ -42,7 +43,7 @@ public class SimplePermissionChecker extends BasePermissionChecker {
 
 	@Override
 	public boolean hasPermission(
-		long groupId, String name, String primKey, String actionId) {
+		Group group, String name, String primKey, String actionId) {
 
 		return hasPermission(actionId);
 	}
@@ -88,16 +89,11 @@ public class SimplePermissionChecker extends BasePermissionChecker {
 	}
 
 	protected boolean hasPermission(String actionId) {
-		if (signedIn) {
+		if (signedIn || actionId.equals(ActionKeys.VIEW)) {
 			return true;
 		}
 
-		if (actionId.equals(ActionKeys.VIEW)) {
-			return true;
-		}
-		else {
-			return false;
-		}
+		return false;
 	}
 
 }
