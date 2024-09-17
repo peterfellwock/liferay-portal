@@ -138,6 +138,8 @@ public class PACLTestRule implements TestRule {
 			Description description, HotDeployEvent hotDeployEvent,
 			PortletContextLoaderListener portletContextLoaderListener)
 		throws Exception {
+		
+		System.out.println("afterClass:" + description.getTestClass());
 
 		if (PACLTestRuleThreadLocal.isDummyDataSourceEnabled()) {
 			LazyConnectionDataSourceProxy lazyConnectionDataSourceProxy =
@@ -171,6 +173,8 @@ public class PACLTestRule implements TestRule {
 			Description description,
 			PortletContextLoaderListener portletContextLoaderListener)
 		throws Exception {
+		
+		System.out.println("beforeClass:" + description.getTestClass());
 
 		_testClass = _loadTestClass(description.getTestClass());
 
